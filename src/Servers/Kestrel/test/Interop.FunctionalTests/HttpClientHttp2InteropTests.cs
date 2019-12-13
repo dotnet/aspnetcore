@@ -502,6 +502,15 @@ namespace Interop.FunctionalTests
                 length = 0;
                 return false;
             }
+
+            internal void Abort()
+            {
+                if (_sendComplete == null)
+                {
+                    throw new InvalidOperationException("Sending hasn't started yet.");
+                }
+                _sendComplete.TrySetException(new Exception("Abort"));
+            }
         }
 
         [ConditionalTheory]
@@ -825,12 +834,11 @@ namespace Interop.FunctionalTests
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
-            var requestCancellation = new CancellationTokenSource();
-            var requestTask = client.SendAsync(request, requestCancellation.Token);
+            var requestTask = client.SendAsync(request);
             await requestReceived.Task.DefaultTimeout();
-            requestCancellation.Cancel();
+            streamingContent.Abort();
             await serverResult.Task.DefaultTimeout();
-            await Assert.ThrowsAsync<TaskCanceledException>(() => requestTask).DefaultTimeout();
+            await Assert.ThrowsAsync<Exception>(() => requestTask).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -871,13 +879,12 @@ namespace Interop.FunctionalTests
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
-            var requestCancellation = new CancellationTokenSource();
-            var requestTask = client.SendAsync(request, requestCancellation.Token);
+            var requestTask = client.SendAsync(request);
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
             await requestReceived.Task.DefaultTimeout();
-            requestCancellation.Cancel();
+            streamingContent.Abort();
             await serverResult.Task.DefaultTimeout();
-            await Assert.ThrowsAsync<TaskCanceledException>(() => requestTask).DefaultTimeout();
+            await Assert.ThrowsAsync<Exception>(() => requestTask).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -1107,11 +1114,195 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        // Settings_Concurrent request limit
-        // Settings_FrameSizeLimit
-        // Settings_HeaderTableSize
-        // Settings_WindowSize
-        // Settings_MaxHeaderListSize
+        [ConditionalTheory]
+        // Expect this to change when the client implements dynamic request header compression.
+        // Will the client send the first headers before receiving our settings frame?
+        // We'll probobly need to ensure the settings changes are ack'd before enforcing them.
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_HeaderTableSize_CanBeReduced_Server(string scheme)
+        {
+            var oneKbString = new string('a', 1024);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureKestrel(options =>
+                    {
+                        // Must be larger than 0, should disable header compression
+                        options.Limits.Http2.HeaderTableSize = 1;
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        try
+                        {
+                            for (var i = 0; i < 14; i++)
+                            {
+                                Assert.Equal(oneKbString + i, context.Request.Headers["header" + i]);
+                            }
+                            serverResult.SetResult(0);
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var request = CreateRequestMessage(HttpMethod.Get, url, content: null);
+            // The default frame size limit is 16kb, and the total header size limit is 32kb.
+            for (var i = 0; i < 14; i++)
+            {
+                request.Headers.Add("header" + i, oneKbString + i);
+            }
+            var requestTask = client.SendAsync(request);
+            var response = await requestTask.DefaultTimeout();
+            await serverResult.Task.DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+
+            Assert.Single(TestSink.Writes.Where(context
+                => context.Message.Contains("received HEADERS frame for stream ID 1 with length 14545 and flags END_STREAM, END_HEADERS")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // Settings_HeaderTableSize_CanBeReduced_Client - The client uses the default 4k HPACK dynamic table size and it cannot be changed.
+        // Nor does Kestrel yet support sending dynaimc table updates, so there's nothing to test here. https://github.com/aspnet/AspNetCore/issues/4715 
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
+        {
+            var sync = new SemaphoreSlim(5);
+            var requestCount = 0;
+            var requestBlock = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureKestrel(options =>
+                    {
+                        options.Limits.Http2.MaxStreamsPerConnection = 5;
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        // The stream limit should mean we never hit the semaphore limit.
+                        Assert.True(sync.Wait(0));
+                        var count = Interlocked.Increment(ref requestCount);
+
+                        if (count == 5)
+                        {
+                            requestBlock.TrySetResult(0);
+                        }
+                        else
+                        {
+                            await requestBlock.Task.DefaultTimeout();
+                        }
+
+                        sync.Release();
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var tasks = new List<Task<HttpResponseMessage>>(10);
+            for (var i = 0; i < 10; i++)
+            {
+                var requestTask = client.GetAsync(url).DefaultTimeout();
+                tasks.Add(requestTask);
+            }
+
+            var responses = await Task.WhenAll(tasks.ToList()).DefaultTimeout();
+            foreach (var response in responses)
+            {
+                response.EnsureSuccessStatusCode();
+            }
+
+            // SKIP: https://github.com/aspnet/AspNetCore/issues/17842
+            // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
+            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
+            // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/17484")]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
+        {
+            var sync = new SemaphoreSlim(5);
+            var requestCount = 0;
+            var requestBlock = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureKestrel(options =>
+                    {
+                        options.Limits.Http2.MaxStreamsPerConnection = 5;
+                    });
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        // The stream limit should mean we never hit the semaphore limit.
+                        Assert.True(sync.Wait(0));
+                        var count = Interlocked.Increment(ref requestCount);
+
+                        if (count == 5)
+                        {
+                            requestBlock.TrySetResult(0);
+                        }
+                        else
+                        {
+                            await requestBlock.Task.DefaultTimeout();
+                        }
+
+                        sync.Release();
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var tasks = new List<Task<HttpResponseMessage>>(10);
+            for (var i = 0; i < 10; i++)
+            {
+                var requestTask = client.PostAsync(url, new StringContent("Hello World")).DefaultTimeout();
+                tasks.Add(requestTask);
+            }
+
+            var responses = await Task.WhenAll(tasks.ToList()).DefaultTimeout();
+            foreach (var response in responses)
+            {
+                response.EnsureSuccessStatusCode();
+            }
+
+            // SKIP: https://github.com/aspnet/AspNetCore/issues/17842
+            // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
+            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
+            // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // Settings_MaxConcurrentStreams_Client - Neither client or server support Push, nothing to test in this direction.
+
+        // Settings_InitialWindowSize_Client/Server
+        // Settings_MaxFrameSize_Client/Server
+        // Settings_MaxHeaderListSize_Client/Server
         // UnicodeRequestHost
         // Url encoding
         // Header encoding
