@@ -264,14 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
     }
     internal readonly partial struct LifecycleProperty
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public LifecycleProperty(System.Reflection.PropertyInfo propertyInfo, string key)
-        {
-            _dummy = _dummy ?? null;
-            _dummyPrimitive = _dummyPrimitive + 1;
-            throw null;
-        }
+        public LifecycleProperty(System.Reflection.PropertyInfo propertyInfo, string key) { throw null; }
         public string Key { get { throw null; } }
         public System.Reflection.PropertyInfo PropertyInfo { get { throw null; } }
         public object GetValue(object instance) { throw null; }
