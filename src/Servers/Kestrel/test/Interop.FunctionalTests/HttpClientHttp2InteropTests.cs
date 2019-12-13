@@ -17,7 +17,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using OpenQA.Selenium.Remote;
 using Xunit;
 
 namespace Interop.FunctionalTests
@@ -1393,7 +1395,146 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        // Settings_InitialWindowSize_Client/Server
+        // Settings_InitialWindowSize_Lower_Server - Kestrel does not support lowering the InitialStreamWindowSize below the spec default 64kb.
+        // Settings_InitialWindowSize_Lower_Client - Not configurable.
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_InitialWindowSize_Server(string scheme)
+        {
+            var requestFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        await requestFinished.Task.DefaultTimeout();
+
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+
+            var streamingContent = new StreamingContent();
+            var requestTask = client.PostAsync(url, streamingContent);
+
+            // The spec default window is 64kb-1 and Kestrel's default is 96kb.
+            // We should be able to send the entire request body without getting blocked by flow control.
+            var oneKbString = new string('a', 1024);
+            for (var i = 0; i < 96; i++)
+            {
+                await streamingContent.SendAsync(oneKbString).DefaultTimeout();
+            }
+            streamingContent.Complete();
+            requestFinished.SetResult(0);
+
+            var response = await requestTask.DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_InitialWindowSize_Client(string scheme)
+        {
+            var responseFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        // The spec default window is 64kb - 1.
+                        // We should be able to send the entire response body without getting blocked by flow control.
+                        var oneKbString = new string('a', 1024);
+                        for (var i = 0; i < 63; i++)
+                        {
+                            await context.Response.WriteAsync(oneKbString).DefaultTimeout();
+                        }
+                        await context.Response.WriteAsync(new string('a', 1023)).DefaultTimeout();
+                        await context.Response.CompleteAsync().DefaultTimeout();
+                        responseFinished.SetResult(0);
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+
+            var requestTask = client.GetStreamAsync(url);
+            await responseFinished.Task.DefaultTimeout();
+            var response = await requestTask.DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ConnectionWindowSize_Server(string scheme)
+        {
+            var requestFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        await requestFinished.Task.DefaultTimeout();
+                        var buffer = new byte[1024];
+                        var read = 0;
+                        do
+                        {
+                            read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length).DefaultTimeout();
+                        } while (read > 0);
+
+                        await context.Response.WriteAsync("Hello World");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+
+            var streamingContent0 = new StreamingContent();
+            var streamingContent1 = new StreamingContent();
+            var requestTask0 = client.PostAsync(url, streamingContent0);
+            var requestTask1 = client.PostAsync(url, streamingContent1);
+
+            // The spec default connection window is 64kb-1 and Kestrel's default is 128kb.
+            // We should be able to send two 64kb requests without getting blocked by flow control.
+            var oneKbString = new string('a', 1024);
+            for (var i = 0; i < 64; i++)
+            {
+                await streamingContent0.SendAsync(oneKbString).DefaultTimeout();
+                await streamingContent1.SendAsync(oneKbString).DefaultTimeout();
+            }
+            streamingContent0.Complete();
+            streamingContent1.Complete();
+            requestFinished.SetResult(0);
+
+            var response0 = await requestTask0.DefaultTimeout();
+            var response1 = await requestTask0.DefaultTimeout();
+            response0.EnsureSuccessStatusCode();
+            response1.EnsureSuccessStatusCode();
+            Assert.Equal("Hello World", await response0.Content.ReadAsStringAsync());
+            Assert.Equal("Hello World", await response1.Content.ReadAsStringAsync());
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // ConnectionWindowSize_Client - impractical
+        // The spec default connection window is 64kb - 1 but the client default is 64Mb (not configurable).
+        // The client restricts streams to 64kb - 1 so we would need to issue 64 * 1024 requests to stress the connection window limit.
+
         // UnicodeRequestHost
         // Url encoding
         // Header encoding
