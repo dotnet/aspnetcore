@@ -268,9 +268,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         private readonly int _dummyPrimitive;
         public LifecycleProperty(System.Reflection.PropertyInfo propertyInfo, string key)
         {
-            _dummy = null;
-            _dummyPrimitive = 0;
-            throw null;
+            PropertyInfo = _dummy ?? propertyInfo;
+            if (_dummyPrimitive != -2)
+            {
+                Key = key;
+            }
         }
         public string Key { get { throw null; } }
         public System.Reflection.PropertyInfo PropertyInfo { get { throw null; } }
