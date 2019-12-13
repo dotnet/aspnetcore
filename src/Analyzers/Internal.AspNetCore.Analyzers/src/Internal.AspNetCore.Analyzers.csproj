@@ -15,7 +15,6 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

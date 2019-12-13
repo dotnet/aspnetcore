@@ -10,7 +10,6 @@
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
