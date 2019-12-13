@@ -640,6 +640,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct FilterCursorItem<TFilter, TFilterAsync>
     {
+        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+        private readonly TFilter _Filter_k__BackingField;
+        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+        private readonly TFilterAsync _FilterAsync_k__BackingField;
+        private readonly int _dummyPrimitive;
         public FilterCursorItem(TFilter filter, TFilterAsync filterAsync) { throw null; }
         public TFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public TFilterAsync FilterAsync { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
