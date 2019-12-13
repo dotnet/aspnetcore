@@ -858,8 +858,7 @@ namespace Interop.FunctionalTests
                     {
                         try
                         {
-                            var read = await context.Request.Body.ReadAsync(new byte[11], 0, 11);
-                            Assert.Equal(11, read);
+                            await ReadStreamHelloWorld(context.Request.Body);
                             var readTask = context.Request.Body.ReadAsync(new byte[11], 0, 11);
                             requestReceived.SetResult(0);
                             var ex = await Assert.ThrowsAsync<IOException>(() => readTask).DefaultTimeout();
@@ -964,8 +963,7 @@ namespace Interop.FunctionalTests
 
             var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
             var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
-            var read = await responseStream.ReadAsync(new byte[11], 0, 11).DefaultTimeout();
-            Assert.Equal(11, read);
+            await ReadStreamHelloWorld(responseStream);
             responseStream.Dispose(); // Sends reset
             await serverResult.Task.DefaultTimeout();
 
@@ -1006,8 +1004,7 @@ namespace Interop.FunctionalTests
 
             var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
             var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
-            var read = await responseStream.ReadAsync(new byte[11], 0, 11).DefaultTimeout();
-            Assert.Equal(11, read);
+            await ReadStreamHelloWorld(responseStream);
             responseStream.Dispose(); // Sends reset
             await serverResult.Task.DefaultTimeout();
 
@@ -1300,9 +1297,103 @@ namespace Interop.FunctionalTests
 
         // Settings_MaxConcurrentStreams_Client - Neither client or server support Push, nothing to test in this direction.
 
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_MaxFrameSize_Larger_Server(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureKestrel(options => options.Limits.Http2.MaxFrameSize = 1024 * 20); // The default is 16kb
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context => context.Response.WriteAsync("Hello World")));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            // Send an initial request to ensure the settings get synced before the real test.
+            var responseBody = await client.GetStringAsync(url).DefaultTimeout();
+            Assert.Equal("Hello World", responseBody);
+
+            var response = await client.PostAsync(url, new ByteArrayContent(new byte[1024 * 18])).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+
+            // SKIP: The client does not take advantage of a larger allowed frame size.
+            // https://github.com/dotnet/runtime/blob/48a78bfa13e9c710851690621fc2c0fe1637802c/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2Connection.cs#L483-L488
+            // Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received DATA frame for stream ID 1 with length 18432 and flags NONE")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // Settings_MaxFrameSize_Larger_Client - Not configurable
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_MaxHeaderListSize_Server(string scheme)
+        {
+            var oneKbString = new string('a', 1024);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context => throw new NotImplementedException() ));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+            // There's no point in waiting for the settings to sync, the client doesn't check the header list size setting.
+            // https://github.com/dotnet/runtime/blob/48a78bfa13e9c710851690621fc2c0fe1637802c/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2Connection.cs#L467-L494
+
+            var request = CreateRequestMessage(HttpMethod.Get, url, content: null);
+            // The default size limit is 32kb.
+            for (var i = 0; i < 33; i++)
+            {
+                request.Headers.Add("header" + i, oneKbString + i);
+            }
+            // Kestrel closes the connection rather than sending the recommended 431 response. https://github.com/aspnet/AspNetCore/issues/17861
+            await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request)).DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task Settings_MaxHeaderListSize_Client(string scheme)
+        {
+            var oneKbString = new string('a', 1024);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        // The total header size limit is 64kb.
+                        for (var i = 0; i < 65; i++)
+                        {
+                            context.Response.Headers.Append("header" + i, oneKbString + i);
+                        }
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url)).DefaultTimeout();
+            Assert.Equal("The HTTP response headers length exceeded the set limit of 65536 bytes.", ex.InnerException?.InnerException?.Message);
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
         // Settings_InitialWindowSize_Client/Server
-        // Settings_MaxFrameSize_Client/Server
-        // Settings_MaxHeaderListSize_Client/Server
         // UnicodeRequestHost
         // Url encoding
         // Header encoding
