@@ -251,6 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         public void OnTempDataSaving(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary tempData) { }
         protected void SetPropertyValues(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary tempData) { }
     }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct LifecycleProperty
     {
         private readonly object _dummy;
