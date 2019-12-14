@@ -113,6 +113,17 @@
     <Error
       Message="Unrecongnized value for BlazorLinkOnBuild: '$(BlazorLinkOnBuild)'. Valid values are 'true' or 'false'."
       Condition="'$(BlazorLinkOnBuild)' != 'true' AND '$(BlazorLinkOnBuild)' != 'false'" />
+
+    <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
+    <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
+      <Output TaskParameter="Lines" ItemName="_BlazorLinkedFile"/>
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <BlazorOutputWithTargetPath Include="%(_BlazorLinkedFile.Identity)">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+      </BlazorOutputWithTargetPath>
+    </ItemGroup>
   </Target>
 
   <!--
@@ -127,17 +138,6 @@
     Name="_ResolveBlazorOutputsWhenLinked"
     Condition="'$(BlazorLinkOnBuild)' == 'true'"
     DependsOnTargets="_GenerateBlazorLinkerDescriptor;_LinkBlazorApplication">
-
-    <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
-    <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
-      <Output TaskParameter="Lines" ItemName="_BlazorLinkedFile"/>
-    </ReadLinesFromFile>
-
-    <ItemGroup>
-      <BlazorOutputWithTargetPath Include="%(_BlazorLinkedFile.Identity)">
-        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
-    </ItemGroup>
   </Target>
 
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(BlazorTasksPath)" />
@@ -219,47 +219,108 @@
     <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
   </Target>
 
+  <UsingTask TaskName="BlazorGetAssemblyReferences" AssemblyFile="$(BlazorTasksPath)" />
 
-  <UsingTask TaskName="ResolveBlazorRuntimeDependencies" AssemblyFile="$(BlazorTasksPath)" />
-  <Target
-    Name="_ResolveBlazorOutputsWhenNotLinked"
-    DependsOnTargets="_ResolveBlazorRuntimeDependencies"
-    Condition="'$(BlazorLinkOnBuild)' != 'true'">
+  <Target Name="_GetBlazorNotLinkedInputs">
+    <!--
+    We're using ILLink to determine the minimum closure of assemblies that need to be copied to the output directory. However executing ILLink results in a separate process being launched.
+    The outputs of a previous run are
+    -->
 
-    <ReadLinesFromFile File="$(_BlazorApplicationAssembliesCacheFile)" Condition="'@(_BlazorResolvedRuntimeDependencies->Count())' == '0'">
-      <Output TaskParameter="Lines" ItemName="_BlazorResolvedRuntimeDependencies"/>
-    </ReadLinesFromFile>
+    <PropertyGroup>
+      <_BlazorReferenceCacheFile>$(BlazorIntermediateOutputPath)blazor.assemblyreferences.cache</_BlazorReferenceCacheFile>
+    </PropertyGroup>
 
     <ItemGroup>
-      <BlazorOutputWithTargetPath Include="@(_BlazorResolvedRuntimeDependencies)">
-        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
+      <_BlazorProjectReference Include="@(ReferencePath->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <_BlazorExternalReference Include="@(ReferencePath)" Exclude="@(_BlazorProjectReference)" />
+    </ItemGroup>
+
+    <BlazorGetAssemblyReferences Assemblies="@(IntermediateAssembly);@(_BlazorProjectReference)">
+      <Output TaskParameter="AssemblyReferences" ItemName="_ProjectAssemblyReferences" />
+    </BlazorGetAssemblyReferences>
+
+    <Hash ItemsToHash="@(_BlazorProjectReference);@(_ProjectAssemblyReferences);">
+      <Output TaskParameter="HashResult" PropertyName="_BlazorReferenceHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_BlazorReferenceHash)"
+      File="$(_BlazorReferenceCacheFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+  </Target>
+
+  <Target
+    Name="_GetBlazorNotLinkedAssemblyClosure"
+    DependsOnTargets="_GenerateBlazorLinkerDescriptor"
+    Inputs="$(ProjectAssetsFile);
+            $(_BlazorReferenceCacheFile);
+            @(_BlazorExternalReference);"
+    Outputs="$(_BlazorLinkerOutputCache)">
+
+   <ItemGroup>
+      <_OldLinkedFile Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_OldLinkedFile Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" />
+    </ItemGroup>
+
+    <Delete Files="@(_OldLinkedFile)" />
+
+    <!--
+      When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
+      In this case, explicitly specify the path to the dotnet host.
+    -->
+    <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
+      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
+      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
+      <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
+    </PropertyGroup>
+
+    <BlazorILLink
+        ILLinkPath="$(MonoLinkerPath)"
+        AssemblyPaths="@(_BlazorDependencyInput);@(_WebAssemblyBCLAssembly)"
+        RootAssemblyNames="@(IntermediateAssembly)"
+        RootDescriptorFiles="@(BlazorLinkerDescriptor)"
+        OutputDirectory="$(BlazorIntermediateLinkerOutputPath)"
+        ExtraArgs="$(_BlazorLinkerAdditionalOptions)"
+        ToolExe="$(_DotNetHostFileName)"
+        ToolPath="$(_DotNetHostDirectory)"
+        FrameworkAssemblyAction="copyused" />
+
+    <ItemGroup>
+      <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" Condition="'$(BlazorEnableDebugging)' == 'true'" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorLinkerOutputCache)" />
     </ItemGroup>
   </Target>
 
   <Target
-    Name="_ResolveBlazorRuntimeDependencies"
-    Inputs="$(ProjectAssetsFile);
-            @(IntermediateAssembly);
-            @(_BlazorDependencyInput)"
-    Outputs="$(_BlazorApplicationAssembliesCacheFile)">
+    Name="_ResolveBlazorOutputsWhenNotLinked"
+    Condition="'$(BlazorLinkOnBuild)' != 'true'"
+    DependsOnTargets="_GetBlazorNotLinkedInputs;_GetBlazorNotLinkedAssemblyClosure">
 
     <!--
-    At this point we have decided not to run the linker and instead to just copy the assemblies
-    from the BCL referenced by the app the nuget package into the _framework/_bin folder.
-    The only thing we need to do here is collect the list of items that will go into _framework/_bin.
+      _GetBlazorNotLinkedAssemblyClosure might have been skipped due to build incrementalism. However, the IntermediateAssembly or assemblies produced
+      by project references may be newer. Copy them to the linker output directory.
     -->
-    <ResolveBlazorRuntimeDependencies
-      EntryPoint="@(IntermediateAssembly)"
-      ApplicationDependencies="@(_BlazorDependencyInput)"
-      WebAssemblyBCLAssemblies="@(_WebAssemblyBCLAssembly)">
 
-      <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedRuntimeDependencies" />
-    </ResolveBlazorRuntimeDependencies>
+    <Copy
+      SourceFiles="@(IntermediateAssembly);@(_BlazorProjectReference)"
+      DestinationFolder="$(BlazorIntermediateLinkerOutputPath)"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
 
-    <ItemGroup>
-      <FileWrites Include="$(_BlazorApplicationAssembliesCacheFile)" />
-    </ItemGroup>
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
   </Target>
 
   <UsingTask TaskName="GenerateBlazorBootJson" AssemblyFile="$(BlazorTasksPath)" />

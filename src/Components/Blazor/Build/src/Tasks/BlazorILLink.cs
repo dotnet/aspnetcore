@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
 
         public bool DumpDependencies { get; set; }
 
+        public string FrameworkAssemblyAction { get; set; }
+
         private string _dotnetPath;
 
         private string DotNetPath
@@ -112,6 +114,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
                     args.Append(action);
                     args.Append(" ").AppendLine(Quote(assemblyName));
                 }
+            }
+
+            if (!string.IsNullOrEmpty(FrameworkAssemblyAction))
+            {
+                args.Append("-c ").AppendLine(FrameworkAssemblyAction);
             }
 
             if (ReferenceAssemblyPaths != null)
