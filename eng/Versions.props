@@ -23,15 +23,12 @@
     <BlazorClientPreReleasePreviewNumber>4</BlazorClientPreReleasePreviewNumber>
     <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
+    <!-- The following property may need to be updated if ingesting new versions of Extensions.Refs package. The package override version is used to create PackageOverrides.txt in the targeting pack. -->
+    <MicrosoftInternalExtensionsRefsPackageOverrideVersion>3.1.0</MicrosoftInternalExtensionsRefsPackageOverrideVersion>
     <!-- Additional assembly attributes are already configured to include the source revision ID. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <!--
-      Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them and PatchConfig.props. This also
-      gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
-    -->
-    <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
-    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
-    <IsServicingBuild Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <!-- Servicing builds have different characteristics for the way dependencies, framework references, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <!-- TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats. -->
     <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>

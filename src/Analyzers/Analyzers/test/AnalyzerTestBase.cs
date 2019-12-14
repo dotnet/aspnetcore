@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Analyzers
             }
 
             var read = Read(source);
-            return DiagnosticProject.Create(GetType().Assembly, new[] { read.Source, });
+            return AnalyzersDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { read.Source, });
         }
 
         public Task<Compilation> CreateCompilationAsync(string source)

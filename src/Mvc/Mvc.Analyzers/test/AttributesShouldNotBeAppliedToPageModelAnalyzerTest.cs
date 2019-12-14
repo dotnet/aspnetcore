@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Analyzers.Test
+namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
     public class AttributesShouldNotBeAppliedToPageModelAnalyzerTest
     {

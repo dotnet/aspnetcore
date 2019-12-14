@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +15,8 @@
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
 </Project>

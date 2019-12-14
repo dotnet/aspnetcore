@@ -82,12 +82,14 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <LatestPackageReference Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
     <LatestPackageReference Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
     <LatestPackageReference Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <LatestPackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandlineExperimentalPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel" Version="$(SystemComponentModelPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
+    <LatestPackageReference Include="System.Drawing.Common" Version="$(SystemDrawingCommonPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
@@ -99,6 +101,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
     <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
+    <LatestPackageReference Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
 
     <!-- Runtime packages required for crossgen -->
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />

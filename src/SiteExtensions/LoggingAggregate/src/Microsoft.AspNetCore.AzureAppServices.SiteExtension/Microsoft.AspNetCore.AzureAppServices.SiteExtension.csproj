@@ -16,6 +16,8 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
     <IsShippingPackage>true</IsShippingPackage>
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
