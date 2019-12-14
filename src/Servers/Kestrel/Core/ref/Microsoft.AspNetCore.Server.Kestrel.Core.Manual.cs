@@ -1552,6 +1552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     internal readonly partial struct HeaderField
     {
         public const int RfcOverhead = 32;
+        private readonly object _dummy;
         public HeaderField(System.Span<byte> name, System.Span<byte> value) { throw null; }
         public int Length { get { throw null; } }
         public byte[] Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

@@ -367,6 +367,7 @@ namespace Microsoft.AspNetCore.Routing
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal readonly partial struct MatcherState
         {
+            private readonly object _dummy;
             public readonly Microsoft.AspNetCore.Routing.RoutePatternMatcher Matcher;
             public readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<IRouteConstraint>> Constraints;
             public MatcherState(Microsoft.AspNetCore.Routing.RoutePatternMatcher matcher, System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Microsoft.AspNetCore.Routing.IRouteConstraint>> constraints) { throw null; }

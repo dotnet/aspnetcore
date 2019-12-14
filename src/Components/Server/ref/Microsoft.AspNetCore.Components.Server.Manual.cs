@@ -6,6 +6,8 @@ namespace Microsoft.AspNetCore.Components
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct ServerComponent
     {
+        private object _dummy;
+        private int _dummyPrimitive;
         public ServerComponent(int sequence, string assemblyName, string typeName, System.Guid invocationId) { throw null; }
         public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Guid InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -27,6 +29,8 @@ namespace Microsoft.AspNetCore.Components
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct ServerComponentMarker
     {
+        private object _dummy;
+        private int _dummyPrimitive;
         public string Descriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string PrerenderId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int? Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -151,6 +155,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal readonly partial struct UnacknowledgedRenderBatch
         {
+            private readonly object _dummy;
+            private readonly int _dummyPrimitive;
             public UnacknowledgedRenderBatch(long batchId, Microsoft.AspNetCore.Components.Server.Circuits.ArrayBuilder<byte> data, System.Threading.Tasks.TaskCompletionSource<object> completionSource, Microsoft.Extensions.Internal.ValueStopwatch valueStopwatch) { throw null; }
             public long BatchId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
             public System.Threading.Tasks.TaskCompletionSource<object> CompletionSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -217,6 +223,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct CircuitId : System.IEquatable<Microsoft.AspNetCore.Components.Server.Circuits.CircuitId>
     {
+        private readonly object _dummy;
         public CircuitId(string secret, string id) { throw null; }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Secret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -291,6 +298,7 @@ namespace Microsoft.Extensions.Internal
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct ValueStopwatch
     {
+        private int _dummyPrimitive;
         public bool IsActive { get { throw null; } }
         public System.TimeSpan GetElapsedTime() { throw null; }
         public static Microsoft.Extensions.Internal.ValueStopwatch StartNew() { throw null; }
