@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct CookedUrl
     {
+        private readonly int _dummyPrimitive;
         internal CookedUrl(Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_COOKED_URL nativeCookedUrl) { throw null; }
         internal string GetAbsPath() { throw null; }
         internal string GetFullUrl() { throw null; }
