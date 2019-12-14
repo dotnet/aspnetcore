@@ -1,17 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
-using Microsoft.AspNetCore.SpaServices.Util;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SpaServices.Extensions.Util;
+using Microsoft.AspNetCore.SpaServices.Util;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 {
@@ -39,8 +43,10 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
+            var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger);
+            var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
+            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -63,7 +69,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         }
 
         private static async Task<int> StartCreateReactAppServerAsync(
-            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
             if (portNumber == default(int))
             {
@@ -77,7 +83,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 { "BROWSER", "none" }, // We don't want create-react-app to open its own extra browser window pointing to the internal dev server port
             };
             var scriptRunner = new NodeScriptRunner(
-                sourcePath, scriptName, null, envVars, pkgManagerCommand);
+                sourcePath, scriptName, null, envVars, pkgManagerCommand, diagnosticSource, applicationStoppingToken);
             scriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
