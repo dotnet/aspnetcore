@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,9 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using OpenQA.Selenium.Remote;
 using Xunit;
 
 namespace Interop.FunctionalTests
@@ -435,6 +433,8 @@ namespace Interop.FunctionalTests
             var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
+            // The client doesn't flush the headers for requests with a body unless a continue is expected.
+            client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
@@ -608,6 +608,7 @@ namespace Interop.FunctionalTests
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_AfterHeaders_ClientBodyThrows(string scheme)
         {
+            var receivedHeaders = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var hostBuilder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
@@ -616,6 +617,7 @@ namespace Interop.FunctionalTests
                     .Configure(app => app.Run(async context =>
                     {
                         await context.Response.BodyWriter.FlushAsync();
+                        await receivedHeaders.Task.DefaultTimeout();
                         context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
                     }));
                 });
@@ -625,6 +627,7 @@ namespace Interop.FunctionalTests
             using var client = CreateClient();
             var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
             response.EnsureSuccessStatusCode();
+            receivedHeaders.SetResult(0);
             var exception = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync()).DefaultTimeout();
             Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
             await host.StopAsync().DefaultTimeout();
@@ -726,6 +729,8 @@ namespace Interop.FunctionalTests
             var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
+            // The client doesn't flush the headers for requests with a body unless a continue is expected.
+            client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
@@ -833,6 +838,8 @@ namespace Interop.FunctionalTests
             var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
+            // The client doesn't flush the headers for requests with a body unless a continue is expected.
+            client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
@@ -840,7 +847,7 @@ namespace Interop.FunctionalTests
             await requestReceived.Task.DefaultTimeout();
             streamingContent.Abort();
             await serverResult.Task.DefaultTimeout();
-            await Assert.ThrowsAsync<Exception>(() => requestTask).DefaultTimeout();
+            await Assert.ThrowsAnyAsync<Exception>(() => requestTask).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -885,7 +892,7 @@ namespace Interop.FunctionalTests
             await requestReceived.Task.DefaultTimeout();
             streamingContent.Abort();
             await serverResult.Task.DefaultTimeout();
-            await Assert.ThrowsAsync<Exception>(() => requestTask).DefaultTimeout();
+            await Assert.ThrowsAnyAsync<Exception>(() => requestTask).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -1014,6 +1021,7 @@ namespace Interop.FunctionalTests
         }
 
         [ConditionalTheory]
+        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
         [MemberData(nameof(SupportedSchemes))]
         public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
         {
@@ -1053,13 +1061,14 @@ namespace Interop.FunctionalTests
             {
                 request.Headers.Add("header" + i, oneKbString + i);
             }
+            request.Headers.Host = "localhost"; // The default Host header has a random port value wich can cause the length to vary.
             var requestTask = client.SendAsync(request);
             var response = await requestTask.DefaultTimeout();
             await serverResult.Task.DefaultTimeout();
             response.EnsureSuccessStatusCode();
 
             Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received HEADERS frame for stream ID 1 with length 16384 and flags END_STREAM")));
-            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received CONTINUATION frame for stream ID 1 with length 4395 and flags END_HEADERS")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received CONTINUATION frame for stream ID 1 with length 4390 and flags END_HEADERS")));
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -1161,13 +1170,14 @@ namespace Interop.FunctionalTests
             {
                 request.Headers.Add("header" + i, oneKbString + i);
             }
+            request.Headers.Host = "localhost"; // The default Host has a random port value that causes the length to very.
             var requestTask = client.SendAsync(request);
             var response = await requestTask.DefaultTimeout();
             await serverResult.Task.DefaultTimeout();
             response.EnsureSuccessStatusCode();
 
             Assert.Single(TestSink.Writes.Where(context
-                => context.Message.Contains("received HEADERS frame for stream ID 1 with length 14545 and flags END_STREAM, END_HEADERS")));
+                => context.Message.Contains("received HEADERS frame for stream ID 1 with length 14540 and flags END_STREAM, END_HEADERS")));
 
             await host.StopAsync().DefaultTimeout();
         }
@@ -1333,6 +1343,7 @@ namespace Interop.FunctionalTests
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
         [ConditionalTheory]
+        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
         {
@@ -1535,9 +1546,54 @@ namespace Interop.FunctionalTests
         // The spec default connection window is 64kb - 1 but the client default is 64Mb (not configurable).
         // The client restricts streams to 64kb - 1 so we would need to issue 64 * 1024 requests to stress the connection window limit.
 
-        // UnicodeRequestHost
-        // Url encoding
-        // Header encoding
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task UnicodeRequestHost(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        Assert.Equal("點.看", context.Request.Host.Host);
+                        return context.Response.WriteAsync(context.Request.Host.Host);
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var request = CreateRequestMessage(HttpMethod.Get, url, content: null);
+            request.Headers.Host = "xn--md7a.xn--c1y"; // Punycode
+            var response = await client.SendAsync(request).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("點.看", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task UrlEncoding(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context => context.Response.WriteAsync(context.Request.Path.Value)));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            // Skipped controls, '?' and '#'.
+            var response = await client.GetAsync(url + " !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`{|}~點看").DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("/ !\"$%&'()*++,-./0123456789:;<>=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[/]^_`{|}~點看", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
 
         private static HttpClient CreateClient()
         {
