@@ -11,8 +11,7 @@ let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
 let find_method: (typeHandle: number, methodName: string, unknownArg: number) => MethodHandle;
 let invoke_method: (method: MethodHandle, target: System_Object, argsArrayPtr: number, exceptionFlagIntPtr: number) => System_Object;
-let mono_call_assembly_entry_point: (assemblyName: string, args: System_Object[]) => System_Object;
-let mono_obj_array_new: (length: number) => System_Object;
+let mono_string_array_new: (length: number) => System_Array<System_String>;
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
 const appBinDirName = 'appBinDir';
@@ -41,9 +40,18 @@ export const monoPlatform: Platform = {
 
   findMethod: findMethod,
 
-  callEntryPoint: function callEntryPoint(assemblyName: string): System_Object {
-    const empty_array = mono_obj_array_new(0);
-    return mono_call_assembly_entry_point(assemblyName, [empty_array]);
+  callEntryPoint: function callEntryPoint(assemblyName: string) {
+    // Instead of using Module.mono_call_assembly_entry_point, we have our own logic for invoking
+    // the entrypoint which adds support for async main.
+    // Currently we disregard the return value from the entrypoint, whether it's sync or async.
+    // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
+    // outer promise reflects the startup process, and the inner one reflects the possibly-async
+    // .NET entrypoint method.
+    const invokeEntrypoint = findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting', 'EntrypointInvoker', 'InvokeEntrypoint');
+    this.callMethod(invokeEntrypoint, null, [
+      this.toDotNetString(assemblyName),
+      mono_string_array_new(0) // In the future, we may have a way of supplying arg strings. For now, we always supply an empty string[].
+    ]);
   },
 
   callMethod: function callMethod(method: MethodHandle, target: System_Object, args: System_Object[]): System_Object {
@@ -263,11 +271,9 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
       'number',
     ]);
 
-    mono_call_assembly_entry_point = Module.mono_call_assembly_entry_point;
-
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
-    mono_obj_array_new = Module.cwrap ('mono_wasm_obj_array_new', 'number', ['number']);
+    mono_string_array_new = Module.cwrap('mono_wasm_string_array_new', 'number', ['number']);
 
     MONO.loaded_files = [];
 

@@ -5,11 +5,11 @@
   "tools": {
     "dotnet": "5.0.100-alpha1-015752",
     "runtimes": {
-      "dotnet": [
-        "$(MicrosoftNETCoreAppRuntimeVersion)"
+      "dotnet/x64": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ],
       "dotnet/x86": [
-        "$(MicrosoftNETCoreAppRuntimeVersion)"
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ]
     },
     "Git": "2.22.0",
