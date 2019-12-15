@@ -88,6 +88,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandlineExperimentalPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel" Version="$(SystemComponentModelPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
+    <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />

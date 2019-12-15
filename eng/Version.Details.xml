@@ -309,6 +309,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>475778fa982064e26a8b3a5d7545112f6586ac61</Sha>
     </Dependency>
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="5.0.0-alpha.1.19556.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>475778fa982064e26a8b3a5d7545112f6586ac61</Sha>
+    </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="5.0.0-alpha.1.19556.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>475778fa982064e26a8b3a5d7545112f6586ac61</Sha>

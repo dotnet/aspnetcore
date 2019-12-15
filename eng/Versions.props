@@ -74,6 +74,7 @@
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha.1.19556.7</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-alpha.1.19556.7</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha.1.19556.7</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha.1.19556.7</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha.1.19556.7</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-alpha.1.19556.7</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.0-alpha.1.19556.7</SystemIOPipelinesPackageVersion>
