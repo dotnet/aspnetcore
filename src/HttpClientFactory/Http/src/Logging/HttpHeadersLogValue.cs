@@ -12,15 +12,15 @@ namespace Microsoft.Extensions.Http.Logging
     internal class HttpHeadersLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly Kind _kind;
-        private readonly Predicate<string> _isSensitiveHeader;
+        private readonly Predicate<string> _shouldRedactHeaderValue;
 
         private string _formatted;
         private List<KeyValuePair<string, object>> _values;
 
-        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Predicate<string> isSensitiveHeader)
+        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Predicate<string> shouldRedactHeaderValue)
         {
             _kind = kind;
-            _isSensitiveHeader = isSensitiveHeader;
+            _shouldRedactHeaderValue = shouldRedactHeaderValue;
 
             Headers = headers;
             ContentHeaders = contentHeaders;
@@ -96,13 +96,17 @@ namespace Microsoft.Extensions.Http.Logging
                     builder.Append(kvp.Key);
                     builder.Append(": ");
 
-                    if (_isSensitiveHeader(kvp.Key))
+                    if (_shouldRedactHeaderValue(kvp.Key))
                     {
                         builder.Append("*");
                         builder.AppendLine();
                     }
                     else
                     {
+#if NETCOREAPP // TODO: or use !NETSTANDARD2_0?
+                        builder.AppendJoin(", ", (IEnumerable<object>)kvp.Value);
+                        builder.AppendLine();
+#else
                         foreach (var value in (IEnumerable<object>)kvp.Value)
                         {
                             builder.Append(value);
@@ -112,6 +116,7 @@ namespace Microsoft.Extensions.Http.Logging
                         // Remove the extra ', '
                         builder.Remove(builder.Length - 2, 2);
                         builder.AppendLine();
+#endif
                     }
                 }
 

@@ -2,13 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
@@ -19,22 +13,34 @@ namespace Microsoft.Extensions.Http.Logging
     public class LoggingHttpMessageHandler : DelegatingHandler
     {
         private ILogger _logger;
-        private readonly Predicate<string> _isSensitiveHeader;
+        private readonly HttpClientFactoryOptions _options;
 
-        public LoggingHttpMessageHandler(ILogger logger, Predicate<string> isSensitiveHeader)
+        private static readonly Predicate<string> _shouldNotRedactHeaderValue = (header) => false;
+
+        public LoggingHttpMessageHandler(ILogger logger)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (isSensitiveHeader == null)
+            _logger = logger;
+        }
+
+        public LoggingHttpMessageHandler(ILogger logger, HttpClientFactoryOptions options)
+        {
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(isSensitiveHeader));
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             _logger = logger;
-            _isSensitiveHeader = isSensitiveHeader;
+            _options = options;
         }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -46,11 +52,13 @@ namespace Microsoft.Extensions.Http.Logging
 
             var stopwatch = ValueStopwatch.StartNew();
 
+            var shouldRedactHeaderValue = _options?.ShouldRedactHeaderValue ?? _shouldNotRedactHeaderValue;
+
             // Not using a scope here because we always expect this to be at the end of the pipeline, thus there's
             // not really anything to surround.
-            Log.RequestStart(_logger, request, _isSensitiveHeader);
+            Log.RequestStart(_logger, request, shouldRedactHeaderValue);
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            Log.RequestEnd(_logger, response, stopwatch.GetElapsedTime(), _isSensitiveHeader);
+            Log.RequestEnd(_logger, response, stopwatch.GetElapsedTime(), shouldRedactHeaderValue);
 
             return response;
         }
@@ -76,7 +84,7 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.RequestEnd,
                 "Received HTTP response headers after {ElapsedMilliseconds}ms - {StatusCode}");
 
-            public static void RequestStart(ILogger logger, HttpRequestMessage request, Predicate<string> isSensitiveHeader)
+            public static void RequestStart(ILogger logger, HttpRequestMessage request, Predicate<string> shouldRedactHeaderValue)
             {
                 _requestStart(logger, request.Method, request.RequestUri, null);
 
@@ -85,13 +93,13 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.RequestHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers, isSensitiveHeader),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers, shouldRedactHeaderValue),
                         null,
                         (state, ex) => state.ToString());
                 }
             }
 
-            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Predicate<string> isSensitiveHeader)
+            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Predicate<string> shouldRedactHeaderValue)
             {
                 _requestEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 
@@ -100,7 +108,7 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.ResponseHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers, isSensitiveHeader),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers, shouldRedactHeaderValue),
                         null,
                         (state, ex) => state.ToString());
                 }

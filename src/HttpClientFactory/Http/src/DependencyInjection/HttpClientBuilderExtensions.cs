@@ -490,25 +490,25 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Sets the <see cref="Predicate{T}"/> which determines whether to redact the HTTP header value before logging.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="isSensitiveHeader">The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.</param>
+        /// <param name="shouldRedactHeaderValue">The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
-        /// <remarks>The provided <paramref name="isSensitiveHeader" predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
+        /// <remarks>The provided <paramref name="shouldRedactHeaderValue"/> predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
         /// </remarks>
-        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Predicate<string> isSensitiveHeader)
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Predicate<string> shouldRedactHeaderValue)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (isSensitiveHeader == null)
+            if (shouldRedactHeaderValue == null)
             {
-                throw new ArgumentNullException(nameof(isSensitiveHeader));
+                throw new ArgumentNullException(nameof(shouldRedactHeaderValue));
             }
 
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
             {
-                options.IsSensitiveHeader = isSensitiveHeader;
+                options.ShouldRedactHeaderValue = shouldRedactHeaderValue;
             });
 
             return builder;
@@ -536,7 +536,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var sensitiveHeaders = new HashSet<string>(redactedLoggedHeaderNames, StringComparer.OrdinalIgnoreCase);
 
-                options.IsSensitiveHeader = (header) => sensitiveHeaders.Contains(header);
+                options.ShouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
             });
 
             return builder;

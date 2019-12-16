@@ -70,9 +70,9 @@ namespace Microsoft.Extensions.Http
         }
 
         /// <summary>
-        /// The predicate which determines whether to log HTTP header value or redact before logging.
+        /// The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.
         /// </summary>
-        public Predicate<string> IsSensitiveHeader { get; set; }
+        public Predicate<string> ShouldRedactHeaderValue { get; set; } = (header) => false;
 
         /// <summary>
         /// <para>
