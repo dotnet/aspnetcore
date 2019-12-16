@@ -1,7 +1,7 @@
 export interface Platform {
   start(loadAssemblyUrls: string[]): Promise<void>;
 
-  callEntryPoint(assemblyName: string, entrypointMethod: string, args: (System_Object | null)[]);
+  callEntryPoint(assemblyName: string): void;
   findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle;
   callMethod(method: MethodHandle, target: System_Object | null, args: (System_Object | null)[]): System_Object;
 

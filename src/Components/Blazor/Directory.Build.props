@@ -2,10 +2,12 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Override prerelease label and use preview 4, even in the final build -->
-    <PreReleaseVersionLabel>$(BlazorClientPreReleaseVersionLabel)</PreReleaseVersionLabel>
-    <!-- These packages ship from the blazor-wasm branch -->
-    <IsShipping>false</IsShipping>
-    <DotNetFinalVersionKind></DotNetFinalVersionKind>
+    <!-- Override version labels -->
+    <VersionPrefix>3.2.0</VersionPrefix>
+    <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind />
+    <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
+         target the latest patch before a preview release. -->
+    <LatestAspNetCoreReferenceVersion>3.1.0</LatestAspNetCoreReferenceVersion>
   </PropertyGroup>
 </Project>
