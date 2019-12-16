@@ -487,11 +487,13 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the <see cref="Predicate{T}"/> which determines whether to log HTTP header value or redact before logging
+        /// Sets the <see cref="Predicate{T}"/> which determines whether to redact the HTTP header value before logging.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="isSensitiveHeader">The <see cref="Predicate{T}"/> which determines whether to log HTTP header value or redact before logging.</param>
+        /// <param name="isSensitiveHeader">The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        /// <remarks>The provided <paramref name="isSensitiveHeader" predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
+        /// </remarks>
         public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Predicate<string> isSensitiveHeader)
         {
             if (builder == null)
@@ -513,10 +515,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the HTTP headers collection which values should be redacted before logging.
+        /// Sets the collection of HTTP headers names for which values should be redacted before logging.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="redactedLoggedHeaderNames">The HTTP headers collection which values should not be logged.</param>
+        /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
         public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, ICollection<string> redactedLoggedHeaderNames)
         {
