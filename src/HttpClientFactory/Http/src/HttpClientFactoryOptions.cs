@@ -70,9 +70,9 @@ namespace Microsoft.Extensions.Http
         }
 
         /// <summary>
-        /// The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.
+        /// The <see cref="Func{T, R}"/> which determines whether redact the HTTP header value before logging.
         /// </summary>
-        public Predicate<string> ShouldRedactHeaderValue { get; set; } = (header) => false;
+        public Func<string, bool> ShouldRedactHeaderValue { get; set; } = (header) => false;
 
         /// <summary>
         /// <para>

@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Http.Tests.Logging
             };
             var sensitiveHeaders = new HashSet<string>(headersToRedact, StringComparer.OrdinalIgnoreCase);
 
-            Predicate<string> shouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
+            Func<string, bool> shouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
 
             var httpHeadersLogValue = new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, headers, contentHeaders, shouldRedactHeaderValue);
 

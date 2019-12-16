@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder ConfigurePrimaryHttpMessageHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Func<System.IServiceProvider, System.Net.Http.HttpMessageHandler> configureHandler) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder ConfigurePrimaryHttpMessageHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Func<System.Net.Http.HttpMessageHandler> configureHandler) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder ConfigurePrimaryHttpMessageHandler<THandler>(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder) where THandler : System.Net.Http.HttpMessageHandler { throw null; }
-        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder RedactLoggedHeaders(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Collections.Generic.ICollection<string> redactedLoggedHeaderNames) { throw null; }
-        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder RedactLoggedHeaders(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Predicate<string> isSensitiveHeader) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder RedactLoggedHeaders(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Collections.Generic.IEnumerable<string> redactedLoggedHeaderNames) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder RedactLoggedHeaders(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Func<string, bool> shouldRedactHeaderValue) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder SetHandlerLifetime(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.TimeSpan handlerLifetime) { throw null; }
     }
     public static partial class HttpClientFactoryServiceCollectionExtensions
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Http
         public System.TimeSpan HandlerLifetime { get { throw null; } set { } }
         public System.Collections.Generic.IList<System.Action<System.Net.Http.HttpClient>> HttpClientActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IList<System.Action<Microsoft.Extensions.Http.HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public System.Predicate<string> IsSensitiveHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<string, bool> ShouldRedactHeaderValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool SuppressHandlerScope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class HttpMessageHandlerBuilder
@@ -81,13 +81,15 @@ namespace Microsoft.Extensions.Http.Logging
 {
     public partial class LoggingHttpMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public LoggingHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, System.Predicate<string> isSensitiveHeader) { }
+        public LoggingHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger) { }
+        public LoggingHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Http.HttpClientFactoryOptions options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public partial class LoggingScopeHttpMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public LoggingScopeHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, System.Predicate<string> isSensitiveHeader) { }
+        public LoggingScopeHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger) { }
+        public LoggingScopeHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Http.HttpClientFactoryOptions options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }

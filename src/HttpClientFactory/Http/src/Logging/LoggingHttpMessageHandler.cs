@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Http.Logging
         private ILogger _logger;
         private readonly HttpClientFactoryOptions _options;
 
-        private static readonly Predicate<string> _shouldNotRedactHeaderValue = (header) => false;
+        private static readonly Func<string, bool> _shouldNotRedactHeaderValue = (header) => false;
 
         public LoggingHttpMessageHandler(ILogger logger)
         {
@@ -84,7 +84,7 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.RequestEnd,
                 "Received HTTP response headers after {ElapsedMilliseconds}ms - {StatusCode}");
 
-            public static void RequestStart(ILogger logger, HttpRequestMessage request, Predicate<string> shouldRedactHeaderValue)
+            public static void RequestStart(ILogger logger, HttpRequestMessage request, Func<string, bool> shouldRedactHeaderValue)
             {
                 _requestStart(logger, request.Method, request.RequestUri, null);
 
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.Http.Logging
                 }
             }
 
-            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Predicate<string> shouldRedactHeaderValue)
+            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Func<string, bool> shouldRedactHeaderValue)
             {
                 _requestEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 

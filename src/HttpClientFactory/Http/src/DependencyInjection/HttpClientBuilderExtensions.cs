@@ -487,14 +487,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the <see cref="Predicate{T}"/> which determines whether to redact the HTTP header value before logging.
+        /// Sets the <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="shouldRedactHeaderValue">The <see cref="Predicate{T}"/> which determines whether redact the HTTP header value before logging.</param>
+        /// <param name="shouldRedactHeaderValue">The <see cref="Func{T, R}"/> which determines whether redact the HTTP header value before logging.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
         /// <remarks>The provided <paramref name="shouldRedactHeaderValue"/> predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
         /// </remarks>
-        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Predicate<string> shouldRedactHeaderValue)
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Func<string, bool> shouldRedactHeaderValue)
         {
             if (builder == null)
             {
@@ -520,7 +520,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
-        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, ICollection<string> redactedLoggedHeaderNames)
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
         {
             if (builder == null)
             {

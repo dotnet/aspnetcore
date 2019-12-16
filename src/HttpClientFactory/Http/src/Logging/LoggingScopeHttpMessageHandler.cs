@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Http.Logging
         private ILogger _logger;
         private readonly HttpClientFactoryOptions _options;
 
-        private static readonly Predicate<string> _shouldNotRedactHeaderValue = (header) => false;
+        private static readonly Func<string, bool> _shouldNotRedactHeaderValue = (header) => false;
 
         public LoggingScopeHttpMessageHandler(ILogger logger)
         {
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.Http.Logging
                 return _beginRequestPipelineScope(logger, request.Method, request.RequestUri);
             }
 
-            public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request, Predicate<string> shouldRedactHeaderValue)
+            public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request, Func<string, bool> shouldRedactHeaderValue)
             {
                 _requestPipelineStart(logger, request.Method, request.RequestUri, null);
 
@@ -107,7 +107,7 @@ namespace Microsoft.Extensions.Http.Logging
                 }
             }
 
-            public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Predicate<string> shouldRedactHeaderValue)
+            public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Func<string, bool> shouldRedactHeaderValue)
             {
                 _requestPipelineEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 

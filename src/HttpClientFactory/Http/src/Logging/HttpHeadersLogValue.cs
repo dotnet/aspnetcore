@@ -12,12 +12,12 @@ namespace Microsoft.Extensions.Http.Logging
     internal class HttpHeadersLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly Kind _kind;
-        private readonly Predicate<string> _shouldRedactHeaderValue;
+        private readonly Func<string, bool> _shouldRedactHeaderValue;
 
         private string _formatted;
         private List<KeyValuePair<string, object>> _values;
 
-        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Predicate<string> shouldRedactHeaderValue)
+        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Func<string, bool> shouldRedactHeaderValue)
         {
             _kind = kind;
             _shouldRedactHeaderValue = shouldRedactHeaderValue;
