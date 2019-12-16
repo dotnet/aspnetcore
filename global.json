@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "5.0.100-alpha1-015752"
+    "version": "5.0.100-alpha1-015723"
   },
   "tools": {
-    "dotnet": "5.0.100-alpha1-015752",
+    "dotnet": "5.0.100-alpha1-015723",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCoreAppRuntimeVersion)"
