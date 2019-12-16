@@ -39,11 +39,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.BuildPassed(result);
 
             var buildOutputDirectory = project.BuildOutputDirectory;
-            var blazorConfig = Path.Combine(buildOutputDirectory, "standalone.blazor.config");
-            Assert.FileExists(result, blazorConfig);
 
             var path = Path.GetFullPath(Path.Combine(project.SolutionPath, "standalone", "bin", project.Configuration, "netstandard2.1", "standalone.dll"));
-            Assert.FileContains(result, blazorConfig, path);
             Assert.FileDoesNotExist(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
         }
 

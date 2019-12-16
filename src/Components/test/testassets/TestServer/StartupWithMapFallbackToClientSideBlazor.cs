@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BasicTestApp;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +21,7 @@ namespace TestServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddBlazorStaticFilesConfiguration();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -36,7 +34,7 @@ namespace TestServer
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
             app.Map("/subdir", app =>
             {
-                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
+                app.UseStaticFiles();
             });
 
             // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
@@ -46,7 +44,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html");
+                    endpoints.MapFallbackToFile("index.html");
                 });
             });
 
@@ -56,7 +54,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("test/{*path:nonfile}", "index.html");
+                    endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
                 });
             });
 
@@ -66,7 +64,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Program).Assembly.Location, "index.html");
+                    endpoints.MapFallbackToFile("index.html");
                 });
             });
 
@@ -76,7 +74,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Program).Assembly.Location, "test/{*path:nonfile}", "index.html");
+                    endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
                 });
             });
         }

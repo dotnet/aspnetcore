@@ -131,7 +131,7 @@
         <BlazorRuntimeFile>true</BlazorRuntimeFile>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
-      </BlazorOutputWithTargetPath>      
+      </BlazorOutputWithTargetPath>
     </ItemGroup>
 
     <!--

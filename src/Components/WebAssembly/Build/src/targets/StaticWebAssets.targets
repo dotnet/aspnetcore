@@ -1,22 +1,33 @@
 <Project>
 
   <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
-      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
-    </ResolveStaticWebAssetsInputsDependsOn>
-
-    <GetCurrentProjectStaticWebAssetsDependsOn>
-      $(GetCurrentProjectStaticWebAssetsDependsOn);
-      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
-    </GetCurrentProjectStaticWebAssetsDependsOn>
+    <ResolveCurrentProjectStaticWebAssetsDependsOn>
+      _ResolveBlazorGeneratedAssets;
+      $(ResolveCurrentProjectStaticWebAssetsDependsOn);
+    </ResolveCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
 
-
-  <Target Name="_RemoveBlazorCurrentProjectAssetsFromStaticWebAssets">
+  <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="PrepareBlazorOutputs">
     <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
+      <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" RemoveMetadata="TargetOutputPath">
+        <SourceType></SourceType>
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>$([System.String]::Copy('%(TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
+      </StaticWebAsset>
+
+      <!-- We are dependingo on a "private" property for static web assets, but this is something we can clean-up in a later release.
+           These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail. -->
+      <_ExternalStaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')">
+        <SourceId>$(PackageId)</SourceId>
+        <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
+        <SourceType>Generated</SourceType>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      </_ExternalStaticWebAsset>
     </ItemGroup>
+
   </Target>
 
   <Target Name="BlazorStaticWebAssetsComputeFilesToPublish"
@@ -24,13 +35,30 @@
 
     <ItemGroup>
       <!-- We need to update the external static web assets to follow the blazor publish output convention that puts them inside $(TargetName)/dist instead of wwwroot -->
-      <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != ''">
+      <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != '' and '$([System.String]::Copy(%(Identity))).StartsWith($(MSBuildThisProjectDirectory))' != 'true'">
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
       </_StandaloneExternalPublishStaticWebAsset>
 
+      <_CurrentProjectWwwrootStaticWebAsset Include="@(StaticWebAsset)" Exclude="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" Condition="'%(StaticWebAsset.SourceType)' == ''" />
+
+      <_StandaloneWwwrootCurrentProjectPublishStaticWebAsset Include="%(_CurrentProjectWwwrootStaticWebAsset.Identity)">
+        <RelativePath>$(BlazorPublishDistDir)%(RelativePath)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </_StandaloneWwwrootCurrentProjectPublishStaticWebAsset>
+
       <!-- Update doesn't work inside targets so we need to remove the items and re-add them. See https://github.com/microsoft/msbuild/issues/2835 for details -->
-      <ResolvedFileToPublish Remove="@(_StandaloneExternalPublishStaticWebAsset)" />
+      <ResolvedFileToPublish Remove="@(_ExternalPublishStaticWebAsset)" />
       <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
+
+      <!-- Gets rid of the content and sets it up on the right path -->
+      <ResolvedFileToPublish Remove="@(_CurrentProjectWwwrootStaticWebAsset)" />
+      <ResolvedFileToPublish Include="@(_StandaloneWwwrootCurrentProjectPublishStaticWebAsset)" />
+
+      <!-- Makes sure the generated static web assets for this project are copied to the expected output folder -->
+      <ResolvedFileToPublish Include="@(StaticWebAsset)" Exclude="@(_CurrentProjectWwwrootStaticWebAsset)" Condition="'@(SourceType)' == ''">
+        <RelativePath>$(BlazorPublishDistDir)%(RelativePath)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
 
     </ItemGroup>
   </Target>

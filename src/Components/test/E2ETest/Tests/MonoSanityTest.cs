@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             : base(browserFixture, serverFixture, output)
         {
             serverFixture.BuildWebHostMethod = MonoSanity.Program.BuildWebHost;
+            serverFixture.Environment = AspNetEnvironment.Development;
         }
 
         protected override void InitializeAsyncCore()

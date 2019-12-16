@@ -23,6 +23,7 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
+            services.AddBlazorStaticFilesConfiguration();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,7 +38,6 @@ namespace TestServer
             app.Map("/subdir", app =>
             {
                 // Add it before to ensure it takes priority over files in wwwroot
-                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
                 app.UseStaticFiles();
 
                 app.UseRouting();
@@ -45,7 +45,7 @@ namespace TestServer
                 {
                     endpoints.MapRazorPages();
                     endpoints.MapControllers();
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html");
+                    endpoints.MapFallbackToFile("index.html");
                 });
             });
         }

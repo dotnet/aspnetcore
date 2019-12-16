@@ -10,6 +10,7 @@ namespace MonoSanity
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddBlazorStaticFilesConfiguration();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -17,11 +18,10 @@ namespace MonoSanity
             app.UseDeveloperExceptionPage();
             app.UseFileServer(new FileServerOptions() { EnableDefaultFiles = true, });
             app.UseStaticFiles();
-            app.UseClientSideBlazorFiles<MonoSanityClient.Program>();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapFallbackToClientSideBlazor<MonoSanityClient.Program>("index.html");
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }

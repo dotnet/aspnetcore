@@ -23,28 +23,4 @@
   <Import Project="StaticWebAssets.targets" />
   <Import Project="ServiceWorkerAssetsManifest.targets" />
 
-  <Target Name="GenerateBlazorMetadataFile"
-    BeforeTargets="GetCopyToOutputDirectoryItems">
-    <PropertyGroup>
-      <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>
-      <BlazorMetadataFilePath>$(TargetDir)$(BlazorMetadataFileName)</BlazorMetadataFilePath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_BlazorConfigContent Include="$(MSBuildProjectFullPath)" />
-      <_BlazorConfigContent Include="$(TargetPath)" />
-      <_BlazorConfigContent Include="debug:true" Condition="'$(BlazorEnableDebugging)'=='true'" />
-    </ItemGroup>
-
-    <WriteLinesToFile
-      File="$(BlazorMetadataFilePath)"
-      Lines="@(_BlazorConfigContent)"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="True" />
-
-    <ItemGroup>
-      <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-  </Target>
-
 </Project>
