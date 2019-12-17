@@ -17,7 +17,7 @@
 #    displayName: Setup Private Feeds Credentials
 #    inputs:
 #      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-#      arguments: $BUILD_SOURCESDIRECTORY/NuGet.config $Token
+#      arguments: $(Build.SourcesDirectory)/NuGet.config $Token
 #    condition: ne(variables['Agent.OS'], 'Windows_NT')
 #    env:
 #      Token: $(dn-bot-dnceng-artifact-feeds-rw)
@@ -42,7 +42,12 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 . "$scriptroot/tools.sh"
 
 if [ ! -f "$ConfigFile" ]; then
-    Write-PipelineTelemetryError -Category 'Build' -Message "Couldn't find the file NuGet config file: $ConfigFile"
+    Write-PipelineTelemetryError -Category 'Build' "Error: Eng/common/SetupNugetSources.sh returned a non-zero exit code. Couldn't find the NuGet config file: $ConfigFile"
+    ExitWithExitCode 1
+fi
+
+if [ -z "$CredToken" ]; then
+    Write-PipelineTelemetryError -category 'Build' "Error: Eng/common/SetupNugetSources.sh returned a non-zero exit code. Please supply a valid PAT"
     ExitWithExitCode 1
 fi
 
@@ -52,7 +57,7 @@ if [[ `uname -s` == "Darwin" ]]; then
 fi
 
 # Ensure there is a <packageSources>...</packageSources> section.
-grep -i "<packageSources>" $ConfigFile 
+grep -i "<packageSources>" $ConfigFile
 if [ "$?" != "0" ]; then
     echo "Adding <packageSources>...</packageSources> section."
     ConfigNodeHeader="<configuration>"
@@ -62,7 +67,7 @@ if [ "$?" != "0" ]; then
 fi
 
 # Ensure there is a <packageSourceCredentials>...</packageSourceCredentials> section. 
-grep -i "<packageSourceCredentials>" $ConfigFile 
+grep -i "<packageSourceCredentials>" $ConfigFile
 if [ "$?" != "0" ]; then
     echo "Adding <packageSourceCredentials>...</packageSourceCredentials> section."
 
@@ -72,36 +77,63 @@ if [ "$?" != "0" ]; then
     sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourcesNodeFooter${NL}$PackageSourceCredentialsTemplate|" NuGet.config
 fi
 
-# Ensure dotnet3-internal and dotnet3-internal-transport is in the packageSources
-grep -i "<add key=\"dotnet3-internal\">" $ConfigFile 
-if [ "$?" != "0" ]; then
-    echo "Adding dotnet3-internal to the packageSources."
+PackageSources=()
 
-    PackageSourcesNodeFooter="</packageSources>"
-    PackageSourceTemplate="${TB}<add key=\"dotnet3-internal\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2\" />"
+# Ensure dotnet3-internal and dotnet3-internal-transport are in the packageSources if the public dotnet3 feeds are present
+grep -i "<add key=\"dotnet3\"" $ConfigFile
 
-    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" NuGet.config
+if [ "$?" == "0" ]; then
+    grep -i "<add key=\"dotnet3-internal\">" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet3-internal to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet3-internal')
+
+    grep -i "<add key=\"dotnet3-internal-transport\"" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet3-internal-transport to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet3-internal-transport')
 fi
 
-# Ensure dotnet3-internal and dotnet3-internal-transport is in the packageSources
-grep -i "<add key=\"dotnet3-internal-transport\">" $ConfigFile 
-if [ "$?" != "0" ]; then
-    echo "Adding dotnet3-internal-transport to the packageSources."
+# Ensure dotnet3.1-internal and dotnet3.1-internal-transport are in the packageSources if the public dotnet3.1 feeds are present
+grep -i "<add key=\"dotnet3.1\"" $ConfigFile
+if [ "$?" == "0" ]; then
+    grep -i "<add key=\"dotnet3.1-internal\"" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet3.1-internal to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet3.1-internal\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v2\" />"
 
-    PackageSourcesNodeFooter="</packageSources>"
-    PackageSourceTemplate="${TB}<add key=\"dotnet3-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2\" />"
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet3.1-internal')
 
-    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" NuGet.config
+    grep -i "<add key=\"dotnet3.1-internal-transport\">" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet3.1-internal-transport to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet3.1-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet3.1-internal-transport')
 fi
 
 # I want things split line by line
 PrevIFS=$IFS
 IFS=$'\n'
-PackageSources=$(grep -oh '"darc-int-[^"]*"' $ConfigFile | tr -d '"')
+PackageSources+="$IFS"
+PackageSources+=$(grep -oh '"darc-int-[^"]*"' $ConfigFile | tr -d '"')
 IFS=$PrevIFS
-
-PackageSources+=('dotnet3-internal')
-PackageSources+=('dotnet3-internal-transport')
 
 for FeedName in ${PackageSources[@]} ; do
     # Check if there is no existing credential for this FeedName
@@ -112,6 +144,6 @@ for FeedName in ${PackageSources[@]} ; do
         PackageSourceCredentialsNodeFooter="</packageSourceCredentials>"
         NewCredential="${TB}${TB}<$FeedName>${NL}<add key=\"Username\" value=\"dn-bot\" />${NL}<add key=\"ClearTextPassword\" value=\"$CredToken\" />${NL}</$FeedName>"
 
-        sed -i.bak "s|$PackageSourceCredentialsNodeFooter|$NewCredential${NL}$PackageSourceCredentialsNodeFooter|" NuGet.config
+        sed -i.bak "s|$PackageSourceCredentialsNodeFooter|$NewCredential${NL}$PackageSourceCredentialsNodeFooter|" $ConfigFile
     fi
 done
