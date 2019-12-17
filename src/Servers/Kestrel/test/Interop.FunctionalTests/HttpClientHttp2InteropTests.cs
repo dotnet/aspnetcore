@@ -1246,7 +1246,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/17484")]
+        [Theory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
