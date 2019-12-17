@@ -6,6 +6,7 @@
     "dotnet": "5.0.100-alpha1-015723",
     "runtimes": {
       "dotnet": [
+        "3.1.0",
         "$(MicrosoftNETCoreAppRuntimeVersion)"
       ],
       "dotnet/x86": [
