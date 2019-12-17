@@ -792,7 +792,7 @@ namespace Interop.FunctionalTests
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
             var requestTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
-            await streamingContent.SendAsync("Hello World");
+            await streamingContent.SendAsync("Hello World").DefaultTimeout();
             using var response = await requestTask;
             responseHeadersReceived.SetResult(0);
 
