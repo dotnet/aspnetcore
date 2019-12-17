@@ -214,6 +214,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("select-box-add-option")).Click();
             Browser.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
+
+            // Verify we can select options whose value is empty
+            // https://github.com/aspnet/AspNetCore/issues/17735
+            target.SelectByText("Empty value");
+            Browser.Equal(string.Empty, () => boundValue.Text);
         }
 
         [Fact]
@@ -227,6 +232,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated
             target.SelectByText("Third choice");
             Browser.Equal("Third", () => boundValue.Text);
+
+            // Verify we can select options whose value is empty
+            // https://github.com/aspnet/AspNetCore/issues/17735
+            target.SelectByText("Empty value");
+            Browser.Equal(string.Empty, () => boundValue.Text);
         }
 
         [Fact]

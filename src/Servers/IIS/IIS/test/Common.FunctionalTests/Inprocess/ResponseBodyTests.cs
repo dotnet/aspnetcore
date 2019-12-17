@@ -30,5 +30,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             Assert.Equal(20, (await _fixture.Client.GetByteArrayAsync($"/FlushedPipeAndThenUnflushedPipe")).Length);
         }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task ResponseBodyTest_BodyCompletionNotBlockedByOnCompleted()
+        {
+            Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/SlowOnCompleted"));
+        }
     }
 }

@@ -73,5 +73,7 @@ interface BootJsonData {
 
 window['Blazor'].start = boot;
 if (shouldAutoStart()) {
-  boot();
+  boot().catch(error => {
+    Module.printErr(error); // Logs it, and causes the error UI to appear
+  });
 }

@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 }
                 finally
                 {
-                    // Unwind Https for shutdown. This must happen before context goes ot of scope or else DisposeAsync will hang
+                    // Unwind Https for shutdown. This must happen before the context goes out of scope or else DisposeAsync will never complete
                     context.Transport = originalTransport;
 
                     if (sslState != null)

@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
         protected override bool HandleTaskExecutionErrors()
         {
             // Show a slightly better error than the standard ToolTask message that says "dotnet" failed.
-            Log.LogError($"ILLink failed with exited code {ExitCode}.");
+            Log.LogError($"ILLink failed with exit code {ExitCode}.");
             return false;
         }
 

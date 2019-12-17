@@ -230,8 +230,8 @@ namespace Microsoft.Net.Http.Headers
         /// any value originally supplied in result will be overwritten.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
-        /// <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
+        /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
         public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
@@ -286,8 +286,8 @@ namespace Microsoft.Net.Http.Headers
         /// The target cache control directives to look for.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
-        /// otherwise, <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
+        /// otherwise, <see langword="false" />.
         /// </returns>
         public static bool ContainsCacheDirective(StringValues cacheControlDirectives, string targetDirectives)
         {
@@ -367,7 +367,7 @@ namespace Microsoft.Net.Http.Headers
         /// greater than Int64.MaxValue. This parameter is passed uninitialized; any value originally supplied in
         /// result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
@@ -418,7 +418,7 @@ namespace Microsoft.Net.Http.Headers
         /// represents a number greater than Int64.MaxValue. This parameter is passed uninitialized; any value
         /// originally supplied in result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)

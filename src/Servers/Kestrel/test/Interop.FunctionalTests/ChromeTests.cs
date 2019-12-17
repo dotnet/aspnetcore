@@ -83,7 +83,7 @@ namespace Interop.FunctionalTests
                 .ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(async context =>
                 {
-                    if (string.Equals(context.Request.Query["TestMethod"], "POST", StringComparison.OrdinalIgnoreCase))
+                    if (HttpMethods.IsPost(context.Request.Query["TestMethod"]))
                     {
                         await context.Response.WriteAsync(_postHtml);
                     }

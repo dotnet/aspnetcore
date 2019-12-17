@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var bufferStream = context.ResponseCachingStream.GetBufferStream();
                 if (!contentLength.HasValue || contentLength == bufferStream.Length
                     || (bufferStream.Length == 0
-                        && string.Equals(context.HttpContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase)))
+                        && HttpMethods.IsHead(context.HttpContext.Request.Method)))
                 {
                     var response = context.HttpContext.Response;
                     // Add a content-length if required

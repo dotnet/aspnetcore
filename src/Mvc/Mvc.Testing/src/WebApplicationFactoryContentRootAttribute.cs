@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     /// <see cref="Key"/> is equal to <c>TEntryPoint</c> <see cref="Assembly.FullName"/>,
     /// order them by <see cref="Priority"/> in ascending order.
     /// <see cref="WebApplicationFactory{TEntryPoint}"/> will check for the existence of the marker
-    /// in <code>Path.Combine(<see cref="ContentRootPath"/>, Path.GetFileName(<see cref="ContentRootTest"/>))"</code>
+    /// in <c>Path.Combine(<see cref="ContentRootPath"/>, Path.GetFileName(<see cref="ContentRootTest"/>))"</c>
     /// and if the file exists it will set the content root to <see cref="ContentRootPath"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// </param>
         /// <param name="contentRootPath">The path to the content root. This path can be either relative or absolute.
         /// In case the path is relative, the path will be combined with
-        /// <code><see cref="Directory.GetCurrentDirectory()"/></code></param>
+        /// <see cref="Directory.GetCurrentDirectory()"/></param>
         /// <param name="contentRootTest">
         /// A file that will be use as a marker to determine that the content root path for the given context is correct.
         /// </param>

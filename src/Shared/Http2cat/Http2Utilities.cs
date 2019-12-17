@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -938,6 +939,31 @@ namespace Microsoft.AspNetCore.Http2Cat
             return WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames, expectedLastStreamId, Http2ErrorCode.NO_ERROR);
         }
 
+        internal Task ReceiveHeadersAsync(int expectedStreamId, Action<IDictionary<string, string>> verifyHeaders = null)
+            => ReceiveHeadersAsync(expectedStreamId, endStream: false, verifyHeaders);
+
+        internal async Task ReceiveHeadersAsync(int expectedStreamId, bool endStream = false, Action<IDictionary<string, string>> verifyHeaders = null)
+        {
+            var headersFrame = await ReceiveFrameAsync();
+            Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+            Assert.Equal(expectedStreamId, headersFrame.StreamId);
+            Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_HEADERS) != 0);
+            Assert.Equal(endStream, (headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_STREAM) != 0);
+            Logger.LogInformation("Received headers in a single frame.");
+
+            ResetHeaders();
+            DecodeHeaders(headersFrame);
+            verifyHeaders?.Invoke(_decodedHeaders);
+        }
+
+        internal static void VerifyDataFrame(Http2Frame frame, int expectedStreamId, bool endOfStream, int length)
+        {
+            Assert.Equal(Http2FrameType.DATA, frame.Type);
+            Assert.Equal(expectedStreamId, frame.StreamId);
+            Assert.Equal(endOfStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE, frame.DataFlags);
+            Assert.Equal(length, frame.PayloadLength);
+        }
+
         internal void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
         {
             Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
@@ -946,6 +972,15 @@ namespace Microsoft.AspNetCore.Http2Cat
             Assert.Equal(0, frame.StreamId);
             Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);
             Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
+        }
+
+        internal static void VerifyResetFrame(Http2Frame frame, int expectedStreamId, Http2ErrorCode expectedErrorCode)
+        {
+            Assert.Equal(Http2FrameType.RST_STREAM, frame.Type);
+            Assert.Equal(expectedStreamId, frame.StreamId);
+            Assert.Equal(expectedErrorCode, frame.RstStreamErrorCode);
+            Assert.Equal(4, frame.PayloadLength);
+            Assert.Equal(0, frame.Flags);
         }
 
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)

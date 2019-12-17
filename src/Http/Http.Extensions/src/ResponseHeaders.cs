@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         /// <summary>
         /// Gets the value of header with <paramref name="name"/>.
         /// </summary>
-        /// <remarks><typeparamref name="T"/> must contain a TryParse method with the signature <code>public static bool TryParse(string, out T)</code>.</remarks>
+        /// <remarks><typeparamref name="T"/> must contain a TryParse method with the signature <c>public static bool TryParse(string, out T)</c>.</remarks>
         /// <typeparam name="T">The type of the header.
         /// The given type must have a static TryParse method.</typeparam>
         /// <param name="name">The name of the header to retrieve.</param>
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         /// <summary>
         /// Gets the values of header with <paramref name="name"/>.
         /// </summary>
-        /// <remarks><typeparamref name="T"/> must contain a TryParseList method with the signature <code>public static bool TryParseList(IList&lt;string&gt;, out IList&lt;T&gt;)</code>.</remarks>
+        /// <remarks><typeparamref name="T"/> must contain a TryParseList method with the signature <c>public static bool TryParseList(IList&lt;string&gt;, out IList&lt;T&gt;)</c>.</remarks>
         /// <typeparam name="T">The type of the header.
         /// The given type must have a static TryParseList method.</typeparam>
         /// <param name="name">The name of the header to retrieve.</param>

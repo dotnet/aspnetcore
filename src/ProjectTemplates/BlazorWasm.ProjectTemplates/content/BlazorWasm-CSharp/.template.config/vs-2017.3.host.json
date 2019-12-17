@@ -11,7 +11,7 @@
   },
   "order": 610,
   "icon": "icon.png",
-  "learnMoreLink": "https://github.com/aspnet/blazor",
+  "learnMoreLink": "https://github.com/aspnet/AspNetCore",
   "uiFilters": [
     "oneaspnet"
   ],
