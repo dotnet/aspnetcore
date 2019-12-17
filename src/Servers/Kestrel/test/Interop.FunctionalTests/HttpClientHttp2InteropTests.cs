@@ -1631,8 +1631,16 @@ namespace Interop.FunctionalTests
         private static async Task ReadStreamHelloWorld(Stream stream)
         {
             var responseBuffer = new byte["Hello World".Length];
-            var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(responseBuffer.Length, read);
+            var totalRead = 0;
+            do
+            {
+                var read = await stream.ReadAsync(responseBuffer, totalRead, responseBuffer.Length - totalRead).DefaultTimeout();
+                totalRead += read;
+                if (read == 0)
+                {
+                    throw new InvalidOperationException("Unexpected end of stream");
+                }
+            } while (totalRead < responseBuffer.Length);
             Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
         }
     }
