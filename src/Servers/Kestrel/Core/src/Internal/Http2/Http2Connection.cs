@@ -939,9 +939,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Http2StreamErrorException)
             {
+                MakeSpaceInDrainQueue();
                 // Tracked for draining
                 _completedStreams.Enqueue(_currentHeadersStream);
-                HandleStreamOverflow();
                 throw;
             }
 
@@ -1042,34 +1042,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Compare to UpdateCompletedStreams, but only removes streams if over the max stream drain limit.
-        private void HandleStreamOverflow()
+        private void MakeSpaceInDrainQueue()
         {
-            var now = SystemClock.UtcNowTicks;
             var maxStreams = _serverSettings.MaxConcurrentStreams * 2;
             // If we're tracking too many streams, discard the oldest.
-            while (_streams.Count > maxStreams && _completedStreams.TryDequeue(out var stream))
+            while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
             {
                 if (stream.DrainExpirationTicks == default)
                 {
                     _serverActiveStreamCount--;
-                    stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
                 }
 
-                if (stream == _currentHeadersStream)
-                {
-                    // This stream is currently draining trailers, hold onto it.
-                    _completedStreams.Enqueue(stream);
-
-                    // MaxConcurrentStreams can be 0 for some tests, but that could cause an infinite loop for the trialers scenario.
-                    if (_completedStreams.Count == 1)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    _streams.Remove(stream.StreamId);
-                }
+                _streams.Remove(stream.StreamId);
             }
         }
 
