@@ -7,8 +7,20 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// IApplicationBuilder extensions methods for socket operations.
+    /// </summary>
     public static class WebSocketMiddlewareExtensions
     {
+        /// <summary>
+        /// Adds the WebSocketMiddleware to the request pipeline.
+        /// </summary>
+        /// <param name="app">
+        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder to configure.
+        /// </param>
+        /// <returns>
+        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder.
+        /// </returns>
         public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app)
         {
             if (app == null)
@@ -19,6 +31,18 @@ namespace Microsoft.AspNetCore.Builder
             return app.UseMiddleware<WebSocketMiddleware>();
         }
 
+        /// <summary>
+        /// Adds the WebSocketMiddleware to the request pipeline.
+        /// </summary>
+        /// <param name="app">
+        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder to configure.
+        /// </param>
+        /// <param name="options">
+        /// The WebSocketOptions to be used for the WebSocketMiddleware.
+        /// </param>
+        /// <returns>
+        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder.
+        /// </returns>
         public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, WebSocketOptions options)
         {
             if (app == null)

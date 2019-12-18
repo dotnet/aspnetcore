@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// IWebHostBuilder extension methods for socket operations.
+    /// </summary>
     public static class WebHostBuilderSocketExtensions
     {
         /// <summary>
