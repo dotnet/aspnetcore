@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The <see cref="IApplicationBuilder" /> to configure.
         /// </param>
         /// <param name="options">
-        /// The WebSocketOptions to be used for the WebSocketMiddleware.
+        /// The <see cref="WebSocketOptions" /> to be used for the <see cref="WebSocketMiddleware" />.
         /// </param>
         /// <returns>
         /// The <see cref="IApplicationBuilder" />.
