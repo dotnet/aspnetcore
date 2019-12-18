@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The <see cref="IApplicationBuilder" /> to configure.
         /// </param>
         /// <returns>
-        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder.
+        /// The <see cref="IApplicationBuilder" />.
         /// </returns>
         public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app)
         {
