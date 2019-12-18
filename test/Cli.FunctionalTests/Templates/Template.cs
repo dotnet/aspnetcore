@@ -104,6 +104,7 @@ namespace Cli.FunctionalTests.Templates
         public virtual IEnumerable<string> ExpectedObjFilesAfterRestore => new[]
         {
             $"{Name}.csproj.nuget.cache",
+            $"{Name}.csproj.nuget.dgspec.json",
             $"{Name}.csproj.nuget.g.props",
             $"{Name}.csproj.nuget.g.targets",
             "project.assets.json",
