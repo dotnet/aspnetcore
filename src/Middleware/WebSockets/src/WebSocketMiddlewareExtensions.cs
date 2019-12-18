@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class WebSocketMiddlewareExtensions
     {
         /// <summary>
-        /// Adds the WebSocketMiddleware to the request pipeline.
+        /// Adds the <see cref="WebSocketMiddleware" /> to the request pipeline.
         /// </summary>
         /// <param name="app">
         /// The <see cref="IApplicationBuilder" /> to configure.
