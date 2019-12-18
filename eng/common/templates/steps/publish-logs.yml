@@ -18,6 +18,6 @@ steps:
   inputs:
     PathtoPublish: '$(Build.SourcesDirectory)/PostBuildLogs'
     PublishLocation: Container
-    ArtifactName: PostBuilLogs
+    ArtifactName: PostBuildLogs
   continueOnError: true
   condition: always()

@@ -113,14 +113,16 @@ try {
             }
             $toolInstallationFailure = $true
         } else {
-            Write-PipelineTelemetryError -Category 'NativeToolsBootstrap' -Message $errMsg
+            # We cannot change this to Write-PipelineTelemetryError because of https://github.com/dotnet/arcade/issues/4482
+            Write-Host $errMsg
             exit 1
         }
       }
     }
 
     if ((Get-Variable 'toolInstallationFailure' -ErrorAction 'SilentlyContinue') -and $toolInstallationFailure) {
-        Write-PipelineTelemetryError -Category 'NativeToolsBootstrap' -Message 'Native tools bootstrap failed'
+        # We cannot change this to Write-PipelineTelemetryError because of https://github.com/dotnet/arcade/issues/4482
+        Write-Host 'Native tools bootstrap failed'
         exit 1
     }
   }
