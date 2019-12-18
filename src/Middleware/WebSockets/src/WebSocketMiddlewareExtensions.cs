@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// IApplicationBuilder extensions methods for socket operations.
+    /// IApplicationBuilder extensions methods to add and configure WebSocketMiddleware.
     /// </summary>
     public static class WebSocketMiddlewareExtensions
     {
