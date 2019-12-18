@@ -10,7 +10,7 @@ declare namespace Module {
   function FS_createPath(parent, path, canRead, canWrite);
   function FS_createDataFile(parent, name, data, canRead, canWrite, canOwn);
 
-  function mono_bind_static_method(fqn: string): (args: any[]) => any;
+  function mono_bind_static_method(fqn: string): BoundStaticMethod;
 }
 
 // Emscripten declares these globals
@@ -28,3 +28,7 @@ declare namespace MONO {
   var mono_wasm_runtime_is_ready: boolean;
   function mono_wasm_setenv (name: string, value: string): void;
 }
+
+// mono_bind_static_method allows arbitrary JS data types to be sent over the wire. However we are
+// artifically limiting it to a subset of types that we actually use.
+declare type BoundStaticMethod = (...args: (string | number | null)[]) => (string | number | null);

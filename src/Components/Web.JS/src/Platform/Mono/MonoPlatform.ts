@@ -4,7 +4,6 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
-let mono_bind_static_method: (fqn: string) => (args: (System_Object | null)[]) => System_Object;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -37,6 +36,7 @@ export const monoPlatform: Platform = {
     // outer promise reflects the startup process, and the inner one reflects the possibly-async
     // .NET entrypoint method.
     const invokeEntrypoint = bindStaticMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting.EntrypointInvoker', 'InvokeEntrypoint');
+    // Note we're passing in null because passing arrays is problematic until https://github.com/mono/mono/issues/18245 is resolved.
     invokeEntrypoint(assemblyName, null);
   },
 
@@ -170,7 +170,6 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
       'number',
     ]);
 
-    mono_bind_static_method = Module.mono_bind_static_method;
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
 
     MONO.loaded_files = [];
@@ -247,7 +246,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 function bindStaticMethod(assembly: string, typeName: string, method: string) : (...args: any[]) => any {
   // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
   const fqn = `[${assembly}] ${typeName}:${method}`;
-  return mono_bind_static_method(fqn);
+  return Module.mono_bind_static_method(fqn);
 }
 
 function attachInteropInvoker(): void {
