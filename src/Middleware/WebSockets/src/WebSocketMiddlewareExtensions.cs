@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds the WebSocketMiddleware to the request pipeline.
         /// </summary>
         /// <param name="app">
-        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder to configure.
+        /// The <see cref="IApplicationBuilder" /> to configure.
         /// </param>
         /// <returns>
         /// The Microsoft.AspNetCore.Builder.IApplicationBuilder.
