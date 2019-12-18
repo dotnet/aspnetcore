@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <para>
         /// Conventions must be static types. Methods in a convention are
         /// matched to an action method using rules specified by <see cref="ApiConventionNameMatchAttribute" />
-        /// that may be applied to a method name or it's parameters and <see cref="ApiConventionTypeMatchAttribute"/>
+        /// that may be applied to a method name or its parameters and <see cref="ApiConventionTypeMatchAttribute"/>
         /// that are applied to parameters.
         /// </para>
         /// </param>
