@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// IWebHostBuilder extension methods for socket operations.
+    /// IWebHostBuilder extension methods to configure the Socket transport to be used by Kestrel.
     /// </summary>
     public static class WebHostBuilderSocketExtensions
     {
