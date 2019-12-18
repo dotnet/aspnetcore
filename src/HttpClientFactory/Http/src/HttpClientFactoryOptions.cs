@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Http
         }
 
         /// <summary>
-        /// The <see cref="Func{T, R}"/> which determines whether redact the HTTP header value before logging.
+        /// The <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.
         /// </summary>
         public Func<string, bool> ShouldRedactHeaderValue { get; set; } = (header) => false;
 
