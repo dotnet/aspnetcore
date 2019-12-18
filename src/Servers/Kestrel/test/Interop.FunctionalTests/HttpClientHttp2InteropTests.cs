@@ -463,6 +463,8 @@ namespace Interop.FunctionalTests
             {
             }
 
+            public Task SendStarted => _sendStarted.Task;
+
             public async Task SendAsync(string text)
             {
                 await _sendStarted.Task;
@@ -845,6 +847,7 @@ namespace Interop.FunctionalTests
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
             var requestTask = client.SendAsync(request);
             await requestReceived.Task.DefaultTimeout();
+            await streamingContent.SendStarted.DefaultTimeout();
             streamingContent.Abort();
             await serverResult.Task.DefaultTimeout();
             await Assert.ThrowsAnyAsync<Exception>(() => requestTask).DefaultTimeout();
@@ -1246,7 +1249,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/17484")]
+        [Theory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
