@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Builder
         /// The WebSocketOptions to be used for the WebSocketMiddleware.
         /// </param>
         /// <returns>
-        /// The Microsoft.AspNetCore.Builder.IApplicationBuilder.
+        /// The <see cref="IApplicationBuilder" />.
         /// </returns>
         public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, WebSocketOptions options)
         {
