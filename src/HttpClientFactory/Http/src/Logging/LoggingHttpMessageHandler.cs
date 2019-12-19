@@ -63,7 +63,8 @@ namespace Microsoft.Extensions.Http.Logging
             return response;
         }
 
-        private static class Log
+        // Used in tests.
+        internal static class Log
         {
             public static class EventIds
             {
