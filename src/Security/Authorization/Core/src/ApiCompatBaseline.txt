@@ -1,0 +1,4 @@
+Compat issues with assembly Microsoft.AspNetCore.Authorization:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute' changed from '[AttributeUsageAttribute(68, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple=false, Inherited=true)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Authorization.AuthorizeAttribute' changed from '[AttributeUsageAttribute(68, AllowMultiple=true, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple=true, Inherited=true)]' in the implementation.
+Total Issues: 2

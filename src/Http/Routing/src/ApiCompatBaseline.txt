@@ -1,0 +1,5 @@
+Compat issues with assembly Microsoft.AspNetCore.Routing:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Routing.HostAttribute' changed from '[AttributeUsageAttribute(68, AllowMultiple=false, Inherited=false)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple=false, Inherited=false)]' in the implementation.
+MembersMustExist : Member 'Microsoft.AspNetCore.Routing.Matching.CandidateState.Values.set(Microsoft.AspNetCore.Routing.RouteValueDictionary)' does not exist in the implementation but it does exist in the contract.
+CannotChangeAttribute : Attribute 'System.Diagnostics.DebuggerDisplayAttribute' on 'Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment' changed from '[DebuggerDisplayAttribute("{DebuggerToString()}")]' in the contract to '[DebuggerDisplayAttribute("{DebuggerToString()}")]' in the implementation.
+Total Issues: 3

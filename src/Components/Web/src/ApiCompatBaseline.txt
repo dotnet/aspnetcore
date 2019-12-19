@@ -1,0 +1,3 @@
+Compat issues with assembly Microsoft.AspNetCore.Components.Web:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Components.BindInputElementAttribute' changed from '[AttributeUsageAttribute(4, AllowMultiple=true, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class, AllowMultiple=true, Inherited=true)]' in the implementation.
+Total Issues: 1

@@ -1,0 +1,6 @@
+Compat issues with assembly Microsoft.AspNetCore.Mvc.Razor:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute' changed from '[AttributeUsageAttribute(1, AllowMultiple=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Assembly, AllowMultiple=true)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute' changed from '[AttributeUsageAttribute(128, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Property, AllowMultiple=false, Inherited=true)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.ComponentModel.EditorBrowsableAttribute' on 'Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper' changed from '[EditorBrowsableAttribute(1)]' in the contract to '[EditorBrowsableAttribute(EditorBrowsableState.Never)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.ComponentModel.EditorBrowsableAttribute' on 'Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper' changed from '[EditorBrowsableAttribute(1)]' in the contract to '[EditorBrowsableAttribute(EditorBrowsableState.Never)]' in the implementation.
+Total Issues: 4

@@ -1,0 +1,3 @@
+Compat issues with assembly Microsoft.AspNetCore.SignalR.Core:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.SignalR.HubMethodNameAttribute' changed from '[AttributeUsageAttribute(64, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Method, AllowMultiple=false, Inherited=true)]' in the implementation.
+Total Issues: 1

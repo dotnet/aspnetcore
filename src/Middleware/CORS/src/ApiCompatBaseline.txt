@@ -1,0 +1,4 @@
+Compat issues with assembly Microsoft.AspNetCore.Cors:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Cors.DisableCorsAttribute' changed from '[AttributeUsageAttribute(68, AllowMultiple=false, Inherited=false)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple=false, Inherited=false)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Cors.EnableCorsAttribute' changed from '[AttributeUsageAttribute(68, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple=false, Inherited=true)]' in the implementation.
+Total Issues: 2

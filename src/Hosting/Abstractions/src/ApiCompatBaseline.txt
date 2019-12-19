@@ -1,0 +1,3 @@
+Compat issues with assembly Microsoft.AspNetCore.Hosting.Abstractions:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Hosting.HostingStartupAttribute' changed from '[AttributeUsageAttribute(1, Inherited=false, AllowMultiple=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Assembly, Inherited=false, AllowMultiple=true)]' in the implementation.
+Total Issues: 1

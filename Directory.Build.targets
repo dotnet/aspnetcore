@@ -119,6 +119,7 @@
     <!-- Don't run APICompat on projects without ref assemblies -->
     <RunApiCompat Condition="'$(HasReferenceAssembly)' == 'false'">false</RunApiCompat>
     <ContractDir Condition="'$(HasReferenceAssembly)' == 'true'">$(OutputPath.Replace('$(OutDirName)','$(RefOutDirName)'))</ContractDir>
+    <BaselineAllAPICompatError Condition="'$(HasReferenceAssembly)' == 'true'">true</BaselineAllAPICompatError>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(HasReferenceAssembly)' == 'true'">

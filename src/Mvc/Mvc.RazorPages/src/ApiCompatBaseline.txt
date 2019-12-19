@@ -1,0 +1,5 @@
+Compat issues with assembly Microsoft.AspNetCore.Mvc.RazorPages:
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Mvc.RazorPages.NonHandlerAttribute' changed from '[AttributeUsageAttribute(64, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Method, AllowMultiple=false, Inherited=true)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Mvc.RazorPages.PageContextAttribute' changed from '[AttributeUsageAttribute(128, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Property, AllowMultiple=false, Inherited=true)]' in the implementation.
+CannotChangeAttribute : Attribute 'System.AttributeUsageAttribute' on 'Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageModelAttribute' changed from '[AttributeUsageAttribute(4, AllowMultiple=false, Inherited=true)]' in the contract to '[AttributeUsageAttribute(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]' in the implementation.
+Total Issues: 3

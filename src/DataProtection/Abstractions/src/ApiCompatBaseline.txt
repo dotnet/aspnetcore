@@ -1,0 +1,3 @@
+Compat issues with assembly Microsoft.AspNetCore.DataProtection.Abstractions:
+CannotChangeAttribute : Attribute 'System.ComponentModel.EditorBrowsableAttribute' on 'Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator' changed from '[EditorBrowsableAttribute(1)]' in the contract to '[EditorBrowsableAttribute(EditorBrowsableState.Never)]' in the implementation.
+Total Issues: 1
