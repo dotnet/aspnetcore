@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void RegisterPrefix(string uriPrefix, int contextId)
         {
-            LogHelper.LogInfo(_logger, "Listening on prefix: " + uriPrefix);
+            LogHelper.LogDebug(_logger, "Listening on prefix: " + uriPrefix);
             CheckDisposed();
             var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         
         internal bool UnregisterPrefix(string uriPrefix)
         {
-            LogHelper.LogInfo(_logger, "Stop listening on prefix: " + uriPrefix);
+            LogHelper.LogDebug(_logger, "Stop listening on prefix: " + uriPrefix);
             CheckDisposed();
 
             var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);

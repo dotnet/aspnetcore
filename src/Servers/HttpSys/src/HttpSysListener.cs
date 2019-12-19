@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             CheckDisposed();
 
-            LogHelper.LogInfo(Logger, "Start");
+            LogHelper.LogTrace(Logger, "Starting the listener.");
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -195,6 +195,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
+                    LogHelper.LogTrace(Logger, "Stopping the listener.");
+
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
                     {
@@ -236,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    LogHelper.LogInfo(Logger, "Dispose");
+                    LogHelper.LogTrace(Logger, "Disposing the listener.");
 
                     Stop();
                     DisposeInternal();
