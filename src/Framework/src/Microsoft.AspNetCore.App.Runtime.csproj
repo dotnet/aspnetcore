@@ -231,6 +231,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_RuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.pdb' AND '%(ReferenceCopyLocalPaths.Extension)' != '.map'" />
     </ItemGroup>
 
+    <!-- This is the platform manifest file that will be included in the Targeting Pack (Microsoft.AspNetCore.App.Ref).
+         It is a reference to what is included in the shared framework, so that apps know at compile time what will be available at runtime. -->
     <RepoTasks.GenerateSharedFrameworkDepsFile
       DepsFilePath="$(ProjectDepsFilePath)"
       TargetFramework="$(TargetFrameworkMoniker)"
