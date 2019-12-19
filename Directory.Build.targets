@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
-    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(IsPackable)' != 'false' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
 
     <!--
       By default, assemblies which are only in the Microsoft.AspNetCore.App shared framework are not available as NuGet packages.
@@ -65,6 +63,12 @@
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
     <!-- Suppress creation of .nupkg for servicing builds of non-shipping projects. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
+    <!-- Keep this below where we set "IsPackageInThisPatch" -->
+    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
