@@ -19,6 +19,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory"  />
+    <Reference Include="Microsoft.Extensions.DependencyInjection"  />
+    <Reference Include="Microsoft.Extensions.Logging"  />
   </ItemGroup>
 
 </Project>
