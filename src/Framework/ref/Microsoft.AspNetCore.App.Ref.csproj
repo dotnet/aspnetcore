@@ -104,6 +104,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- This target finds the reference assemblies. -->
   <Target Name="_ResolveTargetingPackContent"
+          Returns="@(AspNetCoreReferenceAssemblyPath)"
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
