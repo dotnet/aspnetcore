@@ -118,6 +118,8 @@
   <PropertyGroup Label="APICompat settings">
     <!-- Don't run APICompat on projects without ref assemblies -->
     <RunApiCompat Condition="'$(HasReferenceAssembly)' == 'false'">false</RunApiCompat>
+    <!-- Only run ApiCompat on Windows -->
+    <RunApiCompat Condition="'$(TargetOsName)' != 'win'">false</RunApiCompat>
     <ContractDir Condition="'$(HasReferenceAssembly)' == 'true'">$(OutputPath.Replace('$(OutDirName)','$(RefOutDirName)'))</ContractDir>
     <BaselineAllAPICompatError Condition="'$(HasReferenceAssembly)' == 'true'">true</BaselineAllAPICompatError>
   </PropertyGroup>
