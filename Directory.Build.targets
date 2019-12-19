@@ -115,6 +115,16 @@
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup Label="APICompat settings">
+    <!-- Don't run APICompat on projects without ref assemblies -->
+    <RunApiCompat Condition="'$(HasReferenceAssembly)' == 'false'">false</RunApiCompat>
+    <ContractDir Condition="'$(HasReferenceAssembly)' == 'true'">$(OutputPath.Replace('$(OutDirName)','$(RefOutDirName)'))</ContractDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(HasReferenceAssembly)' == 'true'">
+    <ResolvedMatchingContract Include="$(ContractDir)$(TargetFileName)" />
+  </ItemGroup>
+
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->

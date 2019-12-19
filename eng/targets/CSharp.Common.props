@@ -12,6 +12,7 @@
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
 
     <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
+    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.APICompat" PrivateAssets="All" Version="$(MicrosoftDotNetAPICompatPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">

@@ -417,6 +417,10 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.APICompat" Version="1.0.0-beta.19607.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19607.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>

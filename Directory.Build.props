@@ -11,7 +11,8 @@
 
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
+    <RefOutDirName>$(MSBuildProjectName)-ref</RefOutDirName>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(RefOutDirName)</OutDirName>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
