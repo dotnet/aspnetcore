@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.Http.Logging
                     }
                     else
                     {
-#if NETCOREAPP // TODO: or use !NETSTANDARD2_0?
+#if NETCOREAPP
                         builder.AppendJoin(", ", (IEnumerable<object>)kvp.Value);
                         builder.AppendLine();
 #else

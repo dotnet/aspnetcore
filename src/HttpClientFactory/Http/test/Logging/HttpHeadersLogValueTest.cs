@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Http.Logging;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Tests.Logging
+namespace Microsoft.Extensions.Http.Logging
 {
     public class HttpHeadersLogValueTest
     {
