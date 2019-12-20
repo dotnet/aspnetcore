@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
