@@ -812,7 +812,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(modelState));
             }
 
-            patchDoc.ApplyTo(objectToApplyTo, modelState, prefix: string.Empty);
+            ApplyTo(objectToApplyTo, modelState, prefix: string.Empty);
         }
 
         /// <summary>
@@ -836,7 +836,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(modelState));
             }
 
-            patchDoc.ApplyTo(objectToApplyTo, jsonPatchError =>
+            ApplyTo(objectToApplyTo, jsonPatchError =>
             {
                 var affectedObjectName = jsonPatchError.AffectedObject.GetType().Name;
                 var key = string.IsNullOrEmpty(prefix) ? affectedObjectName : prefix + "." + affectedObjectName;
