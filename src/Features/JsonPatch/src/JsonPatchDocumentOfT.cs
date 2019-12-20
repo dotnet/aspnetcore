@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -790,6 +791,58 @@ namespace Microsoft.AspNetCore.JsonPatch
             }
 
             return allOps;
+        }
+
+        /// <summary>
+        /// Applies JSON patch operations on object and logs errors in <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> to add errors.</param>
+        public void ApplyTo(
+            TModel objectToApplyTo,
+            ModelStateDictionary modelState)
+        {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            patchDoc.ApplyTo(objectToApplyTo, modelState, prefix: string.Empty);
+        }
+
+        /// <summary>
+        /// Applies JSON patch operations on object and logs errors in <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> to add errors.</param>
+        /// <param name="prefix">The prefix to use when looking up values in <see cref="ModelStateDictionary"/>.</param>
+        public void ApplyTo<T>(
+            TModel objectToApplyTo,
+            ModelStateDictionary modelState,
+            string prefix)
+        {
+            if (objectToApplyTo == null)
+            {
+                throw new ArgumentNullException(nameof(objectToApplyTo));
+            }
+
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            patchDoc.ApplyTo(objectToApplyTo, jsonPatchError =>
+            {
+                var affectedObjectName = jsonPatchError.AffectedObject.GetType().Name;
+                var key = string.IsNullOrEmpty(prefix) ? affectedObjectName : prefix + "." + affectedObjectName;
+
+                modelState.TryAddModelError(key, jsonPatchError.ErrorMessage);
+            });
         }
 
         // Internal for testing
