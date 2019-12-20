@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> to add errors.</param>
         /// <param name="prefix">The prefix to use when looking up values in <see cref="ModelStateDictionary"/>.</param>
-        public void ApplyTo<T>(
+        public void ApplyTo<TModle>(
             TModel objectToApplyTo,
             ModelStateDictionary modelState,
             string prefix)
