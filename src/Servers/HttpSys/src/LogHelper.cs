@@ -79,6 +79,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal static void LogTrace(ILogger logger, string data)
+        {
+            if (logger == null)
+            {
+                Debug.WriteLine(data);
+            }
+            else
+            {
+                logger.LogTrace(data);
+            }
+        }
+
         internal static void LogException(ILogger logger, string location, Exception exception)
         {
             if (logger == null)

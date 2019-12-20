@@ -74,6 +74,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueSharing", "samples\Que
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "..\..\DefaultBuilder\src\Microsoft.AspNetCore.csproj", "{E8880B06-7172-4995-893D-13E87AF00E7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -332,6 +334,18 @@ Global
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Release|x86.ActiveCfg = Release|Any CPU
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Release|x86.Build.0 = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Debug|x86.Build.0 = Debug|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{E8880B06-7172-4995-893D-13E87AF00E7B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -359,6 +373,7 @@ Global
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{9B58DF76-DC6D-4728-86B7-40087BDDC897} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
+		{E8880B06-7172-4995-893D-13E87AF00E7B} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34B42B42-FA09-41AB-9216-14073990C504}
