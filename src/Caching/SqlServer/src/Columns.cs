@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             public const int ExpiresAtTimeIndex = 1;
             public const int SlidingExpirationInSecondsIndex = 2;
             public const int AbsoluteExpirationIndex = 3;
-            public const int CacheItemValueIndex = 4;
+            public const int CacheItemValueIndex = 0;
         }
     }
 }
