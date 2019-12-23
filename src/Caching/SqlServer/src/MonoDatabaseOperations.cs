@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             byte[] value = null;
             using (var connection = new SqlConnection(ConnectionString))
             {
-                var command = new SqlCommand(SqlQueries.GetCacheItem, connection);
+                var command = new SqlCommand(query, connection);
                 command.Parameters
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);
