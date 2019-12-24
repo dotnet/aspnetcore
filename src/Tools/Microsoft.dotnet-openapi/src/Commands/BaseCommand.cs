@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var items = project.GetItems(tagName);
             var fileItems = items.Where(i => string.Equals(GetFullPath(i.EvaluatedInclude), GetFullPath(sourceFile), StringComparison.Ordinal));
 
-            if (fileItems.Count() > 0)
+            if (fileItems.Any())
             {
                 Warning.Write($"One or more references to {sourceFile} already exist in '{project.FullPath}'. Duplicate references could lead to unexpected behavior.");
                 return;
