@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Authorization
                     }
 
                     var rolesSplit = authorizeDatum.Roles?.Split(',');
-                    if (rolesSplit?.Count > 0)
+                    if (rolesSplit?.Length > 0)
                     {
                         var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
                         policyBuilder.RequireRole(trimmedRolesSplit);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Authorization
                     }
 
                     var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
-                    if (authTypesSplit?.Count > 0)
+                    if (authTypesSplit?.Length > 0)
                     {
                         foreach (var authType in authTypesSplit)
                         {
