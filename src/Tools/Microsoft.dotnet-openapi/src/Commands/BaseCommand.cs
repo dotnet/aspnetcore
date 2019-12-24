@@ -376,7 +376,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             else
             {
                 var uri = new Uri(url);
-                if (uri.Segments.Count() > 0 && uri.Segments.Last() != "/")
+                if (uri.Segments.Any() && uri.Segments.Last() != "/")
                 {
                     var lastSegment = uri.Segments.Last();
                     if (!Path.HasExtension(lastSegment))
