@@ -120,14 +120,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (!Request.IsHttps)
             {
-                LogHelper.LogDebug(Logger, "TryGetChannelBinding", "Channel binding requires HTTPS.");
+                Logger.LogDebug("TryGetChannelBinding; Channel binding requires HTTPS.");
                 return false;
             }
 
             value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-            LogHelper.LogInfo(Logger, "Channel binding retrieved.");
+            Logger.LogInformation("Channel binding retrieved.");
             return value != null;
         }
 
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogDebug(Logger, "Abort", ex);
+                    Logger.LogDebug(0, ex, "Abort");
                 }
                 _requestAbortSource.Dispose();
             }
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             try
             {
                 var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
-                var statusCode =  HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
+                var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
                     (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
             }
             catch (ObjectDisposedException)
