@@ -126,8 +126,7 @@ namespace Microsoft.AspNetCore.Localization
                     {
                         cultureInfo = _options.DefaultRequestCulture.Culture;
                     }
-
-                    if (cultureInfo != null && uiCultureInfo == null)
+                    else if (cultureInfo != null && uiCultureInfo == null)
                     {
                         uiCultureInfo = _options.DefaultRequestCulture.UICulture;
                     }
