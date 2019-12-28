@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection
         private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
         {
             var authContext = new AuthenticationContext(authority);
-            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
+            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate)).ConfigureAwait(false);
             return result.AccessToken;
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.DataProtection
         {
             var authContext = new AuthenticationContext(authority);
             var clientCred = new ClientCredential(clientId, clientSecret);
-            var result = await authContext.AcquireTokenAsync(resource, clientCred);
+            var result = await authContext.AcquireTokenAsync(resource, clientCred).ConfigureAwait(false);
             return result.AccessToken;
         }
 

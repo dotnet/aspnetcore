@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault
                     encryptedValue = encryptor.TransformFinalBlock(value, 0, value.Length);
                 }
 
-                var wrappedKey = await _client.WrapKeyAsync(_keyId, DefaultKeyEncryption, symmetricKey);
+                var wrappedKey = await _client.WrapKeyAsync(_keyId, DefaultKeyEncryption, symmetricKey).ConfigureAwait(false);
 
                 var element = new XElement("encryptedKey",
                     new XComment(" This key is encrypted with Azure KeyVault. "),

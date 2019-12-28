@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault
 
             var encryptedValue = Convert.FromBase64String((string)encryptedElement.Element("value"));
 
-            var result = await _client.UnwrapKeyAsync(kid, AzureKeyVaultXmlEncryptor.DefaultKeyEncryption, symmetricKey);
+            var result = await _client.UnwrapKeyAsync(kid, AzureKeyVaultXmlEncryptor.DefaultKeyEncryption, symmetricKey).ConfigureAwait(false);
 
             byte[] decryptedValue;
             using (var symmetricAlgorithm = AzureKeyVaultXmlEncryptor.DefaultSymmetricAlgorithmFactory())
