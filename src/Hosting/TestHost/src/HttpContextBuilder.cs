@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.TestHost
             _requestLifetimeFeature = new RequestLifetimeFeature(Abort);
 
             var request = _httpContext.Request;
-            request.Protocol = "HTTP/1.1";
+            request.Protocol = HttpProtocols.Http11;
             request.Method = HttpMethods.Get;
 
             _requestPipe = new Pipe();
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (string.Equals("HTTP/2", _httpContext.Request.Protocol, StringComparison.OrdinalIgnoreCase))
+                if (HttpProtocols.IsHttp2(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }

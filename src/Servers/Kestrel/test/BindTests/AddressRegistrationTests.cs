@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Sdk;
+using HttpProtocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {

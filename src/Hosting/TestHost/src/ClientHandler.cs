@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = "HTTP/2";
+                    req.Protocol =  HttpProtocols.Http2;
                 }
                 else
                 {

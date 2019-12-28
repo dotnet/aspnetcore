@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using HttpProtocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {

@@ -27,3 +27,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
     }
 }
+
+// Required because extensions references readonly values from HttpProtocols
+namespace Microsoft.AspNetCore.Http
+{
+    public static class HttpProtocols
+    {
+        public static readonly string Http3 = "HTTP/3";
+        public static readonly string Http2 = "HTTP/2";
+        public static readonly string Http10 = "HTTP/1.0";
+        public static readonly string Http11 = "HTTP/1.1";
+    }
+}

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             Assert.True(context.RequestAborted.CanBeCanceled);
-            Assert.Equal("HTTP/1.1", context.Request.Protocol);
+            Assert.Equal(HttpProtocols.Http11, context.Request.Protocol);
             Assert.Equal("POST", context.Request.Method);
             Assert.Equal("https", context.Request.Scheme);
             Assert.Equal("example.com", context.Request.Host.Value);

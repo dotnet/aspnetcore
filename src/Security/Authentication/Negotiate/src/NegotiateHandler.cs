@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new NegotiateEvents());
 
-        private bool IsHttp2 => string.Equals("HTTP/2", Request.Protocol, StringComparison.OrdinalIgnoreCase);
+        private bool IsSupportedProtocol => HttpProtocols.IsHttp10(Request.Protocol) || HttpProtocols.IsHttp11(Request.Protocol);
 
         /// <summary>
         /// Intercepts incomplete Negotiate authentication handshakes and continues or completes them.
@@ -80,10 +80,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 _requestProcessed = true;
 
-                if (IsHttp2)
+                if (!IsSupportedProtocol)
                 {
-                    // HTTP/2 is not supported. Do not throw because this may be running on a server that supports
-                    // both HTTP/1 and HTTP/2.
+                    // HTTP/1.0 and HTTP/1.1 are supported. Do not throw because this may be running on a server that supports
+                    // additional protocols.
                     return false;
                 }
 
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 throw new InvalidOperationException("AuthenticateAsync must not be called before the UseAuthentication middleware runs.");
             }
 
-            if (IsHttp2)
+            if (!IsSupportedProtocol)
             {
                 // Not supported. We don't throw because Negotiate may be set as the default auth
                 // handler on a server that's running HTTP/1 and HTTP/2. We'll challenge HTTP/2 requests
