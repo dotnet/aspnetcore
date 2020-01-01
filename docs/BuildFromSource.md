@@ -7,6 +7,19 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 ## Install pre-requisites
 
+## Clone the source code
+
+ASP.NET Core uses git submodules to include the source from a few other projects.
+
+For a new copy of the project, run:
+```
+git clone --recursive https://github.com/aspnet/AspNetCore
+```
+
+To update an existing copy, run:
+```
+git submodule update --init --recursive
+```
 ### Windows
 
 Building ASP.NET Core on Windows requires:
@@ -42,19 +55,6 @@ Building ASP.NET Core on macOS or Linux requires:
     * OpenJDK <https://jdk.java.net/>
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-## Clone the source code
-
-ASP.NET Core uses git submodules to include the source from a few other projects.
-
-For a new copy of the project, run:
-```
-git clone --recursive https://github.com/aspnet/AspNetCore
-```
-
-To update an existing copy, run:
-```
-git submodule update --init --recursive
-```
 
 ## Building in Visual Studio
 
