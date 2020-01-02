@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             PreconditionState matchFoundState,
             PreconditionState matchNotFoundState)
         {
-            if (etagHeader != null && etagHeader.Any())
+            if (etagHeader?.Count > 0)
             {
                 var state = matchNotFoundState;
                 foreach (var entityTag in etagHeader)

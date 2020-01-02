@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                                         : context.Database.GetMigrations())
                                     .ToArray();
 
-                                if (pendingModelChanges || pendingMigrations.Any())
+                                if (pendingModelChanges || pendingMigrations.Length > 0)
                                 {
                                     var page = new DatabaseErrorPage
                                     {

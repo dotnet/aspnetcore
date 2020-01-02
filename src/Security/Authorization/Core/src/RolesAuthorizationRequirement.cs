@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                 throw new ArgumentNullException(nameof(allowedRoles));
             }
 
-            if (allowedRoles.Count() == 0)
+            if (!allowedRoles.Any())
             {
                 throw new InvalidOperationException(Resources.Exception_RoleRequirementEmpty);
             }
