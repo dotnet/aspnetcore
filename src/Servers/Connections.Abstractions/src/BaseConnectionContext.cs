@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets a unique identifier to represent this connection in trace logs.
         /// </summary>
-        public abstract string ConnectionId { get; set; }
+        public abstract string? ConnectionId { get; set; }
 
         /// <summary>
         /// Gets the collection of features provided by the server and middleware available on this connection.
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets a key/value collection that can be used to share data within the scope of this connection.
         /// </summary>
-        public abstract IDictionary<object, object> Items { get; set; }
+        public abstract IDictionary<object, object?>? Items { get; set; }
 
         /// <summary>
         /// Triggered when the client connection is closed.
@@ -35,12 +35,12 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets the local endpoint for this connection.
         /// </summary>
-        public virtual EndPoint LocalEndPoint { get; set; }
+        public virtual EndPoint? LocalEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the remote endpoint for this connection.
         /// </summary>
-        public virtual EndPoint RemoteEndPoint { get; set; }
+        public virtual EndPoint? RemoteEndPoint { get; set; }
 
         /// <summary>
         /// Aborts the underlying connection.

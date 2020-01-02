@@ -58,7 +58,7 @@ namespace Microsoft.Net.Http.Headers
         public void Parameters_AddNull_Throw()
         {
             var contentDisposition = new ContentDispositionHeaderValue("inline");
-            Assert.Throws<ArgumentNullException>(() => contentDisposition.Parameters.Add(null));
+            Assert.Throws<ArgumentNullException>(() => contentDisposition.Parameters.Add(null!));
         }
 
         [Fact]
@@ -414,7 +414,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(contentDisposition1.Equals(contentDisposition2), "No params vs. name.");
             Assert.False(contentDisposition2.Equals(contentDisposition1), "name vs. no params.");
             Assert.False(contentDisposition1.Equals(null), "No params vs. <null>.");
-            Assert.False(contentDisposition1.Equals(contentDisposition3), "No params vs. custom param.");
+            Assert.False(contentDisposition1!.Equals(contentDisposition3), "No params vs. custom param.");
             Assert.False(contentDisposition2.Equals(contentDisposition3), "name vs. custom param.");
             Assert.True(contentDisposition1.Equals(contentDisposition4), "Different casing.");
             Assert.True(contentDisposition2.Equals(contentDisposition5), "Different casing in name.");
@@ -615,28 +615,26 @@ namespace Microsoft.Net.Http.Headers
             public bool Valid { get; }
         }
 
-        private void CheckValidParse(string input, ContentDispositionHeaderValue expectedResult)
+        private void CheckValidParse(string? input, ContentDispositionHeaderValue expectedResult)
         {
             var result = ContentDispositionHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => ContentDispositionHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, ContentDispositionHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, ContentDispositionHeaderValue expectedResult)
         {
-            ContentDispositionHeaderValue result = null;
-            Assert.True(ContentDispositionHeaderValue.TryParse(input, out result), input);
+            Assert.True(ContentDispositionHeaderValue.TryParse(input, out var result), input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            ContentDispositionHeaderValue result = null;
-            Assert.False(ContentDispositionHeaderValue.TryParse(input, out result), input);
+            Assert.False(ContentDispositionHeaderValue.TryParse(input, out var result), input);
             Assert.Null(result);
         }
 

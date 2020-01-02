@@ -111,11 +111,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static TheoryData<IList<SetCookieHeaderValue>, string[]> ListOfSetCookieHeaderDataSet
+        public static TheoryData<IList<SetCookieHeaderValue>, string?[]> ListOfSetCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string?[]>();
                 var header1 = new SetCookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3")
                 {
                     Domain = "domain1",
@@ -190,11 +190,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static TheoryData<IList<SetCookieHeaderValue>, string[]> ListWithInvalidSetCookieHeaderDataSet
+        public static TheoryData<IList<SetCookieHeaderValue>?, string?[]> ListWithInvalidSetCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<SetCookieHeaderValue>?, string?[]>();
                 var header1 = new SetCookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3")
                 {
                     Domain = "domain1",
@@ -341,7 +341,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.True(SetCookieHeaderValue.TryParse(expectedValue, out var header));
 
             Assert.Equal(cookie, header);
-            Assert.Equal(expectedValue, header.ToString());
+            Assert.Equal(expectedValue, header!.ToString());
         }
 
         [Theory]
@@ -382,11 +382,9 @@ namespace Microsoft.Net.Http.Headers
         {
             string cookieHeaderValue = "cookiename=value; extensionname=value;";
 
-            SetCookieHeaderValue setCookieHeaderValue;
 
-            SetCookieHeaderValue.TryParse(cookieHeaderValue, out setCookieHeaderValue);
-
-            Assert.Equal("value", setCookieHeaderValue.Value);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue, out var setCookieHeaderValue);
+            Assert.Equal("value", setCookieHeaderValue!.Value);
         }
 
         [Theory]
