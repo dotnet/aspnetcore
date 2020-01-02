@@ -52,6 +52,9 @@ export function toLogicalRootCommentElement(start: Comment, end: Comment): Logic
 
   const parent = start.parentNode;
   const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
+  const children = getLogicalChildrenArray(parentLogicalElement);
+  Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
+
   start[logicalParentPropname] = parentLogicalElement;
   // We might not have an end comment in the case of non-prerendered components.
   if (end) {
@@ -69,11 +72,7 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
     throw new Error('New logical elements must start empty, or allowExistingContents must be true');
   }
 
-  if (allowExistingContents) {
-    if (!(logicalChildrenPropname in element)) { // If it's already a logical element, leave it alone
-      element[logicalChildrenPropname] = Array.prototype.slice.call(element.childNodes, 0);
-    }
-  } else {
+  if (!(logicalChildrenPropname in element)) { // If it's already a logical element, leave it alone
     element[logicalChildrenPropname] = [];
   }
 
