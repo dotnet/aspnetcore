@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>http</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

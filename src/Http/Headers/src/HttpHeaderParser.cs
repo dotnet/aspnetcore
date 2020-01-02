@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -27,7 +28,7 @@ namespace Microsoft.Net.Http.Headers
         // pointing to the next non-whitespace character after a delimiter. E.g. if called with a start index of 0
         // for string "value , second_value", then after the call completes, 'index' must point to 's', i.e. the first
         // non-whitespace after the separator ','.
-        public abstract bool TryParseValue(StringSegment value, ref int index, out T parsedValue);
+        public abstract bool TryParseValue(StringSegment value, ref int index, [NotNullWhen(true)]out T parsedValue);
 
         public T ParseValue(StringSegment value, ref int index)
         {
@@ -46,23 +47,23 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public virtual bool TryParseValues(IList<string> values, out IList<T> parsedValues)
+        public virtual bool TryParseValues(IList<string> values, [NotNullWhen(true)]out IList<T>? parsedValues)
         {
             return TryParseValues(values, strict: false, parsedValues: out parsedValues);
         }
 
-        public virtual bool TryParseStrictValues(IList<string> values, out IList<T> parsedValues)
+        public virtual bool TryParseStrictValues(IList<string> values, [NotNullWhen(true)]out IList<T>? parsedValues)
         {
             return TryParseValues(values, strict: true, parsedValues: out parsedValues);
         }
 
-        protected virtual bool TryParseValues(IList<string> values, bool strict, out IList<T> parsedValues)
+        protected virtual bool TryParseValues(IList<string> values, bool strict, [NotNullWhen(true)]out IList<T>? parsedValues)
         {
             Contract.Assert(_supportsMultipleValues);
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
             parsedValues = null;
-            List<T> results = null;
+            List<T>? results = null;
             if (values == null)
             {
                 return false;
@@ -166,7 +167,7 @@ namespace Microsoft.Net.Http.Headers
         {
             Contract.Requires(value != null);
 
-            return value.ToString();
+            return value!.ToString()!;
         }
     }
 }

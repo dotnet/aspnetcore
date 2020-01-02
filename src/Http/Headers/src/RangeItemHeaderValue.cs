@@ -61,7 +61,7 @@ namespace Microsoft.Net.Http.Headers
                 _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is RangeItemHeaderValue other)
             {
@@ -93,7 +93,7 @@ namespace Microsoft.Net.Http.Headers
         {
             Contract.Requires(rangeCollection != null);
             Contract.Requires(startIndex >= 0);
-            Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection.Count > 0),
+            Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection!.Count > 0),
                 "If we can parse the string, then we expect to have at least one range item.");
 
             if ((StringSegment.IsNullOrEmpty(input)) || (startIndex >= input.Length))
@@ -111,7 +111,7 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            RangeItemHeaderValue range = null;
+            RangeItemHeaderValue? range = null;
             while (true)
             {
                 var rangeLength = GetRangeItemLength(input, current, out range);
@@ -121,7 +121,7 @@ namespace Microsoft.Net.Http.Headers
                     return 0;
                 }
 
-                rangeCollection.Add(range);
+                rangeCollection!.Add(range!);
 
                 current = current + rangeLength;
                 current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, current, true, out separatorFound);
@@ -140,7 +140,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static int GetRangeItemLength(StringSegment input, int startIndex, out RangeItemHeaderValue parsedValue)
+        internal static int GetRangeItemLength(StringSegment input, int startIndex, out RangeItemHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 

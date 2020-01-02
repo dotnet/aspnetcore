@@ -41,7 +41,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    parameters.Add(new NameValueHeaderValue(QualityName, qualityString));
+                    parameters!.Add(new NameValueHeaderValue(QualityName, qualityString));
                 }
             }
             else
@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove quality parameter
                 if (qualityParameter != null)
                 {
-                    parameters.Remove(qualityParameter);
+                    parameters!.Remove(qualityParameter);
                 }
             }
         }
@@ -85,12 +85,12 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y)
         {
             return AreEqualCollections(x, y, null);
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y, IEqualityComparer<T> comparer)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y, IEqualityComparer<T>? comparer)
         {
             if (x == null)
             {

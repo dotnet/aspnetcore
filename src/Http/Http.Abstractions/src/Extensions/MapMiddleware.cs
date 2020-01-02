@@ -32,6 +32,11 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (options.Branch == null)
+            {
+                throw new ArgumentException("Branch not set on options.", nameof(options));
+            }
+
             _next = next;
             _options = options;
         }
@@ -62,7 +67,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
                 try
                 {
-                    await _options.Branch(context);
+                    await _options.Branch!(context);
                 }
                 finally
                 {

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
@@ -12,6 +12,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <PackageTags>aspnetcore;routing</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>

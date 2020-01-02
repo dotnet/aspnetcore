@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

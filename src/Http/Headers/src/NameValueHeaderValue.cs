@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -16,9 +17,9 @@ namespace Microsoft.Net.Http.Headers
     public class NameValueHeaderValue
     {
         private static readonly HttpHeaderParser<NameValueHeaderValue> SingleValueParser
-            = new GenericHeaderParser<NameValueHeaderValue>(false, GetNameValueLength);
+            = new GenericHeaderParser<NameValueHeaderValue>(false, GetNameValueLength!);
         internal static readonly HttpHeaderParser<NameValueHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<NameValueHeaderValue>(true, GetNameValueLength);
+            = new GenericHeaderParser<NameValueHeaderValue>(true, GetNameValueLength!);
 
         private StringSegment _name;
         private StringSegment _value;
@@ -109,7 +110,7 @@ namespace Microsoft.Net.Http.Headers
             return nameHashCode;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as NameValueHeaderValue;
 
@@ -171,7 +172,7 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(StringSegment input, out NameValueHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)]out NameValueHeaderValue? parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -187,12 +188,12 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseStrictValues(input);
         }
 
-        public static bool TryParseList(IList<string> input, out IList<NameValueHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string> input, [NotNullWhen(true)]out IList<NameValueHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> input, out IList<NameValueHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string> input, [NotNullWhen(true)]out IList<NameValueHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
@@ -207,7 +208,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         internal static void ToString(
-            IList<NameValueHeaderValue> values,
+            IList<NameValueHeaderValue>? values,
             char separator,
             bool leadingSeparator,
             StringBuilder destination)
@@ -235,7 +236,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static string ToString(IList<NameValueHeaderValue> values, char separator, bool leadingSeparator)
+        internal static string? ToString(IList<NameValueHeaderValue>? values, char separator, bool leadingSeparator)
         {
             if ((values == null) || (values.Count == 0))
             {
@@ -249,7 +250,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        internal static int GetHashCode(IList<NameValueHeaderValue> values)
+        internal static int GetHashCode(IList<NameValueHeaderValue>? values)
         {
             if ((values == null) || (values.Count == 0))
             {
@@ -264,7 +265,7 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        private static int GetNameValueLength(StringSegment input, int startIndex, out NameValueHeaderValue parsedValue)
+        private static int GetNameValueLength(StringSegment input, int startIndex, out NameValueHeaderValue? parsedValue)
         {
             Contract.Requires(input != null);
             Contract.Requires(startIndex >= 0);
@@ -334,8 +335,7 @@ namespace Microsoft.Net.Http.Headers
             var current = startIndex + HttpRuleParser.GetWhitespaceLength(input, startIndex);
             while (true)
             {
-                NameValueHeaderValue parameter = null;
-                var nameValueLength = GetNameValueLength(input, current, out parameter);
+                var nameValueLength = GetNameValueLength(input, current, out var parameter);
 
                 if (nameValueLength == 0)
                 {
@@ -343,7 +343,7 @@ namespace Microsoft.Net.Http.Headers
                     return current - startIndex;
                 }
 
-                nameValueCollection.Add(parameter);
+                nameValueCollection!.Add(parameter!);
                 current = current + nameValueLength;
                 current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
@@ -359,7 +359,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static NameValueHeaderValue Find(IList<NameValueHeaderValue> values, StringSegment name)
+        public static NameValueHeaderValue? Find(IList<NameValueHeaderValue>? values, StringSegment name)
         {
             Contract.Requires((name != null) && (name.Length > 0));
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
@@ -10,10 +11,10 @@ namespace Microsoft.Net.Http.Headers
     public class RangeConditionHeaderValue
     {
         private static readonly HttpHeaderParser<RangeConditionHeaderValue> Parser
-            = new GenericHeaderParser<RangeConditionHeaderValue>(false, GetRangeConditionLength);
+            = new GenericHeaderParser<RangeConditionHeaderValue>(false, GetRangeConditionLength!);
 
         private DateTimeOffset? _lastModified;
-        private EntityTagHeaderValue _entityTag;
+        private EntityTagHeaderValue? _entityTag;
 
         private RangeConditionHeaderValue()
         {
@@ -45,7 +46,7 @@ namespace Microsoft.Net.Http.Headers
             get { return _lastModified; }
         }
 
-        public EntityTagHeaderValue EntityTag
+        public EntityTagHeaderValue? EntityTag
         {
             get { return _entityTag; }
         }
@@ -59,7 +60,7 @@ namespace Microsoft.Net.Http.Headers
             return _entityTag.ToString();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as RangeConditionHeaderValue;
 
@@ -92,13 +93,13 @@ namespace Microsoft.Net.Http.Headers
             return Parser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(StringSegment input, out RangeConditionHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)]out RangeConditionHeaderValue? parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue);
         }
 
-        private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue parsedValue)
+        private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -114,7 +115,7 @@ namespace Microsoft.Net.Http.Headers
 
             // Caller must remove leading whitespaces.
             DateTimeOffset date = DateTimeOffset.MinValue;
-            EntityTagHeaderValue entityTag = null;
+            EntityTagHeaderValue? entityTag = null;
 
             // Entity tags are quoted strings optionally preceded by "W/". By looking at the first two character we
             // can determine whether the string is en entity tag or a date.

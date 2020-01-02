@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http.Features
     public class FeatureCollection : IFeatureCollection
     {
         private static KeyComparer FeatureKeyComparer = new KeyComparer();
-        private readonly IFeatureCollection _defaults;
-        private IDictionary<Type, object> _features;
+        private readonly IFeatureCollection? _defaults;
+        private IDictionary<Type, object>? _features;
         private volatile int _containerRevision;
 
         public FeatureCollection()
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public bool IsReadOnly { get { return false; } }
 
-        public object this[Type key]
+        public object? this[Type key]
         {
             get
             {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                object result;
+                object? result;
                 return _features != null && _features.TryGetValue(key, out result) ? result : _defaults?[key];
             }
             set
@@ -95,7 +95,9 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public TFeature Get<TFeature>()
         {
+#pragma warning disable CS8601 // Possible null reference assignment.
             return (TFeature)this[typeof(TFeature)];
+#pragma warning restore CS8601 // Possible null reference assignment.
         }
 
         public void Set<TFeature>(TFeature instance)

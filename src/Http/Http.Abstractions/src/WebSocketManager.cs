@@ -36,6 +36,6 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="subProtocol">The sub-protocol to use.</param>
         /// <returns>A task representing the completion of the transition.</returns>
-        public abstract Task<WebSocket> AcceptWebSocketAsync(string subProtocol);
+        public abstract Task<WebSocket> AcceptWebSocketAsync(string? subProtocol);
     }
 }

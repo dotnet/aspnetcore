@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieBuilder
     {
-        private string _name;
+        private string? _name;
 
         /// <summary>
         /// The name of the cookie.
         /// </summary>
-        public virtual string Name
+        public virtual string? Name
         {
             get => _name;
             set => _name = !string.IsNullOrEmpty(value)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
         /// <remarks>
         /// Determines the value that will set on <see cref="CookieOptions.Path"/>.
         /// </remarks>
-        public virtual string Path { get; set; }
+        public virtual string? Path { get; set; }
 
         /// <summary>
         /// The domain to associate the cookie with.
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http
         /// <remarks>
         /// Determines the value that will set on <see cref="CookieOptions.Domain"/>.
         /// </remarks>
-        public virtual string Domain { get; set; }
+        public virtual string? Domain { get; set; }
 
         /// <summary>
         /// Indicates whether a cookie is accessible by client-side script.

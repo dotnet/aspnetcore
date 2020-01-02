@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Http
             return left.Add(right);
         }
 
-        private static void AppendKeyValuePair(StringBuilder builder, string key, string value, bool first)
+        private static void AppendKeyValuePair(StringBuilder builder, string key, string? value, bool first)
         {
             builder.Append(first ? "?" : "&");
             builder.Append(UrlEncoder.Default.Encode(key));

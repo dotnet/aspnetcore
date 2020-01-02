@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(other, dict);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
 
             var storage = dict._propertyStorage;
             var otherStorage = other._propertyStorage;
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Empty(dict);
         }
 
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Empty(dict);
         }
 
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp =>
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("DerivedProperty", kvp.Key); Assert.Equal(5, kvp.Value); });
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Empty(dict);
         }
 
@@ -926,7 +926,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Empty(dict);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
         }
 
         [Fact]
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict,
                 kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp));
@@ -1073,7 +1073,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict,
                 kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp));
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict,
                 kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp));
@@ -1114,7 +1114,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.Collection(
                 dict,
                 kvp => Assert.Equal(new KeyValuePair<string, object>("key", "value"), kvp));
@@ -1158,7 +1158,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.False(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
         }
 
         [Fact]
@@ -1173,7 +1173,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
         }
 
         [Fact]
@@ -1188,7 +1188,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.True(result);
             Assert.NotNull(dict._propertyStorage);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
         }
 
         [Fact]
@@ -1761,7 +1761,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.False(result);
-            Assert.Null(dict._arrayStorage);
+            AssertEmptyArrayStorage(dict);
             Assert.NotNull(dict._propertyStorage);
             Assert.Collection(
                 dict,
@@ -2111,6 +2111,11 @@ namespace Microsoft.AspNetCore.Routing.Tests
                     new KeyValuePair<string, object>(null, null),
                 },
                 array);
+        }
+
+        private void AssertEmptyArrayStorage(RouteValueDictionary value)
+        {
+            Assert.Same(Array.Empty<KeyValuePair<string, object>>(), value._arrayStorage);
         }
 
         private class RegularType

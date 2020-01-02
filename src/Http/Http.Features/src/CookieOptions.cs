@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the domain to associate the cookie with.
         /// </summary>
         /// <returns>The domain to associate the cookie with.</returns>
-        public string Domain { get; set; }
+        public string? Domain { get; set; }
 
         /// <summary>
         /// Gets or sets the cookie path.
         /// </summary>
         /// <returns>The cookie path.</returns>
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         /// <summary>
         /// Gets or sets the expiration date and time for the cookie.

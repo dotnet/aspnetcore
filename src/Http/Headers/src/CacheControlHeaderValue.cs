@@ -31,12 +31,12 @@ namespace Microsoft.Net.Http.Headers
         // Cache-Control headers, only one instance of CacheControlHeaderValue is created (if all headers contain valid
         // values, otherwise we may have multiple strings containing the invalid values).
         private static readonly HttpHeaderParser<CacheControlHeaderValue> Parser
-            = new GenericHeaderParser<CacheControlHeaderValue>(true, GetCacheControlLength);
+            = new GenericHeaderParser<CacheControlHeaderValue>(true, GetCacheControlLength!);
 
         private static readonly Action<StringSegment> CheckIsValidTokenAction = CheckIsValidToken;
 
         private bool _noCache;
-        private ICollection<StringSegment> _noCacheHeaders;
+        private ICollection<StringSegment>? _noCacheHeaders;
         private bool _noStore;
         private TimeSpan? _maxAge;
         private TimeSpan? _sharedMaxAge;
@@ -47,10 +47,10 @@ namespace Microsoft.Net.Http.Headers
         private bool _onlyIfCached;
         private bool _public;
         private bool _private;
-        private ICollection<StringSegment> _privateHeaders;
+        private ICollection<StringSegment>? _privateHeaders;
         private bool _mustRevalidate;
         private bool _proxyRevalidate;
-        private IList<NameValueHeaderValue> _extensions;
+        private IList<NameValueHeaderValue>? _extensions;
 
         public CacheControlHeaderValue()
         {
@@ -240,7 +240,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as CacheControlHeaderValue;
 
@@ -335,7 +335,7 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static bool TryParse(StringSegment input, out CacheControlHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out CacheControlHeaderValue? parsedValue)
         {
             int index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
@@ -347,7 +347,7 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static int GetCacheControlLength(StringSegment input, int startIndex, out CacheControlHeaderValue parsedValue)
+        private static int GetCacheControlLength(StringSegment input, int startIndex, out CacheControlHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -361,11 +361,10 @@ namespace Microsoft.Net.Http.Headers
             // Cache-Control header consists of a list of name/value pairs, where the value is optional. So use an
             // instance of NameValueHeaderParser to parse the string.
             var current = startIndex;
-            NameValueHeaderValue nameValue = null;
             var nameValueList = new List<NameValueHeaderValue>();
             while (current < input.Length)
             {
-                if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out nameValue))
+                if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out var nameValue))
                 {
                     return 0;
                 }
@@ -539,11 +538,11 @@ namespace Microsoft.Net.Http.Headers
         private static bool TrySetOptionalTokenList(
             NameValueHeaderValue nameValue,
             ref bool boolField,
-            ref ICollection<StringSegment> destination)
+            ref ICollection<StringSegment>? destination)
         {
             Contract.Requires(nameValue != null);
 
-            if (nameValue.Value == null)
+            if (nameValue!.Value == null)
             {
                 boolField = true;
                 return true;
@@ -605,7 +604,7 @@ namespace Microsoft.Net.Http.Headers
         {
             Contract.Requires(nameValue != null);
 
-            if (nameValue.Value == null)
+            if (nameValue!.Value == null)
             {
                 return false;
             }

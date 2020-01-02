@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
@@ -26,10 +27,10 @@ namespace Microsoft.Net.Http.Headers
         private static readonly char[] SingleQuote = new char[] { '\'' };
 
         private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
-            = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
+            = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength!);
 
         // Use list instead of dictionary since we may have multiple parameters with the same name.
-        private ObjectCollection<NameValueHeaderValue> _parameters;
+        private ObjectCollection<NameValueHeaderValue>? _parameters;
         private StringSegment _dispositionType;
 
         private ContentDispositionHeaderValue()
@@ -128,7 +129,7 @@ namespace Microsoft.Net.Http.Headers
                     // Remove parameter
                     if (sizeParameter != null)
                     {
-                        _parameters.Remove(sizeParameter);
+                        _parameters!.Remove(sizeParameter);
                     }
                 }
                 else if (value < 0)
@@ -142,7 +143,7 @@ namespace Microsoft.Net.Http.Headers
                 else
                 {
                     string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
-                    _parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
+                    _parameters!.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
         }
@@ -180,7 +181,7 @@ namespace Microsoft.Net.Http.Headers
             return _dispositionType + NameValueHeaderValue.ToString(_parameters, ';', true);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ContentDispositionHeaderValue;
 
@@ -205,13 +206,13 @@ namespace Microsoft.Net.Http.Headers
             return Parser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(StringSegment input, out ContentDispositionHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)]out ContentDispositionHeaderValue? parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue);
         }
 
-        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue parsedValue)
+        private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -318,7 +319,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (dateParameter != null)
                 {
-                    _parameters.Remove(dateParameter);
+                    _parameters!.Remove(dateParameter);
                 }
             }
             else
@@ -343,7 +344,7 @@ namespace Microsoft.Net.Http.Headers
             var nameParameter = NameValueHeaderValue.Find(_parameters, parameter);
             if (nameParameter != null)
             {
-                string result;
+                string? result;
                 // filename*=utf-8'lang'%7FMyString
                 if (parameter.EndsWith("*", StringComparison.Ordinal))
                 {
@@ -375,7 +376,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove parameter
                 if (nameParameter != null)
                 {
-                    _parameters.Remove(nameParameter);
+                    _parameters!.Remove(nameParameter);
                 }
             }
             else
@@ -497,7 +498,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Attempt to decode MIME encoded strings
-        private bool TryDecodeMime(StringSegment input, out string output)
+        private bool TryDecodeMime(StringSegment input, [NotNullWhen(true)]out string? output)
         {
             Contract.Assert(input != null);
 
@@ -582,7 +583,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Attempt to decode using RFC 5987 encoding.
         // encoding'language'my%20string
-        private bool TryDecode5987(StringSegment input, out string output)
+        private bool TryDecode5987(StringSegment input, [NotNullWhen(true)]out string? output)
         {
             output = null;
 
@@ -593,7 +594,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var decoded = new StringBuilder();
-            byte[] unescapedBytes = null;
+            byte[]? unescapedBytes = null;
             try
             {
                 var encoding = Encoding.GetEncoding(parts[0].ToString());
