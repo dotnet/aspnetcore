@@ -143,6 +143,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
+                if (_httpVersion == Http.HttpVersion.Http3)
+                {
+                    return AspNetCore.Http.HttpProtocol.Http3;
+                }
+                if (_httpVersion == Http.HttpVersion.Http2)
+                {
+                    return AspNetCore.Http.HttpProtocol.Http2;
+                }
                 if (_httpVersion == Http.HttpVersion.Http11)
                 {
                     return AspNetCore.Http.HttpProtocol.Http11;
@@ -150,14 +158,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_httpVersion == Http.HttpVersion.Http10)
                 {
                     return AspNetCore.Http.HttpProtocol.Http10;
-                }
-                if (_httpVersion == Http.HttpVersion.Http2)
-                {
-                    return AspNetCore.Http.HttpProtocol.Http2;
-                }
-                if (_httpVersion == Http.HttpVersion.Http3)
-                {
-                    return AspNetCore.Http.HttpProtocol.Http3;
                 }
 
                 return string.Empty;
@@ -168,21 +168,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // GetKnownVersion returns versions which ReferenceEquals interned string
                 // As most common path, check for this only in fast-path and inline
-                if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http11))
+                if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http3))
+                {
+                    _httpVersion = Http.HttpVersion.Http3;
+                }
+                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http2))
+                {
+                    _httpVersion = Http.HttpVersion.Http2;
+                }
+                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http11))
                 {
                     _httpVersion = Http.HttpVersion.Http11;
                 }
                 else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http10))
                 {
                     _httpVersion = Http.HttpVersion.Http10;
-                }
-                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http2))
-                {
-                    _httpVersion = Http.HttpVersion.Http2;
-                }
-                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http3))
-                {
-                    _httpVersion = Http.HttpVersion.Http3;
                 }
                 else
                 {
@@ -194,21 +194,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void HttpVersionSetSlow(string value)
         {
-            if (AspNetCore.Http.HttpProtocol.IsHttp11(value))
+            if (AspNetCore.Http.HttpProtocol.IsHttp3(value))
+            {
+                _httpVersion = Http.HttpVersion.Http3;
+            }
+            else if (AspNetCore.Http.HttpProtocol.IsHttp2(value))
+            {
+                _httpVersion = Http.HttpVersion.Http2;
+            }
+            else if (AspNetCore.Http.HttpProtocol.IsHttp11(value))
             {
                 _httpVersion = Http.HttpVersion.Http11;
             }
             else if (AspNetCore.Http.HttpProtocol.IsHttp10(value))
             {
                 _httpVersion = Http.HttpVersion.Http10;
-            }
-            else if (AspNetCore.Http.HttpProtocol.IsHttp2(value))
-            {
-                _httpVersion = Http.HttpVersion.Http2;
-            }
-            else if (AspNetCore.Http.HttpProtocol.IsHttp3(value))
-            {
-                _httpVersion = Http.HttpVersion.Http3;
             }
             else
             {
