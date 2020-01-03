@@ -36,8 +36,6 @@ namespace Microsoft.Extensions.Localization
         public virtual System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
         protected System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures, System.Globalization.CultureInfo culture) { throw null; }
         protected string GetStringSafely(string name, System.Globalization.CultureInfo culture) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
     public partial class ResourceManagerStringLocalizerFactory : Microsoft.Extensions.Localization.IStringLocalizerFactory
     {
@@ -51,14 +49,6 @@ namespace Microsoft.Extensions.Localization
         protected virtual string GetResourcePrefix(string baseResourceName, string baseNamespace) { throw null; }
         protected virtual string GetResourcePrefix(string location, string baseName, string resourceLocation) { throw null; }
         protected virtual Microsoft.Extensions.Localization.RootNamespaceAttribute GetRootNamespaceAttribute(System.Reflection.Assembly assembly) { throw null; }
-    }
-    [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-    public partial class ResourceManagerWithCultureStringLocalizer : Microsoft.Extensions.Localization.ResourceManagerStringLocalizer
-    {
-        public ResourceManagerWithCultureStringLocalizer(System.Resources.ResourceManager resourceManager, System.Reflection.Assembly resourceAssembly, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, System.Globalization.CultureInfo culture, Microsoft.Extensions.Logging.ILogger logger) : base (default(System.Resources.ResourceManager), default(System.Reflection.Assembly), default(string), default(Microsoft.Extensions.Localization.IResourceNamesCache), default(Microsoft.Extensions.Logging.ILogger)) { }
-        public override Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
-        public override Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
-        public override System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
     }
     public partial class ResourceNamesCache : Microsoft.Extensions.Localization.IResourceNamesCache
     {

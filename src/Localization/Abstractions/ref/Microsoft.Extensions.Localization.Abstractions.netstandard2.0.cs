@@ -8,8 +8,6 @@ namespace Microsoft.Extensions.Localization
         Microsoft.Extensions.Localization.LocalizedString this[string name] { get; }
         Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get; }
         System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures);
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture);
     }
     public partial interface IStringLocalizerFactory
     {
@@ -43,7 +41,5 @@ namespace Microsoft.Extensions.Localization
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
         public System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
 }
