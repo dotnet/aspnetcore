@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

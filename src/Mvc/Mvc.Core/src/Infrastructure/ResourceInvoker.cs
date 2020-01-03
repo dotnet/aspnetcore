@@ -1177,7 +1177,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         var resultExecutingContext = _resultExecutingContext;
                         var resultExecutedContext = _resultExecutedContext;
 
-                        if (resultExecutedContext == null || resultExecutingContext.Cancel)
+                        if (_resultExecutedContext == null || resultExecutingContext.Cancel)
                         {
                             // Short-circuited by not calling next || Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
