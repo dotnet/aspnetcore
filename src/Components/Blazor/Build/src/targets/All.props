@@ -4,12 +4,6 @@
   <PropertyGroup>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
 
-    <!-- By default, enable auto rebuilds for debug builds. Note that the server will not enable it in production environments regardless. -->
-    <BlazorRebuildOnFileChange Condition="'$(Configuration)' == 'Debug' AND '$(BlazorRebuildOnFileChange)' == ''">true</BlazorRebuildOnFileChange>
-
-    <!-- By default, enable debugging for debug builds. -->
-    <BlazorEnableDebugging Condition="'$(Configuration)' == 'Debug' AND '$(BlazorEnableDebugging)' == ''">true</BlazorEnableDebugging>
-      
     <!-- When using IISExpress with a standalone app, there's no point restarting IISExpress after build. It slows things unnecessarily and breaks in-flight HTTP requests. -->
     <NoRestartServerOnBuild>true</NoRestartServerOnBuild>
   </PropertyGroup>
