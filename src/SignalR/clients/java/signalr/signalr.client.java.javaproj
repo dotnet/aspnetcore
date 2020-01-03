@@ -11,6 +11,8 @@
 
     <IsShippingPackage>true</IsShippingPackage>
 
+    <IsTestProject>true</IsTestProject>
+
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
   </PropertyGroup>
@@ -33,6 +35,9 @@
     </PackDependsOn>
   </PropertyGroup>
 
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <!-- Define Target overrides after importing Directory.Build.targets so these don't get overriden -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" />
@@ -50,10 +55,8 @@
     <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
-
   <PropertyGroup>
     <!-- Pass the Java Package Version down to Gradle -->
-    <GradleOptions>-PpackageVersion="$(PackageVersion)"</GradleOptions>
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
   </PropertyGroup>
 </Project>
