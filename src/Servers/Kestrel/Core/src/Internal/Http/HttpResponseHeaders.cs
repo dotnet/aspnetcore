@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpResponseHeaders : HttpHeaders
     {
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> CrLf => new[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> ColonSpace => new[] { (byte)':', (byte)' ' };
 

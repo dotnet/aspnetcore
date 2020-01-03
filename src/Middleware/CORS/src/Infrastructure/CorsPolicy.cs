@@ -142,16 +142,16 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(", SupportsCredentials: ");
             builder.Append(SupportsCredentials);
             builder.Append(", Origins: {");
-            builder.Append(string.Join(",", Origins));
+            builder.AppendJoin(",", Origins);
             builder.Append("}");
             builder.Append(", Methods: {");
-            builder.Append(string.Join(",", Methods));
+            builder.AppendJoin(",", Methods);
             builder.Append("}");
             builder.Append(", Headers: {");
-            builder.Append(string.Join(",", Headers));
+            builder.AppendJoin(",", Headers);
             builder.Append("}");
             builder.Append(", ExposedHeaders: {");
-            builder.Append(string.Join(",", ExposedHeaders));
+            builder.AppendJoin(",", ExposedHeaders);
             builder.Append("}");
             return builder.ToString();
         }

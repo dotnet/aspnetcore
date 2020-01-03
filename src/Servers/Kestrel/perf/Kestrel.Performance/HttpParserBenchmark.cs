@@ -3,8 +3,10 @@
 
 using System;
 using System.Buffers;
+using System.Net.Http;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -69,11 +71,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
 
-        public void OnHeadersComplete()
+        public void OnHeadersComplete(bool endStream)
         {
         }
 
@@ -86,11 +88,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 RequestHandler = requestHandler;
             }
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
-            public void OnHeadersComplete()
-                => RequestHandler.OnHeadersComplete();
+            public void OnHeadersComplete(bool endStream)
+                => RequestHandler.OnHeadersComplete(endStream);
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);

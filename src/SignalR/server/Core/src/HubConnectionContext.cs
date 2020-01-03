@@ -564,6 +564,11 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void CheckClientTimeout()
         {
+            if (Debugger.IsAttached)
+            {
+                return;
+            }
+
             // If it's been too long since we've heard from the client, then close this
             if (DateTime.UtcNow.Ticks - Volatile.Read(ref _lastReceivedTimeStamp) > _clientTimeoutInterval)
             {

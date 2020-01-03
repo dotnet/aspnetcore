@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// the <see cref="CircuitClientProxy"/> to use the new client instance that attempted to reconnect to the server. Removing the entry from
     /// <see cref="DisconnectedCircuits"/> should ensure we no longer have to concern ourselves with entry expiration.
     ///
-    /// Knowing when a client disconnected is not an exact science. There's a fair possiblity that a client may reconnect before the server realizes.
+    /// Knowing when a client disconnected is not an exact science. There's a fair possibility that a client may reconnect before the server realizes.
     /// Consequently, we have to account for reconnects and disconnects occuring simultaneously as well as appearing out of order.
     /// To manage this, we use a critical section to manage all state transitions.
     /// </remarks>
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 else
                 {
                     // DisconnectCore may fail to disconnect the circuit if it was previously marked inactive or
-                    // has been transfered to a new connection. Do not invoke the circuit handlers in this instance.
+                    // has been transferred to a new connection. Do not invoke the circuit handlers in this instance.
 
                     // We have to do in this instance.
                     return Task.CompletedTask;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // Transition the host from disconnected to connected if it's available. In this critical section, we return
                 // an existing host if it's currently considered connected or transition a disconnected host to connected.
-                // Transfering also wires up the client to the new set.
+                // Transferring also wires up the client to the new set.
                 (circuitHost, previouslyConnected) = ConnectCore(circuitId, clientProxy, connectionId);
 
                 if (circuitHost == null)
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _connectingToDisconnectedCircuit = LoggerMessage.Define<CircuitId, string>(
                     LogLevel.Debug,
                     EventIds.ConnectingToDisconnectedCircuit,
-                    "Transfering disconnected circuit {CircuitId} to connection {ConnectionId}.");
+                    "Transferring disconnected circuit {CircuitId} to connection {ConnectionId}.");
 
                 _failedToReconnectToCircuit = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,

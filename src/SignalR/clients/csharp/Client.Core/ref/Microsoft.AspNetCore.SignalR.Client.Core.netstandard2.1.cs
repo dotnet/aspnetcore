@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
-    public partial class HubConnection
+    public partial class HubConnection : System.IAsyncDisposable
     {
         public static readonly System.TimeSpan DefaultHandshakeTimeout;
         public static readonly System.TimeSpan DefaultKeepAliveInterval;
@@ -11,15 +11,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public HubConnection(Microsoft.AspNetCore.Connections.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.Net.EndPoint endPoint, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public HubConnection(Microsoft.AspNetCore.Connections.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.Net.EndPoint endPoint, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy reconnectPolicy) { }
         public string ConnectionId { get { throw null; } }
-        public System.TimeSpan HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan ServerTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.TimeSpan HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.TimeSpan ServerTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.SignalR.Client.HubConnectionState State { get { throw null; } }
         public event System.Func<System.Exception, System.Threading.Tasks.Task> Closed { add { } remove { } }
         public event System.Func<string, System.Threading.Tasks.Task> Reconnected { add { } remove { } }
         public event System.Func<System.Exception, System.Threading.Tasks.Task> Reconnecting { add { } remove { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task DisposeAsync() { throw null; }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<object> InvokeCoreAsync(string methodName, System.Type returnType, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.IDisposable On(string methodName, System.Type[] parameterTypes, System.Func<object[], object, System.Threading.Tasks.Task> handler, object state) { throw null; }
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public partial class HubConnectionBuilder : Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder, Microsoft.AspNetCore.SignalR.ISignalRBuilder
     {
         public HubConnectionBuilder() { }
-        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.SignalR.Client.HubConnection Build() { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public override bool Equals(object obj) { throw null; }
@@ -155,8 +155,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public sealed partial class RetryContext
     {
         public RetryContext() { }
-        public System.TimeSpan ElapsedTime { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long PreviousRetryCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Exception RetryReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.TimeSpan ElapsedTime { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public long PreviousRetryCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Exception RetryReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }

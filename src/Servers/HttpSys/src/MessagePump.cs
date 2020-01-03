@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             _options = options.Value;
             Listener = new HttpSysListener(_options, loggerFactory);
-            _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
+            _logger = loggerFactory.CreateLogger<MessagePump>();
 
             if (_options.Authentication.Schemes != AuthenticationSchemes.None)
             {
@@ -74,49 +76,40 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
+            var serverAddressCopy = _serverAddresses.Addresses.ToList();
+            _serverAddresses.Addresses.Clear();
 
             if (_serverAddresses.PreferHostingUrls && hostingUrlsPresent)
             {
                 if (_options.UrlPrefixes.Count > 0)
                 {
-                    LogHelper.LogWarning(_logger, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
+                    _logger.LogWarning($"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
                         $" Binding to address(es) '{string.Join(", ", _serverAddresses.Addresses)}' instead. ");
 
                     Listener.Options.UrlPrefixes.Clear();
                 }
 
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else if (_options.UrlPrefixes.Count > 0)
             {
                 if (hostingUrlsPresent)
                 {
-                    LogHelper.LogWarning(_logger, $"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
+                    _logger.LogWarning($"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
                         $"Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.");
 
                     _serverAddresses.Addresses.Clear();
                 }
 
-                foreach (var prefix in _options.UrlPrefixes)
-                {
-                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
-                }
             }
             else if (hostingUrlsPresent)
             {
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else if (Listener.RequestQueue.Created)
             {
-                LogHelper.LogDebug(_logger, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
+                _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
-                _serverAddresses.Addresses.Add(Constants.DefaultServerAddress);
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
             // else // Attaching to an existing queue, don't add a default.
@@ -130,6 +123,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Listener.Start();
 
+            // Update server addresses after we start listening as port 0
+            // needs to be selected at the point of binding.
+            foreach (var prefix in _options.UrlPrefixes)
+            {
+                _serverAddresses.Addresses.Add(prefix.FullPrefix);
+            }
+
             ActivateRequestProcessingLimits();
 
             return Task.CompletedTask;
@@ -140,6 +140,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
                 ProcessRequestsWorker();
+            }
+        }
+
+        private void UpdateUrlPrefixes(IList<string> serverAddressCopy)
+        {
+            foreach (var value in serverAddressCopy)
+            {
+                Listener.Options.UrlPrefixes.Add(value);
             }
         }
 
@@ -163,11 +171,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Contract.Assert(Stopping);
                     if (Stopping)
                     {
-                        LogHelper.LogDebug(_logger, "ListenForNextRequestAsync-Stopping", exception);
+                        _logger.LogDebug(0, exception, "ListenForNextRequestAsync-Stopping");
                     }
                     else
                     {
-                        LogHelper.LogException(_logger, "ListenForNextRequestAsync", exception);
+                        _logger.LogError(0, exception, "ListenForNextRequestAsync");
                     }
                     continue;
                 }
@@ -179,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
-                    LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
+                    _logger.LogError(0, ex, "ProcessRequestAsync");
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
@@ -216,17 +224,22 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
+                    _logger.LogError(0, ex, "ProcessRequestAsync");
                     _application.DisposeContext(context, ex);
                     if (requestContext.Response.HasStarted)
                     {
+                        // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                        // Otherwise the default is Cancel = 0x8.
+                        requestContext.SetResetCode(2);
                         requestContext.Abort();
                     }
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
                         requestContext.Response.Headers.IsReadOnly = false;
+                        requestContext.Response.Trailers.IsReadOnly = false;
                         requestContext.Response.Headers.Clear();
+                        requestContext.Response.Trailers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }
                 }
@@ -234,14 +247,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
                     {
-                        LogHelper.LogInfo(_logger, "All requests drained.");
+                        _logger.LogInformation("All requests drained.");
                         _shutdownSignal.TrySetResult(0);
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
+                _logger.LogError(0, ex, "ProcessRequestAsync");
                 requestContext.Abort();
             }
         }
@@ -261,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
                     {
-                        LogHelper.LogInfo(_logger, "Canceled, terminating " + _outstandingRequests + " request(s).");
+                        _logger.LogInformation("Canceled, terminating " + _outstandingRequests + " request(s).");
                         _shutdownSignal.TrySetResult(null);
                     }
                 });
@@ -279,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Wait for active requests to drain
                 if (_outstandingRequests > 0)
                 {
-                    LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
+                    _logger.LogInformation("Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
                     RegisterCancelation();
                 }
                 else

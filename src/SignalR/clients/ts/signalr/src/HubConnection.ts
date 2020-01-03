@@ -599,6 +599,10 @@ export class HubConnection {
     }
 
     private resetKeepAliveInterval() {
+        if (this.connection.features.inherentKeepAlive) {
+            return;
+        }
+
         this.cleanupPingTimer();
         this.pingServerHandle = setTimeout(async () => {
             if (this.connectionState === HubConnectionState.Connected) {

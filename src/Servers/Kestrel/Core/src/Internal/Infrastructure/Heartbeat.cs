@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly TimeSpan _interval;
         private Timer _timer;
         private int _executingOnHeartbeat;
+        private long _lastHeartbeatTicks;
 
         public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
@@ -46,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (Interlocked.Exchange(ref _executingOnHeartbeat, 1) == 0)
             {
+                Volatile.Write(ref _lastHeartbeatTicks, now.Ticks);
+
                 try
                 {
                     foreach (var callback in _callbacks)
@@ -66,7 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 if (!_debugger.IsAttached)
                 {
-                    _trace.HeartbeatSlow(_interval, now);
+                    var lastHeartbeatTicks = Volatile.Read(ref _lastHeartbeatTicks);
+                    
+                    _trace.HeartbeatSlow(TimeSpan.FromTicks(now.Ticks - lastHeartbeatTicks), _interval, now);
                 }
             }
         }

@@ -5,6 +5,7 @@
 
     <!-- Exclude the TestFiles directory from default wildcards -->
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

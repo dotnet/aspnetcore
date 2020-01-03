@@ -1,5 +1,7 @@
 parameters:
   artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
   publishInstallersAndChecksums: false
   symbolPublishingAdditionalParameters: ''
   stageName: ''
@@ -11,14 +13,14 @@ parameters:
 
 stages:
 - stage: ${{ parameters.stageName }}
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: ${{ parameters.channelName }} Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - job:
+  - job: publish_symbols
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
     condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} ))
@@ -63,6 +65,11 @@ stages:
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
             ${{ parameters.symbolPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'SymbolPublishing'
 
   - job: publish_assets
     displayName: Publish Assets
@@ -134,7 +141,6 @@ stages:
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
-            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='${{ parameters.shippingFeed }}'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='${{ parameters.transportFeed }}'
@@ -142,6 +148,11 @@ stages:
             /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'AssetsPublishing'
 
       - template: ../../steps/promote-build.yml
         parameters:

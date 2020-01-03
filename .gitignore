@@ -29,6 +29,7 @@ modules/
 *.psess
 *.res
 *.snk
+*.so
 *.suo
 *.tlog
 *.user
@@ -40,3 +41,4 @@ launchSettings.json
 msbuild.ProjectImports.zip
 StyleCop.Cache
 UpgradeLog.htm
+.idea

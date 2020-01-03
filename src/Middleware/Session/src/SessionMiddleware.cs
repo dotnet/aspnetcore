@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Session
                 {
                     establisher.SetCookie();
                 }
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             private void SetCookie()

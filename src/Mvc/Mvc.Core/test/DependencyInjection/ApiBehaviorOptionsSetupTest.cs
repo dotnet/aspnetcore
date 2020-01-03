@@ -7,6 +7,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -68,6 +70,29 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal(400, problemDetails.Status);
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
             Assert.Equal(link, problemDetails.Type);
+        }
+
+        [Fact]
+        public void ProblemDetailsInvalidModelStateResponse_UsesProblemDetailsFactory()
+        {
+            // Arrange
+            var actionContext = GetActionContext();
+            var factory = Mock.Of<ProblemDetailsFactory>(m => m.CreateValidationProblemDetails(It.IsAny<HttpContext>(), It.IsAny<ModelStateDictionary>(), null, null, null, null, null) == new ValidationProblemDetails
+            {
+                Status = 422,
+            });
+
+            // Act
+            var result = ApiBehaviorOptionsSetup.ProblemDetailsInvalidModelStateResponse(factory, actionContext);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(422, objectResult.StatusCode);
+            Assert.Equal(new[] { "application/problem+json", "application/problem+xml" }, objectResult.ContentTypes.OrderBy(c => c));
+
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+            Assert.Equal(422, problemDetails.Status);
+            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
         }
 
         [Fact]

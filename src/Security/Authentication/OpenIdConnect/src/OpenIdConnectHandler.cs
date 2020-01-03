@@ -78,13 +78,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             OpenIdConnectMessage message = null;
 
-            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(Request.Method))
             {
                 message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
-            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+            else if (HttpMethods.IsPost(Request.Method)
               && !string.IsNullOrEmpty(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             OpenIdConnectMessage authorizationResponse = null;
 
-            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(Request.Method))
             {
                 authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
 
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 }
             }
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
-            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+            else if (HttpMethods.IsPost(Request.Method)
               && !string.IsNullOrEmpty(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
