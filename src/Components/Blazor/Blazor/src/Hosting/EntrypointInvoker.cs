@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             {
                 var assembly = Assembly.Load(assemblyName);
                 var entrypoint = FindUnderlyingEntrypoint(assembly);
-                var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args } : new object[] { };
+                var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args ?? Array.Empty<string>() } : new object[] { };
                 entrypointResult = entrypoint.Invoke(null, @params);
             }
             catch (Exception syncException)
