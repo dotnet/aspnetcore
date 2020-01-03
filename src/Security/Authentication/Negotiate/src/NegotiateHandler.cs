@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new NegotiateEvents());
 
-        private bool IsSupportedProtocol => HttpProtocols.IsHttp10(Request.Protocol) || HttpProtocols.IsHttp11(Request.Protocol);
+        private bool IsSupportedProtocol => HttpProtocol.IsHttp10(Request.Protocol) || HttpProtocol.IsHttp11(Request.Protocol);
 
         /// <summary>
         /// Intercepts incomplete Negotiate authentication handshakes and continues or completes them.

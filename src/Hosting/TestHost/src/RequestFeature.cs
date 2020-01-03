@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.TestHost
             Method = "GET";
             Path = "";
             PathBase = "";
-            Protocol = HttpProtocols.Http11;
+            Protocol = HttpProtocol.Http11;
             QueryString = "";
             Scheme = "http";
         }

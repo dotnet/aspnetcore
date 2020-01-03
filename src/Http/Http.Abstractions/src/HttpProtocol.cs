@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Contains methods to verify the request protocol of an HTTP request. 
+    /// Contains methods to verify the request protocol version of an HTTP request. 
     /// </summary>
-    public static class HttpProtocols
+    public static class HttpProtocol
     {
         // We are intentionally using 'static readonly' here instead of 'const'.
         // 'const' values would be embedded into each assembly that used them
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsHttp10(string protocol)
         {
-            return object.ReferenceEquals(Http10, protocol) || StringComparer.Ordinal.Equals(Http10, protocol);
+            return object.ReferenceEquals(Http10, protocol) || StringComparer.OrdinalIgnoreCase.Equals(Http10, protocol);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsHttp11(string protocol)
         {
-            return object.ReferenceEquals(Http11, protocol) || StringComparer.Ordinal.Equals(Http11, protocol);
+            return object.ReferenceEquals(Http11, protocol) || StringComparer.OrdinalIgnoreCase.Equals(Http11, protocol);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsHttp2(string protocol)
         {
-            return object.ReferenceEquals(Http2, protocol) || StringComparer.Ordinal.Equals(Http2, protocol);
+            return object.ReferenceEquals(Http2, protocol) || StringComparer.OrdinalIgnoreCase.Equals(Http2, protocol);
         }
 
         /// <summary>
@@ -68,7 +68,20 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsHttp3(string protocol)
         {
-            return object.ReferenceEquals(Http3, protocol) || StringComparer.Ordinal.Equals(Http3, protocol);
+            return object.ReferenceEquals(Http3, protocol) || StringComparer.OrdinalIgnoreCase.Equals(Http3, protocol);
         }
+
+        /// <summary>
+        /// Gets the HTTP request protocol for the specified <see cref="Version"/>.
+        /// </summary>
+        /// <param name="version">The version.</param>
+        /// <returns>A HTTP request protocol.</returns>
+        public static string GetProtocol(this Version version) => version switch
+        {
+            { Major: 2, Minor: 0 } => Http2,
+            { Major: 1, Minor: 1 } => Http11,
+            { Major: 1, Minor: 0 } => Http10,
+            _ => "HTTP/" + version.ToString(2)
+        };
     }
 }

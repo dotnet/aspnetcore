@@ -426,8 +426,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             return httpVersion switch
             {
-                HttpVersion.Http10 => AspNetCore.Http.HttpProtocols.Http10,
-                HttpVersion.Http11 => AspNetCore.Http.HttpProtocols.Http11,
+                HttpVersion.Http10 => AspNetCore.Http.HttpProtocol.Http10,
+                HttpVersion.Http11 => AspNetCore.Http.HttpProtocol.Http11,
                 _ => null,
             };
         }

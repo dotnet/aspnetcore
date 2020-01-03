@@ -1,21 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Abstractions
 {
-    public class HttpProtocolsTests
+    public class HttpProtocolTests
     {
         [Fact]
         public void Http3_Success()
         {
-            Assert.Equal("HTTP/3", HttpProtocols.Http3);
+            Assert.Equal("HTTP/3", HttpProtocol.Http3);
         }
 
         [Theory]
         [InlineData("HTTP/3", true)]
-        [InlineData("http/3", false)]
+        [InlineData("http/3", true)]
         [InlineData("HTTP/1.1", false)]
         [InlineData("HTTP/3.0", false)]
         [InlineData("HTTP/1", false)]
@@ -23,18 +24,18 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("HTTP/3 ", false)]
         public void IsHttp3_Success(string protocol, bool match)
         {
-            Assert.Equal(match, HttpProtocols.IsHttp3(protocol));
+            Assert.Equal(match, HttpProtocol.IsHttp3(protocol));
         }
 
         [Fact]
         public void Http2_Success()
         {
-            Assert.Equal("HTTP/2", HttpProtocols.Http2);
+            Assert.Equal("HTTP/2", HttpProtocol.Http2);
         }
 
         [Theory]
         [InlineData("HTTP/2", true)]
-        [InlineData("http/2", false)]
+        [InlineData("http/2", true)]
         [InlineData("HTTP/1.1", false)]
         [InlineData("HTTP/2.0", false)]
         [InlineData("HTTP/1", false)]
@@ -42,18 +43,18 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("HTTP/2 ", false)]
         public void IsHttp2_Success(string protocol, bool match)
         {
-            Assert.Equal(match, HttpProtocols.IsHttp2(protocol));
+            Assert.Equal(match, HttpProtocol.IsHttp2(protocol));
         }
 
         [Fact]
         public void Http11_Success()
         {
-            Assert.Equal("HTTP/1.1", HttpProtocols.Http11);
+            Assert.Equal("HTTP/1.1", HttpProtocol.Http11);
         }
 
         [Theory]
         [InlineData("HTTP/1.1", true)]
-        [InlineData("http/1.1", false)]
+        [InlineData("http/1.1", true)]
         [InlineData("HTTP/2", false)]
         [InlineData("HTTP/1.0", false)]
         [InlineData("HTTP/1", false)]
@@ -61,18 +62,18 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("HTTP/1.1 ", false)]
         public void IsHttp11_Success(string protocol, bool match)
         {
-            Assert.Equal(match, HttpProtocols.IsHttp11(protocol));
+            Assert.Equal(match, HttpProtocol.IsHttp11(protocol));
         }
 
         [Fact]
         public void Http10_Success()
         {
-            Assert.Equal("HTTP/1.0", HttpProtocols.Http10);
+            Assert.Equal("HTTP/1.0", HttpProtocol.Http10);
         }
 
         [Theory]
         [InlineData("HTTP/1.0", true)]
-        [InlineData("http/1.0", false)]
+        [InlineData("http/1.0", true)]
         [InlineData("HTTP/2", false)]
         [InlineData("HTTP/1.1", false)]
         [InlineData("HTTP/1", false)]
@@ -80,7 +81,25 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("HTTP/1.0 ", false)]
         public void IsHttp10_Success(string protocol, bool match)
         {
-            Assert.Equal(match, HttpProtocols.IsHttp10(protocol));
+            Assert.Equal(match, HttpProtocol.IsHttp10(protocol));
+        }
+
+        public static TheoryData<Version, string> s_data = new TheoryData<Version, string>
+        {
+            { new Version(2, 0), "HTTP/2" },
+            { new Version(1, 1), "HTTP/1.1" },
+            { new Version(1, 0), "HTTP/1.0" },
+            { new Version(0, 3), "HTTP/0.3" },
+            { new Version(2, 1), "HTTP/2.1" }
+        };
+
+        [Theory]
+        [MemberData(nameof(s_data))]
+        public void GetProtocol_CorrectIETFVersion(Version version, string expected)
+        {
+            var actual = HttpProtocol.GetProtocol(version);
+
+            Assert.Equal(expected, actual);
         }
     }
 }

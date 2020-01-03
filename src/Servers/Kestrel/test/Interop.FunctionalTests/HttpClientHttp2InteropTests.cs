@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using HttpProtocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols;
 
 namespace Interop.FunctionalTests
 {

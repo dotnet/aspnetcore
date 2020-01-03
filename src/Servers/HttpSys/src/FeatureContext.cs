@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    _httpProtocolVersion = Request.ProtocolVersion.GetHttpProtocolVersion();
+                    _httpProtocolVersion = HttpProtocol.GetProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
