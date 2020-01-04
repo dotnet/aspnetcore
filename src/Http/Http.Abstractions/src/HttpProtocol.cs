@@ -76,8 +76,9 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="version">The version.</param>
         /// <returns>A HTTP request protocol.</returns>
-        public static string GetProtocol(this Version version) => version switch
+        public static string GetProtocol(Version version) => version switch
         {
+            { Major: 3, Minor: 0 } => Http3,
             { Major: 2, Minor: 0 } => Http2,
             { Major: 1, Minor: 1 } => Http11,
             { Major: 1, Minor: 0 } => Http10,

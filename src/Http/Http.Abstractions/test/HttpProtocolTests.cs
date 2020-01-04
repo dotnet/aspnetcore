@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions
 
         public static TheoryData<Version, string> s_data = new TheoryData<Version, string>
         {
+            { new Version(3, 0), "HTTP/3" },
             { new Version(2, 0), "HTTP/2" },
             { new Version(1, 1), "HTTP/1.1" },
             { new Version(1, 0), "HTTP/1.0" },
