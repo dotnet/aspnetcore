@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         private HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -301,9 +299,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return result;
         }
 
-        private static string GenerateTimeStamp()
+        private string GenerateTimeStamp()
         {
-            var secondsSinceUnixEpocStart = DateTime.UtcNow - Epoch;
+            var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
