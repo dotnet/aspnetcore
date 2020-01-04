@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Session
     /// </summary>
     public class SessionMiddleware
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         private const int SessionKeyLength = 36; // "382c74c3-721d-4f34-80e5-57657b6cbc27"
         private static readonly Func<bool> ReturnTrue = () => true;
         private readonly RequestDelegate _next;
@@ -91,7 +90,7 @@ namespace Microsoft.AspNetCore.Session
             {
                 // No valid cookie, new session.
                 var guidBytes = new byte[16];
-                CryptoRandom.GetBytes(guidBytes);
+                RandomNumberGenerator.Fill(guidBytes);
                 sessionKey = new Guid(guidBytes).ToString();
                 cookieValue = CookieProtection.Protect(_dataProtector, sessionKey);
                 var establisher = new SessionEstablisher(context, cookieValue, _options);

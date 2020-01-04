@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         private const string NonceProperty = "N";
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         private OpenIdConnectConfiguration _configuration;
 
         protected HttpClient Backchannel => Options.Backchannel;
@@ -371,7 +369,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
             {
                 var bytes = new byte[32];
-                CryptoRandom.GetBytes(bytes);
+                RandomNumberGenerator.Fill(bytes);
                 var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
