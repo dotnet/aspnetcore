@@ -109,8 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
         private string CreateRequestKey()
         {
             byte[] data = new byte[16];
-            var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return Convert.ToBase64String(data);
         }
 
