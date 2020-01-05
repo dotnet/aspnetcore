@@ -288,6 +288,27 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.False(result);
         }
 
+        [Theory]
+        [InlineData("/\n")]
+        [InlineData("/\n/not-local-url")]
+        [InlineData("/\r/not-local-url")]
+        [InlineData("/\t/not-local-url")]
+        [InlineData("~/\n")]
+        [InlineData("~/\n/not-local-url")]
+        [InlineData("~/\r/not-local-url")]
+        [InlineData("~/\t/not-local-url")]
+        public void IsLocalUrl_RejectsControlCharacters(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper(appRoot: string.Empty, host: "www.mysite.com", protocol: null);
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
         [Fact]
         public void RouteUrlWithDictionary()
         {
