@@ -25,8 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        private IFormatterResolver _resolver;
-
+        private MessagePackSerializerOptions _msgPackSerializerOptions;
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
 
@@ -62,7 +61,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             // with the provided resolvers
             if (options.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
             {
-                _resolver = new CombinedResolvers(options.FormatterResolvers);
+                var resolver = new CombinedResolvers(options.FormatterResolvers);
+                _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
+
                 return;
             }
 
@@ -71,13 +72,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 // check if the user customized the resolvers
                 if (options.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
                 {
-                    _resolver = new CombinedResolvers(options.FormatterResolvers);
+                    var resolver = new CombinedResolvers(options.FormatterResolvers);
                     return;
                 }
             }
 
             // Use optimized cached resolver if the default is chosen
-            _resolver = SignalRResolver.Instance;
+            _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(SignalRResolver.Instance);
         }
 
         /// <inheritdoc />
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var arraySegment = GetArraySegment(payload);
 
             var reader = new MessagePackReader(input);
-            message = ParseMessage(ref reader, arraySegment.Array, arraySegment.Offset, binder, _resolver);
+            message = ParseMessage(ref reader, binder, _msgPackSerializerOptions);
             return true;
         }
 
@@ -116,24 +117,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new ArraySegment<byte>(input.ToArray());
         }
 
-        private static HubMessage ParseMessage(ref MessagePackReader reader, byte[] input, int startOffset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage ParseMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             var itemCount = reader.ReadArrayHeader();
-            //var itemCount = reader.ReadArrayHeader(input, startOffset, out var readSize);
-            //startOffset += readSize;
 
             var messageType = ReadInt32(ref reader, "messageType");
 
             switch (messageType)
             {
                 case HubProtocolConstants.InvocationMessageType:
-                    return CreateInvocationMessage(ref reader, binder, resolver, itemCount);
+                    return CreateInvocationMessage(ref reader, binder, msgPackSerializerOptions, itemCount);
                 case HubProtocolConstants.StreamInvocationMessageType:
-                    return CreateStreamInvocationMessage(ref reader, binder, resolver, itemCount);
+                    return CreateStreamInvocationMessage(ref reader, binder, msgPackSerializerOptions, itemCount);
                 case HubProtocolConstants.StreamItemMessageType:
-                    return CreateStreamItemMessage(ref reader, binder, resolver);
+                    return CreateStreamItemMessage(ref reader, binder, msgPackSerializerOptions);
                 case HubProtocolConstants.CompletionMessageType:
-                    return CreateCompletionMessage(ref reader, binder, resolver);
+                    return CreateCompletionMessage(ref reader, binder, msgPackSerializerOptions);
                 case HubProtocolConstants.CancelInvocationMessageType:
                     return CreateCancelInvocationMessage(ref reader);
                 case HubProtocolConstants.PingMessageType:
@@ -146,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private static HubMessage CreateInvocationMessage(ref MessagePackReader reader, IInvocationBinder binder, IFormatterResolver resolver, int itemCount)
+        private static HubMessage CreateInvocationMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions, int itemCount)
         {
             var headers = ReadHeaders(ref reader);
             var invocationId = ReadInvocationId(ref reader);
@@ -164,7 +163,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             try
             {
                 var parameterTypes = binder.GetParameterTypes(target);
-                arguments = BindArguments(ref reader, parameterTypes, resolver);
+                arguments = BindArguments(ref reader, parameterTypes, msgPackSerializerOptions);
             }
             catch (Exception ex)
             {
@@ -181,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new InvocationMessage(invocationId, target, arguments, streams));
         }
 
-        private static HubMessage CreateStreamInvocationMessage(ref MessagePackReader reader, IInvocationBinder binder, IFormatterResolver resolver, int itemCount)
+        private static HubMessage CreateStreamInvocationMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions, int itemCount)
         {
             var headers = ReadHeaders(ref reader);
             var invocationId = ReadInvocationId(ref reader);
@@ -191,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             try
             {
                 var parameterTypes = binder.GetParameterTypes(target);
-                arguments = BindArguments(ref reader, parameterTypes, resolver);
+                arguments = BindArguments(ref reader, parameterTypes, msgPackSerializerOptions);
             }
             catch (Exception ex)
             {
@@ -208,7 +207,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments, streams));
         }
 
-        private static HubMessage CreateStreamItemMessage(ref MessagePackReader reader, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateStreamItemMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             var headers = ReadHeaders(ref reader);
             var invocationId = ReadInvocationId(ref reader);
@@ -216,7 +215,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             try
             {
                 var itemType = binder.GetStreamItemType(invocationId);
-                value = DeserializeObject(ref reader, itemType, "item", resolver);
+                value = DeserializeObject(ref reader, itemType, "item", msgPackSerializerOptions);
             }
             catch (Exception ex)
             {
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new StreamItemMessage(invocationId, value));
         }
 
-        private static CompletionMessage CreateCompletionMessage(ref MessagePackReader reader, IInvocationBinder binder, IFormatterResolver resolver)
+        private static CompletionMessage CreateCompletionMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             var headers = ReadHeaders(ref reader);
             var invocationId = ReadInvocationId(ref reader);
@@ -243,7 +242,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     break;
                 case NonVoidResult:
                     var itemType = binder.GetReturnType(invocationId);
-                    result = DeserializeObject(ref reader, itemType, "argument", resolver);
+                    result = DeserializeObject(ref reader, itemType, "argument", msgPackSerializerOptions);
                     hasResult = true;
                     break;
                 case VoidResult:
@@ -320,7 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return streams?.ToArray();
         }
 
-        private static object[] BindArguments(ref MessagePackReader reader, IReadOnlyList<Type> parameterTypes, IFormatterResolver resolver)
+        private static object[] BindArguments(ref MessagePackReader reader, IReadOnlyList<Type> parameterTypes, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             var argumentCount = ReadArrayLength(ref reader, "arguments");
 
@@ -335,7 +334,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 var arguments = new object[argumentCount];
                 for (var i = 0; i < argumentCount; i++)
                 {
-                    arguments[i] = DeserializeObject(ref reader, parameterTypes[i], "argument", resolver);
+                    arguments[i] = DeserializeObject(ref reader, parameterTypes[i], "argument", msgPackSerializerOptions);
                 }
 
                 return arguments;
@@ -494,7 +493,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
             else
             {
-                MessagePackSerializer.NonGeneric.Serialize(argument.GetType(), stream, argument, _resolver);
+                MessagePackSerializer.Serialize(argument.GetType(), ref writer, argument, _msgPackSerializerOptions);
             }
         }
 
@@ -667,14 +666,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             throw new InvalidDataException($"Reading array length for '{field}' failed.", msgPackException);
         }
 
-        private static object DeserializeObject(ref MessagePackReader reader, Type type, string field, IFormatterResolver resolver)
+        private static object DeserializeObject(ref MessagePackReader reader, Type type, string field, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             Exception msgPackException = null;
             try
             {
-                var obj = MessagePackSerializer.NonGeneric.Deserialize(type, new ArraySegment<byte>(input, offset, input.Length - offset), resolver);
-                offset += reader.ReadNextBlock(input, offset);
-                return obj;
+                return MessagePackSerializer.Deserialize(type, ref reader, msgPackSerializerOptions);
             }
             catch (Exception ex)
             {
@@ -694,7 +691,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             public static readonly IFormatterResolver Instance = new SignalRResolver();
 
-            public static readonly IList<IFormatterResolver> Resolvers = new[]
+            public static readonly IList<IFormatterResolver> Resolvers = new IFormatterResolver[]
             {
                 MessagePack.Resolvers.DynamicEnumAsStringResolver.Instance,
                 MessagePack.Resolvers.ContractlessStandardResolver.Instance,
