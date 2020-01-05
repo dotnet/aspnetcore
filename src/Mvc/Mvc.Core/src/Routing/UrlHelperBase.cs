@@ -43,48 +43,32 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public virtual bool IsLocalUrl(string url)
         {
-            if (string.IsNullOrEmpty(url))
+            ReadOnlySpan<char> span = url;
+
+            if (span.IsEmpty)
             {
                 return false;
             }
 
-            // Allows "/" or "/foo" but not "//" or "/\".
-            if (url[0] == '/')
+            if (span[0] == '~')
             {
-                // url is exactly "/"
-                if (url.Length == 1)
-                {
-                    return true;
-                }
+                span = span[1..];
+            }
 
-                // url doesn't start with "//" or "/\"
-                if (url[1] != '/' && url[1] != '\\' && !char.IsControl(url[1]))
-                {
-                    return true;
-                }
-
+            // url does not start with "/" or "~/"
+            if (span[0] != '/')
+            {
                 return false;
             }
 
-            // Allows "~/" or "~/foo" but not "~//" or "~/\".
-            if (url[0] == '~' && url.Length > 1 && url[1] == '/')
+            // url is exactly "/" or "~/"
+            if ((uint)span.Length <= 1)     // PERF: elides the bounds-check below
             {
-                // url is exactly "~/"
-                if (url.Length == 2)
-                {
-                    return true;
-                }
-
-                // url doesn't start with "~//" or "~/\"
-                if (url[2] != '/' && url[2] != '\\' && !char.IsControl(url[2]))
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
-            return false;
+            // url doesn't start with "//" or "/\" or "/\n" (or any other control character)
+            return span[1] != '/' && span[1] != '\\' && !char.IsControl(span[1]);
         }
 
         /// <inheritdoc />
