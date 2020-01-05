@@ -424,11 +424,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            return httpVersion switch
+            switch (httpVersion)
             {
-                HttpVersion.Http10 => AspNetCore.Http.HttpProtocol.Http10,
-                HttpVersion.Http11 => AspNetCore.Http.HttpProtocol.Http11,
-                _ => null,
+                case HttpVersion.Http10:
+                    return AspNetCore.Http.HttpProtocol.Http10;
+                case HttpVersion.Http11:
+                    return AspNetCore.Http.HttpProtocol.Http11;
+                case HttpVersion.Http2:
+                    return AspNetCore.Http.HttpProtocol.Http2;
+                case HttpVersion.Http3:
+                    return AspNetCore.Http.HttpProtocol.Http3;
+                default:
+                    Debug.Fail("Unexpected HttpVersion: " + httpVersion);
+                    return null;
             };
         }
 
