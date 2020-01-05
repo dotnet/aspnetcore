@@ -358,138 +358,131 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <inheritdoc />
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
-            var writer = MemoryBufferWriter.Get();
+            var writer = new MessagePackWriter(output);
 
-            try
-            {
-                // Write message to a buffer so we can get its length
-                WriteMessageCore(message, writer);
+            // Write message to a buffer so we can get its length
+            WriteMessageCore(message, ref writer);
 
-                // Write length then message to output
-                BinaryMessageFormatter.WriteLengthPrefix(writer.Length, output);
-                writer.CopyTo(output);
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(writer);
-            }
+            // REVIEW : I have no idea if this is needed or not, the previous code was using memryBufferWritter.CopyTo(stream)
+            //writer.Flush();
         }
 
         /// <inheritdoc />
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
-            var writer = MemoryBufferWriter.Get();
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            var writer = new MessagePackWriter(memoryBufferWriter);
 
             try
             {
                 // Write message to a buffer so we can get its length
-                WriteMessageCore(message, writer);
+                WriteMessageCore(message, ref writer);
 
-                var dataLength = writer.Length;
-                var prefixLength = BinaryMessageFormatter.LengthPrefixLength(writer.Length);
+                var dataLength = memoryBufferWriter.Length;
+                var prefixLength = BinaryMessageFormatter.LengthPrefixLength(memoryBufferWriter.Length);
 
                 var array = new byte[dataLength + prefixLength];
                 var span = array.AsSpan();
 
                 // Write length then message to output
-                var written = BinaryMessageFormatter.WriteLengthPrefix(writer.Length, span);
+                var written = BinaryMessageFormatter.WriteLengthPrefix(memoryBufferWriter.Length, span);
                 Debug.Assert(written == prefixLength);
-                writer.CopyTo(span.Slice(prefixLength));
+                memoryBufferWriter.CopyTo(span.Slice(prefixLength));
 
                 return array;
             }
             finally
             {
-                MemoryBufferWriter.Return(writer);
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
         }
 
-        private void WriteMessageCore(HubMessage message, Stream packer)
+        private void WriteMessageCore(HubMessage message, ref MessagePackWriter writer)
         {
             switch (message)
             {
                 case InvocationMessage invocationMessage:
-                    WriteInvocationMessage(invocationMessage, packer);
+                    WriteInvocationMessage(invocationMessage, ref writer);
                     break;
                 case StreamInvocationMessage streamInvocationMessage:
-                    WriteStreamInvocationMessage(streamInvocationMessage, packer);
+                    WriteStreamInvocationMessage(streamInvocationMessage, ref writer);
                     break;
                 case StreamItemMessage streamItemMessage:
-                    WriteStreamingItemMessage(streamItemMessage, packer);
+                    WriteStreamingItemMessage(streamItemMessage, ref writer);
                     break;
                 case CompletionMessage completionMessage:
-                    WriteCompletionMessage(completionMessage, packer);
+                    WriteCompletionMessage(completionMessage, ref writer);
                     break;
                 case CancelInvocationMessage cancelInvocationMessage:
-                    WriteCancelInvocationMessage(cancelInvocationMessage, packer);
+                    WriteCancelInvocationMessage(cancelInvocationMessage, ref writer);
                     break;
                 case PingMessage pingMessage:
-                    WritePingMessage(pingMessage, packer);
+                    WritePingMessage(pingMessage, ref writer);
                     break;
                 case CloseMessage closeMessage:
-                    WriteCloseMessage(closeMessage, packer);
+                    WriteCloseMessage(closeMessage, ref writer);
                     break;
                 default:
                     throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
             }
         }
 
-        private void WriteInvocationMessage(InvocationMessage message, Stream packer)
+        private void WriteInvocationMessage(InvocationMessage message, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 6);
+            writer.WriteArrayHeader(6);
 
-            MessagePackBinary.WriteInt32(packer, HubProtocolConstants.InvocationMessageType);
-            PackHeaders(packer, message.Headers);
+            writer.WriteInt32(HubProtocolConstants.InvocationMessageType);
+            PackHeaders(message.Headers, ref writer);
             if (string.IsNullOrEmpty(message.InvocationId))
             {
-                MessagePackBinary.WriteNil(packer);
+                writer.WriteNil();
             }
             else
             {
-                MessagePackBinary.WriteString(packer, message.InvocationId);
+                writer.Write(message.InvocationId);
             }
-            MessagePackBinary.WriteString(packer, message.Target);
-            MessagePackBinary.WriteArrayHeader(packer, message.Arguments.Length);
+            writer.Write(message.Target);
+            writer.WriteArrayHeader(message.Arguments.Length);
             foreach (var arg in message.Arguments)
             {
-                WriteArgument(arg, packer);
+                WriteArgument(arg, ref writer);
             }
 
-            WriteStreamIds(message.StreamIds, packer);
+            WriteStreamIds(message.StreamIds, ref writer);
         }
 
-        private void WriteStreamInvocationMessage(StreamInvocationMessage message, Stream packer)
+        private void WriteStreamInvocationMessage(StreamInvocationMessage message, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 6);
+            writer.WriteArrayHeader(6);
 
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamInvocationMessageType);
-            PackHeaders(packer, message.Headers);
-            MessagePackBinary.WriteString(packer, message.InvocationId);
-            MessagePackBinary.WriteString(packer, message.Target);
+            writer.WriteInt16(HubProtocolConstants.StreamInvocationMessageType);
+            PackHeaders(message.Headers, ref writer);
+            writer.Write(message.InvocationId);
+            writer.Write(message.Target);
 
-            MessagePackBinary.WriteArrayHeader(packer, message.Arguments.Length);
+            writer.WriteArrayHeader(message.Arguments.Length);
             foreach (var arg in message.Arguments)
             {
-                WriteArgument(arg, packer);
+                WriteArgument(arg, ref writer);
             }
 
-            WriteStreamIds(message.StreamIds, packer);
+            WriteStreamIds(message.StreamIds, ref writer);
         }
 
-        private void WriteStreamingItemMessage(StreamItemMessage message, Stream packer)
+        private void WriteStreamingItemMessage(StreamItemMessage message, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 4);
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamItemMessageType);
-            PackHeaders(packer, message.Headers);
-            MessagePackBinary.WriteString(packer, message.InvocationId);
-            WriteArgument(message.Item, packer);
+            writer.WriteArrayHeader(4);
+            writer.WriteInt16(HubProtocolConstants.StreamItemMessageType);
+            PackHeaders(message.Headers, ref writer);
+            writer.Write(message.InvocationId);
+            WriteArgument(message.Item, ref writer);
         }
 
-        private void WriteArgument(object argument, Stream stream)
+        private void WriteArgument(object argument, ref MessagePackWriter writer)
         {
             if (argument == null)
             {
-                MessagePackBinary.WriteNil(stream);
+                writer.WriteNil();
             }
             else
             {
@@ -497,99 +490,97 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteStreamIds(string[] streamIds, Stream packer)
+        private void WriteStreamIds(string[] streamIds, ref MessagePackWriter writer)
         {
             if (streamIds != null)
             {
-                MessagePackBinary.WriteArrayHeader(packer, streamIds.Length);
+                writer.WriteArrayHeader(streamIds.Length);
                 foreach (var streamId in streamIds)
                 {
-                    MessagePackBinary.WriteString(packer, streamId);
+                    writer.Write(streamId);
                 }
             }
             else
             {
-                MessagePackBinary.WriteArrayHeader(packer, 0);
+                writer.WriteArrayHeader(0);
             }
         }
 
-        private void WriteCompletionMessage(CompletionMessage message, Stream packer)
+        private void WriteCompletionMessage(CompletionMessage message, ref MessagePackWriter writer)
         {
             var resultKind =
                 message.Error != null ? ErrorResult :
                 message.HasResult ? NonVoidResult :
                 VoidResult;
 
-            MessagePackBinary.WriteArrayHeader(packer, 4 + (resultKind != VoidResult ? 1 : 0));
-            MessagePackBinary.WriteInt32(packer, HubProtocolConstants.CompletionMessageType);
-            PackHeaders(packer, message.Headers);
-            MessagePackBinary.WriteString(packer, message.InvocationId);
-            MessagePackBinary.WriteInt32(packer, resultKind);
+            writer.WriteArrayHeader(4 + (resultKind != VoidResult ? 1 : 0));
+            writer.WriteInt32(HubProtocolConstants.CompletionMessageType);
+            PackHeaders(message.Headers, ref writer);
+            writer.Write(message.InvocationId);
+            writer.WriteInt32(resultKind);
             switch (resultKind)
             {
                 case ErrorResult:
-                    MessagePackBinary.WriteString(packer, message.Error);
+                    writer.Write(message.Error);
                     break;
                 case NonVoidResult:
-                    WriteArgument(message.Result, packer);
+                    WriteArgument(message.Result, ref writer);
                     break;
             }
         }
 
-        private void WriteCancelInvocationMessage(CancelInvocationMessage message, Stream packer)
+        private void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 3);
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CancelInvocationMessageType);
-            PackHeaders(packer, message.Headers);
-            MessagePackBinary.WriteString(packer, message.InvocationId);
+            writer.WriteArrayHeader(3);
+            writer.WriteInt16(HubProtocolConstants.CancelInvocationMessageType);
+            PackHeaders(message.Headers, ref writer);
+            writer.Write(message.InvocationId);
         }
 
-        private void WriteCloseMessage(CloseMessage message, Stream packer)
+        private void WriteCloseMessage(CloseMessage message, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 3);
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CloseMessageType);
+            writer.WriteArrayHeader(3);
+            writer.WriteInt16(HubProtocolConstants.CloseMessageType);
             if (string.IsNullOrEmpty(message.Error))
             {
-                MessagePackBinary.WriteNil(packer);
+                writer.WriteNil();
             }
             else
             {
-                MessagePackBinary.WriteString(packer, message.Error);
+                writer.Write(message.Error);
             }
 
-            MessagePackBinary.WriteBoolean(packer, message.AllowReconnect);
+            writer.Write(message.AllowReconnect);
         }
 
-        private void WritePingMessage(PingMessage pingMessage, Stream packer)
+        private void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 1);
-            MessagePackBinary.WriteInt32(packer, HubProtocolConstants.PingMessageType);
+            writer.WriteArrayHeader(1);
+            writer.WriteInt32(HubProtocolConstants.PingMessageType);
         }
 
-        private void PackHeaders(Stream packer, IDictionary<string, string> headers)
+        private void PackHeaders(IDictionary<string, string> headers, ref MessagePackWriter writer)
         {
             if (headers != null)
             {
-                MessagePackBinary.WriteMapHeader(packer, headers.Count);
+                writer.WriteMapHeader(headers.Count);
                 if (headers.Count > 0)
                 {
                     foreach (var header in headers)
                     {
-                        MessagePackBinary.WriteString(packer, header.Key);
-                        MessagePackBinary.WriteString(packer, header.Value);
+                        writer.Write(header.Key);
+                        writer.Write(header.Value);
                     }
                 }
             }
             else
             {
-                MessagePackBinary.WriteMapHeader(packer, 0);
+                writer.WriteMapHeader(0);
             }
         }
 
-        private static string ReadInvocationId(ref MessagePackReader reader)
-        {
-            return ReadString(ref reader, "invocationId");
-        }
+        private static string ReadInvocationId(ref MessagePackReader reader) =>
+            ReadString(ref reader, "invocationId");
 
         private static bool ReadBoolean(ref MessagePackReader reader, string field)
         {
