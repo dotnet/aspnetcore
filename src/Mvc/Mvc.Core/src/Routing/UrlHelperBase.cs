@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 // url doesn't start with "//" or "/\"
-                if (url[1] != '/' && url[1] != '\\')
+                if (url[1] != '/' && url[1] != '\\' && !char.IsControl(url[1]))
                 {
                     return true;
                 }
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 // url doesn't start with "~//" or "~/\"
-                if (url[2] != '/' && url[2] != '\\')
+                if (url[2] != '/' && url[2] != '\\' && !char.IsControl(url[2]))
                 {
                     return true;
                 }
