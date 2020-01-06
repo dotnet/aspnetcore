@@ -9,7 +9,7 @@ using Azure.Core.Cryptography;
 using Azure.Identity;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
-using Microsoft.AspNetCore.DataProtection.AzureKeyVault;
+using Microsoft.AspNetCore.DataProtection.Azure.KeyVault;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;

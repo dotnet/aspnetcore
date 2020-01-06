@@ -6,11 +6,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection;azure;keyvault</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.KeyVault.Keys.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Keys.Tests" />
 
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Azure.Security.KeyVault.Keys" />

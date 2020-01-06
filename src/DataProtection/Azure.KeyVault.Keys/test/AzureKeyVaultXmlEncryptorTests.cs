@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault.Test
+namespace Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Test
 {
     public class AzureKeyVaultXmlEncryptorTests
     {
