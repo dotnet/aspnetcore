@@ -2512,7 +2512,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             private class StringFormatter<T> : IMessagePackFormatter<T>
             {
-
                 public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
                 {
                     // this method isn't used in our tests
