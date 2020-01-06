@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // Any additional items are discarded.
 
             var memoryBufferWriter = MemoryBufferWriter.Get();
-            var writer = new MessagePackWriter(memoryBufferWriter);
-
             try
             {
+                var writer = new MessagePackWriter(memoryBufferWriter);
+
                 writer.WriteArrayHeader(2);
                 if (excludedConnectionIds != null && excludedConnectionIds.Count > 0)
                 {
@@ -83,9 +83,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // Any additional items are discarded.
 
             var memoryBufferWriter = MemoryBufferWriter.Get();
-            var writer = new MessagePackWriter(memoryBufferWriter);
             try
             {
+                var writer = new MessagePackWriter(memoryBufferWriter);
+
                 writer.WriteArrayHeader(5);
                 writer.WriteInt32(command.Id);
                 writer.Write(command.ServerName);
@@ -108,10 +109,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // Any additional items are discarded.
 
             var memoryBufferWriter = MemoryBufferWriter.Get();
-            var writer = new MessagePackWriter(memoryBufferWriter);
-
             try
             {
+                var writer = new MessagePackWriter(memoryBufferWriter);
+
                 writer.WriteArrayHeader(1);
                 writer.WriteInt32(messageId);
 
