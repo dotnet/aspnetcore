@@ -295,6 +295,7 @@ namespace Microsoft.AspNetCore.Testing
         public string TestName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static string GetAssemblyBaseDirectory(System.Reflection.Assembly assembly, string baseDirectory = null) { throw null; }
         public static string GetOutputDirectory(System.Reflection.Assembly assembly) { throw null; }
+        public static bool GetPreserveExistingLogsInOutput(System.Reflection.Assembly assembly) { throw null; }
         public static string GetTestClassName(System.Type type) { throw null; }
         public static string GetTestMethodName(System.Reflection.MethodInfo method, object[] arguments) { throw null; }
         public string GetUniqueFileName(string prefix, string extension) { throw null; }
@@ -307,8 +308,9 @@ namespace Microsoft.AspNetCore.Testing
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=true)]
     public partial class TestOutputDirectoryAttribute : System.Attribute
     {
-        public TestOutputDirectoryAttribute(string targetFramework, string baseDirectory = null) { }
+        public TestOutputDirectoryAttribute(string preserveExistingLogsInOutput, string targetFramework, string baseDirectory = null) { }
         public string BaseDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool PreserveExistingLogsInOutput { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string TargetFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.ObsoleteAttribute("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/aspnet/Extensions/issues/1697 for details.")]
