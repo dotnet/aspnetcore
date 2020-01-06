@@ -155,9 +155,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmationAndRealEmailSender()
         {
             // Arrange
+            var emailSender = new ContosoEmailSender();
             void ConfigureTestServices(IServiceCollection services)
             {
-                services.AddSingleton<IEmailSender, FakeEmailSender>();
+                services.SetupTestEmailSender(emailSender)
                 services
                         .Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true)
                         .SetupTestThirdPartyLogin();
@@ -173,6 +174,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert
             await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email, hasRealEmailSender: true);
+            Assert.Single(emailSender.SentEmails);            
         }
 
         [Fact]
