@@ -255,7 +255,7 @@
     <GetTargetPathWithTargetPlatformMonikerDependsOn>$(GetTargetPathWithTargetPlatformMonikerDependsOn);AddReferenceProjectMetadata</GetTargetPathWithTargetPlatformMonikerDependsOn>
     <PrepareForRunDependsOn>RemoveReferenceProjectMetadata;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
   </PropertyGroup>
-  <ItemGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
+  <ItemGroup Condition=" $(HasReferenceAssembly) ">
     <!-- Ensure ref/ project is built prior to the implementation project. Capture its target path. -->
     <ProjectReference Include="$(_ReferenceProjectFile)">
       <OutputItemType>ReferenceProjectMetadata</OutputItemType>
