@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.Logging.Testing
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
     public class TestFrameworkFileLoggerAttribute : TestOutputDirectoryAttribute
     {
-        public TestFrameworkFileLoggerAttribute(string tfm, string baseDirectory = null)
-            : base(tfm, baseDirectory)
+        public TestFrameworkFileLoggerAttribute(string preserveExistingLogsInOutput, string tfm, string baseDirectory = null)
+            : base(preserveExistingLogsInOutput, tfm, baseDirectory)
         {
         }
     }
