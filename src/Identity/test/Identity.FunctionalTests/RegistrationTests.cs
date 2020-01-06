@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var emailSender = new ContosoEmailSender();
             void ConfigureTestServices(IServiceCollection services)
             {
-                services.SetupTestEmailSender(emailSender)
+                services.SetupTestEmailSender(emailSender);
                 services
                         .Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true)
                         .SetupTestThirdPartyLogin();
