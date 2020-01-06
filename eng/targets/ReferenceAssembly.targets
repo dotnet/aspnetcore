@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="GenerateReferenceSource" Condition="'$(HasReferenceAssembly)' == 'true'">
+  <Target Name="GenerateReferenceSource" Condition=" $(HasReferenceAssembly) ">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefProjectFileOutputPath>$(_RefSourceOutputPath)$(AssemblyName).csproj</_RefProjectFileOutputPath>
@@ -13,8 +13,8 @@
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="_GenerateProjectSourceInner"
-             Properties="TargetFramework=%(_DeduplicatedTargetFramework.Identity)">
+        Targets="_GenerateProjectSourceInner"
+        Properties="TargetFramework=%(_DeduplicatedTargetFramework.Identity);CompileUsingReferenceAssemblies=false">
       <Output TaskParameter="TargetOutputs" ItemName="ProjectListContentItem" />
     </MSBuild>
 
@@ -34,16 +34,17 @@
 ]]></ProjectListContentLines>
     </PropertyGroup>
 
-    <!-- Workaround https://github.com/Microsoft/msbuild/issues/1024 -->
-    <WriteLinesToFile Condition="'$(OS)' == 'Windows_NT'"
-                      File="$(_RefProjectFileOutputPath)" Lines="$([MSBuild]::Escape($(ProjectListContentLines)))" Overwrite="true" />
-    <Exec Condition="'$(OS)' != 'Windows_NT'"
-          Command="echo '$(ProjectListContentLines.Replace('\t','\\t'))' > $(_RefProjectFileOutputPath)" />
+    <WriteLinesToFile File="$(_RefProjectFileOutputPath)"
+        Lines="$([MSBuild]::Escape($(ProjectListContentLines)))"
+        Overwrite="true" />
 
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
-  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <Target Name="_GenerateProjectSourceInner"
+      Returns="@(ProjectListContent)"
+      DependsOnTargets="Build"
+      Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
       <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
@@ -53,6 +54,7 @@
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(_RefSourceFileTFM).cs</_RefSourceFileName>
       <_ManualRefSourceFileName>$(AssemblyName).Manual.cs</_ManualRefSourceFileName>
+      <_PerTFMManualRefSourceFileName>$(AssemblyName).$(_RefSourceFileTFM).Manual.cs</_PerTFMManualRefSourceFileName>
       <_RefSourceFileOutputPath>$(_RefSourceOutputPath)$(_RefSourceFileName)</_RefSourceFileOutputPath>
     </PropertyGroup>
 
@@ -63,8 +65,12 @@
 
     <PropertyGroup>
       <_GenApiFile>$([MSBuild]::NormalizePath('$(ArtifactsDir)', 'log', 'GenAPI.rsp'))</_GenApiFile>
-      <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
+      <_GenAPICommand
+          Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
+      <_GenAPICmd>$(_GenAPICommand)</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICommand) @"$(_GenApiFile)"</_GenAPICmd>
+      <_GenAPICmd
+          Condition=" '$(AdditionalGenApiCmdOptions)' != '' ">$(_GenAPICmd) $(AdditionalGenApiCmdOptions)</_GenAPICmd>
       <_GenApiArguments><![CDATA[
 "$(TargetPath)"
 --lib-path "@(_ReferencePathDirectories, '%3B')"
@@ -82,23 +88,34 @@
     <Exec Command="$(_GenAPICmd)" />
 
     <ItemGroup>
-      <FilteredOriginalReferences
-        Include="%(_OriginalReferences.Identity)"
-        Condition="'%(_OriginalReferences.NuGetPackageId)' == '' AND '%(_OriginalReferences.PrivateAssets)' != 'All'" />
+      <_ReferenceAssemblyCompileItems Include="$(_RefSourceFileName)" />
+      <_ReferenceAssemblyCompileItems Include="$(_ManualRefSourceFileName)"
+          Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')" />
+      <_ReferenceAssemblyCompileItems Include="$(_PerTFMManualRefSourceFileName)"
+          Condition="Exists('$(_RefSourceOutputPath)$(_PerTFMManualRefSourceFileName)')" />
+      <_ReferenceAssemblyCompileItems Include="../src/AssemblyInfo.cs"
+          Condition="Exists('$(MSBuildProjectDirectory)/AssemblyInfo.cs')" />
+      <_ReferenceAssemblyCompileItems Include="../src/Properties/AssemblyInfo.cs"
+          Condition="Exists('$(MSBuildProjectDirectory)/Properties/AssemblyInfo.cs')" />
+      <FilteredOriginalReferences Include="%(_OriginalReferences.Identity)"
+          Condition="'%(_OriginalReferences.NuGetPackageId)' == '' AND '%(_OriginalReferences.PrivateAssets)' != 'All'" />
+
+      <_ReferenceAssemblyItems
+          Include="@(_ReferenceAssemblyCompileItems->'&lt;Compile Include=&quot;%(Identity)&quot; /&gt;')" />
+      <_ReferenceAssemblyItems
+          Include="@(FilteredOriginalReferences->'&lt;Reference Include=&quot;%(Identity)&quot; /&gt;')"
+          Condition=" '@(FilteredOriginalReferences)' != '' " />
+      <!-- Some src/ projects use Arcade SDK feature to generate InternalsVisibleTo attributes. -->
+      <_ReferenceAssemblyItems
+          Include="@(InternalsVisibleTo->'&lt;InternalsVisibleTo Include=&quot;%(Identity)&quot; Key=&quot;%(Key)&quot; /&gt;')"
+          Condition=" '@(InternalsVisibleTo)' != '' " />
     </ItemGroup>
 
     <PropertyGroup>
-      <_ManualReferenceAssemblyContent />
-      <_ManualReferenceAssemblyContent Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')">
-      <![CDATA[
-    <Compile Include="$(_ManualRefSourceFileName)" />]]>
-      </_ManualReferenceAssemblyContent>
-
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(_RefProjectFileTFM)'">
-    <Compile Include="$(_RefSourceFileName)" />]]>$(_ManualReferenceAssemblyContent)<![CDATA[
-    @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
+    @(_ReferenceAssemblyItems, '%0A    ')
   </ItemGroup>
 ]]>
       </ReferencesContent>

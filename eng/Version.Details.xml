@@ -401,9 +401,9 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.1-servicing.19576.9" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.0-rtm.19565.2" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>f3f2dd583fffa254015fc21ff0e45784b333256d</Sha>
+      <Sha>65f04fb6db7a5e198d05dbebd5c4ad21eb018f89</Sha>
     </Dependency>
     <!-- Keep these dependencies at the bottom of ProductDependencies, else they will be picked as the parent for CoherentParentDependencies -->
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
@@ -425,17 +425,17 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19577.5">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19607.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>99c6b59a8afff97fe891341b39abe985f1d3c565</Sha>
+      <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19577.5">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19607.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>99c6b59a8afff97fe891341b39abe985f1d3c565</Sha>
+      <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19577.5">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19607.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>99c6b59a8afff97fe891341b39abe985f1d3c565</Sha>
+      <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.0-rtm.19572.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>

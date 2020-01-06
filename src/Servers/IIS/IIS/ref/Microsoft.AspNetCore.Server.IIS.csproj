@@ -6,14 +6,15 @@
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.Server.IIS.netcoreapp.cs" />
     <Compile Include="Microsoft.AspNetCore.Server.IIS.Manual.cs" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core"  />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Features"  />
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical"  />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources"  />
-    <Reference Include="System.IO.Pipelines"  />
-    <Reference Include="System.Security.Principal.Windows"  />
+    <Compile Include="../src/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
+    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 </Project>

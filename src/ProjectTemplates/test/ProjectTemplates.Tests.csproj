@@ -22,6 +22,7 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,6 +68,7 @@
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+  
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
