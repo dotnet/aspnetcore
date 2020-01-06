@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 if (options.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
                 {
                     var resolver = new CombinedResolvers(options.FormatterResolvers);
+                    _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
                     return;
                 }
             }
