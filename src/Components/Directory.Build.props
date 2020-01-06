@@ -27,4 +27,11 @@
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Embed any linker configs in such a way that the linker will find them -->
+    <EmbeddedResource
+      Condition="Exists('$(MSBuildProjectDirectory)\LinkerConfig.xml')"
+      Include="$(MSBuildProjectDirectory)\LinkerConfig.xml"
+      LogicalName="$(AssemblyName).xml" />
+  </ItemGroup>
 </Project>

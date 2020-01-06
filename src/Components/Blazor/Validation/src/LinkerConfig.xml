@@ -1,0 +1,6 @@
+<linker>
+  <!-- Use type-granularity linking for this assembly because it contains Blazor components -->
+  <assembly fullname="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation">
+    <type fullname="*" preserve="all" required="false" />
+  </assembly>
+</linker>
