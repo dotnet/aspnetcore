@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
@@ -17,6 +18,17 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         private static readonly Assembly ThisAssembly = typeof(AssemblyTestLogTests).GetTypeInfo().Assembly;
         private static readonly string ThisAssemblyName = ThisAssembly.GetName().Name;
         private static readonly string TFM = new DirectoryInfo(AppContext.BaseDirectory).Name;
+
+        [Fact]
+        public void FunctionalLogs_LogsPreservedFromNonFlakyRun()
+        {
+        }
+
+        [Fact]
+        [Flaky("http://example.com", FlakyOn.All)]
+        public void FunctionalLogs_LogsPreservedFromFlakyRun()
+        {
+        }
 
         [Fact]
         public void ForAssembly_ReturnsSameInstanceForSameAssembly()
