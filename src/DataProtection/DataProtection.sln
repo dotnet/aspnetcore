@@ -67,11 +67,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataPr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{BD3BD405-9F22-41E1-94ED-981BBEC57CF5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KeyVault.Keys", "KeyVault.Keys", "{E4587A51-3FF6-42D1-8906-5CADE0050344}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure.KeyVault.Keys", "Azure.KeyVault.Keys", "{E4587A51-3FF6-42D1-8906-5CADE0050344}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.KeyVault.Keys", "KeyVault.Keys\src\Microsoft.AspNetCore.DataProtection.KeyVault.Keys.csproj", "{4D74A2B4-3F45-4962-964B-C77017500CF9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Keys", "Azure.KeyVault.Keys\src\Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Keys.csproj", "{4D74A2B4-3F45-4962-964B-C77017500CF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.KeyVault.Keys.Tests", "KeyVault.Keys\test\Microsoft.AspNetCore.DataProtection.KeyVault.Keys.Tests.csproj", "{AAE27CF5-A524-4551-8A6F-F86FA86A7CAD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Keys.Tests", "Azure.KeyVault.Keys\test\Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Keys.Tests.csproj", "{AAE27CF5-A524-4551-8A6F-F86FA86A7CAD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{72B77CA4-6715-4347-B42E-A0A509354C2E}"
 EndProject
