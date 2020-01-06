@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -130,13 +131,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
             // Read excluded Ids
             IReadOnlyList<string> excludedConnectionIds = null;
-            var idCount = MessagePackUtil.ReadArrayHeader(ref reader);
+            var idCount = reader.ReadArrayHeader();
             if (idCount > 0)
             {
                 var ids = new string[idCount];
                 for (var i = 0; i < idCount; i++)
                 {
-                    ids[i] = MessagePackUtil.ReadString(ref reader);
+                    ids[i] = reader.ReadString();
                 }
 
                 excludedConnectionIds = ids;
@@ -158,11 +159,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // See WriteGroupCommand for format.
             ValidateArraySize(ref reader, 5, "GroupCommand");
 
-            var id = MessagePackUtil.ReadInt32(ref reader);
-            var serverName = MessagePackUtil.ReadString(ref reader);
-            var action = (GroupAction)MessagePackUtil.ReadByte(ref reader);
-            var groupName = MessagePackUtil.ReadString(ref reader);
-            var connectionId = MessagePackUtil.ReadString(ref reader);
+            var id = reader.ReadInt32();
+            var serverName = reader.ReadString();
+            var action = (GroupAction)reader.ReadByte();
+            var groupName = reader.ReadString();
+            var connectionId = reader.ReadString();
 
             return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
         }
@@ -173,7 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
             // See WriteAck for format
             ValidateArraySize(ref reader, 1, "Ack");
-            return MessagePackUtil.ReadInt32(ref reader);
+            return reader.ReadInt32();
         }
 
         private void WriteHubMessage(ref MessagePackWriter writer, HubMessage message)
@@ -198,12 +199,22 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         public static SerializedHubMessage ReadSerializedHubMessage(ReadOnlyMemory<byte> data)
         {
             var reader = new MessagePackReader(data);
-            var count = MessagePackUtil.ReadMapHeader(ref reader);
+            var count = reader.ReadMapHeader();
             var serializations = new SerializedMessage[count];
             for (var i = 0; i < count; i++)
             {
-                var protocol = MessagePackUtil.ReadString(ref reader);
-                var serialized = MessagePackUtil.ReadBytes(ref reader);
+                var protocol = reader.ReadString();
+
+                /********************* REVIEW : need feedback (Will remove lines / comment before merge) **********************************/
+                // REVIEW : is that ToArray necessary ?
+                // REVIEW : Returning a "ReadOnlySequence<byte>?" have significant code change accross the repository, so for now i limited the impact here
+                // REVIEW : As my understanding is limited, it will allocate only if multiple sequence are not one next to another in memory ?
+                // REVIEW : previous call to "reader.ReadBytes()" was returning a "byte[]"
+                // REVIEW : not sure if the defaulting to "Array.Empty<byte>()" is a good thing either or if it was trhowing before
+
+                var serialized = reader.ReadBytes()?.ToArray() ?? Array.Empty<byte>();
+                /*******************************************************/
+
                 serializations[i] = new SerializedMessage(protocol, serialized);
             }
 
@@ -212,7 +223,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
         private static void ValidateArraySize(ref MessagePackReader reader, int expectedLength, string messageType)
         {
-            var length = MessagePackUtil.ReadArrayHeader(ref reader);
+            var length = reader.ReadArrayHeader();
 
             if (length < expectedLength)
             {
