@@ -145,11 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             }
 
             // Read payload
-            // REVIEW : There's a chance that i just created a bug here ...
-            // REVIEW : As i changed the code to use MessagePackReader, ReadSerializedHubMessage still uses ReadOnlyMemory<byte>
-            // REVIEW : I did not changed any public API signature (breaking change)
-            // REVIEW: it would also expose the serialization format and by so lock down to ONE implementation instead of the Abstration
-            var message = ReadSerializedHubMessage(data);
+            var message = ReadSerializedHubMessage(ref reader);
             return new RedisInvocation(message, excludedConnectionIds);
         }
 
@@ -197,9 +193,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             }
         }
 
-        public static SerializedHubMessage ReadSerializedHubMessage(ReadOnlyMemory<byte> data)
+        public static SerializedHubMessage ReadSerializedHubMessage(ref MessagePackReader reader)
         {
-            var reader = new MessagePackReader(data);
             var count = reader.ReadMapHeader();
             var serializations = new SerializedMessage[count];
             for (var i = 0; i < count; i++)
