@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Microsoft Azure Blob storage support as key store.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;dataprotection;azure;blob</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Azure.Storage.Blobs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.1'">
+    <Reference Include="Microsoft.Data.OData" />
+  </ItemGroup>
+
+</Project>
