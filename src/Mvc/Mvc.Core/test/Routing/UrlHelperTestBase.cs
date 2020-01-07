@@ -288,27 +288,45 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.False(result);
         }
 
-        [Theory]
-        [InlineData("/\n")]
-        [InlineData("/\n/not-local-url")]
-        [InlineData("/\r/not-local-url")]
-        [InlineData("/\t/not-local-url")]
-        [InlineData("/not-local-url\n")]
-        [InlineData("/not-\nlocal-url")]
-        [InlineData("~/\n")]
-        [InlineData("~/\n/not-local-url")]
-        [InlineData("~/\r/not-local-url")]
-        [InlineData("~/\t/not-local-url")]
-        public void IsLocalUrl_RejectsControlCharacters(string url)
+        [Fact]
+        public void IsLocalUrl_RejectsControlCharacters()
         {
             // Arrange
             var helper = CreateUrlHelper(appRoot: string.Empty, host: "www.mysite.com", protocol: null);
 
-            // Act
-            var result = helper.IsLocalUrl(url);
+            foreach (var controlCharacter in GetControlCharacters())
+            {
+                // Test urls like "/\n"
+                string url = $"/{controlCharacter}";
+                var result = helper.IsLocalUrl(url);
+                Assert.False(result, $"control character 0x{(int)controlCharacter:X2} in short url");
 
-            // Assert
-            Assert.False(result);
+                // Test urls with control character at beginning
+                url = $"/{controlCharacter}/not-local-url";
+                result = helper.IsLocalUrl(url);
+                Assert.False(result, $"control character 0x{(int)controlCharacter:X2} at beginning");
+
+                // Test urls with control character in the middle
+                url = $"/not-{controlCharacter}-local-url";
+                result = helper.IsLocalUrl(url);
+                Assert.False(result, $"control character 0x{(int)controlCharacter:X2} in the middle");
+
+                // Test urls with contorl character at the end
+                url = $"/not-local-url{controlCharacter}";
+                result = helper.IsLocalUrl(url);
+                Assert.False(result, $"control character 0x{(int)controlCharacter:X2} at the end");
+            }
+
+            static IEnumerable<char> GetControlCharacters()
+            {
+                for (var c = char.MinValue; c < 0x80; ++c)
+                {
+                    if (char.IsControl(c))
+                    {
+                        yield return c;
+                    }
+                }
+            }
         }
 
         [Fact]
