@@ -97,9 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var arraySegment = GetArraySegment(payload);
-
-            var reader = new MessagePackReader(input);
+            var reader = new MessagePackReader(payload);
             message = ParseMessage(ref reader, binder, _msgPackSerializerOptions);
             return true;
         }
