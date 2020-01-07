@@ -115,6 +115,9 @@ try {
         if (-not $AssetRootUrl) {
             Write-Error "Missing required parameter: AssetRootUrl"
         }
+        if (-not $AccessTokenSuffix) {
+            Write-Error "Missing required parameter: AccessTokenSuffix"
+        }
         $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
         $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/${CliManifestName}${AccessTokenSuffix}"
         Write-Host "CliMetadataUrl:  $cliMetadataUrl"
