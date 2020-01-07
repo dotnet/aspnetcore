@@ -293,6 +293,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         [InlineData("/\n/not-local-url")]
         [InlineData("/\r/not-local-url")]
         [InlineData("/\t/not-local-url")]
+        [InlineData("/not-local-url\n")]
+        [InlineData("/not-\nlocal-url")]
         [InlineData("~/\n")]
         [InlineData("~/\n/not-local-url")]
         [InlineData("~/\r/not-local-url")]

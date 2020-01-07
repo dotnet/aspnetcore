@@ -67,8 +67,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 return true;
             }
 
-            // url doesn't start with "//" or "/\" or "/\n" (or any other control character)
-            return span[1] != '/' && span[1] != '\\' && !char.IsControl(span[1]);
+            // url doesn't start with "//" or "/\"
+            if (span[1] != '/' && span[1] != '\\')
+            {
+                // check that url does not contain any (ASCII) control character
+                for (var i = 1; i < span.Length; ++i)
+                {
+                    if (span[i] < 0x20 || span[i] == 0x7F)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
