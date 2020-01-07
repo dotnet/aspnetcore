@@ -1345,7 +1345,7 @@ namespace Interop.FunctionalTests
 
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/18154")]
         [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
