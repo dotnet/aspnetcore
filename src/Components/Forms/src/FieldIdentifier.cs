@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldName">The name of the editable field.</param>
         public FieldIdentifier(object model, string fieldName)
         {
-            if (model == null)
+            if (model is null)
             {
                 throw new ArgumentNullException(nameof(model));
             }
@@ -64,7 +65,16 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <inheritdoc />
         public override int GetHashCode()
-            => (Model, FieldName).GetHashCode();
+        {
+            // Ww want to compare Model instances by reference RuntimeHelpers.GetHashCode returns identical hashes for equal object references which is what we want.
+            var modelHash = RuntimeHelpers.GetHashCode(Model);
+            var fieldHash = StringComparer.Ordinal.GetHashCode(FieldName);
+            return (
+                modelHash,
+                fieldHash
+            )
+            .GetHashCode();
+        }
 
         /// <inheritdoc />
         public override bool Equals(object obj)
@@ -75,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public bool Equals(FieldIdentifier otherIdentifier)
         {
             return
-                otherIdentifier.Model == Model &&
+                ReferenceEquals(otherIdentifier.Model, Model) &&
                 string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
         }
 
