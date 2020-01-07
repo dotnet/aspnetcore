@@ -370,10 +370,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             var memoryBufferWriter = MemoryBufferWriter.Get();
-            var writer = new MessagePackWriter(memoryBufferWriter);
 
             try
             {
+                var writer = new MessagePackWriter(memoryBufferWriter);
+
                 // Write message to a buffer so we can get its length
                 WriteMessageCore(message, ref writer);
 
