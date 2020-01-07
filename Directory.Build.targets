@@ -115,18 +115,25 @@
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
-  <PropertyGroup Label="APICompat settings">
-    <!-- Don't run APICompat on projects without ref assemblies -->
-    <RunApiCompat Condition="'$(HasReferenceAssembly)' == 'false'">false</RunApiCompat>
+  <PropertyGroup Label="ApiCompat settings">
+    <!-- Don't run ApiCompat on projects without ref assemblies -->
+    <RunApiCompat Condition=" ! $(HasReferenceAssembly) ">false</RunApiCompat>
     <!-- Only run ApiCompat on Windows -->
     <RunApiCompat Condition="'$(TargetOsName)' != 'win'">false</RunApiCompat>
-    <ContractDir Condition="'$(HasReferenceAssembly)' == 'true'">$(OutputPath.Replace('$(OutDirName)','$(RefOutDirName)'))</ContractDir>
-    <BaselineAllAPICompatError Condition="'$(HasReferenceAssembly)' == 'true'">true</BaselineAllAPICompatError>
+    <!-- Only run ApiCompat in inner builds when multi-targeting. -->
+    <RunApiCompat Condition=" '$(TargetFramework)' == '' ">false</RunApiCompat>
+
+    <BaselineAllAPICompatError Condition=" '$(BaselineAllAPICompatError)' == '' ">false</BaselineAllAPICompatError>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(HasReferenceAssembly)' == 'true'">
-    <ResolvedMatchingContract Include="$(ContractDir)$(TargetFileName)" />
-  </ItemGroup>
+  <Target Name="HackApiCompatPath"
+      Condition=" $(HasReferenceAssembly) "
+      BeforeTargets="ValidateApiCompatForSrc"
+      DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ResolvedMatchingContract Include="@(ReferenceProjectMetadata)" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
