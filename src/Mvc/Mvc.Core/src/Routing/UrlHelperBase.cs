@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // check that url does not contain any (ASCII) control character
                 for (var i = 1; i < span.Length; ++i)
                 {
-                    if ((uint)(span[i] - 0x20) >= 0x7F - 0x20)  // span[i] < 0x20 || span[i] == 0x7F
+                    if (span[i] < 0x20 || span[i] == 0x7F)
                     {
                         return false;
                     }
