@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components
         [Fact]
         public void IncomingParameterMatchesOverridenParameter_ThatDoesNotHasAttribute()
         {
-            // Test for https://github.com/aspnet/AspNetCore/issues/13162
+            // Test for https://github.com/dotnet/aspnetcore/issues/13162
             // Arrange
             var parameters = new ParameterViewBuilder
             {

@@ -8,7 +8,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <!-- Tests are disabled due to https://github.com/aspnet/AspNetCore-Internal/issues/1967 -->
     <SkipTests>true</SkipTests>
-    <!-- https://github.com/aspnet/AspNetCore/issues/8343 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8343 -->
     <BuildHelixPayload>false</BuildHelixPayload>
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>

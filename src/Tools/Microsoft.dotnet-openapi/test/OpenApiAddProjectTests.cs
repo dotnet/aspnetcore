@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
     {
         public OpenApiAddProjectTests(ITestOutputHelper output) : base(output){}
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12738")]
         public async Task OpenApi_Add_GlobbingOpenApi()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12738")]
         public void OpenApi_Add_Project_EquivilentPaths()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12738")]
         public async Task OpenApi_Add_FromCsProj()
         {
             var project = CreateBasicProject(withOpenApi: false);

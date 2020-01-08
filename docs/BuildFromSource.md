@@ -3,7 +3,7 @@ Build ASP.NET Core from Source
 
 Building ASP.NET Core from source allows you to tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
+See https://github.com/dotnet/aspnetcore/labels/area-infrastructure for known issues and to track ongoing work.
 
 ## Install pre-requisites
 
@@ -48,7 +48,7 @@ ASP.NET Core uses git submodules to include the source from a few other projects
 
 For a new copy of the project, run:
 ```
-git clone --recursive https://github.com/aspnet/AspNetCore
+git clone --recursive https://github.com/dotnet/aspnetcore
 ```
 
 To update an existing copy, run:

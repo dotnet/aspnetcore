@@ -32,7 +32,7 @@
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
-    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/aspnet/AspNetCore/issues/7196 -->
+    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/dotnet/aspnetcore/issues/7196 -->
     <DotNetPath>$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
     <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>

@@ -83,7 +83,7 @@ task generatePOM {
         project {
             inceptionYear '2018'
             description 'ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/aspnet/AspNetCore'
+            url 'https://github.com/dotnet/aspnetcore'
             name groupId + ':' + artifactId
             licenses {
                 license {
@@ -93,9 +93,9 @@ task generatePOM {
                 }
             }
             scm {
-                connection 'scm:git:git://github.com/aspnet/AspNetCore.git'
-                developerConnection 'scm:git:git://github.com/aspnet/AspNetCore.git'
-                url 'http://github.com/aspnet/AspNetCore/tree/master'
+                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                url 'http://github.com/dotnet/aspnetcore/tree/master'
             }
             developers {
                 developer {

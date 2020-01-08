@@ -7,6 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/labeler@v2
-      if: github.repository == 'aspnet/AspNetCore'
+      if: github.repository == 'dotnet/aspnetcore'
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"

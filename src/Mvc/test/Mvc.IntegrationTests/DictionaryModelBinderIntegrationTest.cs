@@ -1166,7 +1166,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         [Fact]
         public async Task DictionaryModelBinder_DictionaryOfSimpleType_NullValue_DoesNotResultInRequiredValidation()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/13512
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13512
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
