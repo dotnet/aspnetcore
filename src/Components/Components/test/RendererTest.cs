@@ -2575,7 +2575,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanCombineBindAndConditionalAttribute()
         {
-            // This test represents https://github.com/aspnet/Blazor/issues/624
+            // This test represents https://github.com/dotnet/blazor/issues/624
 
             // Arrange: Rendered with textbox enabled
             var renderer = new TestRenderer();

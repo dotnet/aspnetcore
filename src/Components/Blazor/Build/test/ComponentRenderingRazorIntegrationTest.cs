@@ -408,7 +408,7 @@ namespace Test
                 frame => AssertFrame.Text(frame, "Some text", 4));
         }
 
-        [Fact] // https://github.com/aspnet/Blazor/issues/773
+        [Fact] // https://github.com/dotnet/blazor/issues/773
         public void Regression_773()
         {
             // Arrange

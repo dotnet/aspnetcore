@@ -448,7 +448,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 4));
         }
 
-        [Fact] // See https://github.com/aspnet/Blazor/issues/703
+        [Fact] // See https://github.com/dotnet/blazor/issues/703
         public void Workaround_703()
         {
             // Arrange
