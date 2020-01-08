@@ -166,7 +166,7 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-alpha.1.19602.5</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-alpha.1.19602.5</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-alpha.1.19602.5</MicrosoftEntityFrameworkCorePackageVersion>
-    <!-- Packages from aspnet/AspNetCore-Tooling -->
+    <!-- Packages from dotnet/aspnetcore-tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-alpha.1.20056.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-alpha.1.20056.3</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-alpha.1.20056.3</MicrosoftCodeAnalysisRazorPackageVersion>
