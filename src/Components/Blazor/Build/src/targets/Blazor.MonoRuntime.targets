@@ -173,9 +173,9 @@
 
     <ItemGroup>
       <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)" />
-      <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('System.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.AspNetCore.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.Extensions.'))" />
+      <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('System.'))" />
+      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.'))" />
+      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))" />
 
       <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
       <_BlazorAssemblyToLink Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" />
