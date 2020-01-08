@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore;dataprotection;azure;blob</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
