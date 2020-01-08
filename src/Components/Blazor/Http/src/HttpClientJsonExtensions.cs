@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Components
 
             // Make sure the call was successful before we
             // attempt to process the response content
-            response.EnsureSuccessStatusCode();
+            // response.EnsureSuccessStatusCode();
 
             if (typeof(T) == typeof(IgnoreResponse))
             {
