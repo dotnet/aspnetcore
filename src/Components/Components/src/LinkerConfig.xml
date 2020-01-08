@@ -1,6 +1,0 @@
-<linker>
-  <!-- Use type-granularity linking for this assembly because it contains Blazor components and DI services -->
-  <assembly fullname="Microsoft.AspNetCore.Components">
-    <type fullname="*" preserve="all" required="false" />
-  </assembly>
-</linker>

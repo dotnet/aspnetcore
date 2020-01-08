@@ -160,6 +160,7 @@
   </Target>
 
   <UsingTask TaskName="BlazorILLink" AssemblyFile="$(BlazorTasksPath)" />
+  <UsingTask TaskName="GenerateTypeGranularityLinkingConfig" AssemblyFile="$(BlazorTasksPath)" />
 
   <Target
       Name="_LinkBlazorApplication"
@@ -173,8 +174,8 @@
     <ItemGroup>
       <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)" />
       <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('System.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.AspNetCore.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.Extensions.'))" />
+      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.AspNetCore.'))" />
+      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy(%(Filename)).StartsWith('Microsoft.Extensions.'))" />
 
       <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
       <_BlazorAssemblyToLink Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" />
@@ -204,6 +205,14 @@
       <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <_TypeGranularityLinkingConfig>$(BlazorIntermediateOutputPath)linker.typegranularityconfig.xml</_TypeGranularityLinkingConfig>
+    </PropertyGroup>
+    <GenerateTypeGranularityLinkingConfig Assemblies="@(_BlazorAssemblyToLink)" OutputPath="$(_TypeGranularityLinkingConfig)" />
+    <ItemGroup>
+      <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkingConfig)" />
+    </ItemGroup>
+    
     <BlazorILLink
         ILLinkPath="$(MonoLinkerPath)"
         AssemblyPaths="@(_BlazorAssemblyToLink)"
