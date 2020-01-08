@@ -33,7 +33,7 @@ These are some other repos for related projects:
 
 * [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
 * [Entity Framework Core](https://github.com/dotnet/efcore) - data access technology
-* [Extensions](https://github.com/aspnet/Extensions) - Logging, configuration, dependency injection, and more.
+* [Extensions](https://github.com/dotnet/extensions) - Logging, configuration, dependency injection, and more.
 
 ## Code of conduct
 
