@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            // Ww want to compare Model instances by reference RuntimeHelpers.GetHashCode returns identical hashes for equal object references which is what we want.
+            // We want to compare Model instances by reference. RuntimeHelpers.GetHashCode returns identical hashes for equal object references (ignoring any `Equals`/`GetHashCode` overrides) which is what we want.
             var modelHash = RuntimeHelpers.GetHashCode(Model);
             var fieldHash = StringComparer.Ordinal.GetHashCode(FieldName);
             return (

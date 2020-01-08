@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // Arrange
             var model = new EquatableModel();
             var fieldIdentifier1 = new FieldIdentifier(model, nameof(EquatableModel.Property));
+            model.Property = "changed value"; // To show it makes no difference if the overridden `GetHashCode` result changes
             var fieldIdentifier2 = new FieldIdentifier(model, nameof(EquatableModel.Property));
 
             // Act/Assert
