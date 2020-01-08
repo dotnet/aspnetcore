@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
         {
             var data = await GetLatestDataAsync(blobRef);
 
-            if (data == null)
+            if (data == null || data.BlobContents.Length == 0)
             {
                 // no data in blob storage
                 return new XElement[0];
