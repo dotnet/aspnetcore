@@ -116,10 +116,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             _emailSender = emailSender;
         }
 
-        public override IActionResult OnGet()
-        {
-            return RedirectToPage("./Login");
-        }
+        public override IActionResult OnGet() => RedirectToPage("./Login");
 
         public override IActionResult OnPost(string provider, string returnUrl = null)
         {
