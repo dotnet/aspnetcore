@@ -113,6 +113,35 @@ namespace Microsoft.AspNetCore.Blazor.Build
         }
 
         [Fact]
+        public async Task Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies</DefineConstants>
+</PropertyGroup>
+<ItemGroup>
+    <ProjectReference Include=""..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj"" />
+</ItemGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", args: "/restore");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+            var blazorPublishDirectory = Path.Combine(publishDirectory, Path.GetFileNameWithoutExtension(project.ProjectFilePath));
+
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
+
+            var bootJsonPath = Path.Combine(blazorPublishDirectory, "dist", "_framework", "blazor.boot.json");
+            Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
+            Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
+        }
+
+        [Fact]
         public async Task Publish_HostedApp_Works()
         {
             // Arrange

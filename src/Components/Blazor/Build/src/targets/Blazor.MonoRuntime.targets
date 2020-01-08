@@ -74,7 +74,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveBlazorInputs">
+  <Target Name="_ResolveBlazorInputs" DependsOnTargets="ResolveReferences;ResolveRuntimePackAssets">
     <PropertyGroup>
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
       <BlazorIntermediateOutputPath>$(IntermediateOutputPath)blazor\</BlazorIntermediateOutputPath>
@@ -94,14 +94,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_BlazorDependencyInput Include="@(ReferenceCopyLocalPaths->WithMetadataValue('Extension','.dll')->'%(FullPath)')" />
-
       <_WebAssemblyBCLFolder Include="
         $(DotNetWebAssemblyBCLPath);
         $(DotNetWebAssemblyBCLFacadesPath);
         $(DotNetWebAssemblyFrameworkPath)" />
 
       <_WebAssemblyBCLAssembly Include="%(_WebAssemblyBCLFolder.Identity)*.dll" />
+    </ItemGroup>
+
+    <!--
+      Calculate the assemblies that act as inputs to calculate assembly closure. Based on _ComputeAssembliesToPostprocessOnPublish which is used as input to SDK's linker
+      https://github.com/dotnet/sdk/blob/d597e7b09d7657ba4e326d6734e14fcbf8473564/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets#L864-L873
+    -->
+    <ItemGroup>
+      <!-- Assemblies from packages -->
+      <_BlazorManagedRuntimeAssemby Include="@(RuntimeCopyLocalItems)" />
+
+      <!-- Assemblies from other references -->
+      <_BlazorUserRuntimeAssembly Include="@(ReferencePath->WithMetadataValue('CopyLocal', 'true'))"  />
+      <_BlazorUserRuntimeAssembly Include="@(ReferenceDependencyPaths->WithMetadataValue('CopyLocal', 'true'))" />
+
+      <_BlazorManagedRuntimeAssemby Include="@(_BlazorUserRuntimeAssembly)" />
+      <_BlazorManagedRuntimeAssemby Include="@(IntermediateAssembly)" />
     </ItemGroup>
 
     <MakeDir Directories="$(BlazorIntermediateOutputPath)" />
@@ -111,6 +125,27 @@
     <Error
       Message="Unrecongnized value for BlazorLinkOnBuild: '$(BlazorLinkOnBuild)'. Valid values are 'true' or 'false'."
       Condition="'$(BlazorLinkOnBuild)' != 'true' AND '$(BlazorLinkOnBuild)' != 'false'" />
+
+    <ItemGroup>
+      <!--
+        ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
+        Remove assemblies that are inputs to calculating the assembly closure. Instead use the resolved outputs, since it is the minimal set.
+       -->
+      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" />
+      <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" />
+
+      <BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
+        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+        <RelativeOutputPath>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</RelativeOutputPath>
+      </BlazorOutputWithTargetPath>
+
+      <BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
+        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
+      </BlazorOutputWithTargetPath>
+    </ItemGroup>
   </Target>
 
   <!--
@@ -128,14 +163,8 @@
 
     <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
     <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
-      <Output TaskParameter="Lines" ItemName="_BlazorLinkedFile"/>
+      <Output TaskParameter="Lines" ItemName="_BlazorResolvedAssembly"/>
     </ReadLinesFromFile>
-
-    <ItemGroup>
-      <BlazorOutputWithTargetPath Include="%(_BlazorLinkedFile.Identity)">
-        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
-    </ItemGroup>
   </Target>
 
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(BlazorTasksPath)" />
@@ -163,8 +192,7 @@
   <Target
       Name="_LinkBlazorApplication"
       Inputs="$(ProjectAssetsFile);
-              @(IntermediateAssembly);
-              @(_BlazorDependencyInput);
+              @(_BlazorManagedRuntimeAssemby);
               @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
       Outputs="$(_BlazorLinkerOutputCache)">
@@ -174,12 +202,15 @@
       <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('System.'))" />
       <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.'))" />
       <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))" />
+      <!-- Any assembly from a package reference that starts with System. file name is allowed to be linked -->
+      <_BlazorRuntimeCopyLocalItems Include="@(RuntimeCopyLocalItems)" IsLinkable="$([System.String]::Copy('%(FileName)').StartsWith('System.'))" />
 
       <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
-      <_BlazorAssemblyToLink Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" />
+      <_BlazorAssemblyToLink Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' == 'true'" />
 
       <_BlazorLinkerRoot Include="@(IntermediateAssembly)" />
-      <_BlazorLinkerRoot Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' != 'true'" />
+      <_BlazorLinkerRoot Include="@(_BlazorUserRuntimeAssembly)" />
+      <_BlazorLinkerRoot Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' != 'true'" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -230,29 +261,22 @@
     <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
   </Target>
 
-
   <UsingTask TaskName="ResolveBlazorRuntimeDependencies" AssemblyFile="$(BlazorTasksPath)" />
   <Target
     Name="_ResolveBlazorOutputsWhenNotLinked"
     DependsOnTargets="_ResolveBlazorRuntimeDependencies"
     Condition="'$(BlazorLinkOnBuild)' != 'true'">
 
-    <ReadLinesFromFile File="$(_BlazorApplicationAssembliesCacheFile)" Condition="'@(_BlazorResolvedRuntimeDependencies->Count())' == '0'">
-      <Output TaskParameter="Lines" ItemName="_BlazorResolvedRuntimeDependencies"/>
+    <ReadLinesFromFile File="$(_BlazorApplicationAssembliesCacheFile)" Condition="'@(_BlazorResolvedAssembly->Count())' == '0'">
+      <Output TaskParameter="Lines" ItemName="_BlazorResolvedAssembly"/>
     </ReadLinesFromFile>
-
-    <ItemGroup>
-      <BlazorOutputWithTargetPath Include="@(_BlazorResolvedRuntimeDependencies)">
-        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
-    </ItemGroup>
   </Target>
 
   <Target
     Name="_ResolveBlazorRuntimeDependencies"
     Inputs="$(ProjectAssetsFile);
             @(IntermediateAssembly);
-            @(_BlazorDependencyInput)"
+            @(_BlazorManagedRuntimeAssemby)"
     Outputs="$(_BlazorApplicationAssembliesCacheFile)">
 
     <!--
@@ -262,10 +286,10 @@
     -->
     <ResolveBlazorRuntimeDependencies
       EntryPoint="@(IntermediateAssembly)"
-      ApplicationDependencies="@(_BlazorDependencyInput)"
+      ApplicationDependencies="@(_BlazorManagedRuntimeAssemby)"
       WebAssemblyBCLAssemblies="@(_WebAssemblyBCLAssembly)">
 
-      <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedRuntimeDependencies" />
+      <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssembly" />
     </ResolveBlazorRuntimeDependencies>
 
     <WriteLinesToFile File="$(_BlazorApplicationAssembliesCacheFile)" Lines="@(_BlazorResolvedRuntimeDependencies)" Overwrite="true" />
@@ -282,13 +306,12 @@
     Inputs="@(BlazorOutputWithTargetPath)"
     Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
-      <_AppReferences Include="@(BlazorOutputWithTargetPath->WithMetadataValue('Extension','.dll'))" />
-      <_AppReferences Include="@(BlazorOutputWithTargetPath->WithMetadataValue('Extension','.pdb'))" Condition="'$(BlazorEnableDebugging)' == 'true'" />
+      <_BlazorRuntimeFile Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
     </ItemGroup>
 
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      References="@(_AppReferences)"
+      References="@(_BlazorRuntimeFile)"
       LinkerEnabled="$(BlazorLinkOnBuild)"
       OutputPath="$(BlazorBootJsonIntermediateOutputPath)" />
 
