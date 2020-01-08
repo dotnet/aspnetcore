@@ -11,10 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.DataProtection.Repositories;
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Azure;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 
 namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
 {
