@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         [Fact]
         public void DoesNotThrowIfStableSortComparesRouteWithItself()
         {
-            // Test for https://github.com/aspnet/AspNetCore/issues/13313
+            // Test for https://github.com/dotnet/aspnetcore/issues/13313
             // Arrange & Act
             var builder = new TestRouteTableBuilder();
             builder.AddRoute("r16");

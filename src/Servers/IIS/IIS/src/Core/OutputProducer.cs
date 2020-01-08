@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly Pipe _pipe;
 
         // https://github.com/dotnet/corefxlab/issues/1334
-        // https://github.com/aspnet/AspNetCore/issues/8843
+        // https://github.com/dotnet/aspnetcore/issues/8843
         // Pipelines don't support multiple awaiters on flush. This is temporary until it does.
         // _lastFlushTask field should only be get or set under the _flushLock.
         private readonly object _flushLock = new object();

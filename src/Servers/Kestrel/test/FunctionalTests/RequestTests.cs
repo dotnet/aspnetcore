@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalFact]
         [IPv6SupportedCondition]
 #if LIBUV
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1977", FlakyOn.Helix.All)] // https://github.com/aspnet/AspNetCore/issues/8109
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1977", FlakyOn.Helix.All)] // https://github.com/dotnet/aspnetcore/issues/8109
 #endif
         public Task RemoteIPv6Address()
         {

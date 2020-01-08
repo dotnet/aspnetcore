@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 if (updatedRoutePattern == null)
                 {
                     // This kind of thing can happen when a route pattern uses a *reserved* route value such as `action`.
-                    // See: https://github.com/aspnet/AspNetCore/issues/14789
+                    // See: https://github.com/dotnet/aspnetcore/issues/14789
                     var formattedRouteKeys = string.Join(", ", resolvedRouteValues.Keys.Select(k => $"'{k}'"));
                     throw new InvalidOperationException(
                         $"Failed to update the route pattern '{resolvedRoutePattern.RawText}' with required route values. " +
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         private void AddActionDataToBuilder(
-            EndpointBuilder builder, 
+            EndpointBuilder builder,
             HashSet<string> routeNames,
             ActionDescriptor action,
             string routeName,
@@ -332,9 +332,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // However, Endpoint Routing requires Endpoint Names to be unique.
             //
             // We can use the route name as the endpoint name if it's not set. Note that there's no
-            // attribute for this today so it's unlikley. Using endpoint name on a 
-            if (routeName != null && 
-                !suppressLinkGeneration && 
+            // attribute for this today so it's unlikley. Using endpoint name on a
+            if (routeName != null &&
+                !suppressLinkGeneration &&
                 routeNames.Add(routeName) &&
                 builder.Metadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName == null)
             {

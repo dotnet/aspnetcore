@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
+    <HelixSource>pr/dotnet/aspnetcore</HelixSource>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>

@@ -46,7 +46,7 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            // Avoid the F# compiler. See https://github.com/aspnet/AspNetCore/issues/14022
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
             if (languageOverride != null)
             {
                 return;

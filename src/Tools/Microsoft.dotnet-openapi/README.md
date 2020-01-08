@@ -6,7 +6,7 @@
 
 ### Add Commands
 
-<!-- TODO: Restore after https://github.com/aspnet/AspNetCore/issues/12738
+<!-- TODO: Restore after https://github.com/dotnet/aspnetcore/issues/12738
  #### Add Project
 
 ##### Options

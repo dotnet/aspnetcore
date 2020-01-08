@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int DefaultWebSocketBufferSize = 4096;
         private const int StreamCopyBufferSize = 81920;
 
-        // https://github.com/aspnet/AspNetCore/issues/16797
+        // https://github.com/dotnet/aspnetcore/issues/16797
         private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
 
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469

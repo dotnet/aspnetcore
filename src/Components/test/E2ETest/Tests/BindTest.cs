@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
 
             // Verify we can select options whose value is empty
-            // https://github.com/aspnet/AspNetCore/issues/17735
+            // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
         }
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Third", () => boundValue.Text);
 
             // Verify we can select options whose value is empty
-            // https://github.com/aspnet/AspNetCore/issues/17735
+            // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
         }

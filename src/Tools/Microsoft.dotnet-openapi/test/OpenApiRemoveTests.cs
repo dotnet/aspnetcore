@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.DoesNotContain($"<OpenApiReference", removedContent);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12738")]
         public async Task OpenApi_Remove_Project()
         {
             _tempDir

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7267")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7267")]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7267")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7267")]
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();

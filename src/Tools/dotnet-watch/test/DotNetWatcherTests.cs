@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/8267")]
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
     public class Http2Tests
     {
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17420")]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/17420")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H1, SkipReason = "This is last version without GoAway support")]
         public async Task ConnectionClose_NoOSSupport_NoGoAway()

@@ -901,7 +901,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/13219", FlakyOn.AzP.Linux, FlakyOn.Helix.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore/issues/13219", FlakyOn.AzP.Linux, FlakyOn.Helix.All)]
         public async Task ClientCanReceiveFullConnectionCloseResponseWithoutErrorAtALowDataRate()
         {
             var chunkSize = 64 * 128 * 1024;

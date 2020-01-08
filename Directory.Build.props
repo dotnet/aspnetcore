@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

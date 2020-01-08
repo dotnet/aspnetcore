@@ -1186,7 +1186,7 @@ namespace Interop.FunctionalTests
         }
 
         // Settings_HeaderTableSize_CanBeReduced_Client - The client uses the default 4k HPACK dynamic table size and it cannot be changed.
-        // Nor does Kestrel yet support sending dynaimc table updates, so there's nothing to test here. https://github.com/aspnet/AspNetCore/issues/4715 
+        // Nor does Kestrel yet support sending dynaimc table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
@@ -1241,7 +1241,7 @@ namespace Interop.FunctionalTests
                 response.EnsureSuccessStatusCode();
             }
 
-            // SKIP: https://github.com/aspnet/AspNetCore/issues/17842
+            // SKIP: https://github.com/dotnet/aspnetcore/issues/17842
             // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
             // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
             // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
@@ -1302,7 +1302,7 @@ namespace Interop.FunctionalTests
                 response.EnsureSuccessStatusCode();
             }
 
-            // SKIP: https://github.com/aspnet/AspNetCore/issues/17842
+            // SKIP: https://github.com/dotnet/aspnetcore/issues/17842
             // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
             // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
             // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
@@ -1372,7 +1372,7 @@ namespace Interop.FunctionalTests
             {
                 request.Headers.Add("header" + i, oneKbString + i);
             }
-            // Kestrel closes the connection rather than sending the recommended 431 response. https://github.com/aspnet/AspNetCore/issues/17861
+            // Kestrel closes the connection rather than sending the recommended 431 response. https://github.com/dotnet/aspnetcore/issues/17861
             await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request)).DefaultTimeout();
 
             await host.StopAsync().DefaultTimeout();
