@@ -12,7 +12,7 @@ For non-security related bugs, log a new issue in the appropriate GitHub reposit
 * [AspNetCore](https://github.com/aspnet/AspNetCore)
 * [Entity Framework Core](https://github.com/dotnet/efcore)
 * [Tooling](https://github.com/aspnet/Tooling)
-* [Extensions](https://github.com/aspnet/Extensions)
+* [Extensions](https://github.com/dotnet/extensions)
 
 Or browse the full list of repositories in the [aspnet](https://github.com/aspnet/) organization.
 
