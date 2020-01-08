@@ -10,7 +10,7 @@ For non-security related bugs, log a new issue in the appropriate GitHub reposit
 
 * [Docs](https://github.com/aspnet/Docs)
 * [AspNetCore](https://github.com/aspnet/AspNetCore)
-* [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore)
+* [Entity Framework Core](https://github.com/dotnet/efcore)
 * [Tooling](https://github.com/aspnet/Tooling)
 * [Extensions](https://github.com/aspnet/Extensions)
 
