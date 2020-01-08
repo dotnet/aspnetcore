@@ -222,6 +222,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
 
                 var serializedDoc = new MemoryStream();
                 doc.Save(serializedDoc, SaveOptions.DisableFormatting);
+                serializedDoc.Position = 0;
 
                 // Generate the appropriate precondition header based on whether or not
                 // we believe data already exists in storage.

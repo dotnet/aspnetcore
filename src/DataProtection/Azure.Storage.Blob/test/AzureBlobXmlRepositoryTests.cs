@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
                     await Task.Yield();
 
                     var mockResponse = new Mock<Response<BlobContentInfo>>();
-                    var mockContentInfo = new Mock<BlobContentInfo>();
-                    mockContentInfo.Setup(c => c.ETag).Returns(ETag.All);
-                    mockResponse.Setup(c => c.Value).Returns(mockContentInfo.Object);
+                    var blobContentInfo = BlobsModelFactory.BlobContentInfo(ETag.All, DateTimeOffset.Now.AddDays(-1), Array.Empty<byte>(), "", 1);
+
+                    mockResponse.Setup(c => c.Value).Returns(blobContentInfo);
                     return mockResponse.Object;
                 });
 
@@ -127,9 +127,8 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
                     await Task.Yield();
 
                     var mockResponse = new Mock<Response<BlobContentInfo>>();
-                    var mockContentInfo = new Mock<BlobContentInfo>();
-                    mockContentInfo.Setup(c => c.ETag).Returns(ETag.All);
-                    mockResponse.Setup(c => c.Value).Returns(mockContentInfo.Object);
+                    var blobContentInfo = BlobsModelFactory.BlobContentInfo(ETag.All, DateTimeOffset.Now.AddDays(-1), Array.Empty<byte>(), "", 1);
+                    mockResponse.Setup(c => c.Value).Returns(blobContentInfo);
                     return mockResponse.Object;
                 })
                 .Verifiable();
