@@ -258,6 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             if (ModelState.HasReachedMaxErrors)
             {
                 SuppressValidation(key);
+                _currentPath.Pop(model);
                 return false;
             }
             else if (entry != null && entry.SuppressValidation)

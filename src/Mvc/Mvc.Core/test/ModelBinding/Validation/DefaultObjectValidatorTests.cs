@@ -1305,6 +1305,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Assert.True(actionContext.ModelState.IsValid);
         }
 
+        [Fact]
+        public void Validate_DoesNotThrow_IfNumberOfErrorsAfterReachingMaxAllowedErrors_GoesOverMaxDepth()
+        {
+            // Arrange
+            var maxDepth = 4;
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            actionContext.ModelState.MaxAllowedErrors = 2;
+            var validator = CreateValidator();
+            var model = new List<ModelWithRequiredProperty>
+            {
+                new ModelWithRequiredProperty(), new ModelWithRequiredProperty(),
+                // After the first 2 items we will reach MaxAllowedErrors
+                // If we add items without popping after having reached max validation,
+                // with 4 more items (on top of the list) we would go over max depth of 4
+                new ModelWithRequiredProperty(), new ModelWithRequiredProperty(),
+                new ModelWithRequiredProperty(), new ModelWithRequiredProperty(),
+            };
+
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            // Act & Assert
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+            Assert.False(actionContext.ModelState.IsValid);
+        }
+
         [Theory]
         [InlineData(false, ModelValidationState.Unvalidated)]
         [InlineData(true, ModelValidationState.Invalid)]
@@ -1419,6 +1448,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             entry = modelState["Property2"];
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+        }
+
+        public class ModelWithRequiredProperty
+        {
+            [Required]
+            public string MyProperty { get; set; }
         }
 
         private class ModelWithoutValidation
