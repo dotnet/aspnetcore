@@ -94,7 +94,7 @@
     <SystemWindowsExtensionsPackageVersion>5.0.0-alpha.1.19556.7</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha.1.19556.7</MicrosoftNETCorePlatformsPackageVersion>
-    <!-- Packages from aspnet/Blazor -->
+    <!-- Packages from dotnet/blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.1.0-preview4.19578.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-alpha.1.20056.3</InternalAspNetCoreAnalyzersPackageVersion>
