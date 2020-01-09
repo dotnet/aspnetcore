@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -19,42 +18,31 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
 
         public override bool Execute()
         {
-            using (var fileStream = File.Open(OutputPath, FileMode.Create))
-            using (var xmlWriter = XmlWriter.Create(fileStream, new XmlWriterSettings { Indent = true }))
+            var linkerElement = new XElement("linker");
+            linkerElement.Add(new XComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY "));
+
+            foreach (var assembly in Assemblies)
             {
-                xmlWriter.WriteStartDocument();
-                xmlWriter.WriteComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY ");
-
-                xmlWriter.WriteStartElement("linker");
-
-                foreach (var assembly in Assemblies)
-                {
-                    AddTypeGranularityConfig(xmlWriter, assembly);
-                }
-
-                xmlWriter.WriteEndElement(); // linker
-
-                xmlWriter.WriteEndDocument();
-                xmlWriter.Flush();
+                var assemblyElement = CreateTypeGranularityConfig(assembly);
+                linkerElement.Add(assemblyElement);
             }
+
+            using var fileStream = File.Open(OutputPath, FileMode.Create);
+            new XDocument(linkerElement).Save(fileStream);
 
             return true;
         }
 
-        private void AddTypeGranularityConfig(XmlWriter xmlWriter, ITaskItem assembly)
+        private XElement CreateTypeGranularityConfig(ITaskItem assembly)
         {
-            xmlWriter.WriteStartElement("assembly");
-            xmlWriter.WriteAttributeString("fullname", Path.GetFileNameWithoutExtension(assembly.ItemSpec));
-
             // We match all types in the assembly, and for each one, tell the linker to preserve all
             // its members (preserve=all) but only if there's some reference to the type (required=false)
-            xmlWriter.WriteStartElement("type");
-            xmlWriter.WriteAttributeString("fullname", "*");
-            xmlWriter.WriteAttributeString("preserve", "all");
-            xmlWriter.WriteAttributeString("required", "false");
-            xmlWriter.WriteEndElement(); // type
-
-            xmlWriter.WriteEndElement(); // assembly
+            return new XElement("assembly",
+                new XAttribute("fullname", Path.GetFileNameWithoutExtension(assembly.ItemSpec)),
+                new XElement("type",
+                    new XAttribute("fullname", "*"),
+                    new XAttribute("preserve", "all"),
+                    new XAttribute("required", "false")));
         }
     }
 }
