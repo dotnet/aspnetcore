@@ -13,6 +13,9 @@
 
     <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- By default, enable debugging for debug builds. -->
+    <BlazorEnableDebugging Condition="'$(Configuration)' == 'Debug' AND '$(BlazorEnableDebugging)' == ''">true</BlazorEnableDebugging>
   </PropertyGroup>
 
   <Import Project="Blazor.MonoRuntime.targets" />

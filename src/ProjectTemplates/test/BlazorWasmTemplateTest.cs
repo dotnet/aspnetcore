@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.CommandLineUtils;
 using OpenQA.Selenium;
 using Templates.Test.Helpers;
 using Xunit;
@@ -28,11 +28,11 @@ namespace Templates.Test
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
+            project.TargetFramework = "netstandard2.1";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            // We can't run a published standalone app, but let's just make sure it publishes fine
             var publishResult = await project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
@@ -40,6 +40,18 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
             await BuildAndRunTest(project.ProjectName, project);
+
+            var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
+            AspNetProcess.EnsureDevelopmentCertificates();
+
+            Output.WriteLine("Running dotnet serve on published output...");
+            using var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
+
+            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
+            var listeningUri = "https://localhost:8080";
+            Output.WriteLine($"Opening browser at {listeningUri}...");
+            Browser.Navigate().GoToUrl(listeningUri);
+            TestBasicNavigation(project.ProjectName);
         }
 
         [Fact]
@@ -70,7 +82,7 @@ namespace Templates.Test
             if (BrowserFixture.IsHostAutomationSupported())
             {
                 aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(project.ProjectName, serverProject);
+                TestBasicNavigation(project.ProjectName);
             }
             else
             {
@@ -90,7 +102,7 @@ namespace Templates.Test
             if (BrowserFixture.IsHostAutomationSupported())
             {
                 aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(appName, project);
+                TestBasicNavigation(appName);
             }
             else
             {
@@ -98,7 +110,7 @@ namespace Templates.Test
             }
         }
 
-        private void TestBasicNavigation(string appName, Project project)
+        private void TestBasicNavigation(string appName)
         {
             // Give components.server enough time to load so that it can replace
             // the prerendered content before we start making assertions.
