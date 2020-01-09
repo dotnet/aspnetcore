@@ -30,16 +30,15 @@ stages:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
-        inputs:
-          artifactName: 'BlobArtifacts'
+        displayName: Download Build Assets
         continueOnError: true
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download PDB Artifacts
         inputs:
-          artifactName: 'PDBArtifacts'
-        continueOnError: true
+          buildType: 'current'
+          downloadType: 'specific'
+          itemPattern: |
+            PDBArtifacts/**
+            BlobArtifacts/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
 
       # This is necessary whenever we want to publish/restore to an AzDO private feed
       # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -85,23 +84,16 @@ stages:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Package Artifacts
-        inputs:
-          buildType: current
-          artifactName: PackageArtifacts
+        displayName: Download Build Assets
         continueOnError: true
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
         inputs:
-          buildType: current
-          artifactName: BlobArtifacts
-        continueOnError: true
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Asset Manifests
-        inputs:
-          buildType: current
-          artifactName: AssetManifests
+          buildType: 'current'
+          downloadType: 'specific'
+          itemPattern: |
+            PackageArtifacts/**
+            BlobArtifacts/**
+            AssetManifests/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
 
       - task: NuGetToolInstaller@1
         displayName: 'Install NuGet.exe'
