@@ -22,8 +22,6 @@
   <Target
     Name="_BlazorCopyFilesToOutputDirectory"
     DependsOnTargets="PrepareBlazorOutputs"
-    Inputs="@(BlazorOutputWithTargetPath)"
-    Outputs="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
 
