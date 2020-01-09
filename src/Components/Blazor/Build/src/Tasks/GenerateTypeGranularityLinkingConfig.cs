@@ -29,10 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
 
                 foreach (var assembly in Assemblies)
                 {
-                    if (assembly.GetMetadata("TypeGranularity").Equals("true", StringComparison.Ordinal))
-                    {
-                        AddTypeGranularityConfig(xmlWriter, assembly);
-                    }
+                    AddTypeGranularityConfig(xmlWriter, assembly);
                 }
 
                 xmlWriter.WriteEndElement(); // linker
@@ -49,6 +46,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
             xmlWriter.WriteStartElement("assembly");
             xmlWriter.WriteAttributeString("fullname", Path.GetFileNameWithoutExtension(assembly.ItemSpec));
 
+            // We match all types in the assembly, and for each one, tell the linker to preserve all
+            // its members (preserve=all) but only if there's some reference to the type (required=false)
             xmlWriter.WriteStartElement("type");
             xmlWriter.WriteAttributeString("fullname", "*");
             xmlWriter.WriteAttributeString("preserve", "all");
