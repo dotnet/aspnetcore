@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                 var writer = new MessagePackWriter(memoryBufferWriter);
 
                 writer.WriteArrayHeader(5);
-                writer.WriteInt32(command.Id);
+                writer.Write(command.Id);
                 writer.Write(command.ServerName);
                 writer.Write((byte)command.Action);
                 writer.Write(command.GroupName);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                 var writer = new MessagePackWriter(memoryBufferWriter);
 
                 writer.WriteArrayHeader(1);
-                writer.WriteInt32(messageId);
+                writer.Write(messageId);
 
                 return memoryBufferWriter.ToArray();
             }

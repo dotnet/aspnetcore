@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             writer.WriteArrayHeader(6);
 
-            writer.WriteInt32(HubProtocolConstants.InvocationMessageType);
+            writer.Write(HubProtocolConstants.InvocationMessageType);
             PackHeaders(message.Headers, ref writer);
             if (string.IsNullOrEmpty(message.InvocationId))
             {
@@ -514,10 +514,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 VoidResult;
 
             writer.WriteArrayHeader(4 + (resultKind != VoidResult ? 1 : 0));
-            writer.WriteInt32(HubProtocolConstants.CompletionMessageType);
+            writer.Write(HubProtocolConstants.CompletionMessageType);
             PackHeaders(message.Headers, ref writer);
             writer.Write(message.InvocationId);
-            writer.WriteInt32(resultKind);
+            writer.Write(resultKind);
             switch (resultKind)
             {
                 case ErrorResult:
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(1);
-            writer.WriteInt32(HubProtocolConstants.PingMessageType);
+            writer.Write(HubProtocolConstants.PingMessageType);
         }
 
         private void PackHeaders(IDictionary<string, string> headers, ref MessagePackWriter writer)
