@@ -425,6 +425,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 default:
                     throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
             }
+
+            writer.Flush();
         }
 
         private void WriteInvocationMessage(InvocationMessage message, ref MessagePackWriter writer)
