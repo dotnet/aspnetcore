@@ -343,7 +343,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 if (newSize < 0 || newSize > _options.SizeLimit)
                 {
-                    // Overflow occured, return true without updating the cache size
+                    // Overflow occurred, return true without updating the cache size
                     return true;
                 }
 
