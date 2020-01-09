@@ -268,6 +268,8 @@
       <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedRuntimeDependencies" />
     </ResolveBlazorRuntimeDependencies>
 
+    <WriteLinesToFile File="$(_BlazorApplicationAssembliesCacheFile)" Lines="@(_BlazorResolvedRuntimeDependencies)" Overwrite="true" />
+
     <ItemGroup>
       <FileWrites Include="$(_BlazorApplicationAssembliesCacheFile)" />
     </ItemGroup>
