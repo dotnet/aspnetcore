@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Testing
         public bool PreserveExistingLogsInOutput { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string TargetFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    [System.ObsoleteAttribute("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/aspnet/Extensions/issues/1697 for details.")]
+    [System.ObsoleteAttribute("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/dotnet/extensions/issues/1697 for details.")]
     public partial class TestPathUtilities
     {
         public TestPathUtilities() { }

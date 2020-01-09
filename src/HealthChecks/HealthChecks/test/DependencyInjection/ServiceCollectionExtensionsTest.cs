@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
         }
 
-        [Fact] // see: https://github.com/aspnet/Extensions/issues/639
+        [Fact] // see: https://github.com/dotnet/extensions/issues/639
         public void AddHealthChecks_RegistersPublisherService_WhenOtherHostedServicesRegistered()
         {
             // Arrange
