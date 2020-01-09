@@ -7,6 +7,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -53,6 +54,22 @@ namespace Microsoft.AspNetCore.WebUtilities
             var result = await reader.ReadToEndAsync();
 
             Assert.Equal(5000, result.Length);
+        }
+
+        [Fact]
+        public static async Task ReadToEndAsync_Reads_Asynchronously()
+        {
+            // Arrange
+            var stream = new AsyncOnlyStreamWrapper(GetLargeStream());
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+            var streamReader = new StreamReader(GetLargeStream());
+            string expected = await streamReader.ReadToEndAsync();
+
+            // Act
+            var actual = await reader.ReadToEndAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -476,6 +493,85 @@ namespace Microsoft.AspNetCore.WebUtilities
             yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
                  httpRequestStreamReader.ReadLineAsync()
             )};
+        }
+
+        private class AsyncOnlyStreamWrapper : Stream
+        {
+            private readonly Stream _inner;
+
+            public AsyncOnlyStreamWrapper(Stream inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool CanRead => _inner.CanRead;
+
+            public override bool CanSeek => _inner.CanSeek;
+
+            public override bool CanWrite => _inner.CanWrite;
+
+            public override long Length => _inner.Length;
+
+            public override long Position
+            {
+                get => _inner.Position;
+                set => _inner.Position = value;
+            }
+
+            public override void Flush()
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                return _inner.FlushAsync(cancellationToken);
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return _inner.ReadAsync(buffer, offset, count, cancellationToken);
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                return _inner.Seek(offset, origin);
+            }
+
+            public override void SetLength(long value)
+            {
+                _inner.SetLength(value);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw SyncOperationForbiddenException();
+            }
+
+            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return _inner.WriteAsync(buffer, offset, count, cancellationToken);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                _inner.Dispose();
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                return _inner.DisposeAsync();
+            }
+
+            private Exception SyncOperationForbiddenException()
+            {
+                return new InvalidOperationException("The stream cannot be accessed synchronously");
+            }
         }
     }
 }
