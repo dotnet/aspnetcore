@@ -200,16 +200,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             for (var i = 0; i < count; i++)
             {
                 var protocol = reader.ReadString();
-
-                /********************* REVIEW : need feedback (Will remove lines / comment before merge) **********************************/
-                // REVIEW : is that ToArray necessary ?
-                // REVIEW : Returning a "ReadOnlySequence<byte>?" have significant code change accross the repository, so for now i limited the impact here
-                // REVIEW : As my understanding is limited, it will allocate only if multiple sequence are not one next to another in memory ?
-                // REVIEW : previous call to "reader.ReadBytes()" was returning a "byte[]"
-                // REVIEW : not sure if the defaulting to "Array.Empty<byte>()" is a good thing either or if it was trhowing before
-
                 var serialized = reader.ReadBytes()?.ToArray() ?? Array.Empty<byte>();
-                /*******************************************************/
 
                 serializations[i] = new SerializedMessage(protocol, serialized);
             }
