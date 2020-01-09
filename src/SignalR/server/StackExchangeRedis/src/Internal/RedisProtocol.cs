@@ -64,6 +64,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                 }
 
                 WriteHubMessage(ref writer, new InvocationMessage(methodName, args));
+                writer.Flush();
+
                 return memoryBufferWriter.ToArray();
             }
             finally
@@ -93,6 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                 writer.Write((byte)command.Action);
                 writer.Write(command.GroupName);
                 writer.Write(command.ConnectionId);
+                writer.Flush();
 
                 return memoryBufferWriter.ToArray();
             }
@@ -115,6 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
                 writer.WriteArrayHeader(1);
                 writer.Write(messageId);
+                writer.Flush();
 
                 return memoryBufferWriter.ToArray();
             }
