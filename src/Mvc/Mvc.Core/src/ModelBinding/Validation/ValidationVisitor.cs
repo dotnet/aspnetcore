@@ -223,12 +223,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            bool result;
+            try
+            {
+                result = VisitImplementation(ref metadata, ref key, model);
+            }
+            finally
+            {
+                _currentPath.Pop(model);
+            }
+            return result;
+        }
+
+        private bool VisitImplementation(ref ModelMetadata metadata, ref string key, object model)
+        {
             if (MaxValidationDepth != null && _currentPath.Count > MaxValidationDepth)
             {
                 // Non cyclic but too deep an object graph.
-
-                // Pop the current model to make ValidationStack.Dispose happy
-                _currentPath.Pop(model);
 
                 string message;
                 switch (metadata.MetadataKind)
@@ -258,14 +269,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             if (ModelState.HasReachedMaxErrors)
             {
                 SuppressValidation(key);
-                _currentPath.Pop(model);
                 return false;
             }
             else if (entry != null && entry.SuppressValidation)
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
-                _currentPath.Pop(model);
                 return true;
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
@@ -283,7 +292,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                 }
 
-                _currentPath.Pop(model);
                 return true;
             }
 
@@ -402,7 +410,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             private readonly string _key;
             private readonly ModelMetadata _metadata;
             private readonly object _model;
-            private readonly object _newModel;
             private readonly IValidationStrategy _strategy;
 
             public static StateManager Recurse(
@@ -412,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 object model,
                 IValidationStrategy strategy)
             {
-                var recursifier = new StateManager(visitor, model);
+                var recursifier = new StateManager(visitor);
 
                 visitor.Container = visitor.Model;
                 visitor.Key = key;
@@ -423,10 +430,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return recursifier;
             }
 
-            public StateManager(ValidationVisitor visitor, object newModel)
+            public StateManager(ValidationVisitor visitor)
             {
                 _visitor = visitor;
-                _newModel = newModel;
 
                 _container = _visitor.Container;
                 _key = _visitor.Key;
@@ -442,8 +448,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor.Metadata = _metadata;
                 _visitor.Model = _model;
                 _visitor.Strategy = _strategy;
-
-                _visitor._currentPath.Pop(_newModel);
             }
         }
     }
