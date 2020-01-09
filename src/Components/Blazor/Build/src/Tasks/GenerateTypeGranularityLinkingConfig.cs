@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
 
         public override bool Execute()
         {
-            var linkerElement = new XElement("linker");
-            linkerElement.Add(new XComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY "));
+            var linkerElement = new XElement("linker",
+                new XComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY "));
 
             foreach (var assembly in Assemblies)
             {
