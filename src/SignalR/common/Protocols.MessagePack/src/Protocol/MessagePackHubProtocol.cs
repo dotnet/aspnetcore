@@ -6,10 +6,11 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using MessagePack;
 using MessagePack.Formatters;
+using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             // with the provided resolvers
             if (options.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
             {
-                var resolver = new CombinedResolvers(options.FormatterResolvers);
+                var resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)options.FormatterResolvers);
                 _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
 
                 return;
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 // check if the user customized the resolvers
                 if (options.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
                 {
-                    var resolver = new CombinedResolvers(options.FormatterResolvers);
+                    var resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)options.FormatterResolvers);
                     _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
                     return;
                 }
@@ -682,8 +683,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             public static readonly IList<IFormatterResolver> Resolvers = new IFormatterResolver[]
             {
-                MessagePack.Resolvers.DynamicEnumAsStringResolver.Instance,
-                MessagePack.Resolvers.ContractlessStandardResolver.Instance,
+                DynamicEnumAsStringResolver.Instance,
+                ContractlessStandardResolver.Instance,
             };
 
             public IMessagePackFormatter<T> GetFormatter<T>()
@@ -706,31 +707,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         }
                     }
                 }
-            }
-        }
-
-        // Support for users making their own Formatter lists
-        internal class CombinedResolvers : IFormatterResolver
-        {
-            private readonly IList<IFormatterResolver> _resolvers;
-
-            public CombinedResolvers(IList<IFormatterResolver> resolvers)
-            {
-                _resolvers = resolvers;
-            }
-
-            public IMessagePackFormatter<T> GetFormatter<T>()
-            {
-                foreach (var resolver in _resolvers)
-                {
-                    var formatter = resolver.GetFormatter<T>();
-                    if (formatter != null)
-                    {
-                        return formatter;
-                    }
-                }
-
-                return null;
             }
         }
     }
