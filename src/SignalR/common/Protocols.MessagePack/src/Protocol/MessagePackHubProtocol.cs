@@ -102,20 +102,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return true;
         }
 
-        private static ArraySegment<byte> GetArraySegment(in ReadOnlySequence<byte> input)
-        {
-            if (input.IsSingleSegment)
-            {
-                var isArray = MemoryMarshal.TryGetArray(input.First, out var arraySegment);
-                // This will never be false unless we started using un-managed buffers
-                Debug.Assert(isArray);
-                return arraySegment;
-            }
-
-            // Should be rare
-            return new ArraySegment<byte>(input.ToArray());
-        }
-
         private static HubMessage ParseMessage(ref MessagePackReader reader, IInvocationBinder binder, MessagePackSerializerOptions msgPackSerializerOptions)
         {
             var itemCount = reader.ReadArrayHeader();
