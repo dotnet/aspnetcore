@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _remainingRequestHeadersBytesAllowed;
 
         public Http1Connection(HttpConnectionContext context)
-            : base(context)
+            : base(context, isHttp1: true)
         {
             _context = context;
             _parser = ServiceContext.HttpParser;

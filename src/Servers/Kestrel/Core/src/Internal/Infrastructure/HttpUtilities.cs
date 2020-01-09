@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return asciiString;
         }
 
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, bool useLatin1)
         {
             if (span.IsEmpty)
             {
@@ -152,16 +152,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         throw new InvalidOperationException();
                     }
 
-                    try
+                    if (useLatin1)
                     {
-                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                        StringUtilities.GetLatin1String(buffer, output, span.Length);
                     }
-                    catch (DecoderFallbackException)
+                    else
                     {
-                        throw new InvalidOperationException();
+                        try
+                        {
+                            resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                        }
+                        catch (DecoderFallbackException)
+                        {
+                            throw new InvalidOperationException();
+                        }
                     }
                 }
             }
+
             return resultString;
         }
 

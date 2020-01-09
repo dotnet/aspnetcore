@@ -72,12 +72,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
-        public HttpProtocol(HttpConnectionContext context)
+        private readonly bool _useLatin1;
+
+        public HttpProtocol(HttpConnectionContext context, bool isHttp1)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
-            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
+            _useLatin1 = isHttp1 && ServerOptions.Latin1RequestHeaders;
+
+            HttpRequestHeaders = new HttpRequestHeaders(
+                reuseHeaderValues: !ServerOptions.DisableStringReuse,
+                useLatin1: _useLatin1);
+
             HttpResponseControl = this;
         }
 
@@ -513,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters(_useLatin1);
             RequestTrailers.Append(key, valueStr);
         }
 
