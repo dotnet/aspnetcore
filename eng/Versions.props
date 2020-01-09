@@ -22,6 +22,7 @@
     <!-- Blazor Client packages will not RTM with 3.1 -->
     <BlazorClientPreReleasePreviewNumber>4</BlazorClientPreReleasePreviewNumber>
     <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
+    <AzureSDKPreReleaseVersionLabel>preview1</AzureSDKPreReleaseVersionLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
     <!-- The following property may need to be updated if ingesting new versions of Extensions.Refs package. The package override version is used to create PackageOverrides.txt in the targeting pack. -->
     <MicrosoftInternalExtensionsRefsPackageOverrideVersion>3.1.0</MicrosoftInternalExtensionsRefsPackageOverrideVersion>

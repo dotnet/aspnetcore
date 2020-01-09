@@ -9,6 +9,8 @@
     <IsShippingPackage>true</IsShippingPackage>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <HasReferenceAssembly>false</HasReferenceAssembly>
+    <PreReleaseVersionLabel>$(AzureSDKPreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind />
   </PropertyGroup>
 
   <ItemGroup>
