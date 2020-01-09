@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        // Regression test for https://github.com/aspnet/AspNetCore/issues/11315
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/11315
         [Fact]
         [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public async Task BuildIncrementalism_CausingRecompilation_WhenApplicationPartAttributeIsGenerated()
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/13303")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/13303")]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#", additionalProjects: "ClassLibrary")]
         public async Task Build_ProjectWithDependencyThatReferencesMvc_AddsAttributeToNonCSharpProjects()
         {

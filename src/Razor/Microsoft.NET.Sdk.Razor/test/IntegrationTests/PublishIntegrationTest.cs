@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/13303")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/13303")]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
         public async Task Publish_SimpleMvcFSharp_NoopsWithoutFailing()
         {

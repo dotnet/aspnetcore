@@ -516,7 +516,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    Temporarary workaround for https://github.com/aspnet/AspNetCore/issues/6859. This can be removed after a VS insertion with a newer copy of the DesignTime targets.
+    Temporarary workaround for https://github.com/dotnet/aspnetcore/issues/6859. This can be removed after a VS insertion with a newer copy of the DesignTime targets.
   -->
   <ItemGroup>
     <Content Update="$(_RazorComponentInclude)">
