@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             try
             {
-                var writer = new MessagePackWriter(output);
+                var writer = new MessagePackWriter(memoryBufferWriter);
 
                 // Write message to a buffer so we can get its length
                 WriteMessageCore(message, ref writer);
