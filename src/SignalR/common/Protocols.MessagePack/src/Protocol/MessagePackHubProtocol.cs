@@ -357,13 +357,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <inheritdoc />
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
         {
-            var writer = new MessagePackWriter(output);
+            var memoryBufferWriter = MemoryBufferWriter.Get();
 
-            // Write message to a buffer so we can get its length
-            WriteMessageCore(message, ref writer);
+            try
+            {
+                var writer = new MessagePackWriter(output);
 
-            // REVIEW : I have no idea if this is needed or not, the previous code was using memryBufferWritter.CopyTo(stream)
-            //writer.Flush();
+                // Write message to a buffer so we can get its length
+                WriteMessageCore(message, ref writer);
+
+                // Write length then message to output
+                BinaryMessageFormatter.WriteLengthPrefix(memoryBufferWriter.Length, output);
+                memoryBufferWriter.CopyTo(output);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
+            }
         }
 
         /// <inheritdoc />
