@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             writer.WriteArrayHeader(6);
 
-            writer.WriteInt16(HubProtocolConstants.StreamInvocationMessageType);
+            writer.Write(HubProtocolConstants.StreamInvocationMessageType);
             PackHeaders(message.Headers, ref writer);
             writer.Write(message.InvocationId);
             writer.Write(message.Target);
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private void WriteStreamingItemMessage(StreamItemMessage message, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(4);
-            writer.WriteInt16(HubProtocolConstants.StreamItemMessageType);
+            writer.Write(HubProtocolConstants.StreamItemMessageType);
             PackHeaders(message.Headers, ref writer);
             writer.Write(message.InvocationId);
             WriteArgument(message.Item, ref writer);
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(3);
-            writer.WriteInt16(HubProtocolConstants.CancelInvocationMessageType);
+            writer.Write(HubProtocolConstants.CancelInvocationMessageType);
             PackHeaders(message.Headers, ref writer);
             writer.Write(message.InvocationId);
         }
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private void WriteCloseMessage(CloseMessage message, ref MessagePackWriter writer)
         {
             writer.WriteArrayHeader(3);
-            writer.WriteInt16(HubProtocolConstants.CloseMessageType);
+            writer.Write(HubProtocolConstants.CloseMessageType);
             if (string.IsNullOrEmpty(message.Error))
             {
                 writer.WriteNil();
