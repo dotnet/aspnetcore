@@ -208,7 +208,7 @@
     <PropertyGroup>
       <_TypeGranularityLinkingConfig>$(BlazorIntermediateOutputPath)linker.typegranularityconfig.xml</_TypeGranularityLinkingConfig>
     </PropertyGroup>
-    <GenerateTypeGranularityLinkingConfig Assemblies="@(_BlazorAssemblyToLink)" OutputPath="$(_TypeGranularityLinkingConfig)" />
+    <GenerateTypeGranularityLinkingConfig Assemblies="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))" OutputPath="$(_TypeGranularityLinkingConfig)" />
     <ItemGroup>
       <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkingConfig)" />
     </ItemGroup>
