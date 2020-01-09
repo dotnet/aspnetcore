@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore
         public void PlatformManifestListsAllFiles()
         {
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
-            var expectedAssemblies = TestData.GetTargetingPackDependencies()
+            var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .Select(i =>
                 {
