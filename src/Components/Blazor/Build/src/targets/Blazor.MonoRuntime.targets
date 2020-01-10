@@ -82,6 +82,8 @@
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/linker.descriptor.xml -->
       <GeneratedBlazorLinkerDescriptor>$(BlazorIntermediateOutputPath)linker.descriptor.xml</GeneratedBlazorLinkerDescriptor>
 
+      <_TypeGranularityLinkerDescriptor>$(BlazorIntermediateOutputPath)linker.typegranularityconfig.xml</_TypeGranularityLinkerDescriptor>
+
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor/linker/ -->
       <BlazorIntermediateLinkerOutputPath>$(BlazorIntermediateOutputPath)linker/</BlazorIntermediateLinkerOutputPath>
 
@@ -159,12 +161,34 @@
   <Target
     Name="_ResolveBlazorOutputsWhenLinked"
     Condition="'$(BlazorLinkOnBuild)' == 'true'"
-    DependsOnTargets="_GenerateBlazorLinkerDescriptor;_LinkBlazorApplication">
+    DependsOnTargets="_PrepareBlazorLinkerInputs;_GenerateBlazorLinkerDescriptor;_GenerateTypeGranularLinkerDescriptor;_LinkBlazorApplication">
 
     <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
     <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
       <Output TaskParameter="Lines" ItemName="_BlazorResolvedAssembly"/>
     </ReadLinesFromFile>
+  </Target>
+
+  <Target Name="_PrepareBlazorLinkerInputs">
+    <ItemGroup>
+      <_BlazorRuntimeCopyLocalItems Include="@(RuntimeCopyLocalItems)" />
+
+      <!--
+        Any assembly from a package reference that starts with System. file name is allowed to be linked.
+        Assemblies from Microsoft.AspNetCore and Microsoft.Extensions, are also linked but with TypeGranularity.
+      -->
+      <_BlazorRuntimeCopyLocalItems IsLinkable="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('System.'))" />
+      <_BlazorRuntimeCopyLocalItems IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.'))" />
+      <_BlazorRuntimeCopyLocalItems IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))" />
+
+      <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
+      <_BlazorAssemblyToLink Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' == 'true'" />
+
+      <_BlazorLinkerRoot Include="@(IntermediateAssembly)" />
+      <_BlazorLinkerRoot Include="@(_BlazorUserRuntimeAssembly)" />
+      <_BlazorLinkerRoot Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' != 'true'" />
+    </ItemGroup>
+
   </Target>
 
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(BlazorTasksPath)" />
@@ -186,9 +210,22 @@
     </ItemGroup>
   </Target>
 
-  <UsingTask TaskName="BlazorILLink" AssemblyFile="$(BlazorTasksPath)" />
   <UsingTask TaskName="GenerateTypeGranularityLinkingConfig" AssemblyFile="$(BlazorTasksPath)" />
+  <Target Name="_GenerateTypeGranularLinkerDescriptor"
+          Inputs="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))"
+          Outputs="$(_TypeGranularityLinkerDescriptor)">
 
+    <GenerateTypeGranularityLinkingConfig
+      Assemblies="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))"
+      OutputPath="$(_TypeGranularityLinkerDescriptor)" />
+
+    <ItemGroup>
+      <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkerDescriptor)" />
+      <FileWrites Include="$(_TypeGranularityLinkerDescriptor)" />
+    </ItemGroup>
+  </Target>
+
+  <UsingTask TaskName="BlazorILLink" AssemblyFile="$(BlazorTasksPath)" />
   <Target
       Name="_LinkBlazorApplication"
       Inputs="$(ProjectAssetsFile);
@@ -196,22 +233,6 @@
               @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
       Outputs="$(_BlazorLinkerOutputCache)">
-
-    <ItemGroup>
-      <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)" />
-      <_BlazorDependencyAssembly IsLinkable="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('System.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.'))" />
-      <_BlazorDependencyAssembly IsLinkable="true" TypeGranularity="true" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))" />
-      <!-- Any assembly from a package reference that starts with System. file name is allowed to be linked -->
-      <_BlazorRuntimeCopyLocalItems Include="@(RuntimeCopyLocalItems)" IsLinkable="$([System.String]::Copy('%(FileName)').StartsWith('System.'))" />
-
-      <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
-      <_BlazorAssemblyToLink Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' == 'true'" />
-
-      <_BlazorLinkerRoot Include="@(IntermediateAssembly)" />
-      <_BlazorLinkerRoot Include="@(_BlazorUserRuntimeAssembly)" />
-      <_BlazorLinkerRoot Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' != 'true'" />
-    </ItemGroup>
 
     <PropertyGroup>
       <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
@@ -234,15 +255,6 @@
       <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
-    <PropertyGroup>
-      <_TypeGranularityLinkingConfig>$(BlazorIntermediateOutputPath)linker.typegranularityconfig.xml</_TypeGranularityLinkingConfig>
-    </PropertyGroup>
-    <GenerateTypeGranularityLinkingConfig Assemblies="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))" OutputPath="$(_TypeGranularityLinkingConfig)" />
-    <ItemGroup>
-      <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkingConfig)" />
-      <FileWrites Include="$(_TypeGranularityLinkingConfig)" />
-    </ItemGroup>
-    
     <BlazorILLink
         ILLinkPath="$(MonoLinkerPath)"
         AssemblyPaths="@(_BlazorAssemblyToLink)"
