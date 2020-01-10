@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -111,7 +112,15 @@ namespace Microsoft.AspNetCore.TestHost
 
                 foreach (var header in request.Headers)
                 {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
+                    // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
+                    if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    }
+                    else
+                    {
+                        req.Headers.Append(header.Key, header.Value.ToArray());
+                    }
                 }
 
                 if (!req.Host.HasValue)
