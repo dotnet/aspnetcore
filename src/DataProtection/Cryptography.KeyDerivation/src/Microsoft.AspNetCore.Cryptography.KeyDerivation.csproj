@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core utilities for key derivation.</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsShippingPackage>true</IsShippingPackage>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
