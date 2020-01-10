@@ -19,6 +19,8 @@ Building ASP.NET Core on Windows requires:
     PS> ./eng/scripts/InstallVisualStudio.ps1
     ```
 
+    However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
+    and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements.
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:
@@ -30,6 +32,7 @@ Building ASP.NET Core on Windows requires:
     PS> ./eng/scripts/InstallJdk.ps1
     ```
 
+    However, the build should find any JDK 11 or newer installation on the machine.
 * Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
 
 ### macOS/Linux
