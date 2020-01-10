@@ -90,7 +90,9 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                             new KeyValuePair<string, string>("key1", Guid.NewGuid().ToString()),
                             new KeyValuePair<string, string>("Facebook:AppId", Guid.NewGuid().ToString()),
                             new KeyValuePair<string, string>(@"key-@\/.~123!#$%^&*())-+==", @"key-@\/.~123!#$%^&*())-+=="),
-                            new KeyValuePair<string, string>("key2", string.Empty)
+                            new KeyValuePair<string, string>("key2", string.Empty),
+                            new KeyValuePair<string, string>("-oneDashedKey", "-oneDashedValue"),
+                            new KeyValuePair<string, string>("--twoDashedKey", "--twoDashedValue")
                         };
 
             var projectPath = _fixture.GetTempSecretProject();
