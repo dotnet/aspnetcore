@@ -130,12 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return asciiString;
         }
 
-        public static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
-        {
-            return GetAsciiOrUTF8StringNonNullCharacters(span, useLatin1: false);
-        }
-
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, bool useLatin1)
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -147,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             fixed (char* output = resultString)
             fixed (byte* buffer = span)
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
                 // in the string
                 if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
                 {
@@ -157,25 +152,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         throw new InvalidOperationException();
                     }
 
-                    if (useLatin1)
+                    try
                     {
-                        StringUtilities.GetLatin1String(buffer, output, span.Length);
+                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
                     }
-                    else
+                    catch (DecoderFallbackException)
                     {
-                        try
-                        {
-                            resultString = HeaderValueEncoding.GetString(buffer, span.Length);
-                        }
-                        catch (DecoderFallbackException)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        throw new InvalidOperationException();
                     }
                 }
             }
 
             return resultString;
+        }
+
+        public static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = span)
+            {
+                // This returns false if there are any null (0 byte) characters in the string.
+                if (!StringUtilities.TryGetLatin1String(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    throw new InvalidOperationException();
+                }
+            }
+
+            return resultString;
+        }
+
+        public static unsafe string GetRequestHeaderString(this Span<byte> span, bool useLatin1)
+        {
+            if (useLatin1)
+            {
+                return GetLatin1StringNonNullCharacters(span);
+            }
+            else
+            {
+                return GetAsciiOrUTF8StringNonNullCharacters(span);
+            }
         }
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)

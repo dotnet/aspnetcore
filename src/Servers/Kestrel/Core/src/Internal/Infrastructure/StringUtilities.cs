@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -17,6 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {
+            Debug.Assert(input != null);
+            Debug.Assert(output != null);
+
             // Calculate end position
             var end = input + count;
             // Start as valid
@@ -116,10 +118,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static unsafe void GetLatin1String(byte* input, char* output, int count)
+        public static unsafe bool TryGetLatin1String(byte* input, char* output, int count)
         {
+            Debug.Assert(input != null);
+            Debug.Assert(output != null);
+
             // Calculate end position
             var end = input + count;
+            // Start as valid
+            var isValid = true;
 
             do
             {
@@ -131,6 +138,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         // 64-bit: Loop longs by default
                         while (input <= end - sizeof(long))
                         {
+                            isValid &= CheckBytesNotNull(((long*)input)[0]);
+
                             output[0] = (char)input[0];
                             output[1] = (char)input[1];
                             output[2] = (char)input[2];
@@ -145,6 +154,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         }
                         if (input <= end - sizeof(int))
                         {
+                            isValid &= CheckBytesNotNull(((int*)input)[0]);
+
                             output[0] = (char)input[0];
                             output[1] = (char)input[1];
                             output[2] = (char)input[2];
@@ -159,6 +170,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         // 32-bit: Loop ints by default
                         while (input <= end - sizeof(int))
                         {
+                            isValid &= CheckBytesNotNull(((int*)input)[0]);
+
                             output[0] = (char)input[0];
                             output[1] = (char)input[1];
                             output[2] = (char)input[2];
@@ -170,6 +183,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     }
                     if (input <= end - sizeof(short))
                     {
+                        isValid &= CheckBytesNotNull(((short*)input)[0]);
+
                         output[0] = (char)input[0];
                         output[1] = (char)input[1];
 
@@ -178,16 +193,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     }
                     if (input < end)
                     {
+                        isValid &= CheckBytesNotNull(((sbyte*)input)[0]);
                         output[0] = (char)input[0];
                     }
 
-                    return;
+                    return isValid;
                 }
 
                 // do/while as entry condition already checked
                 do
                 {
                     var vector = Unsafe.AsRef<Vector<sbyte>>(input);
+                    isValid &= CheckBytesNotNull(vector);
                     Vector.Widen(
                         vector,
                         out Unsafe.AsRef<Vector<short>>(output),
@@ -200,6 +217,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Vector path done, loop back to do non-Vector
                 // If is a exact multiple of vector size, bail now
             } while (input < end);
+
+            return isValid;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -508,7 +527,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         // Validate: bytes != 0 && bytes <= 127
         //  Subtract 1 from all bytes to move 0 to high bits
         //  bitwise or with self to catch all > 127 bytes
-        //  mask off high bits and check if 0
+        //  mask off non high bits and check if 0
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
         private static bool CheckBytesInAsciiRange(long check)
@@ -531,5 +550,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private static bool CheckBytesInAsciiRange(sbyte check)
             => check > 0;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
+        private static bool CheckBytesNotNull(Vector<sbyte> check)
+        {
+            // Vectorized byte range check, signed byte != null
+            return !Vector.EqualsAny(check, Vector<sbyte>.Zero);
+        }
+
+        // Validate: bytes != 0
+        //  Subtract 1 from all bytes to move 0 to high bits
+        //  bitwise and with ~check so high bits are only set for bytes that were originally 0
+        //  mask off non high bits and check if 0
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
+        private static bool CheckBytesNotNull(long check)
+        {
+            const long HighBits = unchecked((long)0x8080808080808080L);
+            return ((check - 0x0101010101010101L) & ~check & HighBits) == 0;
+        }
+
+        private static bool CheckBytesNotNull(int check)
+        {
+            const int HighBits = unchecked((int)0x80808080);
+            return ((check - 0x01010101) & ~check & HighBits) == 0;
+        }
+
+        private static bool CheckBytesNotNull(short check)
+        {
+            const short HighBits = unchecked((short)0x8080);
+            return ((check - 0x0101) & ~check & HighBits) == 0;
+        }
+
+        private static bool CheckBytesNotNull(sbyte check)
+            => check != 0;
     }
 }

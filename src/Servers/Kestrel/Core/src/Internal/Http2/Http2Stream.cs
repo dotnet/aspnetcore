@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _completionLock = new object();
 
         public Http2Stream(Http2StreamContext context)
-            : base(context, isHttp1: false)
+            : base(context)
         {
             _context = context;
 
