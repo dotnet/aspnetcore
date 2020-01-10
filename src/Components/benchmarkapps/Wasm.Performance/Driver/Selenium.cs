@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -14,8 +16,9 @@ namespace Wasm.Performance.Driver
     class Selenium
     {
         static bool RunHeadlessBrowser = true;
+        static bool PoolForBrowserLogs = true;
 
-        private static async ValueTask<Uri> WaitForServerAsync(int port)
+        private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
         {
             var uri = new UriBuilder("http", "localhost", port, "/wd/hub/").Uri;
             var httpClient = new HttpClient
@@ -34,7 +37,7 @@ namespace Wasm.Performance.Driver
                 retries++;
                 try
                 {
-                    var response = (await httpClient.GetAsync("status")).EnsureSuccessStatusCode();
+                    var response = (await httpClient.GetAsync("status", cancellationToken)).EnsureSuccessStatusCode();
                     Console.WriteLine("Connected to Selenium");
                     return uri;
                 }
@@ -52,9 +55,9 @@ namespace Wasm.Performance.Driver
             throw new Exception($"Unable to connect to selenium-server at {uri}");
         }
 
-        public static async Task<RemoteWebDriver> CreateBrowser(int port)
+        public static async Task<RemoteWebDriver> CreateBrowser(int port, CancellationToken cancellationToken)
         {
-            var uri = await WaitForServerAsync(port);
+            var uri = await WaitForServerAsync(port, cancellationToken);
 
             var options = new ChromeOptions();
 
@@ -81,6 +84,25 @@ namespace Wasm.Performance.Driver
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+
+                    if (PoolForBrowserLogs)
+                    {
+                        // Run in background.
+                        var logs = new RemoteLogs(driver);
+                        _ = Task.Run(async () =>
+                        {
+                            while (!cancellationToken.IsCancellationRequested)
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(3));
+
+                                var consoleLogs = logs.GetLog(LogType.Browser);
+                                foreach (var entry in consoleLogs)
+                                {
+                                    Console.WriteLine($"[Browser Log]: {entry.Timestamp}: {entry.Message}");
+                                }
+                            }
+                        });
+                    }
 
                     return driver;
                 }

@@ -52,10 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 () => runAllButton.Displayed || Browser.FindElements(By.CssSelector(".benchmark-error")).Any(),
                 TimeSpan.FromSeconds(60));
 
-            var finishedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-idle"));
-            var failedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-error"));
-            Assert.NotEmpty(finishedBenchmarks);
-            Assert.Empty(failedBenchmarks);
+            Browser.DoesNotExist(By.CssSelector(".benchmark-error")); // no failures
+            Browser.Exists(By.CssSelector(".benchmark-idle")); // everything's done
         }
     }
 }

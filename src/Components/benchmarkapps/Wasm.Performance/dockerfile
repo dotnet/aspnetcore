@@ -11,7 +11,7 @@ RUN apt-get update \
     nodejs \
     git
 
-ARG gitBranch=prkrishn/blazor-benchmarking
+ARG gitBranch=blazor-wasm
 
 WORKDIR /src
 ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit

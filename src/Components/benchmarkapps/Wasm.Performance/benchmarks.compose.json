@@ -1,12 +1,17 @@
 {
-  "dependencies": [
-    "blazorwasmbenchmark"
-  ],
-  "services": {
+  "$schema": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.schema.json",
+  "scenarios": {
+    "blazorwasmbenchmark": {
+      "application": {
+        "job": "blazorwasmbenchmark"
+      }
+    }
+  },
+  "jobs": {
     "blazorwasmbenchmark": {
       "source": {
         "repository": "https://github.com/dotnet/AspNetCore.git",
-        "branchOrCommit": "prkrishn/blazor-benchmarking",
+        "branchOrCommit": "blazor-wasm",
         "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
       },
       "waitForExit": true,

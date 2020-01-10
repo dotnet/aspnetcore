@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -40,8 +39,10 @@ namespace Wasm.Performance.Driver
             // This write is required for the benchmarking infrastructure.
             Console.WriteLine("Application started.");
 
-            using var browser = await Selenium.CreateBrowser(seleniumPort);
+            var cancellationToken = new CancellationTokenSource(Timeout);
+            cancellationToken.Token.Register(() => benchmarkResult.TrySetException(new TimeoutException($"Timed out after {Timeout}")));
 
+            using var browser = await Selenium.CreateBrowser(seleniumPort, cancellationToken.Token);
             using var testApp = StartTestApp();
             using var benchmarkReceiver = StartBenchmarkResultReceiver();
 
@@ -53,9 +54,6 @@ namespace Wasm.Performance.Driver
             var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
             browser.Url = launchUrl;
             browser.Navigate();
-
-            var cancellationToken = new CancellationTokenSource(Timeout);
-            cancellationToken.Token.Register(() => benchmarkResult.TrySetException(new TimeoutException($"Timed out after {Timeout}")));
 
             var results = await benchmarkResult.Task;
             FormatAsBenchmarksOutput(results);
@@ -96,22 +94,43 @@ namespace Wasm.Performance.Driver
             output.Metadata.Add(new BenchmarkMetadata
             {
                 Source = "BlazorWasm",
-                Name = "Publish size (linked)",
-                ShortDescription = "Publish size - linked app (MB)",
-                LongDescription = "Publish size - linked app (MB)",
+                Name = "Publish size",
+                ShortDescription = "Publish size (KB)",
+                LongDescription = "Publish size (KB)",
                 Format = "n2",
             });
 
             var testAssembly = typeof(TestApp.Startup).Assembly;
+            var testAssemblyLocation = new FileInfo(testAssembly.Location);
             var testApp = new DirectoryInfo(Path.Combine(
-                Path.GetDirectoryName(testAssembly.Location),
+                testAssemblyLocation.Directory.FullName,
                 testAssembly.GetName().Name));
 
             output.Measurements.Add(new BenchmarkMeasurement
             {
                 Timestamp = DateTime.UtcNow,
-                Name = "Publish size (linked)",
+                Name = "Publish size",
                 Value = GetDirectorySize(testApp) / 1024,
+            });
+
+            output.Metadata.Add(new BenchmarkMetadata
+            {
+                Source = "BlazorWasm",
+                Name = "Publish size (compressed)",
+                ShortDescription = "Publish size  compressed app (KB)",
+                LongDescription = "Publish size - compressed app (KB)",
+                Format = "n2",
+            });
+
+            var gzip = new FileInfo(Path.Combine(
+                testAssemblyLocation.Directory.FullName,
+                $"{testAssembly.GetName().Name}.gzip"));
+
+            output.Measurements.Add(new BenchmarkMeasurement
+            {
+                Timestamp = DateTime.UtcNow,
+                Name = "Publish size (compressed)",
+                Value = (gzip.Exists ? gzip.Length : 0) / 1024,
             });
 
             Console.WriteLine("#StartJobStatistics");

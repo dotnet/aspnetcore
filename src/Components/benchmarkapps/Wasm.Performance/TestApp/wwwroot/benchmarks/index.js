@@ -1,7 +1,7 @@
 import { groups, BenchmarkEvent, onBenchmarkEvent } from './lib/minibench/minibench.js';
 import { HtmlUI } from './lib/minibench/minibench.ui.js';
-// import './appStartup.js';
-// import './renderList.js';
+import './appStartup.js';
+import './renderList.js';
 import './jsonHandling.js';
 
 new HtmlUI('E2E Performance', '#display');
@@ -21,6 +21,7 @@ if (location.href.indexOf('#automated') !== -1) {
           break;
         case BenchmarkEvent.benchmarkCompleted:
         case BenchmarkEvent.benchmarkError:
+          console.log(`Completed benchmark ${args.name}`);
           benchmarksResults.push(args);
           break;
         case BenchmarkEvent.runCompleted:

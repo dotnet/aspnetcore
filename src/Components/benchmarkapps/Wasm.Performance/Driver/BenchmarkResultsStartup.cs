@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -22,12 +23,13 @@ namespace Wasm.Performance.Driver
         {
             app.UseCors();
 
-            app.Run(async request =>
+            app.Run(async context =>
             {
-                var result = await JsonSerializer.DeserializeAsync<List<BenchmarkResult>>(request.Request.Body, new JsonSerializerOptions
+                var result = await JsonSerializer.DeserializeAsync<List<BenchmarkResult>>(context.Request.Body, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 });
+                await context.Response.WriteAsync("OK");
                 Program.SetBenchmarkResult(result);
             });
         }

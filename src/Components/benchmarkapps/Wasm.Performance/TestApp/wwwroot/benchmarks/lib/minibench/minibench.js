@@ -302,7 +302,7 @@ class Group extends EventEmitter {
 }
 
 const groups = [];
-let reportBenchmarkEvent;
+let reportBenchmarkEvent = () => {};
 
 function group(name, configure) {
     groups.push(new Group(name));
