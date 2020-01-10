@@ -211,6 +211,7 @@
     <GenerateTypeGranularityLinkingConfig Assemblies="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))" OutputPath="$(_TypeGranularityLinkingConfig)" />
     <ItemGroup>
       <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkingConfig)" />
+      <FileWrites Include="$(_TypeGranularityLinkingConfig)" />
     </ItemGroup>
     
     <BlazorILLink
