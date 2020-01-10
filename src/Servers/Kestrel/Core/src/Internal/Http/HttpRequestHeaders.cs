@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly bool _useLatin1;
         private long _previousBits = 0;
 
+        public HttpRequestHeaders(bool reuseHeaderValues = true)
+            : this(reuseHeaderValues, useLatin1: false)
+        {
+        }
+
         public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
         {
             _reuseHeaderValues = reuseHeaderValues;

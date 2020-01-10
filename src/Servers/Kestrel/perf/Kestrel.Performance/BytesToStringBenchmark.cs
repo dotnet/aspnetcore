@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (uint i = 0; i < Iterations; i++)
             {
-                HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(_utf8Bytes, useLatin1: false);
+                HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(_utf8Bytes);
             }
         }
 
