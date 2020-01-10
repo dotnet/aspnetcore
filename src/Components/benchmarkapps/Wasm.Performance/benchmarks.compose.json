@@ -1,15 +1,16 @@
 {
-    "dependencies": [
-        "blazorwasmbenchmark"
-    ],
-    "services": {
-        "blazorwasmbenchmark": {
-            "source": {
-                "repository": "https://github.com/aspnet/AspNetCore.git",
-                "branchOrCommit": "prkrishn/blazor-benchmarking",
-                "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
-            },
-            "waitForExit": true
-        }
+  "dependencies": [
+    "blazorwasmbenchmark"
+  ],
+  "services": {
+    "blazorwasmbenchmark": {
+      "source": {
+        "repository": "https://github.com/dotnet/AspNetCore.git",
+        "branchOrCommit": "prkrishn/blazor-benchmarking",
+        "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
+      },
+      "waitForExit": true,
+      "readyStateText": "Application started."
     }
+  }
 }

@@ -37,6 +37,9 @@ namespace Wasm.Performance.Driver
                 }
             }
 
+            // This write is required for the benchmarking infrastructure.
+            Console.WriteLine("Application started.");
+
             using var browser = await Selenium.CreateBrowser(seleniumPort);
 
             using var testApp = StartTestApp();
