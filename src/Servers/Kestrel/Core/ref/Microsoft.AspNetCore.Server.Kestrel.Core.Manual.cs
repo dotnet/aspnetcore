@@ -879,7 +879,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     internal sealed partial class HttpRequestHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
     {
-        public HttpRequestHeaders(bool reuseHeaderValues = true) { }
+        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false) { }
         public bool HasConnection { get { throw null; } }
         public bool HasTransferEncoding { get { throw null; } }
         public Microsoft.Extensions.Primitives.StringValues HeaderAccept { get { throw null; } set { } }
@@ -1614,7 +1614,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string Http2Version = "HTTP/2";
         public const string HttpsUriScheme = "https://";
         public const string HttpUriScheme = "http://";
-        public static string GetAsciiOrUTF8StringNonNullCharacters(this System.Span<byte> span) { throw null; }
         public static string GetAsciiStringEscaped(this System.Span<byte> span, int maxChars) { throw null; }
         public static string GetAsciiStringNonNullCharacters(this System.Span<byte> span) { throw null; }
         public static string GetHeaderName(this System.Span<byte> span) { throw null; }
@@ -1624,6 +1623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod GetKnownMethod(string value) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]internal unsafe static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion GetKnownVersion(byte* location, int length) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion knownVersion, out byte length) { throw null; }
+        public static string GetRequestHeaderStringNonNullCharacters(this System.Span<byte> span, bool useLatin1) { throw null; }
         public static bool IsHostHeaderValid(string hostText) { throw null; }
         public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { throw null; }
         public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme scheme) { throw null; }
@@ -1683,6 +1683,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, System.Span<byte> newValue) { throw null; }
         public static string ConcatAsHexSuffix(string str, char separator, uint number) { throw null; }
         public unsafe static bool TryGetAsciiString(byte* input, char* output, int count) { throw null; }
+        public unsafe static bool TryGetLatin1String(byte* input, char* output, int count) { throw null; }
     }
     internal partial class TimeoutControl : Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl
     {

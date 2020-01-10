@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetRequestHeaderString(ServerOptions.Latin1RequestHeaders);
+            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
             RequestTrailers.Append(key, valueStr);
         }
 
