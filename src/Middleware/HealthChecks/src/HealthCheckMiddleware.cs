@@ -85,41 +85,5 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 await _healthCheckOptions.ResponseWriter(httpContext, result);
             }
         }
-
-        private static IHealthCheck[] FilterHealthChecks(
-            IReadOnlyDictionary<string, IHealthCheck> checks,
-            ISet<string> names)
-        {
-            // If there are no filters then include all checks.
-            if (names.Count == 0)
-            {
-                return checks.Values.ToArray();
-            }
-
-            // Keep track of what we don't find so we can report errors.
-            var notFound = new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
-            var matches = new List<IHealthCheck>();
-
-            foreach (var kvp in checks)
-            {
-                if (!notFound.Remove(kvp.Key))
-                {
-                    // This check was excluded
-                    continue;
-                }
-
-                matches.Add(kvp.Value);
-            }
-
-            if (notFound.Count > 0)
-            {
-                var message =
-                    $"The following health checks were not found: '{string.Join(", ", notFound)}'. " +
-                    $"Registered health checks: '{string.Join(", ", checks.Keys)}'.";
-                throw new InvalidOperationException(message);
-            }
-
-            return matches.ToArray();
-        }
     }
 }

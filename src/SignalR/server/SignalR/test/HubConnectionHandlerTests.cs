@@ -1327,6 +1327,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public void CannotHaveGenericMethodOnHub()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+                var exception = Assert.Throws<NotSupportedException>(() => serviceProvider.GetService<HubConnectionHandler<GenericMethodHub>>());
+
+                Assert.Equal("Method 'GenericMethod' is a generic method which is not supported on a Hub.", exception.Message);
+            }
+        }
+
         [Theory]
         [MemberData(nameof(HubTypes))]
         public async Task BroadcastHubMethodSendsToAllClients(Type hubType)
@@ -2215,6 +2228,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 Assert.NotNull(context.Resource);
                 var resource = Assert.IsType<HubInvocationContext>(context.Resource);
+                Assert.Equal(typeof(MethodHub), resource.HubType);
                 Assert.Equal(nameof(MethodHub.MultiParamAuthMethod), resource.HubMethodName);
                 Assert.Equal(2, resource.HubMethodArguments?.Count);
                 Assert.Equal("Hello", resource.HubMethodArguments[0]);
@@ -3739,7 +3753,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // The usage of TypeNameHandling.All is a security risk.
                         // If you're implementing this in your own application instead use your own 'type' field and a custom JsonConverter
                         // or ensure you're restricting to only known types with a custom SerializationBinder like we are here.
-                        // See https://github.com/aspnet/AspNetCore/issues/11495#issuecomment-505047422
+                        // See https://github.com/dotnet/aspnetcore/issues/11495#issuecomment-505047422
                         TypeNameHandling = TypeNameHandling.All,
                         SerializationBinder = StreamingHub.DerivedParameterKnownTypesBinder.Instance
                     }

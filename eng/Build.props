@@ -50,11 +50,6 @@
                       " />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- For the Blazor WASM branch, only build a subset of projects -->
-    <ProjectToBuild>$(RepoRoot)src\Components\**\*.csproj;$(RepoRoot)src\ProjectTemplates\**\*.csproj</ProjectToBuild>
-  </PropertyGroup>
-
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects -->
     <When Condition="'$(ProjectToBuild)' != ''">

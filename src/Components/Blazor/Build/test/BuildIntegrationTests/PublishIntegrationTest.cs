@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
             // Verify static web assets from referenced projects are copied.
-            // Uncomment once https://github.com/aspnet/AspNetCore/issues/17426 is resolved.
+            // Uncomment once https://github.com/dotnet/aspnetcore/issues/17426 is resolved.
             // Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
             // Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = "netcoreapp5.0";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = "netcoreapp5.0";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
 
             Assert.BuildPassed(result);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
             // Verify static web assets from referenced projects are copied.
-            // Uncomment once https://github.com/aspnet/AspNetCore/issues/17426 is resolved.
+            // Uncomment once https://github.com/dotnet/aspnetcore/issues/17426 is resolved.
             // Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
             // Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
 

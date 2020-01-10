@@ -59,20 +59,16 @@ namespace System.IO.Pipelines
             AvailableMemory = arrayPoolBuffer;
         }
 
-        public void SetUnownedMemory(Memory<byte> memory)
-        {
-            AvailableMemory = memory;
-        }
-
         public void ResetMemory()
         {
             if (_memoryOwner is IMemoryOwner<byte> owner)
             {
                 owner.Dispose();
             }
-            else if (_memoryOwner is byte[] array)
+            else
             {
-                ArrayPool<byte>.Shared.Return(array);
+                byte[] poolArray = (byte[])_memoryOwner;
+                ArrayPool<byte>.Shared.Return(poolArray);
             }
 
             // Order of below field clears is significant as it clears in a sequential order

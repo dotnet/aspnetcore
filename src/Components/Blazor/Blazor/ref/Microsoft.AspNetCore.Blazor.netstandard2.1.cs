@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
     public sealed partial class WebAssemblyHostBuilderContext
     {
         public WebAssemblyHostBuilderContext(System.Collections.Generic.IDictionary<object, object> properties) { }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class WebAssemblyHostBuilderExtensions
     {

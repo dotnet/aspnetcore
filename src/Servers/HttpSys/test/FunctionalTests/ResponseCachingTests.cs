@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win2008R2, WindowsVersions.Win7, SkipReason = "Content type not required for caching on Win7 and Win2008R2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "Content type not required for caching on Win7.")]
         public async Task Caching_WithoutContentType_NotCached()
         {
             var requestCount = 1;

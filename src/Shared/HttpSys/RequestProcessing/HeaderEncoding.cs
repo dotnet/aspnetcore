@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
@@ -14,16 +15,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal static unsafe string GetString(byte* pBytes, int byteCount)
         {
-            // net451: return new string(pBytes, 0, byteCount, Encoding);
-
-            var charCount = Encoding.GetCharCount(pBytes, byteCount);
-            var chars = new char[charCount];
-            fixed (char* pChars = chars)
-            {
-                var count = Encoding.GetChars(pBytes, byteCount, pChars, charCount);
-                System.Diagnostics.Debug.Assert(count == charCount);
-            }
-            return new string(chars);
+            return Encoding.GetString(new ReadOnlySpan<byte>(pBytes, byteCount));
         }
 
         internal static byte[] GetBytes(string myString)

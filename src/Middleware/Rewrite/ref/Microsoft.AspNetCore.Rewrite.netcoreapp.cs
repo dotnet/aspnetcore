@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Rewrite
     public partial class RewriteContext
     {
         public RewriteContext() { }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Rewrite.RuleResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.Extensions.FileProviders.IFileProvider StaticFileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Rewrite.RuleResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.Extensions.FileProviders.IFileProvider StaticFileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RewriteMiddleware
     {
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Rewrite
     public partial class RewriteOptions
     {
         public RewriteOptions() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule> Rules { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.FileProviders.IFileProvider StaticFileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.IRule> Rules { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.FileProviders.IFileProvider StaticFileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class RewriteOptionsExtensions
     {
@@ -54,6 +54,12 @@ namespace Microsoft.AspNetCore.Rewrite
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttps(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttps(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, int? sslPort) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttpsPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }

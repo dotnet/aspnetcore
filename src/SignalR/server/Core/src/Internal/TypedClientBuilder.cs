@@ -20,6 +20,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
 
+        private static readonly ConstructorInfo ObjectConstructor = typeof(object).GetConstructors().Single();
+
+        private static readonly Type[] ParameterTypes = new Type[] { typeof(IClientProxy) };
+
         public static T Build(IClientProxy proxy)
         {
             return _builder.Value(proxy);
@@ -40,20 +44,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(ClientModuleName);
             var clientType = GenerateInterfaceImplementation(moduleBuilder);
 
-            return proxy => (T)Activator.CreateInstance(clientType, proxy);
+            var factoryMethod = clientType.GetMethod(nameof(Build), BindingFlags.Public | BindingFlags.Static);
+            return (Func<IClientProxy, T>)factoryMethod.CreateDelegate(typeof(Func<IClientProxy, T>));
         }
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
         {
-            var type = moduleBuilder.DefineType(
-                ClientModuleName + "." + typeof(T).Name + "Impl",
-                TypeAttributes.Public,
-                typeof(Object),
-                new[] { typeof(T) });
+            var name = ClientModuleName + "." + typeof(T).Name + "Impl";
 
-            var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private);
+            var type = moduleBuilder.DefineType(name, TypeAttributes.Public, typeof(object), new[] { typeof(T) });
 
-            BuildConstructor(type, proxyField);
+            var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+            var ctor = BuildConstructor(type, proxyField);
+
+            // Because a constructor doesn't return anything, it can't be wrapped in a
+            // delegate directly, so we emit a factory method that just takes the IClientProxy,
+            // invokes the constructor (using newobj) and returns the new instance of type T.
+            BuildFactoryMethod(type, ctor);
 
             foreach (var method in GetAllInterfaceMethods(typeof(T)))
             {
@@ -79,27 +87,23 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static void BuildConstructor(TypeBuilder type, FieldInfo proxyField)
+        private static ConstructorInfo BuildConstructor(TypeBuilder type, FieldInfo proxyField)
         {
-            var method = type.DefineMethod(".ctor", System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.HideBySig);
+            var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, ParameterTypes);
 
-            var ctor = typeof(object).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null, new Type[] { }, null);
-
-            method.SetReturnType(typeof(void));
-            method.SetParameters(typeof(IClientProxy));
-
-            var generator = method.GetILGenerator();
+            var generator = ctor.GetILGenerator();
 
             // Call object constructor
             generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Call, ctor);
+            generator.Emit(OpCodes.Call, ObjectConstructor);
 
             // Assign constructor argument to the proxyField
             generator.Emit(OpCodes.Ldarg_0); // type
             generator.Emit(OpCodes.Ldarg_1); // type proxyfield
             generator.Emit(OpCodes.Stfld, proxyField); // type.proxyField = proxyField
             generator.Emit(OpCodes.Ret);
+
+            return ctor;
         }
 
         private static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, FieldInfo proxyField)
@@ -127,9 +131,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var genericTypeNames =
                 paramTypes.Where(p => p.IsGenericParameter).Select(p => p.Name).Distinct().ToArray();
 
-            if (genericTypeNames.Any())
+            if (genericTypeNames.Length > 0)
             {
                 methodBuilder.DefineGenericParameters(genericTypeNames);
+            }
+
+            // Check to see if the last parameter of the method is a CancellationToken
+            bool hasCancellationToken = paramTypes.LastOrDefault() == typeof(CancellationToken);
+            if (hasCancellationToken)
+            {
+                // remove CancellationToken from input paramTypes
+                paramTypes = paramTypes.Take(paramTypes.Length - 1).ToArray();
             }
 
             var generator = methodBuilder.GetILGenerator();
@@ -145,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldstr, interfaceMethodInfo.Name);
 
             // Create an new object array to hold all the parameters to this method
-            generator.Emit(OpCodes.Ldc_I4, parameters.Length); // Stack: 
+            generator.Emit(OpCodes.Ldc_I4, paramTypes.Length); // Stack: 
             generator.Emit(OpCodes.Newarr, typeof(object)); // allocate object array
             generator.Emit(OpCodes.Stloc_0);
 
@@ -162,13 +174,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // Load parameter array on to the stack.
             generator.Emit(OpCodes.Ldloc_0);
 
-            // Get 'CancellationToken.None' and put it on the stack, since we don't support CancellationToken right now
-            generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+            if (hasCancellationToken)
+            {
+                // Get CancellationToken from input argument and put it on the stack
+                generator.Emit(OpCodes.Ldarg, paramTypes.Length + 1);
+            }
+            else
+            {
+                // Get 'CancellationToken.None' and put it on the stack, for when method does not have CancellationToken
+                generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+            }
 
             // Send!
             generator.Emit(OpCodes.Callvirt, invokeMethod);
 
             generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'
+        }
+
+        private static void BuildFactoryMethod(TypeBuilder type, ConstructorInfo ctor)
+        {
+            var method = type.DefineMethod(nameof(Build), MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T), ParameterTypes);
+
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0); // Load the IClientProxy argument onto the stack
+            generator.Emit(OpCodes.Newobj, ctor); // Call the generated constructor with the proxy
+            generator.Emit(OpCodes.Ret); // Return the typed client
         }
 
         private static void VerifyInterface(Type interfaceType)
@@ -190,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             foreach (var method in interfaceType.GetMethods())
             {
-                VerifyMethod(interfaceType, method);
+                VerifyMethod(method);
             }
 
             foreach (var parent in interfaceType.GetInterfaces())
@@ -199,7 +230,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static void VerifyMethod(Type interfaceType, MethodInfo interfaceMethod)
+        private static void VerifyMethod(MethodInfo interfaceMethod)
         {
             if (interfaceMethod.ReturnType != typeof(Task))
             {

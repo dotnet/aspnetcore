@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
             Assert.Equal(newGuid, targetObject.GuidValue);
         }
 
-        // https://github.com/aspnet/AspNetCore/issues/3634
+        // https://github.com/dotnet/aspnetcore/issues/3634
         [Fact]
         public void Regression_AspNetCore3634()
         {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
             var target = new Regression_AspNetCore3634_Object();
             target.Object = @object;
 
-            // Act 
+            // Act
             var ex = Assert.Throws<JsonPatchException>(() => document.ApplyTo(target));
 
             // Assert

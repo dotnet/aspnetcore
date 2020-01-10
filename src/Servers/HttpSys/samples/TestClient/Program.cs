@@ -11,20 +11,45 @@ namespace TestClient
     public class Program
     {
         private const string Address = 
-            // "http://localhost:5000/public/1kb.txt";
-            "https://localhost:9090/public/1kb.txt";
+            "http://localhost:5000/public/1kb.txt";
+            // "https://localhost:9090/public/1kb.txt";
 
         public static void Main(string[] args)
         {
-            WebRequestHandler handler = new WebRequestHandler();
-            handler.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
+            Console.WriteLine("Ready");
+            Console.ReadKey();
+
+            var handler = new HttpClientHandler();
+            handler.MaxConnectionsPerServer = 500;
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             // handler.UseDefaultCredentials = true;
-            handler.Credentials = new NetworkCredential(@"redmond\chrross", "passwird");
             HttpClient client = new HttpClient(handler);
 
-            /*
+            RunParallelRequests(client);
+
+            // RunManualRequests(client);
+
+            // RunWebSocketClient().Wait();
+
+            Console.WriteLine("Done");
+            // Console.ReadKey();
+        }
+
+        private static void RunManualRequests(HttpClient client)
+        {
+            while (true)
+            {
+                Console.WriteLine("Press any key to send request");
+                Console.ReadKey();
+                var result = client.GetAsync(Address).Result;
+                Console.WriteLine(result);
+            }
+        }
+
+        private static void RunParallelRequests(HttpClient client)
+        {
             int completionCount = 0;
-            int iterations = 30000;
+            int iterations = 100000;
             for (int i = 0; i < iterations; i++)
             {
                 client.GetAsync(Address)
@@ -34,19 +59,7 @@ namespace TestClient
             while (completionCount < iterations)
             {
                 Thread.Sleep(10);
-            }*/
-
-            while (true)
-            {
-                Console.WriteLine("Press any key to send request");
-                Console.ReadKey();
-                var result = client.GetAsync(Address).Result;
-                Console.WriteLine(result);
             }
-
-            // RunWebSocketClient().Wait();
-            // Console.WriteLine("Done");
-            // Console.ReadKey();
         }
 
         public static async Task RunWebSocketClient()

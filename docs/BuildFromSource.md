@@ -1,11 +1,11 @@
 Build ASP.NET Core from Source
 ==============================
 
-Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
+Building ASP.NET Core from source allows you to tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
+See https://github.com/dotnet/aspnetcore/labels/area-infrastructure for known issues and to track ongoing work.
 
-## Install pre-requistes
+## Install pre-requisites
 
 ### Windows
 
@@ -44,11 +44,11 @@ Building ASP.NET Core on macOS or Linux requires:
 
 ## Clone the source code
 
-ASP.NET Core uses git submodules to include source from a few other projects.
+ASP.NET Core uses git submodules to include the source from a few other projects.
 
 For a new copy of the project, run:
 ```
-git clone --recursive https://github.com/aspnet/AspNetCore
+git clone --recursive https://github.com/dotnet/aspnetcore
 ```
 
 To update an existing copy, run:
@@ -64,19 +64,19 @@ Before opening our .sln files in Visual Studio or VS Code, you need to perform t
    ```
    .\restore.cmd
    ```
-   This will download required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
+   This will download the required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
 
    > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
 
-2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets required environment variables.
+2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets the required environment variables.
 
 ### Solution files
 
 We don't have a single .sln file for all of ASP.NET Core because Visual Studio doesn't currently handle projects of this scale.
 Instead, we have many .sln files which include a sub-set of projects. These principles guide how we create and manage .slns:
 
-1. Solution files are not used by CI or command line build scripts. They are for meant for use by developers only.
+1. Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
 2. Solution files group together projects which are frequently edited at the same time.
 3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .sln file.
 
@@ -91,7 +91,7 @@ Opening solution files and building may produce an error code CS0006 with a mess
 The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project. In some cases, it is sometimes the intended behavior of the .sln which has been crafted to only include a subset of projects.
 
 **You can fix this in one of two ways**
-1. Build the project on command line. In most cases, running `build.cmd` on command line solve this problem.
+1. Build the project on command line. In most cases, running `build.cmd` on command line solves this problem.
 2. Update the solution to include the missing project. You can either do this one by one using `dotnet sln`
    ```
    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
@@ -139,7 +139,7 @@ On macOS/Linux:
 ./build.sh
 ```
 
-By default, all of the C# projects are built. Some C# projects requires NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify /p:BuildNodeJs=false on the command line.
+By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify /p:BuildNodeJs=false on the command line.
 
 ### Using `dotnet` on command line in this repo
 

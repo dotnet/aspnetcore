@@ -77,12 +77,39 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         [Fact]
+        public void FieldIdentifier_ForModelWithoutField_ProduceSameHashCodesAndEquality()
+        {
+            // Arrange
+            var model = new object();
+            var fieldIdentifier1 = new FieldIdentifier(model, fieldName: string.Empty);
+            var fieldIdentifier2 = new FieldIdentifier(model, fieldName: string.Empty);
+
+            // Act/Assert
+            Assert.Equal(fieldIdentifier1.GetHashCode(), fieldIdentifier2.GetHashCode());
+            Assert.True(fieldIdentifier1.Equals(fieldIdentifier2));
+        }
+
+        [Fact]
         public void SameContentsProduceSameHashCodesAndEquality()
         {
             // Arrange
             var model = new object();
             var fieldIdentifier1 = new FieldIdentifier(model, "field");
             var fieldIdentifier2 = new FieldIdentifier(model, "field");
+
+            // Act/Assert
+            Assert.Equal(fieldIdentifier1.GetHashCode(), fieldIdentifier2.GetHashCode());
+            Assert.True(fieldIdentifier1.Equals(fieldIdentifier2));
+        }
+
+        [Fact]
+        public void SameContents_WithOverridenEqualsAndGetHashCode_ProduceSameHashCodesAndEquality()
+        {
+            // Arrange
+            var model = new EquatableModel();
+            var fieldIdentifier1 = new FieldIdentifier(model, nameof(EquatableModel.Property));
+            model.Property = "changed value"; // To show it makes no difference if the overridden `GetHashCode` result changes
+            var fieldIdentifier2 = new FieldIdentifier(model, nameof(EquatableModel.Property));
 
             // Act/Assert
             Assert.Equal(fieldIdentifier1.GetHashCode(), fieldIdentifier2.GetHashCode());
@@ -193,6 +220,21 @@ namespace Microsoft.AspNetCore.Components.Forms
         class ParentModel
         {
             public TestModel Child { get; set; }
+        }
+
+        class EquatableModel : IEquatable<EquatableModel>
+        {
+            public string Property { get; set; } = "";
+
+            public bool Equals(EquatableModel other)
+            {
+                return string.Equals(Property, other?.Property, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode()
+            {
+                return StringComparer.Ordinal.GetHashCode(Property);
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     {
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
-        private readonly string _npmScriptName;
+        private readonly string _scriptName;
 
         /// <summary>
         /// Constructs an instance of <see cref="AngularCliBuilder"/>.
@@ -35,12 +35,13 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new ArgumentException("Cannot be null or empty.", nameof(npmScript));
             }
 
-            _npmScriptName = npmScript;
+            _scriptName = npmScript;
         }
 
         /// <inheritdoc />
         public async Task Build(ISpaBuilder spaBuilder)
         {
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
@@ -50,32 +51,33 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var logger = LoggerFinder.GetOrCreateLogger(
                 spaBuilder.ApplicationBuilder,
                 nameof(AngularCliBuilder));
-            var npmScriptRunner = new NpmScriptRunner(
+            var scriptRunner = new NodeScriptRunner(
                 sourcePath,
-                _npmScriptName,
+                _scriptName,
                 "--watch",
-                null);
-            npmScriptRunner.AttachToLogger(logger);
+                null,
+                pkgManagerCommand);
+            scriptRunner.AttachToLogger(logger);
 
-            using (var stdOutReader = new EventedStreamStringReader(npmScriptRunner.StdOut))
-            using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
+            using (var stdOutReader = new EventedStreamStringReader(scriptRunner.StdOut))
+            using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
             {
                 try
                 {
-                    await npmScriptRunner.StdOut.WaitForMatch(
+                    await scriptRunner.StdOut.WaitForMatch(
                         new Regex("Date", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{_npmScriptName}' exited without indicating success.\n" +
+                        $"The {pkgManagerCommand} script '{_scriptName}' exited without indicating success.\n" +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }
                 catch (OperationCanceledException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{_npmScriptName}' timed out without indicating success. " +
+                        $"The {pkgManagerCommand} script '{_scriptName}' timed out without indicating success. " +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }

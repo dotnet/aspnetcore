@@ -119,7 +119,7 @@ namespace System.Buffers
                         MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(_totalBlocks - _blocks.Count, _totalBlocks, _blocks.ToArray());
                     }
 
-                    if (_blockAccessExceptions.Any())
+                    if (_blockAccessExceptions.Count > 0)
                     {
                         throw CreateAccessExceptions();
                     }
@@ -136,7 +136,7 @@ namespace System.Buffers
 
         private void SetAllBlocksReturned()
         {
-            if (_blockAccessExceptions.Any())
+            if (_blockAccessExceptions.Count > 0)
             {
                 _allBlocksReturned.SetException(CreateAccessExceptions());
             }

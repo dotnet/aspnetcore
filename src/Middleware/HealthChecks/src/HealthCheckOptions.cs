@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         private static IDictionary<HealthStatus, int> ValidateStatusCodesMapping(IDictionary<HealthStatus,int> mapping)
         {
             var missingHealthStatus = ((HealthStatus[])Enum.GetValues(typeof(HealthStatus))).Except(mapping.Keys).ToList();
-            if (missingHealthStatus.Any())
+            if (missingHealthStatus.Count > 0)
             {
                 var missing = string.Join(", ", missingHealthStatus.Select(status => $"{nameof(HealthStatus)}.{status}"));
                 var message =

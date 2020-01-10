@@ -6,14 +6,13 @@
 
 ### Add Commands
 
-<!-- TODO: Restore after https://github.com/aspnet/AspNetCore/issues/12738
+<!-- TODO: Restore after https://github.com/dotnet/aspnetcore/issues/12738
  #### Add Project
 
 ##### Options
 
 | Short option | Long option | Description | Example |
 |-------|------|-------|---------|
-| -v|--verbose | Show verbose output. |dotnet openapi add project *-v* ../Ref/ProjRef.csproj |
 | -p|--project | The project to operate on. |dotnet openapi add project *--project .\Ref.csproj* ../Ref/ProjRef.csproj |
 
 ##### Arguments
@@ -28,7 +27,6 @@
 
 | Short option| Long option| Description | Example |
 |-------|------|-------|---------|
-| -v|--verbose | Show verbose output. |dotnet openapi add file *-v* .\OpenAPI.json |
 | -p|--updateProject | The project to operate on. |dotnet openapi add file *--updateProject .\Ref.csproj* .\OpenAPI.json |
 
 ##### Arguments
@@ -43,7 +41,6 @@
 
 | Short option| Long option| Description | Example |
 |-------|------|-------------|---------|
-| -v|--verbose | Show verbose output. |dotnet openapi add url *-v* <http://contoso.com/openapi.json> |
 | -p|--updateProject | The project to operate on. |dotnet openapi add url *--updateProject .\Ref.csproj* <http://contoso.com/openapi.json> |
 | -o|--output-file | Where to place the local copy of the OpenAPI file. |dotnet openapi add url <https://contoso.com/openapi.json> *--output-file myclient.json* |
 
@@ -59,7 +56,6 @@
 
 | Short option| Long option| Description| Example |
 |-------|------|------------|---------|
-| -v|--verbose | Show verbose output. |dotnet openapi remove *-v*|
 | -p|--updateProject | The project to operate on. |dotnet openapi remove *--updateProject .\Ref.csproj* .\OpenAPI.json |
 
 #### Arguments
@@ -74,7 +70,6 @@
 
 | Short option| Long option| Description | Example |
 |-------|------|-------------|---------|
-| -v|--verbose | Show verbose output. | dotnet openapi refresh *-v* <https://contoso.com/openapi.json> |
 | -p|--updateProject | The project to operate on. | dotnet openapi refresh *--updateProject .\Ref.csproj* <https://contoso.com/openapi.json> |
 
 #### Arguments

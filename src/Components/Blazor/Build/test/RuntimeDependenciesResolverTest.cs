@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
 {
     public class RuntimeDependenciesResolverTest
     {
-        [ConditionalFact(Skip = " https://github.com/aspnet/AspNetCore/issues/12059")]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
+        [ConditionalFact(Skip = " https://github.com/dotnet/aspnetcore/issues/12059")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange

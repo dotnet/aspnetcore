@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         public FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo fileInfo, string basePath, string filePath, string root) { }
         public FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind) { }
-        public override string BasePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override string BasePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override bool Exists { get { throw null; } }
-        public Microsoft.Extensions.FileProviders.IFileInfo FileInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override string FileKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override string FilePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.FileProviders.IFileInfo FileInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public override string FileKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public override string FilePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string PhysicalPath { get { throw null; } }
         public override string RelativePhysicalPath { get { throw null; } }
         public override System.IO.Stream Read() { throw null; }
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     public partial class MvcRazorRuntimeCompilationOptions
     {
         public MvcRazorRuntimeCompilationOptions() { }
-        public System.Collections.Generic.IList<string> AdditionalReferencePaths { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider> FileProviders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<string> AdditionalReferencePaths { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider> FileProviders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

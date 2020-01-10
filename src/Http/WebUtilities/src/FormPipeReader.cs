@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         // Used for UTF8/ASCII (precalculated for fast path)
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 

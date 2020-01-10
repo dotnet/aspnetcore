@@ -7,10 +7,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
-    <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
-    <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
-
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
 
     <!-- Run on platforms where we support Selenium -->

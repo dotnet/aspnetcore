@@ -23,26 +23,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
-        private readonly IConnectionListenerFactory _transportFactory;
+        private readonly List<IConnectionListenerFactory> _transportFactories;
 
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public KestrelServer(IOptions<KestrelServerOptions> options, IConnectionListenerFactory transportFactory, ILoggerFactory loggerFactory)
-            : this(transportFactory, CreateServiceContext(options, loggerFactory))
+        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
+            : this(transportFactories, CreateServiceContext(options, loggerFactory))
         {
         }
 
         // For testing
-        internal KestrelServer(IConnectionListenerFactory transportFactory, ServiceContext serviceContext)
+        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, ServiceContext serviceContext)
         {
-            if (transportFactory == null)
+            if (transportFactories == null)
             {
-                throw new ArgumentNullException(nameof(transportFactory));
+                throw new ArgumentNullException(nameof(transportFactories));
             }
 
-            _transportFactory = transportFactory;
+            _transportFactories = transportFactories.ToList();
+
+            if (_transportFactories.Count == 0)
+            {
+                throw new InvalidOperationException(CoreStrings.TransportNotFound);
+            }
+
             ServiceContext = serviceContext;
 
             Features = new FeatureCollection();
@@ -135,7 +141,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
 
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = await _transportFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
+
+                    IConnectionListenerFactory factory = null;
+                    if (options.Protocols >= HttpProtocols.Http3)
+                    {
+                        foreach (var transportFactory in _transportFactories)
+                        {
+                            if (transportFactory is IMultiplexedConnectionListenerFactory)
+                            {
+                                // Don't break early. Always use the last registered factory.
+                                factory = transportFactory;
+                            }
+                        }
+
+                        if (factory == null)
+                        {
+                            throw new InvalidOperationException(CoreStrings.QuicTransportNotFound);
+                        }
+                    }
+                    else
+                    {
+                        factory = _transportFactories.Last();
+                    }
+
+                    var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
 
                     // Update the endpoint
                     options.EndPoint = transport.EndPoint;

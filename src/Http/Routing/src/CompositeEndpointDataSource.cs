@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Routing
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
                         sb.Append(", Defaults: new { ");
-                        sb.Append(string.Join(", ", FormatValues(routeEndpoint.RoutePattern.Defaults)));
+                        sb.AppendJoin(", ", FormatValues(routeEndpoint.RoutePattern.Defaults));
                         sb.Append(" }");
                         var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                         sb.Append(", Route Name: ");
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Routing
                         if (routeValues.Count > 0)
                         {
                             sb.Append(", Required Values: new { ");
-                            sb.Append(string.Join(", ", FormatValues(routeValues)));
+                            sb.AppendJoin(", ", FormatValues(routeValues));
                             sb.Append(" }");
                         }
                         sb.Append(", Order: ");
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Routing
                         if (httpMethodMetadata != null)
                         {
                             sb.Append(", Http Methods: ");
-                            sb.Append(string.Join(", ", httpMethodMetadata.HttpMethods));
+                            sb.AppendJoin(", ", httpMethodMetadata.HttpMethods);
                         }
                         sb.Append(", Display Name: ");
                         sb.Append(routeEndpoint.DisplayName);

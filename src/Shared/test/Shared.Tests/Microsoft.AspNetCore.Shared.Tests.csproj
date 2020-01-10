@@ -4,18 +4,20 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS0649</NoWarn><!-- Not all APIs are called in the shared test project -->
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
-    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
-    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" Link="Shared\ClosedGenericMatcher\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" Link="Shared\CopyOnWriteDictionary\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" Link="Shared\Http2\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" Link="Shared\HttpSys\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" Link="Shared\ObjectMethodExecutor\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" Link="Shared\PropertyActivator\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" Link="Shared\PropertyHelper\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" Link="Shared\SecurityHelper\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" Link="Shared\StackTrace\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +32,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\ThrowingLibrary\ThrowingLibrary.csproj" />
+    <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
+      <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

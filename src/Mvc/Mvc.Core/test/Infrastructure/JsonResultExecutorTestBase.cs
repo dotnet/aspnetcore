@@ -312,6 +312,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
+        public async Task ExecuteAsync_WithNullValue()
+        {
+            // Arrange
+            var expected = Encoding.UTF8.GetBytes("null");
+
+            var context = GetActionContext();
+            var result = new JsonResult(value: null);
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            Assert.Equal(expected, written);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_SerializesAsyncEnumerables()
         {
             // Arrange
@@ -319,6 +337,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var context = GetActionContext();
             var result = new JsonResult(TestAsyncEnumerable());
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            Assert.Equal(expected, written);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_SerializesAsyncEnumerablesOfPrimtives()
+        {
+            // Arrange
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new[] { 1, 2 }));
+
+            var context = GetActionContext();
+            var result = new JsonResult(TestAsyncPrimitiveEnumerable());
             var executor = CreateExecutor();
 
             // Act
@@ -379,6 +415,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await Task.Yield();
             yield return "Hello";
             yield return "world";
+        }
+
+        private async IAsyncEnumerable<int> TestAsyncPrimitiveEnumerable()
+        {
+            await Task.Yield();
+            yield return 1;
+            yield return 2;
         }
     }
 }
