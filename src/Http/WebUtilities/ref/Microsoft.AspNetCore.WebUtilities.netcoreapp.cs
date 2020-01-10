@@ -152,6 +152,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override string ReadLine() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task<string> ReadLineAsync() { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.Task<string> ReadToEndAsync() { throw null; }
     }
     public partial class HttpResponseStreamWriter : System.IO.TextWriter
     {
