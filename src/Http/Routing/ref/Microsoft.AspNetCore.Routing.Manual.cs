@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
     public partial struct CandidateState
     {
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]internal set { } }
     }
 
     internal sealed partial class DataSourceDependentMatcher : Microsoft.AspNetCore.Routing.Matching.Matcher
