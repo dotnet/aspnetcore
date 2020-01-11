@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol over MsgPack.</Description>
@@ -17,6 +17,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="MessagePack" />
+    <Reference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" />
   </ItemGroup>
 
 </Project>

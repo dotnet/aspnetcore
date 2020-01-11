@@ -21,6 +21,10 @@
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
       <Sha>1b2afd86341b753ed82622b3e08a2d2e82c5b9a7</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.BannedApi" Version="2.9.8">
+      <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
+      <Sha>1d07ec78d0094b99c4f9f21864bb811e44344b99</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-alpha.1.20060.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
       <Sha>1b2afd86341b753ed82622b3e08a2d2e82c5b9a7</Sha>
