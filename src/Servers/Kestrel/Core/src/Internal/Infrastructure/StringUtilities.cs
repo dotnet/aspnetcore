@@ -203,16 +203,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // do/while as entry condition already checked
                 do
                 {
-                    var vector = Unsafe.AsRef<Vector<sbyte>>(input);
+                    // Use byte/ushort instead of signed equivalents to ensure it doesn't fill based on the high bit.
+                    var vector = Unsafe.AsRef<Vector<byte>>(input);
                     isValid &= CheckBytesNotNull(vector);
                     Vector.Widen(
                         vector,
-                        out Unsafe.AsRef<Vector<short>>(output),
-                        out Unsafe.AsRef<Vector<short>>(output + Vector<short>.Count));
+                        out Unsafe.AsRef<Vector<ushort>>(output),
+                        out Unsafe.AsRef<Vector<ushort>>(output + Vector<ushort>.Count));
 
-                    input += Vector<sbyte>.Count;
-                    output += Vector<sbyte>.Count;
-                } while (input <= end - Vector<sbyte>.Count);
+                    input += Vector<byte>.Count;
+                    output += Vector<byte>.Count;
+                } while (input <= end - Vector<byte>.Count);
 
                 // Vector path done, loop back to do non-Vector
                 // If is a exact multiple of vector size, bail now
@@ -552,10 +553,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             => check > 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
-        private static bool CheckBytesNotNull(Vector<sbyte> check)
+        private static bool CheckBytesNotNull(Vector<byte> check)
         {
             // Vectorized byte range check, signed byte != null
-            return !Vector.EqualsAny(check, Vector<sbyte>.Zero);
+            return !Vector.EqualsAny(check, Vector<byte>.Zero);
         }
 
         // Validate: bytes != 0
