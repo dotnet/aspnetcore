@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
         {
-            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetRequestHeaderStringNonNullCharacters(useLatin1: false);
+            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetRequestHeaderStringNonNullCharacters(useLatin1: _serviceContext.ServerOptions.Latin1RequestHeaders);
         }
 
         void IHttpHeadersHandler.OnHeadersComplete() { }
