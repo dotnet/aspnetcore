@@ -43,3 +43,14 @@ M:MessagePackSerializer.Deserialize(System.Type, System.ReadOnlyMemory<byte>, Sy
 M:MessagePackSerializer.Deserialize(System.Type, System.Buffers.ReadOnlySequence<byte>, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
 M:MessagePackSerializer.DeserializeAsync``1(System.IO.Stream, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
 M:MessagePackSerializer.DeserializeAsync(System.Type, System.IO.Stream, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+
+M:MessagePackSerializer.ConvertFromJson(System.String);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertFromJson(System.String, ref MessagePack.MessagePackWriter);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertFromJson(System.IO.TextReader, ref MessagePack.MessagePackWriter);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertToJson(in System.Buffers.ReadOnlySequence<byte>)
+M:MessagePackSerializer.ConvertToJson(ref MessagePack.MessagePackReader, System.IO.TextWriter);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertToJson(System.ReadOnlyMemory<byte>)
+
+M:MessagePackSerializer.ConvertFromJson(System.String, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertToJson(in System.Buffers.ReadOnlySequence<byte>, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.ConvertToJson(System.ReadOnlyMemory<byte>, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
