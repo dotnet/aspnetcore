@@ -101,7 +101,7 @@
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
-    <Exec Command="node $(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js $(PackageJson) $(PackageVersion)" />
+    <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js&quot; &quot;$(PackageJson)&quot; $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
