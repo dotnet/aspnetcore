@@ -1,0 +1,25 @@
+M:MessagePackSerializer.Serialize(System.Type, System.IO.Stream, System.Object);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, System.Object);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(System.Buffers.IBufferWriter<byte>,``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, ref MessagePack.MessagePackWriter, System.Object);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(System.IO.Stream,``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(ref MessagePack.MessagePackWriter,``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, System.Buffers.IBufferWriter<byte>, System.Object);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeAsync(System.Type, System.IO.Stream, System.Object);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeAsync``1(System.IO.Stream,``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeToJson``1(``0);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeToJson``1(TextWriter textWriter,``0);Don't use this method without passing MessagePackSerializerOptions
+
+M:MessagePackSerializer.Serialize(System.Type, System.IO.Stream, System.Object, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, System.Object, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(System.Buffers.IBufferWriter<byte>,``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, ref MessagePack.MessagePackWriter, System.Object, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(System.IO.Stream,``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize``1(ref MessagePack.MessagePackWriter,``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.Serialize(System.Type, System.Buffers.IBufferWriter<byte>, System.Object, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeAsync(System.Type, System.IO.Stream, System.Object, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeAsync``1(System.IO.Stream,``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeToJson``1(``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
+M:MessagePackSerializer.SerializeToJson``1(TextWriter textWriter,``0, System.Threading.CancellationToken);Don't use this method without passing MessagePackSerializerOptions
