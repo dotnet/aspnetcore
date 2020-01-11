@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         internal System.Security.Cryptography.X509Certificates.X509Certificate2 DefaultCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         internal bool IsDevCertLoaded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        internal bool Latin1RequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         internal System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> ListenOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal void ApplyDefaultCert(Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions httpsOptions) { }
         internal void ApplyEndpointDefaults(Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions listenOptions) { }
@@ -433,6 +434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.CertificateConfig> Certificates { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.EndpointDefaults EndpointDefaults { get { throw null; } }
         public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.EndpointConfig> Endpoints { get { throw null; } }
+        public bool Latin1RequestHeaders { get { throw null; } }
     }
     internal partial class HttpConnectionContext
     {
