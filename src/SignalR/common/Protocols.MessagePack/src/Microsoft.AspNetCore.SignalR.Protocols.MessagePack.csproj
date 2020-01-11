@@ -20,4 +20,8 @@
     <Reference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
+
 </Project>
