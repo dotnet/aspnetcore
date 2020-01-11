@@ -583,92 +583,75 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static bool ReadBoolean(ref MessagePackReader reader, string field)
         {
-            Exception msgPackException = null;
             try
             {
                 return reader.ReadBoolean();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                msgPackException = e;
+                throw new InvalidDataException($"Reading '{field}' as Boolean failed.", ex);
             }
-
-            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static int ReadInt32(ref MessagePackReader reader, string field)
         {
-            Exception msgPackException = null;
             try
             {
                 return reader.ReadInt32();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                msgPackException = e;
+                throw new InvalidDataException($"Reading '{field}' as Int32 failed.", ex);
             }
-
-            throw new InvalidDataException($"Reading '{field}' as Int32 failed.", msgPackException);
         }
 
         private static string ReadString(ref MessagePackReader reader, string field)
         {
-            Exception msgPackException = null;
             try
             {
                 return reader.ReadString();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                msgPackException = e;
+                throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
             }
-
-            throw new InvalidDataException($"Reading '{field}' as String failed.", msgPackException);
         }
 
         private static long ReadMapLength(ref MessagePackReader reader, string field)
         {
-            Exception msgPackException = null;
             try
             {
                 return reader.ReadMapHeader();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                msgPackException = e;
+                throw new InvalidDataException($"Reading map length for '{field}' failed.", ex);
             }
 
-            throw new InvalidDataException($"Reading map length for '{field}' failed.", msgPackException);
         }
 
         private static long ReadArrayLength(ref MessagePackReader reader, string field)
         {
-            Exception msgPackException = null;
             try
             {
                 return reader.ReadArrayHeader();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                msgPackException = e;
+                throw new InvalidDataException($"Reading array length for '{field}' failed.", ex);
             }
-
-            throw new InvalidDataException($"Reading array length for '{field}' failed.", msgPackException);
         }
 
         private static object DeserializeObject(ref MessagePackReader reader, Type type, string field, MessagePackSerializerOptions msgPackSerializerOptions)
         {
-            Exception msgPackException = null;
             try
             {
                 return MessagePackSerializer.Deserialize(type, ref reader, msgPackSerializerOptions);
             }
             catch (Exception ex)
             {
-                msgPackException = ex;
+                throw new InvalidDataException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", ex);
             }
-
-            throw new InvalidDataException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", msgPackException);
         }
 
         internal static List<IFormatterResolver> CreateDefaultFormatterResolvers()
