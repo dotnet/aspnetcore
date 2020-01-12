@@ -198,8 +198,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         {
                             context.HttpContext.Abort();
                         }
-                }
-                _logger.CachedResponseServed();
+                    }
+                    _logger.CachedResponseServed();
                 }
                 return true;
             }
