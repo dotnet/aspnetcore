@@ -9,8 +9,9 @@ using System.Text;
 using Azure;
 using Azure.Core;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
+namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
 {
+    // Copied from https://github.com/Azure/azure-sdk-for-net/blob/43a178cbb60a50d9841b48170681b9187143e551/sdk/core/Azure.Core/tests/TestFramework/MockResponse.cs
     public class MockResponse : Response
     {
         private readonly Dictionary<string, List<string>> _headers = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);

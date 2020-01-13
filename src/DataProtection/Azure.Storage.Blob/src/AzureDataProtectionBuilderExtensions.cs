@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// Contains Azure-specific extension methods for modifying a
     /// <see cref="IDataProtectionBuilder"/>.
     /// </summary>
-    public static class AzureDataProtectionBuilderExtensions
+    public static class AzureStorageBlobDataProtectionBuilderExtensions
     {
         /// <summary>
         /// Configures the data protection system to persist keys to the specified path

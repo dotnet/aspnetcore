@@ -16,7 +16,7 @@ using Azure.Storage.Blobs.Models;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
+namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
 {
     public class AzureBlobXmlRepositoryTests
     {
