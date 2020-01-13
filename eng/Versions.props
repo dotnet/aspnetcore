@@ -235,6 +235,7 @@
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <AzureStorageBlobPackageVersion>12.1.0</AzureStorageBlobPackageVersion>
+    <AzureIdentityPackageVersion>1.0.0</AzureIdentityPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>

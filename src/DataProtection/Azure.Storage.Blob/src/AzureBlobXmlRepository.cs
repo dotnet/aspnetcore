@@ -31,31 +31,27 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
 
         private static readonly XName RepositoryElementName = "repository";
 
-        private readonly Func<BlobClient> _blobRefFactory;
         private readonly Random _random;
         private BlobData _cachedBlobData;
+        private readonly BlobClient _blobClient;
 
         /// <summary>
         /// Creates a new instance of the <see cref="AzureBlobXmlRepository"/>.
         /// </summary>
-        /// <param name="blobRefFactory">A factory which can create <see cref="BlobClient"/>
-        /// instances. The factory must be thread-safe for invocation by multiple
-        /// concurrent threads, and each invocation must return a new object.</param>
-        public AzureBlobXmlRepository(Func<BlobClient> blobRefFactory)
+        /// <param name="blobClient">A <see cref="BlobClient"/> that is connected to the blob we are reading from and writing to.</param>
+        public AzureBlobXmlRepository(BlobClient blobClient)
         {
-            _blobRefFactory = blobRefFactory ?? throw new ArgumentNullException(nameof(blobRefFactory));
             _random = new Random();
+            _blobClient = blobClient;
         }
 
         /// <inheritdoc />
         public IReadOnlyCollection<XElement> GetAllElements()
         {
-            var blobRef = CreateFreshBlobRef();
-
             // Shunt the work onto a ThreadPool thread so that it's independent of any
             // existing sync context or other potentially deadlock-causing items.
 
-            var elements = Task.Run(() => GetAllElementsAsync(blobRef)).GetAwaiter().GetResult();
+            var elements = Task.Run(() => GetAllElementsAsync()).GetAwaiter().GetResult();
             return new ReadOnlyCollection<XElement>(elements);
         }
 
@@ -67,12 +63,10 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
                 throw new ArgumentNullException(nameof(element));
             }
 
-            var blobRef = CreateFreshBlobRef();
-
             // Shunt the work onto a ThreadPool thread so that it's independent of any
             // existing sync context or other potentially deadlock-causing items.
 
-            Task.Run(() => StoreElementAsync(blobRef, element)).GetAwaiter().GetResult();
+            Task.Run(() => StoreElementAsync(element)).GetAwaiter().GetResult();
         }
 
         private XDocument CreateDocumentFromBlob(byte[] blob)
@@ -91,23 +85,9 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
             }
         }
 
-        private BlobClient CreateFreshBlobRef()
+        private async Task<IList<XElement>> GetAllElementsAsync()
         {
-            // ICloudBlob instances aren't thread-safe, so we need to make sure we're working
-            // with a fresh instance that won't be mutated by another thread.
-
-            var blobRef = _blobRefFactory();
-            if (blobRef == null)
-            {
-                throw new InvalidOperationException("The ICloudBlob factory method returned null.");
-            }
-
-            return blobRef;
-        }
-
-        private async Task<IList<XElement>> GetAllElementsAsync(BlobClient blobRef)
-        {
-            var data = await GetLatestDataAsync(blobRef);
+            var data = await GetLatestDataAsync();
 
             if (data == null || data.BlobContents.Length == 0)
             {
@@ -129,7 +109,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
             return doc.Root.Elements().ToList();
         }
 
-        private async Task<BlobData> GetLatestDataAsync(BlobClient blobRef)
+        private async Task<BlobData> GetLatestDataAsync()
         {
             // Set the appropriate AccessCondition based on what we believe the latest
             // file contents to be, then make the request.
@@ -143,19 +123,16 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
             {
                 using (var memoryStream = new MemoryStream())
                 {
-                    await blobRef.DownloadToAsync(
+                    var response = await _blobClient.DownloadToAsync(
                         destination: memoryStream,
                         conditions: requestCondition);
 
                     // At this point, our original cache either didn't exist or was outdated.
-                    // We'll update it now and return the updated value;
-
-                    var props = await blobRef.GetPropertiesAsync();
-
+                    // We'll update it now and return the updated value
                     latestCachedData = new BlobData()
                     {
                         BlobContents = memoryStream.ToArray(),
-                        ETag = props.Value.ETag
+                        ETag = response.Headers.ETag
                     };
 
                 }
@@ -188,7 +165,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
             return (int) (multiplier * ConflictBackoffPeriod.Ticks);
         }
 
-        private async Task StoreElementAsync(BlobClient blobRef, XElement element)
+        private async Task StoreElementAsync(XElement element)
         {
             // holds the last error in case we need to rethrow it
             ExceptionDispatchInfo lastError = null;
@@ -206,7 +183,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
                 {
                     // If at least one conflict occurred, make sure we have an up-to-date
                     // view of the blob contents.
-                    await GetLatestDataAsync(blobRef);
+                    await GetLatestDataAsync();
                 }
 
                 // Merge the new element into the document. If no document exists,
@@ -231,8 +208,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
                 BlobHttpHeaders headers = null;
                 if (latestData != null)
                 {
-                    var props = await blobRef.GetPropertiesAsync();
-                    requestConditions = new BlobRequestConditions() { IfMatch = props.Value.ETag };
+                    requestConditions = new BlobRequestConditions() { IfMatch = latestData.ETag };
                 }
                 else
                 {
@@ -244,7 +220,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
                 try
                 {
                     // Send the request up to the server.
-                    var response = await blobRef.UploadAsync(
+                    var response = await _blobClient.UploadAsync(
                         serializedDoc,
                         httpHeaders: headers,
                         conditions: requestConditions);
@@ -285,7 +261,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
         private sealed class BlobData
         {
             internal byte[] BlobContents;
-            internal ETag ETag;
+            internal ETag? ETag;
         }
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Azure.Core;
+using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob;
@@ -39,24 +41,23 @@ namespace Microsoft.AspNetCore.DataProtection
             }
 
             var uriBuilder = new BlobUriBuilder(blobUri);
+            var blobName = uriBuilder.BlobName;
+            BlobContainerClient client;
 
             // The SAS token is present in the query string.
-
-            if (string.IsNullOrEmpty(uriBuilder.Query))
+            if (uriBuilder.Sas == null)
             {
-                throw new ArgumentException(
-                    message: "URI does not have a SAS token in the query string.",
-                    paramName: nameof(blobUri));
+                client = new BlobContainerClient(blobUri, new DefaultAzureCredential());
+            }
+            else
+            {
+                var credentials = new StorageSharedKeyCredential(uriBuilder.AccountName, uriBuilder.Query);
+                uriBuilder.Query = null; // no longer needed
+                var blobAbsoluteUri = uriBuilder.ToUri();
+                client = new BlobContainerClient(blobAbsoluteUri, credentials);
             }
 
-            var credentials = new StorageSharedKeyCredential(uriBuilder.AccountName, uriBuilder.Query);
-            var blobName = uriBuilder.BlobName;
-            uriBuilder.Query = null; // no longer needed
-            var blobAbsoluteUri = uriBuilder.ToUri();
-
-            var client = new BlobContainerClient(blobAbsoluteUri, credentials);
-
-            return PersistKeystoAzureBlobStorageInternal(builder, () => client.GetBlobClient(blobName));
+            return PersistKeystoAzureBlobStorageInternal(builder, client.GetBlobClient(blobName));
         }
 
         /// <summary>
@@ -64,37 +65,65 @@ namespace Microsoft.AspNetCore.DataProtection
         /// in Azure Blob Storage.
         /// </summary>
         /// <param name="builder">The builder instance to modify.</param>
-        /// <param name="container">The <see cref="BlobContainerClient"/> in which the
-        /// key file should be stored.</param>
-        /// <param name="blobName">The name of the key file, generally specified
-        /// as "[subdir/]keys.xml"</param>
+        /// <param name="blobUri">The full URI where the key file should be stored.
+        /// The URI must contain the SAS token as a query string parameter.</param>
+        /// <param name="tokenCredential">The credentials to connect to the blob.</param>
         /// <returns>The value <paramref name="builder"/>.</returns>
         /// <remarks>
-        /// The container referenced by <paramref name="container"/> must already exist.
+        /// The container referenced by <paramref name="blobUri"/> must already exist.
         /// </remarks>
-        public static IDataProtectionBuilder PersistKeysToAzureBlobStorage(this IDataProtectionBuilder builder, BlobContainerClient container, string blobName)
+        public static IDataProtectionBuilder PersistKeysToAzureBlobStorage(this IDataProtectionBuilder builder, Uri blobUri, TokenCredential tokenCredential)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            if (container == null)
+            if (blobUri == null)
             {
-                throw new ArgumentNullException(nameof(container));
+                throw new ArgumentNullException(nameof(blobUri));
             }
-            if (blobName == null)
+            if (tokenCredential == null)
             {
-                throw new ArgumentNullException(nameof(blobName));
+                throw new ArgumentNullException(nameof(tokenCredential));
             }
-            return PersistKeystoAzureBlobStorageInternal(builder, () => container.GetBlobClient(blobName));
+
+            var client = new BlobContainerClient(blobUri, tokenCredential);
+            var uriBuilder = new BlobUriBuilder(blobUri);
+            var blobName = uriBuilder.BlobName;
+
+            return PersistKeystoAzureBlobStorageInternal(builder, client.GetBlobClient(blobName));
+        }
+
+        /// <summary>
+        /// Configures the data protection system to persist keys to the specified path
+        /// in Azure Blob Storage.
+        /// </summary>
+        /// <param name="builder">The builder instance to modify.</param>
+        /// <param name="blobClient">The <see cref="BlobClient"/> in which the
+        /// key file should be stored.</param>
+        /// <returns>The value <paramref name="builder"/>.</returns>
+        /// <remarks>
+        /// The blob referenced by <paramref name="blobClient"/> must already exist.
+        /// </remarks>
+        public static IDataProtectionBuilder PersistKeysToAzureBlobStorage(this IDataProtectionBuilder builder, BlobClient blobClient)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+            if (blobClient == null)
+            {
+                throw new ArgumentNullException(nameof(blobClient));
+            }
+            return PersistKeystoAzureBlobStorageInternal(builder, blobClient);
         }
 
         // important: the Func passed into this method must return a new instance with each call
-        private static IDataProtectionBuilder PersistKeystoAzureBlobStorageInternal(IDataProtectionBuilder builder, Func<BlobClient> blobRefFactory)
+        private static IDataProtectionBuilder PersistKeystoAzureBlobStorageInternal(IDataProtectionBuilder builder, BlobClient blobClient)
         {
             builder.Services.Configure<KeyManagementOptions>(options =>
             {
-                options.XmlRepository = new AzureBlobXmlRepository(blobRefFactory);
+                options.XmlRepository = new AzureBlobXmlRepository(blobClient);
             });
             return builder;
         }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Azure;
+using Azure.Core;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
                     return mockResponse.Object;
                 });
 
-            var repository = new AzureBlobXmlRepository(() => mock.Object);
+            var repository = new AzureBlobXmlRepository(mock.Object);
             repository.StoreElement(new XElement("Element"), null);
 
             Assert.Equal("*", uploadConditions.IfNoneMatch.ToString());
@@ -70,17 +71,6 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
             byte[] bytes = null;
 
             var mock = new Mock<BlobClient>();
-            mock.Setup(c => c.GetPropertiesAsync(
-                    It.IsAny<BlobRequestConditions>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(async (BlobRequestConditions conditions, CancellationToken token) =>
-                {
-                    var mockResponse = new Mock<Response<BlobProperties>>();
-                    mockResponse.Setup(c => c.Value).Returns(new BlobProperties());
-
-                    await Task.Yield();
-                    return mockResponse.Object;
-                });
 
             mock.Setup(c => c.DownloadToAsync(
                     It.IsAny<Stream>(),
@@ -92,7 +82,9 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
                     var data = GetEnvelopedContent("<Element1 />");
                     await target.WriteAsync(data, 0, data.Length);
 
-                    return new Mock<Response>().Object;
+                    var response = new MockResponse(200);
+                    response.AddHeader(new HttpHeader("ETag", "*"));
+                    return response;
                 })
                 .Verifiable();
 
@@ -132,7 +124,7 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob.Test
                 })
                 .Verifiable();
 
-            var repository = new AzureBlobXmlRepository(() => mock.Object);
+            var repository = new AzureBlobXmlRepository(mock.Object);
             repository.StoreElement(new XElement("Element2"), null);
 
             mock.Verify();
