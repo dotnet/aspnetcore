@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Microsoft Azure Blob storage support as key store.</Description>
@@ -16,10 +16,6 @@
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Azure.Storage.Blobs" />
     <Reference Include="Azure.Identity" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.1'">
-    <Reference Include="Microsoft.Data.OData" />
   </ItemGroup>
 
 </Project>
