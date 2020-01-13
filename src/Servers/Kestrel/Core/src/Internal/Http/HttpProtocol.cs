@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
+        // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
+        // how Kestrel processes requests/responses.
+        private string _httpProtocol;
 
         private string _requestId;
         private int _requestHeadersParsed;
@@ -351,6 +354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RawTarget = null;
             QueryString = null;
             _httpVersion = Http.HttpVersion.Unknown;
+            _httpProtocol = null;
             _statusCode = StatusCodes.Status200OK;
             _reasonPhrase = null;
 
