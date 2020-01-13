@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob
         public void PersistKeysToAzureBlobStorage_UsesAzureBlobXmlRepository()
         {
             // Arrange
-            var container = new BlobContainerClient(new Uri("http://www.example.com"));
+            var client = new BlobClient(new Uri("http://www.example.com"));
             var serviceCollection = new ServiceCollection();
             var builder = serviceCollection.AddDataProtection();
 
             // Act
-            builder.PersistKeysToAzureBlobStorage(container, "keys.xml");
+            builder.PersistKeysToAzureBlobStorage(client);
             var services = serviceCollection.BuildServiceProvider();
 
             // Assert
