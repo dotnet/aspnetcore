@@ -4,7 +4,6 @@
 using System;
 using Azure.Core;
 using Azure.Identity;
-using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.DataProtection.Azure.Storage.Blob;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -41,23 +40,19 @@ namespace Microsoft.AspNetCore.DataProtection
             }
 
             var uriBuilder = new BlobUriBuilder(blobUri);
-            var blobName = uriBuilder.BlobName;
-            BlobContainerClient client;
+            BlobClient client;
 
             // The SAS token is present in the query string.
             if (uriBuilder.Sas == null)
             {
-                client = new BlobContainerClient(blobUri, new DefaultAzureCredential());
+                client = new BlobClient(blobUri, new DefaultAzureCredential());
             }
             else
             {
-                var credentials = new StorageSharedKeyCredential(uriBuilder.AccountName, uriBuilder.Query);
-                uriBuilder.Query = null; // no longer needed
-                var blobAbsoluteUri = uriBuilder.ToUri();
-                client = new BlobContainerClient(blobAbsoluteUri, credentials);
+                client = new BlobClient(blobUri);
             }
 
-            return PersistKeystoAzureBlobStorageInternal(builder, client.GetBlobClient(blobName));
+            return PersistKeystoAzureBlobStorageInternal(builder, client);
         }
 
         /// <summary>
@@ -87,11 +82,9 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(tokenCredential));
             }
 
-            var client = new BlobContainerClient(blobUri, tokenCredential);
-            var uriBuilder = new BlobUriBuilder(blobUri);
-            var blobName = uriBuilder.BlobName;
+            var client = new BlobClient(blobUri, tokenCredential);
 
-            return PersistKeystoAzureBlobStorageInternal(builder, client.GetBlobClient(blobName));
+            return PersistKeystoAzureBlobStorageInternal(builder, client);
         }
 
         /// <summary>
@@ -118,7 +111,6 @@ namespace Microsoft.AspNetCore.DataProtection
             return PersistKeystoAzureBlobStorageInternal(builder, blobClient);
         }
 
-        // important: the Func passed into this method must return a new instance with each call
         private static IDataProtectionBuilder PersistKeystoAzureBlobStorageInternal(IDataProtectionBuilder builder, BlobClient blobClient)
         {
             builder.Services.Configure<KeyManagementOptions>(options =>
