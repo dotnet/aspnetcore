@@ -5,14 +5,13 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Azure.Core.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.KeyVault.Test
+namespace Microsoft.AspNetCore.DataProtection.Azure.KeyVault
 {
     public class AzureKeyVaultXmlEncryptorTests
     {
