@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithClientEku);
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     ValidateCertificateUse = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained,
                     ValidateCertificateUse = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     ValidateCertificateUse = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedExpired);
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     ValidateValidityPeriod = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedExpired);
 
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     ValidateCertificateUse = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedNotYetValid);
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     ValidateValidityPeriod = false,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 Certificates.SelfSignedNotYetValid);
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 });
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -262,9 +262,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
-                wireUpHeaderMiddleware : true);
+                wireUpHeaderMiddleware: true);
 
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-Client-Cert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true);
 
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true,
                 headerName: "X-ARR-ClientCert");
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true,
                 headerName: "X-ARR-ClientCert");
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             return server;
         }
 
-        private CertificateAuthenticationEvents sucessfulValidationEvents = new CertificateAuthenticationEvents()
+        private CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
         {
             OnCertificateValidated = context =>
             {

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             for (shift = total; shift >= 0; shift -= 4)
             {
-                // Using Unsafe.Add to elide the bounds check on _hex as the & 0x0f definately
+                // Using Unsafe.Add to elide the bounds check on _hex as the & 0x0f definitely
                 // constrains it to the range 0x0 - 0xf, matching the bounds of the array
                 span[offset] = Unsafe.Add(ref startHex, ((dataCount >> shift) & 0x0f));
                 offset++;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // bytes for the chunked prefix, so we would have to copy once we call advance. Therefore, to avoid this scenario,
             // we slice the memory by one byte.
 
-            // See https://gist.github.com/halter73/af2b9f78978f83813b19e187c4e5309e if you would like to tweek the algorithm at all.
+            // See https://gist.github.com/halter73/af2b9f78978f83813b19e187c4e5309e if you would like to tweak the algorithm at all.
 
             if (length <= 65544)
             {

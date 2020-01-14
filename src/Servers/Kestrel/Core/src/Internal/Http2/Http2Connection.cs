@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var result = await Input.ReadAsync();
                     var buffer = result.Buffer;
 
-                    // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceded their drain timeouts.
+                    // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceeded their drain timeouts.
                     UpdateCompletedStreams();
 
                     try
@@ -921,7 +921,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
                 {
-                    // The protocol default stream limit is infinite so the client can excede our limit at the start of the connection.
+                    // The protocol default stream limit is infinite so the client can exceed our limit at the start of the connection.
                     // Refused streams can be retried, by which time the client must have received our settings frame with our limit information.
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
                 }

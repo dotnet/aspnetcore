@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _disposing = false;
 
         /// <summary>
-        /// Notifies when a rendering exception occured.
+        /// Notifies when a rendering exception occurred.
         /// </summary>
         public event EventHandler<Exception> UnhandledException;
 
