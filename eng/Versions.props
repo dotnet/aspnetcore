@@ -8,7 +8,7 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>2</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
