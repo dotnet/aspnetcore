@@ -46,6 +46,9 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
     <PackagesInPatch>
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.Http;
+      Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
