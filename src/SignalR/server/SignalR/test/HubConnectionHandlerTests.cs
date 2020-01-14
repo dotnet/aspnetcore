@@ -2136,7 +2136,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     nameof(StreamingHub.CounterAsyncEnumerable),
                     nameof(StreamingHub.CounterAsyncEnumerableAsync),
                     nameof(StreamingHub.CounterAsyncEnumerableImpl),
-                    nameof(StreamingHub.AsyncEnumerableIsPreferedOverChannelReader),
+                    nameof(StreamingHub.AsyncEnumerableIsPreferredOverChannelReader),
                 };
 
                 foreach (var method in methods)
