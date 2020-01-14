@@ -44,7 +44,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.16' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.Http.Connections;
       Microsoft.AspNetCore.SignalR.Core;
