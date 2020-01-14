@@ -11,7 +11,6 @@ echo "Installing shared framework from $appRuntimePath"
 cp $appRuntimePath sharedFx.zip
 
 mkdir -p $tmpDir
-echo "Unpacking to $tmpDir"
 unzip sharedFx.zip -d $tmpDir
 mkdir -p $output_dir
 echo "Copying to $output_dir"
