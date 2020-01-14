@@ -145,9 +145,10 @@ HostFxrResolver::GetHostFxrParameters(
 }
 
 BOOL
-HostFxrResolver::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
+HostFxrResolver::IsDotnetExecutable(const std::filesystem::path& dotnetPath)
 {
-    return ends_with(dotnetPath, L"dotnet.exe", true);
+    std::wstring filename = dotnetPath.filename().wstring();
+    return equals_ignore_case(filename, L"dotnet.exe");
 }
 
 void
