@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Blazor.Hosting;
 
-namespace Microsoft.AspNetCore.Blazor.E2EPerformance
+namespace Wasm.Performance.TestApp
 {
     public class Program
     {
