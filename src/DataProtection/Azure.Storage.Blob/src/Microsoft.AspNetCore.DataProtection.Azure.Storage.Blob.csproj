@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Microsoft Azure Blob storage support as key store.</Description>
@@ -10,6 +10,7 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <PreReleaseVersionLabel>$(AzureSDKPreReleaseVersionLabel)</PreReleaseVersionLabel>
     <DotNetFinalVersionKind />
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
