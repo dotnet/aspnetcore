@@ -34,12 +34,12 @@ namespace Microsoft.AspNetCore.DataProtection.Azure.KeyVault
             var encryptedValue = Convert.FromBase64String((string)encryptedElement.Element("value"));
 
             var key = await _client.ResolveAsync(kid).ConfigureAwait(false);
-            var result = key.UnwrapKeyAsync(AzureKeyVaultXmlEncryptor.DefaultKeyEncryption, symmetricKey);
+            var result = await key.UnwrapKeyAsync(AzureKeyVaultXmlEncryptor.DefaultKeyEncryption, symmetricKey).ConfigureAwait(false);
 
             byte[] decryptedValue;
             using (var symmetricAlgorithm = AzureKeyVaultXmlEncryptor.DefaultSymmetricAlgorithmFactory())
             {
-                using (var decryptor = symmetricAlgorithm.CreateDecryptor(result.Result, symmetricIV))
+                using (var decryptor = symmetricAlgorithm.CreateDecryptor(result, symmetricIV))
                 {
                     decryptedValue = decryptor.TransformFinalBlock(encryptedValue, 0, encryptedValue.Length);
                 }
