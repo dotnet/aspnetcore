@@ -85,10 +85,7 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.0.1. -->
-    <!-- We can remove the 3.0.1 line from any branch other than release/3.0 and from here after 3.0.1 is released. -->
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
-    <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(VersionPrefix)' == '3.0.1' ">true</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
