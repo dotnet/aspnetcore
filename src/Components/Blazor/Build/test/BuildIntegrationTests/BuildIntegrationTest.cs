@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.webassembly.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "mono.wasm");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "mono.js");
+            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.js");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
         }
@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.webassembly.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "mono.wasm");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "mono.js");
+            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.js");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
         }
