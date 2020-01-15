@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         string IHttpRequestFeature.Protocol
         {
-            get => _httpProtocolVersion ??= HttpProtocol.GetProtocol(HttpVersion);
+            get => _httpProtocolVersion ??= HttpProtocol.GetHttpProtocol(HttpVersion);
             set => _httpProtocolVersion = value;
         }
 
