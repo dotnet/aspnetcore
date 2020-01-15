@@ -66,7 +66,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
 
         protected override string GenerateFullPathToTool() => DotNetPath;
 
-        protected override string GenerateCommandLineCommands() => ILLinkPath;
+        protected override string GenerateCommandLineCommands()
+        {
+            var args = new StringBuilder();
+            args.Append(Quote(ILLinkPath));
+            return args.ToString();
+        }
 
         private static string Quote(string path)
         {

@@ -66,7 +66,7 @@ window.addEventListener('message', evt => {
     To work around browsers' current nonsupport for high-resolution timers
     (since Spectre etc.), the approach used here is to group executions into
     blocks of roughly fixed duration.
-    
+
     - In each block, we execute the test code as many times as we can until
       the end of the block duration, without even yielding the thread if
       it's a synchronous call. We count how many executions completed. It
@@ -82,7 +82,7 @@ window.addEventListener('message', evt => {
       during which there was no unrelated GC cycle or other background contention.
     - We keep running blocks until some larger timeout occurs *and* we've done
       at least some minimum number of executions.
-    
+
     Note that this approach does *not* allow for per-execution setup/teardown
     logic whose timing is separated from the code under test. Because of the
     low timer precision, there would be no way to separate the setup duration
@@ -174,10 +174,23 @@ class Benchmark extends EventEmitter {
     }
 
     run(runOptions) {
+        if (reportBenchmarkEvent) {
+            const areAllIdle = groups.reduce(
+                (prev, next) => prev && next.status === BenchmarkStatus.idle,
+                true
+            );
+
+            if (areAllIdle) {
+                // This is the first test being run from the idle state
+                reportBenchmarkEvent(BenchmarkEvent.runStarted);
+            }
+        }
+
         this._currentRunWasAborted = false;
         if (this._state.status === BenchmarkStatus.idle) {
             this._updateState({ status: BenchmarkStatus.queued });
             this.workQueueCancelHandle = addToWorkQueue(async () => {
+
                 try {
                     if (!(runOptions && runOptions.skipGroupSetup)) {
                         await this._group.runSetup();
@@ -192,10 +205,13 @@ class Benchmark extends EventEmitter {
                         await this._group.runTeardown();
                     }
 
+                    reportBenchmarkEvent(BenchmarkEvent.benchmarkCompleted, { 'name': this.name, success: true, numExecutions: this._state.numExecutions, duration: this._state.estimatedExecutionDurationMs });
+
                     this._updateState({ status: BenchmarkStatus.idle });
                 } catch (ex) {
                     this._updateState({ status: BenchmarkStatus.error });
                     console.error(ex);
+                    reportBenchmarkEvent(BenchmarkEvent.benchmarkError, { 'name': this.name, success: false });
                 }
             });
         }
@@ -236,6 +252,13 @@ const BenchmarkStatus = {
     running: 2,
     error: 3,
 };
+
+const BenchmarkEvent = {
+    runStarted: 0,
+    benchmarkCompleted : 1,
+    benchmarkError: 2,
+    runCompleted: 3,
+}
 
 class Group extends EventEmitter {
     constructor(name) {
@@ -279,6 +302,7 @@ class Group extends EventEmitter {
 }
 
 const groups = [];
+let reportBenchmarkEvent = () => {};
 
 function group(name, configure) {
     groups.push(new Group(name));
@@ -298,184 +322,21 @@ function teardown(fn) {
     groups[groups.length - 1].teardown = fn;
 }
 
-class BenchmarkDisplay {
-    constructor(htmlUi, benchmark) {
-        this.benchmark = benchmark;
-        this.elem = document.createElement('tr');
-        
-        const headerCol = this.elem.appendChild(document.createElement('th'));
-        headerCol.className = 'pl-4';
-        headerCol.textContent = benchmark.name;
-        headerCol.setAttribute('scope', 'row');
+function onBenchmarkEvent(fn) {
+    reportBenchmarkEvent = fn;
 
-        const progressCol = this.elem.appendChild(document.createElement('td'));
-        this.numExecutionsText = progressCol.appendChild(document.createTextNode(''));
+    groups.forEach(group$$1 => {
+        group$$1.on('changed', () => {
+            const areAllIdle = groups.reduce(
+                (prev, next) => prev && next.status === BenchmarkStatus.idle,
+                true
+            );
 
-        const timingCol = this.elem.appendChild(document.createElement('td'));
-        this.executionDurationText = timingCol.appendChild(document.createElement('span'));
-        
-        const runCol = this.elem.appendChild(document.createElement('td'));
-        runCol.className = 'pr-4';
-        runCol.setAttribute('align', 'right');
-        this.runButton = document.createElement('a');
-        this.runButton.className = 'run-button';
-        runCol.appendChild(this.runButton);
-        this.runButton.textContent = 'Run';
-        this.runButton.onclick = evt => {
-            evt.preventDefault();
-            this.benchmark.run(htmlUi.globalRunOptions);
-        };
-
-        benchmark.on('changed', state => this.updateDisplay(state));
-        this.updateDisplay(this.benchmark.state);
-    }
-
-    updateDisplay(state) {
-        const benchmark = this.benchmark;
-        this.elem.className = rowClass(state.status);
-        this.runButton.textContent = runButtonText(state.status);
-        this.numExecutionsText.textContent = state.numExecutions
-            ? `Executions: ${state.numExecutions}` : '';
-        this.executionDurationText.innerHTML = state.estimatedExecutionDurationMs
-            ? `Duration: <b>${parseFloat(state.estimatedExecutionDurationMs.toPrecision(3))}ms</b>` : '';
-        if (state.status === BenchmarkStatus.idle) {
-            this.runButton.setAttribute('href', '');
-        } else {
-            this.runButton.removeAttribute('href');
-            if (state.status === BenchmarkStatus.error) {
-                this.numExecutionsText.textContent = 'Error - see console';
+            if (areAllIdle) {
+                fn(BenchmarkEvent.runCompleted);
             }
-        }
-    }
-}
-
-function runButtonText(status) {
-    switch (status) {
-        case BenchmarkStatus.idle:
-        case BenchmarkStatus.error:
-            return 'Run';
-        case BenchmarkStatus.queued:
-            return 'Waiting...';
-        case BenchmarkStatus.running:
-            return 'Running...';
-        default:
-            throw new Error(`Unknown status: ${status}`);
-    }
-}
-
-function rowClass(status) {
-    switch (status) {
-        case BenchmarkStatus.idle:
-            return 'benchmark-idle';
-        case BenchmarkStatus.queued:
-            return 'benchmark-waiting';
-        case BenchmarkStatus.running:
-            return 'benchmark-running';
-        case BenchmarkStatus.error:
-            return 'benchmark-error';
-        default:
-            throw new Error(`Unknown status: ${status}`);
-    }
-}
-
-class GroupDisplay {
-    constructor(htmlUi, group) {
-        this.group = group;
-
-        this.elem = document.createElement('div');
-        this.elem.className = 'my-3 py-2 bg-white rounded shadow-sm';
-        
-        const headerContainer = this.elem.appendChild(document.createElement('div'));
-        headerContainer.className = 'd-flex align-items-baseline px-4';
-        const header = headerContainer.appendChild(document.createElement('h5'));
-        header.className = 'py-2';
-        header.textContent = group.name;
-
-        this.runButton = document.createElement('a');
-        this.runButton.className = 'ml-auto run-button';
-        this.runButton.setAttribute('href', '');
-        headerContainer.appendChild(this.runButton);
-        this.runButton.textContent = 'Run all';
-        this.runButton.onclick = evt => {
-            evt.preventDefault();
-            group.runAll(htmlUi.globalRunOptions);
-        };
-
-        const table = this.elem.appendChild(document.createElement('table'));
-        table.className = 'table mb-0 benchmarks';
-        const tbody = table.appendChild(document.createElement('tbody'));
-
-        group.benchmarks.forEach(benchmark => {
-            const benchmarkDisplay = new BenchmarkDisplay(htmlUi, benchmark);
-            tbody.appendChild(benchmarkDisplay.elem);
         });
-
-        group.on('changed', () => this.updateDisplay());
-        this.updateDisplay();
-    }
-
-    updateDisplay() {
-        const canRun = this.group.status === BenchmarkStatus.idle;
-        this.runButton.style.display = canRun ? 'block' : 'none';
-    }
-}
-
-class HtmlUI {
-    constructor(title, selector) {
-        this.containerElement = document.querySelector(selector);
-
-        const headerDiv = this.containerElement.appendChild(document.createElement('div'));
-        headerDiv.className = 'd-flex align-items-center';
-
-        const header = headerDiv.appendChild(document.createElement('h2'));
-        header.className = 'mx-3 flex-grow-1';
-        header.textContent = title;
-
-        const verifyCheckboxLabel = document.createElement('label');
-        verifyCheckboxLabel.className = 'ml-auto mr-5';
-        headerDiv.appendChild(verifyCheckboxLabel);
-        this.verifyCheckbox = verifyCheckboxLabel.appendChild(document.createElement('input'));
-        this.verifyCheckbox.type = 'checkbox';
-        this.verifyCheckbox.className = 'mr-2';
-        verifyCheckboxLabel.appendChild(document.createTextNode('Verify only'));
-
-        this.runButton = document.createElement('button');
-        this.runButton.className = 'btn btn-success ml-auto px-4 run-button';
-        headerDiv.appendChild(this.runButton);
-        this.runButton.textContent = 'Run all';
-        this.runButton.onclick = () => {
-            groups.forEach(g => g.runAll(this.globalRunOptions));
-        };
-
-        this.stopButton = document.createElement('button');
-        this.stopButton.className = 'btn btn-danger ml-auto px-4 stop-button';
-        headerDiv.appendChild(this.stopButton);
-        this.stopButton.textContent = 'Stop';
-        this.stopButton.onclick = () => {
-            groups.forEach(g => g.stopAll());
-        };
-
-        groups.forEach(group$$1 => {
-            const groupDisplay = new GroupDisplay(this, group$$1);
-            this.containerElement.appendChild(groupDisplay.elem);
-            group$$1.on('changed', () => this.updateDisplay());
-        });
-
-        this.updateDisplay();
-    }
-
-    updateDisplay() {
-        const areAllIdle = groups.reduce(
-            (prev, next) => prev && next.status === BenchmarkStatus.idle,
-            true
-        );
-        this.runButton.style.display = areAllIdle ? 'block' : 'none';
-        this.stopButton.style.display = areAllIdle ? 'none' : 'block';
-    }
-
-    get globalRunOptions() {
-        return { verifyOnly: this.verifyCheckbox.checked };
-    }
+      });
 }
 
 /**
@@ -483,4 +344,4 @@ class HtmlUI {
  * https://github.com/SteveSanderson/minibench
  */
 
-export { group, benchmark, setup, teardown, HtmlUI };
+export { groups, group, benchmark, setup, teardown, onBenchmarkEvent, BenchmarkEvent, BenchmarkStatus };
