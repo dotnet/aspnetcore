@@ -52,9 +52,11 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.16' ">
     <PackagesInPatch>
-      Microsoft.Net.Http.Headers;
-      Microsoft.AspNetCore.Http;
+      Microsoft.AspNetCore.Authentication.Cookies;
       Microsoft.AspNetCore.CookiePolicy;
+      Microsoft.AspNetCore.Http;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.Net.Http.Headers;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
