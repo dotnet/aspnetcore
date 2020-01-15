@@ -48,4 +48,10 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.16' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Authentication.Cookies;
+      Microsoft.AspNetCore.Mvc.Core;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
