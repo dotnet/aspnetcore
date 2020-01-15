@@ -2798,6 +2798,47 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task HubMethodInvokeDoesNotCountTowardsClientTimeout()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.Configure<HubOptions>(options =>
+                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0));
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient(new JsonHubProtocol()))
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    // This starts the timeout logic
+                    await client.SendHubMessageAsync(PingMessage.Instance);
+
+                    // Call long running hub method
+                    var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Tick heartbeat while hub method is running to show that close isn't triggered
+                    client.TickHeartbeat();
+
+                    // Unblock long running hub method
+                    tcsService.EndMethod.SetResult(null);
+
+                    await hubMethodTask.OrTimeout();
+
+                    // Tick heartbeat again now that we're outside of the hub method
+                    client.TickHeartbeat();
+
+                    // Connection is closed
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task EndingConnectionSendsCloseMessageWithNoError()
         {
             using (StartVerifiableLog())
