@@ -4,8 +4,6 @@
   <PropertyGroup>
     <!-- Override prerelease label and use preview 4, even in the final build -->
     <PreReleaseVersionLabel>$(BlazorClientPreReleaseVersionLabel)</PreReleaseVersionLabel>
-    <!-- These packages ship from the blazor-wasm branch -->
-    <IsShipping>false</IsShipping>
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
   </PropertyGroup>
 </Project>
