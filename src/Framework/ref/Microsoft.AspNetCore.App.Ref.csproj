@@ -53,7 +53,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Platform manifest and package override metatdata -->
     <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
     <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
-    <ReferencePlatformManifestOutputPath>$(ArtifactsObjDir)ref\PlatformManifest.txt</ReferencePlatformManifestOutputPath>
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -143,23 +144,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
-    </ItemGroup>
 
-    <RepoTasks.GenerateSharedFrameworkDepsFile
-      DepsFilePath="$(ProjectDepsFilePath)"
-      TargetFramework="$(TargetFramework)"
-      FrameworkName="$(TargetingPackName)"
-      FrameworkVersion="$(ReferencePackSharedFxVersion)"
-      References="@(AspNetCoreReferenceAssemblyPath)"
-      RuntimeIdentifier="$(TargetRuntimeIdentifier)"
-      RuntimePackageName="$(PackageId)"
-      PlatformManifestOutputPath="$(ReferencePlatformManifestOutputPath)" />
-
-    <ItemGroup>
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
-      <RefPackContent Include="$(ReferencePlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
