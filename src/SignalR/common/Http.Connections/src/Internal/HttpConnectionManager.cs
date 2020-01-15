@@ -53,11 +53,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
-
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Http.Connections.DoNotUseSendTimeout", out var timeoutDisabled))
-            {
-                _useSendTimeout = !timeoutDisabled;
-            }
         }
 
         public void Start()
@@ -166,7 +161,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
-                var utcNow = DateTimeOffset.UtcNow;
                 var utcNow = DateTimeOffset.UtcNow;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.

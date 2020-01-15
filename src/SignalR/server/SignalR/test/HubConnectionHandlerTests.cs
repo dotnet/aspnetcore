@@ -156,8 +156,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.Null(client.TryRead());
                 }
-
-                Assert.Null(client.TryRead());
             }
         }
 

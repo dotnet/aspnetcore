@@ -33,7 +33,6 @@
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="System.Security.Principal.Windows" />
-    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
 
   <ItemGroup>
