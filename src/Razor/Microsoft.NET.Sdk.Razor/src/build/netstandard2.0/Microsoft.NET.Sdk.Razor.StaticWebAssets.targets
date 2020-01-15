@@ -33,6 +33,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.ValidateStaticWebAssetsUniquePaths"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAsssetsPropsFile"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
@@ -141,11 +146,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'%(SourceType)' != ''">
           <BasePath>%(StaticWebAsset.BasePath)</BasePath>
           <ContentRoot>%(StaticWebAsset.ContentRoot)</ContentRoot>
+          <SourceId>%(StaticWebAsset.SourceId)</SourceId>
       </_ExternalStaticWebAsset>
     </ItemGroup>
 
     <!-- We need a transform here to make sure we hash the metadata -->
-    <Hash ItemsToHash="@(_ExternalStaticWebAsset->'%(Identity)%(BasePath)%(ContentRoot)')">
+    <Hash ItemsToHash="@(_ExternalStaticWebAsset->'%(Identity)%(SourceId)%(BasePath)%(ContentRoot)')">
       <Output TaskParameter="HashResult" PropertyName="_StaticWebAssetsCacheHash" />
     </Hash>
 
@@ -176,6 +182,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     Inputs="$(_GeneratedStaticWebAssetsInputsCacheFile)"
     Outputs="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
     DependsOnTargets="$(GenerateStaticWebAssetsManifestDependsOn)">
+
+    <ItemGroup>
+      <_WebRootFiles Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(TargetPath)').Replace('\','/').StartsWith('wwwroot/'))" />
+      <_ReferencedStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(SourceType)' != ''" />
+    </ItemGroup>
+
+    <ValidateStaticWebAssetsUniquePaths
+      StaticWebAssets="@(_ReferencedStaticWebAssets)"
+      WebRootFiles="@(_WebRootFiles)" />
 
     <GenerateStaticWebAssetsManifest
       ContentRootDefinitions="@(_ExternalStaticWebAsset)"
@@ -269,7 +284,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_ThisProjectStaticWebAsset
         Include="@(Content)"
-        Condition="$([System.String]::Copy('%(Identity)').StartsWith('wwwroot'))">
+        Condition="$([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))">
 
         <!-- Remove the wwwroot\ prefix -->
         <RelativePath>$([System.String]::Copy('%(Identity)').Substring(8))</RelativePath>
