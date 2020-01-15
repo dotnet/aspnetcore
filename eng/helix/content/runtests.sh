@@ -109,6 +109,5 @@ if [ $? != 0 ]; then
     # DO NOT EXIT
 fi
 
-ls -la
-ls -la artifacts/logs
+ls -la artifacts/log
 exit $nonflaky_exitcode
