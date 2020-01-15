@@ -13,21 +13,21 @@
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>23338158154b064321d9d5c418d0fb71264d7bf9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.2">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>7dfb8241da14b065a0453b969c570a6736f31b54</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.3">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>0d546dcdc64a7ebdc5d33fb60e6f6bec57e6c7df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.2">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>7dfb8241da14b065a0453b969c570a6736f31b54</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.3">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>0d546dcdc64a7ebdc5d33fb60e6f6bec57e6c7df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.2">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>7dfb8241da14b065a0453b969c570a6736f31b54</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.3">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>0d546dcdc64a7ebdc5d33fb60e6f6bec57e6c7df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.2">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>7dfb8241da14b065a0453b969c570a6736f31b54</Sha>
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.3">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>0d546dcdc64a7ebdc5d33fb60e6f6bec57e6c7df</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
@@ -313,9 +313,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="4.6.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Drawing.Common" Version="4.6.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>e14c43ea3f727d1ed8844014aae8b168cc608b22</Sha>
+      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="4.6.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -409,9 +409,9 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>e14c43ea3f727d1ed8844014aae8b168cc608b22</Sha>
+      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
     </Dependency>
     <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.2-servicing.19614.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-Extensions</Uri>
