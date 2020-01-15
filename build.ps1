@@ -157,7 +157,7 @@ param(
 
     # Other lifecycle targets
     [switch]$Help, # Show help
-    
+
     # Optional arguments that enable downloading an internal
     # runtime or runtime from a non-default location
     [string]$DotNetRuntimeSourceFeed,

@@ -47,7 +47,12 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/restore.cmd -ci -NoBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+        if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
+            & $repoRoot/restore.cmd -ci -NoBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+        }
+        else{
+            & $repoRoot/restore.cmd -ci -NoBuildNodeJS
+        }
     }
 
     . "$repoRoot/activate.ps1"
