@@ -15,12 +15,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         private readonly PipeReader _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
+        private readonly HttpConnectionContext _connection;
 
         public ServerSentEventsTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;
             _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();
+        }
+
+        internal ServerSentEventsTransport(PipeReader application, string connectionId, HttpConnectionContext connection, ILoggerFactory loggerFactory)
+            : this(application, connectionId, loggerFactory)
+        {
+            _connection = connection;
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
@@ -52,15 +59,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                         {
                             Log.SSEWritingMessage(_logger, buffer.Length);
 
-                            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body);
+                            _connection?.StartSendCancellation();
+                            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body, _connection?.SendingToken ?? default);
                         }
-                        else if (result.IsCompleted)
+                        else if (result.IsCompleted || result.IsCanceled)
                         {
                             break;
                         }
                     }
                     finally
                     {
+                        _connection?.StopSendCancellation();
                         _application.AdvanceTo(buffer.End);
                     }
                 }

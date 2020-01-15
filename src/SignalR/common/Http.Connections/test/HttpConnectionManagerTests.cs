@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var result = await connection.Application.Input.ReadAsync();
                 try
                 {
-                    Assert.True(result.IsCompleted);
+                    Assert.True(result.IsCanceled);
                 }
                 finally
                 {
