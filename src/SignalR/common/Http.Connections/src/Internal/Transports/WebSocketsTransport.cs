@@ -241,7 +241,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
                                 if (WebSocketCanSend(socket))
                                 {
-                                    await socket.SendAsync(buffer, webSocketMessageType);
+                                    _connection.StartSendCancellation();
+                                    await socket.SendAsync(buffer, webSocketMessageType, _connection.SendingToken);
                                 }
                                 else
                                 {
@@ -255,6 +256,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                                     Log.ErrorWritingFrame(_logger, ex);
                                 }
                                 break;
+                            }
+                            finally
+                            {
+                                _connection.StopSendCancellation();
                             }
                         }
                         else if (result.IsCompleted)
@@ -283,7 +288,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
                 _application.Input.Complete();
             }
-
         }
 
         private static bool WebSocketCanSend(WebSocket ws)

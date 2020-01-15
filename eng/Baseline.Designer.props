@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.14</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.15</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -453,25 +453,27 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' ">
-    <BaselinePackageVersion>1.0.4</BaselinePackageVersion>
+    <BaselinePackageVersion>1.0.15</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.0.4, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.0.4, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.0.4, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.0.4, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' ">
@@ -1061,12 +1063,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' ">
-    <BaselinePackageVersion>1.0.4</BaselinePackageVersion>
+    <BaselinePackageVersion>1.0.15</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.0.4, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.0.4, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Reflection.Emit" Version="[4.3.0, )" />
