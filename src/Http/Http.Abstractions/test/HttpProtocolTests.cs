@@ -84,23 +84,34 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             Assert.Equal(match, HttpProtocol.IsHttp10(protocol));
         }
 
-        public static TheoryData<Version, string> s_data = new TheoryData<Version, string>
+        public static TheoryData<Version, string> s_ValidData = new TheoryData<Version, string>
         {
             { new Version(3, 0), "HTTP/3" },
             { new Version(2, 0), "HTTP/2" },
             { new Version(1, 1), "HTTP/1.1" },
-            { new Version(1, 0), "HTTP/1.0" },
-            { new Version(0, 3), "HTTP/0.3" },
-            { new Version(2, 1), "HTTP/2.1" }
+            { new Version(1, 0), "HTTP/1.0" }
         };
 
         [Theory]
-        [MemberData(nameof(s_data))]
-        public void GetProtocol_CorrectIETFVersion(Version version, string expected)
+        [MemberData(nameof(s_ValidData))]
+        public void GetHttpProtocol_CorrectIETFVersion(Version version, string expected)
         {
             var actual = HttpProtocol.GetHttpProtocol(version);
 
             Assert.Equal(expected, actual);
+        }
+
+        public static TheoryData<Version> s_InvalidData = new TheoryData<Version>
+        {
+            { new Version(0, 3) },
+            { new Version(2, 1) }
+        };
+
+        [Theory]
+        [MemberData(nameof(s_InvalidData))]
+        public void GetHttpProtocol_ThrowErrorForUnknownVersion(Version version)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => HttpProtocol.GetHttpProtocol(version));
         }
     }
 }
