@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [MemberData(nameof(s_data))]
         public void GetProtocol_CorrectIETFVersion(Version version, string expected)
         {
-            var actual = HttpProtocol.GetProtocol(version);
+            var actual = HttpProtocol.GetHttpProtocol(version);
 
             Assert.Equal(expected, actual);
         }

@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Http
         public static readonly string Http11;
         public static readonly string Http2;
         public static readonly string Http3;
-        public static string GetProtocol(System.Version version) { throw null; }
+        public static string GetHttpProtocol(System.Version version) { throw null; }
         public static bool IsHttp10(string protocol) { throw null; }
         public static bool IsHttp11(string protocol) { throw null; }
         public static bool IsHttp2(string protocol) { throw null; }
