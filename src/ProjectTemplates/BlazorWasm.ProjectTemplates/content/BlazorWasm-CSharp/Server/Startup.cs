@@ -95,9 +95,9 @@ namespace BlazorWasm_CSharp.Server
             app.UseEndpoints(endpoints =>
             {
 #if (IndividualLocalAuth)
-                endpoints.MapControllers();
                 endpoints.MapRazorPages();
 #endif
+                endpoints.MapControllers();
 
                 endpoints.MapFallbackToClientSideBlazor<Client.Startup>("index.html");
             });
