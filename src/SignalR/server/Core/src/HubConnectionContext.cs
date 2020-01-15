@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task WriteSlowAsync(SerializedHubMessage message, CancellationToken cancellationToken)
         {
             // Failed to get the lock immediately when entering WriteAsync so await until it is available
-            await _writeLock.WaitAsync();
+            await _writeLock.WaitAsync(cancellationToken);
 
             try
             {
@@ -318,6 +318,7 @@ namespace Microsoft.AspNetCore.SignalR
                 return default;
             }
 
+            // TODO: cancel?
             return new ValueTask(TryWritePingSlowAsync());
         }
 
@@ -544,6 +545,14 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 return AbortAsyncSlow();
             }
+            _writeLock.Release();
+
+            // Acquire lock to make sure all writes are completed
+            if (!_writeLock.Wait(0))
+            {
+                return AbortAsyncSlow();
+            }
+
             _writeLock.Release();
             return _abortCompletedTcs.Task;
         }

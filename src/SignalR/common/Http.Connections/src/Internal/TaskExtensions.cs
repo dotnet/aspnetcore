@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Runtime.CompilerServices;
+
 namespace System.Threading.Tasks
 {
     internal static class TaskExtensions
@@ -10,6 +12,7 @@ namespace System.Threading.Tasks
             await new NoThrowAwaiter(task);
         }
     }
+
     internal readonly struct NoThrowAwaiter : ICriticalNotifyCompletion
     {
         private readonly Task _task;

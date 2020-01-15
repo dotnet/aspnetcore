@@ -1098,7 +1098,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await _sync.WaitToContinue();
                 cancellationToken.ThrowIfCancellationRequested();
             }
-#if NETCOREAPP2_1
             public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 if (_isSSE)
@@ -1110,7 +1109,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await _sync.WaitToContinue();
                 cancellationToken.ThrowIfCancellationRequested();
             }
-#endif
         }
 
         [Fact]
