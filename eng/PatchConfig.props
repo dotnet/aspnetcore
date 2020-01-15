@@ -43,7 +43,7 @@ Later on, this will be checked using this condition:
       Microsoft.Net.Http.Headers;
       Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
-  </PropertyGroup>  
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.Http.Connections;
