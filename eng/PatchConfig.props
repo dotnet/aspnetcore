@@ -83,7 +83,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.9' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.Http.Connections;
       Microsoft.AspNetCore.SignalR.Core;
