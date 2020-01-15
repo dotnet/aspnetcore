@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
-    <IsShippingPackage Condition="'$(IsShipping)' == ''">true</IsShippingPackage>
+    <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
