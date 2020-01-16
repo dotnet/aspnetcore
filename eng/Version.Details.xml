@@ -13,49 +13,49 @@
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>7868699de745fd30a654c798a99dc541b77b95c0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>07f16c89db55ab6f9f773cc3db6eb5a52908065e</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.1.2">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>18bfc128c07023e9384697fba876df575238dba9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>07f16c89db55ab6f9f773cc3db6eb5a52908065e</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.1.2">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>18bfc128c07023e9384697fba876df575238dba9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>07f16c89db55ab6f9f773cc3db6eb5a52908065e</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.1.2">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>18bfc128c07023e9384697fba876df575238dba9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-AspNetCore-Tooling</Uri>
-      <Sha>07f16c89db55ab6f9f773cc3db6eb5a52908065e</Sha>
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.1.2">
+      <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
+      <Sha>18bfc128c07023e9384697fba876df575238dba9</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="dotnet-ef" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.1">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-EntityFrameworkCore</Uri>
-      <Sha>fde8a73d63ea11e1f2bdc690cf1b16ba0a449649</Sha>
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>6cf5ee68c68e0d8eaaa929e04bfbfaf97314791a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.1-servicing.19614.4" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://dev.azure.com/dnceng/internal/_git/aspnet-Extensions</Uri>
