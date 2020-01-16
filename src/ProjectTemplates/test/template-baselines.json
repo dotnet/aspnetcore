@@ -922,6 +922,7 @@
         "Shared/LoginDisplay.razor",
         "Shared/MainLayout.razor",
         "Shared/NavMenu.razor",
+        "Shared/SurveyPrompt.razor",
         "wwwroot/favicon.ico",
         "wwwroot/css/site.css",
         "wwwroot/css/bootstrap/bootstrap.min.css",
