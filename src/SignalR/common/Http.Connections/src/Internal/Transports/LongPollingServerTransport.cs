@@ -40,24 +40,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 var result = await _application.ReadAsync(token);
                 var buffer = result.Buffer;
 
-                if (buffer.IsEmpty && (result.IsCompleted || result.IsCanceled))
-                {
-                    Log.LongPolling204(_logger);
-                    context.Response.ContentType = "text/plain";
-                    context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    return;
-                }
-
-                // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
-                // but it's too late to emit the 204 required by being canceled.
-
-                Log.LongPollingWritingMessage(_logger, buffer.Length);
-
-                context.Response.ContentLength = buffer.Length;
-                context.Response.ContentType = "application/octet-stream";
-
                 try
                 {
+                    if (buffer.IsEmpty && (result.IsCompleted || result.IsCanceled))
+                    {
+                        Log.LongPolling204(_logger);
+                        context.Response.ContentType = "text/plain";
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
+                        return;
+                    }
+
+                    // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
+                    // but it's too late to emit the 204 required by being canceled.
+
+                    Log.LongPollingWritingMessage(_logger, buffer.Length);
+
+                    context.Response.ContentLength = buffer.Length;
+                    context.Response.ContentType = "application/octet-stream";
+
                     _connection?.StartSendCancellation();
                     await context.Response.Body.WriteAsync(buffer, _connection?.SendingToken ?? default);
                 }

@@ -318,6 +318,7 @@ namespace Microsoft.AspNetCore.SignalR
                 return default;
             }
 
+            // TODO: cancel?
             return new ValueTask(TryWritePingSlowAsync());
         }
 

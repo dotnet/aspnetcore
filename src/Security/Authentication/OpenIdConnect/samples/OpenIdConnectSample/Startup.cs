@@ -35,7 +35,7 @@ namespace OpenIdConnectSample
 
         private void CheckSameSite(HttpContext httpContext, CookieOptions options)
         {
-            if (options.SameSite > SameSiteMode.Unspecified)
+            if (options.SameSite == SameSiteMode.None)
             {
                 var userAgent = httpContext.Request.Headers["User-Agent"];
                 // TODO: Use your User Agent library of choice here.

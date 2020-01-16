@@ -74,7 +74,6 @@ namespace System.IO.Pipelines
 
             _length += source.Length;
             var task = _pipeWriter.WriteAsync(source);
-
             if (task.IsCompletedSuccessfully)
             {
                 // Cancellation can be triggered by PipeWriter.CancelPendingFlush
