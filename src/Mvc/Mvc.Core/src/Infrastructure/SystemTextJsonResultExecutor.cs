@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _asyncEnumerableReader;
+        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             _options = options.Value;
             _logger = logger;
-            _asyncEnumerableReader = new AsyncEnumerableReader(mvcOptions.Value);
+            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(mvcOptions.Value);
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -76,10 +76,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             try
             {
                 var value = result.Value;
-                if (value is IAsyncEnumerable<object> asyncEnumerable)
+                if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
                 {
-                    Log.BufferingAsyncEnumerable(_logger, asyncEnumerable);
-                    value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+                    Log.BufferingAsyncEnumerable(_logger, value);
+                    value = await reader(value);
                 }
 
                 var type = value?.GetType() ?? typeof(object);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 _jsonResultExecuting(logger, type, null);
             }
 
-            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
                 => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }
