@@ -9,6 +9,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -177,8 +178,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         EnsureCertificateIsAllowedForServerAuth(serverCert);
                     }
                 }
+
                 await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
-                        _options.SslProtocols, _options.CheckCertificateRevocation);
+                    _options.SslProtocols, _options.CheckCertificateRevocation);
 #endif
             }
             catch (OperationCanceledException)
@@ -187,9 +189,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
-            catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
+            catch (IOException ex)
             {
                 _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                sslStream.Dispose();
+                return _closedAdaptedConnection;
+            }
+            catch (AuthenticationException ex)
+            {
+                if (_serverCertificate != null &&
+                    CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
+                    !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
+                {
+                    _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                }
+                else
+                {
+                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                }
+
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
