@@ -875,7 +875,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     internal sealed partial class AsyncEnumerableReader
     {
         public AsyncEnumerableReader(Microsoft.AspNetCore.Mvc.MvcOptions mvcOptions) { }
-        public System.Threading.Tasks.Task<System.Collections.ICollection> ReadAsync(System.Collections.Generic.IAsyncEnumerable<object> value) { throw null; }
+        public bool TryGetReader(System.Type type, out System.Func<object, System.Threading.Tasks.Task<System.Collections.ICollection>> reader) { throw null; }
     }
     internal partial class ClientErrorResultFilter : Microsoft.AspNetCore.Mvc.Filters.IAlwaysRunResultFilter, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter
     {
