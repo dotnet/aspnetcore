@@ -88,7 +88,7 @@
     <!-- We can remove the 3.1.2 line from any branch other than release/3.1 and from here after 3.1.2 is released. -->
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(VersionPrefix)' == '3.1.2' ">true</IsTargetingPackBuilding>
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(VersionPrefix)' == '3.0.1' ">true</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
