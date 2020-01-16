@@ -1098,7 +1098,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await _sync.WaitToContinue();
                 cancellationToken.ThrowIfCancellationRequested();
             }
-#if NETCOREAPP2_1
             public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 if (_isSSE)
@@ -1110,7 +1109,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await _sync.WaitToContinue();
                 cancellationToken.ThrowIfCancellationRequested();
             }
-#endif
         }
 
         [Fact]
@@ -1909,6 +1907,110 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var transportType = HttpTransportType.LongPolling;
                 var manager = CreateConnectionManager(LoggerFactory);
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = transportType;
+
+                var waitForMessageTcs1 = new TaskCompletionSource<object>();
+                var messageTcs1 = new TaskCompletionSource<object>();
+                var waitForMessageTcs2 = new TaskCompletionSource<object>();
+                var messageTcs2 = new TaskCompletionSource<object>();
+                ConnectionDelegate connectionDelegate = async c =>
+                {
+                    await waitForMessageTcs1.Task.OrTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).OrTimeout();
+                    messageTcs1.TrySetResult(null);
+                    await waitForMessageTcs2.Task.OrTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).OrTimeout();
+                    messageTcs2.TrySetResult(null);
+                };
+                {
+                    var options = new HttpConnectionDispatcherOptions();
+                    var context = MakeRequest("/foo", connection);
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+
+                    // second poll should have data
+                    waitForMessageTcs1.SetResult(null);
+                    await messageTcs1.Task.OrTimeout();
+
+                    var ms = new MemoryStream();
+                    context.Response.Body = ms;
+                    // Now send the second poll
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    Assert.Equal("Message1", Encoding.UTF8.GetString(ms.ToArray()));
+
+                    waitForMessageTcs2.SetResult(null);
+                    await messageTcs2.Task.OrTimeout();
+
+                    context = MakeRequest("/foo", connection);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    context.Response.Body = ms;
+                    // This is the third poll which gets the final message after the app is complete
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    Assert.Equal("Message2", Encoding.UTF8.GetString(ms.ToArray()));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DeleteEndpointTerminatesLongPollingWithHangingApplication()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
+                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var context = MakeRequest("/foo", connection);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var pollTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(pollTask.IsCompleted);
+
+                // Now send the second poll
+                pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // Issue the delete request and make sure the poll completes
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+
+                Assert.False(pollTask.IsCompleted);
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+
+                await pollTask.OrTimeout();
+
+                // Verify that transport shuts down
+                await connection.TransportTask.OrTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+                Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+
+                // Verify the connection not removed because application is hanging
+                Assert.True(manager.TryGetConnection(connection.ConnectionId, out _));
+            }
+        }
+
+        [Fact]
+        public async Task PollCanReceiveFinalMessageAfterAppCompletes()
+        {
+            using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var transportType = HttpTransportType.LongPolling;
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = transportType;
 
