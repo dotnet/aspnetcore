@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -392,39 +393,37 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_IsAllowed()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddHttpClient<TestTypedClient>();
+            serviceCollection.AddHttpClient<TestTypedClient>("Test1");
+            serviceCollection.AddHttpClient<TestTypedClient>("Test2");
+
+            var services = serviceCollection.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<TestTypedClient>("Test"));
+            var clients = services.GetRequiredService<IEnumerable<TestTypedClient>>();
 
             // Assert
-            Assert.Equal(
-                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
-                "Client types must be unique. " +
-                "Consider using inheritance to create multiple unique types with the same API surface.",
-                ex.Message);
+            Assert.Equal(2, clients.Count());
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_WithAddTypedClient_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_WithAddTypedClient_IsAllowed()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddHttpClient<TestTypedClient>();
+            serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>());
+            var clients = services.GetRequiredService<IEnumerable<TestTypedClient>>();
 
             // Assert
-            Assert.Equal(
-                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
-                "Client types must be unique. " +
-                "Consider using inheritance to create multiple unique types with the same API surface.",
-                ex.Message);
+            Assert.Equal(2, clients.Count());
         }
 
         [Fact]
