@@ -32,10 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
         private readonly bool _useSendTimeout = true;
-<<<<<<< HEAD
         private readonly TimeSpan _disconnectTimeout;
-=======
->>>>>>> release/2.1
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
             : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
@@ -56,15 +53,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
-<<<<<<< HEAD
-=======
-            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
-
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Http.Connections.DoNotUseSendTimeout", out var timeoutDisabled))
-            {
-                _useSendTimeout = !timeoutDisabled;
-            }
->>>>>>> release/2.1
         }
 
         public void Start()
@@ -173,31 +161,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
-<<<<<<< HEAD
                 var utcNow = DateTimeOffset.UtcNow;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
                 if (!Debugger.IsAttached && lastSeenUtc.HasValue && (utcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
-=======
-                await connection.StateLock.WaitAsync();
-
-                try
-                {
-                    // Capture the connection state
-                    status = connection.Status;
-
-                    lastSeenUtc = connection.LastSeenUtc;
-                }
-                finally
-                {
-                    connection.StateLock.Release();
-                }
-
-                var utcNow = DateTimeOffset.UtcNow;
-                // Once the decision has been made to dispose we don't check the status again
-                // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (utcNow - lastSeenUtc).TotalSeconds > 5)
->>>>>>> release/2.1
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);

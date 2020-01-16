@@ -142,11 +142,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-<<<<<<< HEAD
                 var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
-=======
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
->>>>>>> release/2.1
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
@@ -195,83 +191,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 if (!await connection.CancelPreviousPoll(context))
                 {
-<<<<<<< HEAD
                     // Connection closed. It's already set the response status code.
                     return;
                 }
-=======
-                    if (connection.Status == HttpConnectionStatus.Disposed)
-                    {
-                        Log.ConnectionDisposed(_logger, connection.ConnectionId);
-
-                        // The connection was disposed
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        context.Response.ContentType = "text/plain";
-                        return;
-                    }
-
-                    if (connection.Status == HttpConnectionStatus.Active)
-                    {
-                        var existing = connection.GetHttpContext();
-                        Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
-                    }
-
-                    using (connection.Cancellation)
-                    {
-                        // Cancel the previous request
-                        connection.Cancellation?.Cancel();
-
-                        try
-                        {
-                            // Wait for the previous request to drain
-                            await connection.PreviousPollTask;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Previous poll canceled due to connection closing, close this poll too
-                            context.Response.ContentType = "text/plain";
-                            context.Response.StatusCode = StatusCodes.Status204NoContent;
-                            return;
-                        }
-
-                        connection.PreviousPollTask = currentRequestTcs.Task;
-                    }
-
-                    // Mark the connection as active
-                    connection.Status = HttpConnectionStatus.Active;
-
-                    // Raise OnConnected for new connections only since polls happen all the time
-                    if (connection.ApplicationTask == null)
-                    {
-                        Log.EstablishedConnection(_logger);
-
-                        connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
-
-                        context.Response.ContentType = "application/octet-stream";
-
-                        // This request has no content
-                        context.Response.ContentLength = 0;
-
-                        // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
-                        // requests can be made safely
-                        connection.TransportTask = context.Response.Body.FlushAsync();
-                    }
-                    else
-                    {
-                        Log.ResumingConnection(_logger);
-
-                        // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
-                        connection.Cancellation = new CancellationTokenSource();
-
-                        var timeoutSource = new CancellationTokenSource();
-                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted, timeoutSource.Token);
-
-                        // Dispose these tokens when the request is over
-                        context.Response.RegisterForDispose(timeoutSource);
-                        context.Response.RegisterForDispose(tokenSource);
-
-                        var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory, connection);
->>>>>>> release/2.1
 
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
                 var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -314,23 +236,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             connection.MarkInactive();
                         }
                     }
-<<<<<<< HEAD
                     else if (resultTask.IsFaulted || resultTask.IsCanceled)
-=======
-                    else if (connection.TransportTask.IsFaulted || connection.TransportTask.IsCanceled)
-                    {
-                        // Cancel current request to release any waiting poll and let dispose aquire the lock
-                        currentRequestTcs.TrySetCanceled();
-
-                        // We should be able to safely dispose because there's no more data being written
-                        // We don't need to wait for close here since we've already waited for both sides
-                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
-
-                        // Don't poll again if we've removed the connection completely
-                        pollAgain = false;
-                    }
-                    else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
->>>>>>> release/2.1
                     {
                         // Cancel current request to release any waiting poll and let dispose acquire the lock
                         currentRequestTcs.TrySetCanceled();
@@ -538,7 +444,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Other code isn't guaranteed to be able to acquire the lock before another write
                         // even if CancelPendingFlush is called, and the other write could hang if there is backpressure
                         connection.Application.Output.Complete();
-<<<<<<< HEAD
                         return;
                     }
                     catch (IOException ex)
@@ -548,8 +453,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         context.Response.StatusCode = StatusCodes.Status400BadRequest;
                         context.Response.ContentType = "text/plain";
-=======
->>>>>>> release/2.1
                         return;
                     }
 
