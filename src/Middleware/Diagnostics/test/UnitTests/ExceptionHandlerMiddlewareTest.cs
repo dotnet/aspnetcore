@@ -36,6 +36,28 @@ namespace Microsoft.AspNetCore.Diagnostics
             await middleware.Invoke(httpContext);
         }
 
+
+        [Fact]
+        public async Task Invoke_ExceptionThrownWithPOST_ResultsInExceptionHandlingPathWithGET()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            httpContext.SetEndpoint(new Endpoint((_) => Task.CompletedTask, new EndpointMetadataCollection(), "Test"));
+            httpContext.Request.RouteValues["John"] = "Doe";
+            httpContext.Request.Method = "POST";
+
+            var optionsAccessor = CreateOptionsAccessor(
+                exceptionHandler: context =>
+                {
+                    Assert.Equal("GET", context.Request.Method);
+                    return Task.CompletedTask;
+                });
+            var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor);
+
+            // Act & Assert
+            await middleware.Invoke(httpContext);
+        }
+
         private HttpContext CreateHttpContext()
         {
             var httpContext = new DefaultHttpContext

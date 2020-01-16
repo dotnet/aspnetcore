@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             context.SetEndpoint(endpoint: null);
             var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
             routeValuesFeature?.RouteValues?.Clear();
+            context.Request.Method = "GET";
         }
 
         private static Task ClearCacheHeaders(object state)
