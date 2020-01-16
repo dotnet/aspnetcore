@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     public class CachedResponseBodyTests
     {
-        private readonly int _timeout = Debugger.IsAttached ? -1 : 500;
+        private readonly int _timeout = Debugger.IsAttached ? -1 : 5000;
 
         [Fact]
         public void GetSegments()
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             using var cts = new CancellationTokenSource(_timeout);
 
             var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, cts.Token);
-            var copyTask = body.CopyToAsync(pipe.Writer, CancellationToken.None).ContinueWith(_ => pipe.Writer.CompleteAsync());
+            var copyTask = body.CopyToAsync(pipe.Writer, cts.Token).ContinueWith(_ => pipe.Writer.CompleteAsync());
 
             await Task.WhenAll(receiverTask, copyTask);
 
