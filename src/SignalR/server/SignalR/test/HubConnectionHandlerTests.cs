@@ -2802,11 +2802,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         internal class PipeReaderWrapper : PipeReader
         {
             private readonly PipeReader _originalPipeReader;
-            private bool _waitingForRead;
+            private TaskCompletionSource<object> _waitForRead;
+            private object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
                 _originalPipeReader = pipeReader;
+                _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
             public override void AdvanceTo(SequencePosition consumed) =>
@@ -2823,23 +2825,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
             {
-                _waitingForRead = true;
+                lock (_lock)
+                {
+                    _waitForRead.SetResult(null);
+                }
+
                 try
                 {
                     return await _originalPipeReader.ReadAsync(cancellationToken);
                 }
                 finally
                 {
-                    _waitingForRead = false;
+                    lock (_lock)
+                    {
+                        _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    }
                 }
             }
 
             public override bool TryRead(out ReadResult result) =>
                 _originalPipeReader.TryRead(out result);
 
-            public bool IsWaitingForRead()
+            public Task WaitForReadStart()
             {
-                return _waitingForRead;
+                lock (_lock)
+                {
+                    return _waitForRead.Task;
+                }
             }
         }
 
@@ -2897,17 +2909,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // There is a small window when the hub method finishes and the timer starts again
                     // So we need to delay a little before ticking the heart beat.
                     // We do this by waiting until we know the HubConnectionHandler code is in pipe.ReadAsync()
-                    var timeout = DateTime.UtcNow;
-                    var timeoutSeconds = -30;
-                    while (!customDuplex.WrappedPipeReader.IsWaitingForRead() && timeout > DateTime.UtcNow.AddSeconds(timeoutSeconds))
-                    {
-                        await Task.Delay(10);
-                    }
-
-                    if (timeout < DateTime.UtcNow.AddSeconds(timeoutSeconds))
-                    {
-                        throw new Exception("Timed out waiting for Pipe to start reading");
-                    }
+                    await customDuplex.WrappedPipeReader.WaitForReadStart().OrTimeout();
 
                     // Tick heartbeat again now that we're outside of the hub method
                     client.TickHeartbeat();
