@@ -566,28 +566,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var registry = (HttpClientMappingRegistry)builder.Services.Single(sd => sd.ServiceType == typeof(HttpClientMappingRegistry)).ImplementationInstance;
             Debug.Assert(registry != null);
 
-            // Check for same type registered twice. This can't work because typed clients have to be unique for DI to function.
-            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName) &&
-
-                // Allow duplicate registrations with the same name. This is usually someone calling "AddHttpClient" once
-                // as part of a library, and the consumer of that library doing the same thing to add further configuration.
-                // See: https://github.com/aspnet/Extensions/issues/2077
-                !string.Equals(name, otherName, StringComparison.Ordinal))
-            {
-                var message =
-                    $"The HttpClient factory already has a registered client with the type '{type.FullName}'. " +
-                    $"Client types must be unique. " +
-                    $"Consider using inheritance to create multiple unique types with the same API surface.";
-                throw new InvalidOperationException(message);
-            }
-
             // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
             if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType) &&
 
                 // Allow using the same name with multiple types in some cases (see callers).
                 validateSingleType &&
 
-                // Allow registering the same name twice to the same type (see above).
+                // Allow registering the same name twice to the same type.
                 type != otherType)
             {
                 var message =
@@ -597,8 +582,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new InvalidOperationException(message);
             }
 
-            registry.TypedClientRegistrations[type] = name;
-            registry.NamedClientRegistrations[name] = type;
+            if (validateSingleType)
+            {
+                registry.NamedClientRegistrations[name] = type;
+            }
         }
     }
 }
