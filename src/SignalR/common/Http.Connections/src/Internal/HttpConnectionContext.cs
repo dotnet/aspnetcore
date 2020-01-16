@@ -334,27 +334,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         Transport?.Output.Complete();
                         Transport?.Input.Complete();
                     }
-
-                    Application?.Input.CancelPendingRead();
-
-                    await transportTask.NoThrow();
-                    Application?.Input.Complete();
-
-                    Log.WaitingForTransportAndApplication(_logger, TransportType);
-
-                    // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
-                    // Wait for application so we can complete the writer safely
-                    await applicationTask.NoThrow();
-                    Log.TransportAndApplicationComplete(_logger, TransportType);
-
-                    // Shutdown application side now that it's finished
-                    Transport?.Output.Complete(applicationTask.Exception?.InnerException);
-
-                    // Close the reading side after both sides run
-                    Transport?.Input.Complete();
-
-                    // Observe exceptions
-                    await Task.WhenAll(transportTask, applicationTask);
                 }
 
                 // Notify all waiters that we're done disposing

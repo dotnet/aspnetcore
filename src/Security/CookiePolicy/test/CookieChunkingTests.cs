@@ -45,29 +45,6 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         [Fact]
-        public void AppendLargeCookie_WithOptions_Appended()
-        {
-            HttpContext context = new DefaultHttpContext();
-            var now = DateTimeOffset.UtcNow;
-            var options = new CookieOptions
-            {
-                Domain = "foo.com",
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict,
-                Path = "/bar",
-                Secure = true,
-                Expires = now.AddMinutes(5),
-                MaxAge = TimeSpan.FromMinutes(5)
-            };
-            var testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            new ChunkingCookieManager() { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, options);
-
-            var values = context.Response.Headers["Set-Cookie"];
-            Assert.Single(values);
-            Assert.Equal($"TestCookie={testString}; expires={now.AddMinutes(5).ToString("R")}; max-age=300; domain=foo.com; path=/bar; secure; samesite=strict; httponly", values[0]);
-        }
-
-        [Fact]
         public void AppendLargeCookieWithLimit_Chunked()
         {
             HttpContext context = new DefaultHttpContext();

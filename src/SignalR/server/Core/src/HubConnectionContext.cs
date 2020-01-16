@@ -702,26 +702,6 @@ namespace Microsoft.AspNetCore.SignalR
                     _receivedMessageTimeoutEnabled = false;
                 }
             }
-            finally
-            {
-                _ = InnerAbortConnection(connection);
-            }
-        }
-
-        private static async Task InnerAbortConnection(HubConnectionContext connection)
-        {
-            // We lock to make sure all writes are done before triggering the completion of the pipe
-            await connection._writeLock.WaitAsync();
-            try
-            {
-                // Communicate the fact that we're finished triggering abort callbacks
-                // HubOnDisconnectedAsync is waiting on this to complete the Pipe
-                connection._abortCompletedTcs.TrySetResult(null);
-            }
-            finally
-            {
-                connection._writeLock.Release();
-            }
         }
 
         private static class Log
