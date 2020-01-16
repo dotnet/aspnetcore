@@ -109,5 +109,8 @@ if [ $? != 0 ]; then
     # DO NOT EXIT
 fi
 
+ls -R artifacts/log
+echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT..."
 cp -r artifacts/log $HELIX_WORKITEM_UPLOAD_ROOT
+ls -R $HELIX_WORKITEM_UPLOAD_ROOT
 exit $nonflaky_exitcode
