@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -156,10 +155,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmationAndRealEmailSender()
         {
             // Arrange
-            var emailSender = new ContosoEmailSender();
             void ConfigureTestServices(IServiceCollection services)
             {
-                services.SetupTestEmailSender(emailSender);
+                services.AddSingleton<IEmailSender, FakeEmailSender>();
                 services
                         .Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true)
                         .SetupTestThirdPartyLogin();
@@ -175,7 +173,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert
             await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email, hasRealEmailSender: true);
-            Assert.Single(emailSender.SentEmails);            
         }
 
         [Fact]
