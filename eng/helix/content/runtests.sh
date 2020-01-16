@@ -109,5 +109,5 @@ if [ $? != 0 ]; then
     # DO NOT EXIT
 fi
 
-ls -la artifacts/log
+cp -r artifacts/log $HELIX_WORKITEM_UPLOAD_ROOT
 exit $nonflaky_exitcode
