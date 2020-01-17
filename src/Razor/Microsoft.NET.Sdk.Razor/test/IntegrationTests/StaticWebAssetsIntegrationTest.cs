@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -83,15 +84,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, PublishOutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
-        [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InitializeTestProject("AppWithPackageAndP2PReferenceAndRID", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder_PublishSingleFile()
         {
-            var runtimeIdentifier = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win-x64" : (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx-x64" : "linux-x64");
-            var result = await DotnetMSBuild("Publish", $"/restore /p:PublishSingleFile=true /p:RuntimeIdentifier={runtimeIdentifier}");
+            var result = await DotnetMSBuild("Publish", $"/restore /p:PublishSingleFile=true /p:ReferenceLocallyBuiltPackages=true");
 
             Assert.BuildPassed(result);
-            var publishOutputPath = GetRidSpecificPublishOutputPath(runtimeIdentifier);
+            var publishOutputPath = GetRidSpecificPublishOutputPath("win-x64");
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
