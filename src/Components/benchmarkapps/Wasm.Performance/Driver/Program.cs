@@ -76,9 +76,9 @@ namespace Wasm.Performance.Driver
                 output.Metadata.Add(new BenchmarkMetadata
                 {
                     Source = "BlazorWasm",
-                    Name = result.Name,
-                    ShortDescription = $"{result.Name} Duration",
-                    LongDescription = $"{result.Name} Duration",
+                    Name = result.Descriptor.Name,
+                    ShortDescription = result.Name,
+                    LongDescription = result.Descriptor.Description,
                     Format = "n2"
                 });
 
@@ -94,7 +94,7 @@ namespace Wasm.Performance.Driver
             output.Metadata.Add(new BenchmarkMetadata
             {
                 Source = "BlazorWasm",
-                Name = "Publish size",
+                Name = "blazorwasm/publish-size",
                 ShortDescription = "Publish size (KB)",
                 LongDescription = "Publish size (KB)",
                 Format = "n2",
@@ -116,7 +116,7 @@ namespace Wasm.Performance.Driver
             output.Metadata.Add(new BenchmarkMetadata
             {
                 Source = "BlazorWasm",
-                Name = "Publish size (compressed)",
+                Name = "blazorwasm/compressed-publish-size",
                 ShortDescription = "Publish size  compressed app (KB)",
                 LongDescription = "Publish size - compressed app (KB)",
                 Format = "n2",

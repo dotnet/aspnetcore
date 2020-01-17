@@ -14,6 +14,9 @@
         "branchOrCommit": "blazor-wasm",
         "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
       },
+      "buildArguments": [
+        "gitBranch=blazor-wasm"
+      ],
       "waitForExit": true,
       "readyStateText": "Application started."
     }

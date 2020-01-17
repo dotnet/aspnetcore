@@ -16,9 +16,24 @@ group('Rendering list', () => {
     app.dispose();
   });
 
-  benchmark('Render 10 items', () => measureRenderList(app, 10));
-  benchmark('Render 100 items', () => measureRenderList(app, 100));
-  benchmark('Render 1000 items', () => measureRenderList(app, 1000));
+  benchmark('Render 10 items', () => measureRenderList(app, 10), {
+    descriptor: {
+      name: 'blazorwasm/render-10-items',
+      description: 'Time to render 10 item list (ms)'
+    }
+  });
+  benchmark('Render 100 items', () => measureRenderList(app, 100), {
+    descriptor: {
+      name: 'blazorwasm/render-100-items',
+      description: 'Time to render 100 item list (ms)'
+    }
+  });
+  benchmark('Render 1000 items', () => measureRenderList(app, 1000), {
+    descriptor: {
+      name: 'blazorwasm/render-1000-items',
+      description: 'Time to render 1000 item list (ms)'
+    }
+  });
 
 });
 
