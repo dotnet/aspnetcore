@@ -10,6 +10,7 @@
     <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
 
     <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
+    <ProjectReference Include="..\AppWithPackageAndP2PReferenceAndRID\AppWithPackageAndP2PReferenceAndRID.csproj" />
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
     <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
     <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />

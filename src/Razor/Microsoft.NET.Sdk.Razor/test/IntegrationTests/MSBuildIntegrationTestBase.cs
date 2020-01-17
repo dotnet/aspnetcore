@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected string PublishOutputPath => Path.Combine(OutputPath, "publish");
 
+        protected string GetRidSpecificPublishOutputPath(string rid) => Path.Combine(OutputPath, rid, "publish");
+
         // Used by the test framework to set the project that we're working with
         internal static ProjectDirectory Project
         {
