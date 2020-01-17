@@ -33,6 +33,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.ValidateStaticWebAssetsUniquePaths"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAsssetsPropsFile"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
@@ -54,23 +59,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GetCurrentProjectStaticWebAssetsDependsOn)
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
-    <AssignTargetPathsDependsOn>
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      $(GetCopyToOutputDirectoryItemsDependsOn);
       GenerateStaticWebAssetsManifest;
-      $(AssignTargetPathsDependsOn)
-    </AssignTargetPathsDependsOn>
+    </GetCopyToOutputDirectoryItemsDependsOn>
 
     <ResolveStaticWebAssetsInputsDependsOn>
       ResolveCurrentProjectStaticWebAssetsInputs;
-      $(ResolveStaticWebAssetsInputsDependsOn)
-    </ResolveStaticWebAssetsInputsDependsOn>
-
-    <ResolveStaticWebAssetsInputsDependsOn Condition="$(NoBuild) != 'true'">
       ResolveReferencedProjectsStaticWebAssets;
       $(ResolveStaticWebAssetsInputsDependsOn)
     </ResolveStaticWebAssetsInputsDependsOn>
 
     <ResolveReferencedProjectsStaticWebAssetsDependsOn>
-      ResolveReferences;
+      PrepareProjectReferences;
       $(ResolveReferencedProjectsStaticWebAssetsDependsOn)
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
 
@@ -145,11 +146,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'%(SourceType)' != ''">
           <BasePath>%(StaticWebAsset.BasePath)</BasePath>
           <ContentRoot>%(StaticWebAsset.ContentRoot)</ContentRoot>
+          <SourceId>%(StaticWebAsset.SourceId)</SourceId>
       </_ExternalStaticWebAsset>
     </ItemGroup>
 
     <!-- We need a transform here to make sure we hash the metadata -->
-    <Hash ItemsToHash="@(_ExternalStaticWebAsset->'%(Identity)%(BasePath)%(ContentRoot)')">
+    <Hash ItemsToHash="@(_ExternalStaticWebAsset->'%(Identity)%(SourceId)%(BasePath)%(ContentRoot)')">
       <Output TaskParameter="HashResult" PropertyName="_StaticWebAssetsCacheHash" />
     </Hash>
 
@@ -181,20 +183,29 @@ Copyright (c) .NET Foundation. All rights reserved.
     Outputs="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
     DependsOnTargets="$(GenerateStaticWebAssetsManifestDependsOn)">
 
+    <ItemGroup>
+      <_WebRootFiles Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(TargetPath)').Replace('\','/').StartsWith('wwwroot/'))" />
+      <_ReferencedStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(SourceType)' != ''" />
+    </ItemGroup>
+
+    <ValidateStaticWebAssetsUniquePaths
+      StaticWebAssets="@(_ReferencedStaticWebAssets)"
+      WebRootFiles="@(_WebRootFiles)" />
+
     <GenerateStaticWebAssetsManifest
       ContentRootDefinitions="@(_ExternalStaticWebAsset)"
       TargetManifestPath="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
 
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
-      <Content
+      <ContentWithTargetPath
         Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
-        Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
-        Link="$(TargetName).StaticWebAssets.xml">
+        Condition="'@(_ExternalStaticWebAsset->Count())' != '0'">
 
+        <TargetPath>$(TargetName).StaticWebAssets.xml</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </Content>
+      </ContentWithTargetPath>
     </ItemGroup>
 
     <ItemGroup>
@@ -273,7 +284,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_ThisProjectStaticWebAsset
         Include="@(Content)"
-        Condition="$([System.String]::Copy('%(Identity)').StartsWith('wwwroot'))">
+        Condition="$([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))">
 
         <!-- Remove the wwwroot\ prefix -->
         <RelativePath>$([System.String]::Copy('%(Identity)').Substring(8))</RelativePath>
@@ -506,14 +517,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot\%(BasePath)\%(RelativePath)'))'))</RelativePath>
-
       </_ExternalPublishStaticWebAsset>
 
       <!-- Remove any existing external static web asset that might have been added as part of the
            regular publish pipeline. -->
       <ResolvedFileToPublish Remove="@(_ExternalPublishStaticWebAsset)" />
 
-      <ResolvedFileToPublish Include="@(_ExternalPublishStaticWebAsset)" />
+      <ResolvedFileToPublish Include="@(_ExternalPublishStaticWebAsset)">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
     </ItemGroup>
 
   </Target>
