@@ -89,8 +89,10 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.SignalR.Core;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.10' ">
+    <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.10' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Authentication.Cookies;
+      Microsoft.AspNetCore.Mvc.Core;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
