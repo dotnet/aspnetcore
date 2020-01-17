@@ -40,10 +40,10 @@ namespace BlazorWasm_CSharp.Server.Controllers
             if (claimsPrincipal.Claims.Any())
             {
                 var claims = new List<ClaimValue>();
-                var nameClaims = claimsPrincipal.FindAll(identity.NameClaimType);
+                var nameClaims = claimsPrincipal.FindAll(userInfo.NameClaimType);
                 foreach (var claim in nameClaims)
                 {
-                    claims.Add(new ClaimValue(identity.NameClaimType, claim.Value));
+                    claims.Add(new ClaimValue(userInfo.NameClaimType, claim.Value));
                 }
 
                 // Uncomment this code if you want to send additional claims to the client.
