@@ -1,3 +1,6 @@
+#if (!NoAuth)
+using Microsoft.AspNetCore.Components.Authorization;
+#endif
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +14,10 @@ namespace BlazorWasm_CSharp
     {
         public void ConfigureServices(IServiceCollection services)
         {
+#if (IndividualLocalAuth)
+            services.AddAuthorizationCore();
+            services.AddSingleton<AuthenticationStateProvider, HostAuthenticationStateProvider>();
+#endif
         }
 
         public void Configure(IComponentsApplicationBuilder app)
