@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BlazorWasm_CSharp.Shared.Authorization;
@@ -12,7 +14,7 @@ namespace BlazorWasm_CSharp.Server.Controllers
         [Authorize]
         [AllowAnonymous]
         public IActionResult GetCurrentUser() =>
-            Ok(User.Identity.IsAuthenticated ? new UserInfo(User) : UserInfo.Anonymous);
+            Ok(User.Identity.IsAuthenticated ? CreateUserInfo(User) : UserInfo.Anonymous);
 
         private UserInfo CreateUserInfo(ClaimsPrincipal claimsPrincipal)
         {
@@ -38,10 +40,10 @@ namespace BlazorWasm_CSharp.Server.Controllers
             if (claimsPrincipal.Claims.Any())
             {
                 var claims = new List<ClaimValue>();
-                var nameClaims = claimsPrincipal.FindAll(NameClaimType);
+                var nameClaims = claimsPrincipal.FindAll(claimsIdentity.NameClaimType);
                 foreach (var claim in nameClaims)
                 {
-                    claims.Add(new ClaimValue(NameClaimType, claim.Value));
+                    claims.Add(new ClaimValue(claimsIdentity.NameClaimType, claim.Value));
                 }
 
                 // Uncomment this code if you want to send additional claims to the client.
