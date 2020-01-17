@@ -32,6 +32,7 @@
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>    
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
