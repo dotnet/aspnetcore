@@ -1,6 +1,7 @@
-﻿using BlazorWasm_CSharp.Shared.Authorization;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BlazorWasm_CSharp.Shared.Authorization;
 
 namespace BlazorWasm_CSharp.Server.Controllers
 {
