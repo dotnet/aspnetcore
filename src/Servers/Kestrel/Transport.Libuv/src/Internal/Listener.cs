@@ -27,18 +27,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public ILibuvTrace Log => TransportContext.Log;
 
-        public Task StartAsync(
+        public async Task StartAsync(
             EndPoint endPoint,
             LibuvThread thread)
         {
             EndPoint = endPoint;
             Thread = thread;
 
-            return Thread.PostAsync(listener =>
+            var postTask = Thread.PostAsync(listener =>
             {
                 listener.ListenSocket = listener.CreateListenSocket();
                 listener.ListenSocket.Listen(TransportContext.Options.Backlog, ConnectionCallback, listener);
             }, this);
+
+            var completedTask = await Task.WhenAny(postTask, thread.ThreadLifetimeTask);
+            //awaiting the completed task will throw if there is an exception
+            await completedTask;
         }
 
         /// <summary>

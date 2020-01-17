@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public ILibuvTrace Log => TransportContext.Log;
 
-        public Task StartAsync(
+        public async Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
             EndPoint endPoint,
@@ -48,7 +48,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             var tcs = new TaskCompletionSource<int>(this, TaskCreationOptions.RunContinuationsAsynchronously);
             Thread.Post(StartCallback, tcs);
-            return tcs.Task;
+
+            var completedTask = await Task.WhenAny(tcs.Task, thread.ThreadLifetimeTask);
+            //awaiting the completed task will throw if there is an exception
+            await completedTask;
         }
 
         private static void StartCallback(TaskCompletionSource<int> tcs)

@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly int _maxLoops;
 
         private readonly LibuvFunctions _libuv;
-        private readonly IHostApplicationLifetime _appLifetime;
         private readonly Thread _thread;
         private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly UvLoopHandle _loop;
@@ -37,18 +36,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly object _startSync = new object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
+
         private Exception _closeError;
         private readonly ILibuvTrace _log;
 
         public LibuvThread(LibuvFunctions libuv, LibuvTransportContext libuvTransportContext, int maxLoops = 8)
-            : this(libuv, libuvTransportContext.AppLifetime, libuvTransportContext.Options.MemoryPoolFactory(), libuvTransportContext.Log, maxLoops)
+            : this(libuv, libuvTransportContext.Options.MemoryPoolFactory(), libuvTransportContext.Log, maxLoops)
         {
         }
 
-        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, ILibuvTrace log, int maxLoops = 8)
+        public LibuvThread(LibuvFunctions libuv, MemoryPool<byte> pool, ILibuvTrace log, int maxLoops = 8)
         {
             _libuv = libuv;
-            _appLifetime = appLifetime;
             _log = log;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
@@ -68,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             QueueCloseAsyncHandle = EnqueueCloseHandle;
             MemoryPool = pool;
             WriteReqPool = new WriteReqPool(this, _log);
+            ThreadLifetimeTask = _threadTcs.Task;
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
@@ -75,6 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public MemoryPool<byte> MemoryPool { get; }
 
         public WriteReqPool WriteReqPool { get; }
+
+        public Task ThreadLifetimeTask { get; }
 
 #if DEBUG
         public List<WeakReference> Requests { get; } = new List<WeakReference>();
@@ -329,9 +331,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             catch (Exception ex)
             {
                 _closeError = ex;
-                // Request shutdown so we can rethrow this exception
-                // in Stop which should be observable.
-                _appLifetime.StopApplication();
+                _log.LogError(0, ex, "Libuv thread shut down with an unhandled error.");
+                _threadTcs.SetException(ex);
             }
             finally
             {

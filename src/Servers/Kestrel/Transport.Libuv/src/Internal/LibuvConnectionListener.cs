@@ -157,6 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     var listenerPrimary = new ListenerPrimary(TransportContext);
                     _listeners.Add(listenerPrimary);
+
                     await listenerPrimary.StartAsync(pipeName, pipeMessage, EndPoint, Threads[0]).ConfigureAwait(false);
                     EndPoint = listenerPrimary.EndPoint;
 
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 throw;
             }
         }
-
+        
         private async IAsyncEnumerator<LibuvConnection> AcceptConnections()
         {
             var slots = new Task<(LibuvConnection, int)>[_listeners.Count];
