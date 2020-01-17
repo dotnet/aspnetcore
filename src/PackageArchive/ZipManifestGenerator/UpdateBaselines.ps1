@@ -1,13 +1,23 @@
+param(
+    [string]$BuildXmlFile = $null
+)
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 Push-Location $PSScriptRoot
 try {
 
+    if (!$BuildXmlFile)
+    {
+        Write-Error "No BuildXmlFile is provided. For 2.2 releases, this file should be in a location like \\vsufile\patches\sign\NET\CORE_BUILDS\2.2.X\2.2.9\20191125-01\assets\orchestration-metadata\manifests\build.xml."
+        exit 1
+    }
+
     [xml]$versionProps = Get-Content "$PSScriptRoot/../../../version.props"
     $LastVersion = "$($versionProps.Project.PropertyGroup.AspNetCoreMajorVersion).$($versionProps.Project.PropertyGroup.AspNetCoreMinorVersion | select -first 1).$($versionProps.Project.PropertyGroup.AspNetCorePatchVersion - 1)"
-    $manifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/release/$LastVersion/build.xml"
-    $buildXml = Invoke-RestMethod -Method GET $manifestUrl
+
+    [xml]$buildXml = Get-Content $BuildXmlFile
     $feedUrl = $buildXml.OrchestratedBuild.Endpoint.Url
     $baseFeedUrl = $feedUrl -replace 'final/index.json',''
 

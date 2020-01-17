@@ -89,4 +89,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.SignalR.Core;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.10' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
