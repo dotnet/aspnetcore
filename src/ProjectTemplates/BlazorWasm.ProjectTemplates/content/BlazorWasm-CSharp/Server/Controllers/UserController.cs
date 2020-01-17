@@ -26,7 +26,7 @@ namespace BlazorWasm_CSharp.Server.Controllers
             var userInfo = new UserInfo();
             userInfo.IsAuthenticated = true;
 
-            if (identity is ClaimsIdentity claimsIdentity)
+            if (claimsPrincipal.Identity is ClaimsIdentity claimsIdentity)
             {
                 userInfo.NameClaimType = claimsIdentity.NameClaimType;
                 userInfo.RoleClaimType = claimsIdentity.RoleClaimType;
