@@ -1,4 +1,4 @@
-﻿using BlazorWasm_CSharp.Shared.Models;
+﻿using BlazorWasm_CSharp.Shared.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

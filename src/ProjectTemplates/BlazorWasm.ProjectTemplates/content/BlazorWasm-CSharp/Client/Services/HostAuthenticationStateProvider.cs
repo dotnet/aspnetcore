@@ -1,4 +1,4 @@
-using BlazorWasm_CSharp.Shared.Models;
+using BlazorWasm_CSharp.Shared.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace BlazorWasm_CSharp.Client
 {
-    public class IdentityAuthenticationStateProvider : AuthenticationStateProvider
+    public class HostAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly HttpClient _client;
         private ClaimsPrincipal _currentUser;
 
-        public IdentityAuthenticationStateProvider(HttpClient client)
+        public HostAuthenticationStateProvider(HttpClient client)
         {
             _client = client;
         }
@@ -29,7 +29,7 @@ namespace BlazorWasm_CSharp.Client
 
         private async Task FetchUser()
         {
-            var user = await _client.GetJsonAsync<UserInfo>("/User");
+            var user = await _client.GetJsonAsync<UserInfo>("User");
 
             if (!user.IsAuthenticated)
             {
@@ -38,7 +38,7 @@ namespace BlazorWasm_CSharp.Client
             }
 
             var identity = new ClaimsIdentity(
-                "BlazorWasm_CSharp",
+                nameof(HostAuthenticationStateProvider),
                 user.NameClaimType,
                 user.RoleClaimType);
 

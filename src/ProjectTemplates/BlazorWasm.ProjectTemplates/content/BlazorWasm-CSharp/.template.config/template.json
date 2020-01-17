@@ -146,9 +146,9 @@
         {
           "condition": "(NoAuth)",
           "exclude": [
-            "Client/Services/IdentityAuthenticationStateProvider.cs",
+            "Client/Services/HostAuthenticationStateProvider.cs",
             "Server/Controllers/UserController.cs",
-            "Shared/Models/*"
+            "Shared/Authorization/*"
           ]
         }
       ]

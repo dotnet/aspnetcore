@@ -16,7 +16,7 @@ namespace BlazorWasm_CSharp
         {
 #if (IndividualLocalAuth)
             services.AddAuthorizationCore();
-            services.AddSingleton<AuthenticationStateProvider, IdentityAuthenticationStateProvider>();
+            services.AddSingleton<AuthenticationStateProvider, HostAuthenticationStateProvider>();
 #endif
         }
 

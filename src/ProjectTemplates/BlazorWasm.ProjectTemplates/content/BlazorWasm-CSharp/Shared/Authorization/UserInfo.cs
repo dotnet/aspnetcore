@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
-namespace BlazorWasm_CSharp.Shared.Models
+namespace BlazorWasm_CSharp.Shared.Authorization
 {
     public class UserInfo
     {
@@ -33,7 +33,7 @@ namespace BlazorWasm_CSharp.Shared.Models
                 {
                     claims.Add(new ClaimValue(NameClaimType, claim.Value));
                 }
-                
+
                 // Uncomment this code if you want to send additional claims to the client.
                 //foreach (var claim in claimsPrincipal.Claims.Except(nameClaims))
                 //{

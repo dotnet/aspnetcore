@@ -1,4 +1,4 @@
-﻿namespace BlazorWasm_CSharp.Shared.Models
+﻿namespace BlazorWasm_CSharp.Shared.Authorization
 {
     public class ClaimValue
     {
