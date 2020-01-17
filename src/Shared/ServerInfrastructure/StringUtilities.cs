@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static readonly char[] s_encode16Chars = "0123456789ABCDEF".ToCharArray();
+        private static ReadOnlySpan<byte> s_hexEncodeMap => new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return string.Create(length, (str, separator, number), (buffer, tuple) =>
             {
                 var (tupleStr, tupleSeparator, tupleNumber) = tuple;
-                char[] encode16Chars = s_encode16Chars;
+                var hexEncodeMap = s_hexEncodeMap;
 
                 var i = 0;
                 if (tupleStr != null)
@@ -399,14 +399,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     i = tupleStr.Length;
                 }
 
-                buffer[i + 8] = encode16Chars[tupleNumber & 0xF];
-                buffer[i + 7] = encode16Chars[(tupleNumber >> 4) & 0xF];
-                buffer[i + 6] = encode16Chars[(tupleNumber >> 8) & 0xF];
-                buffer[i + 5] = encode16Chars[(tupleNumber >> 12) & 0xF];
-                buffer[i + 4] = encode16Chars[(tupleNumber >> 16) & 0xF];
-                buffer[i + 3] = encode16Chars[(tupleNumber >> 20) & 0xF];
-                buffer[i + 2] = encode16Chars[(tupleNumber >> 24) & 0xF];
-                buffer[i + 1] = encode16Chars[(tupleNumber >> 28) & 0xF];
+                var number = (int)tupleNumber;
+                buffer[i + 8] = (char)hexEncodeMap[number & 0xF];
+                buffer[i + 7] = (char)hexEncodeMap[(number >> 4) & 0xF];
+                buffer[i + 6] = (char)hexEncodeMap[(number >> 8) & 0xF];
+                buffer[i + 5] = (char)hexEncodeMap[(number >> 12) & 0xF];
+                buffer[i + 4] = (char)hexEncodeMap[(number >> 16) & 0xF];
+                buffer[i + 3] = (char)hexEncodeMap[(number >> 20) & 0xF];
+                buffer[i + 2] = (char)hexEncodeMap[(number >> 24) & 0xF];
+                buffer[i + 1] = (char)hexEncodeMap[(number >> 28) & 0xF];
                 buffer[i] = tupleSeparator;
             });
         }
