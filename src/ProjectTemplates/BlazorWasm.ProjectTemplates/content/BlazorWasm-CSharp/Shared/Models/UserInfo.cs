@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
@@ -13,7 +13,7 @@ namespace BlazorWasm_CSharp.Shared.Models
         public UserInfo(ClaimsPrincipal claimsPrincipal)
         {
             var identity = claimsPrincipal.Identity;
-            AuthenticationType = identity.AuthenticationType;
+            IsAuthenticated = identity.AuthenticationType != null;
             if (identity is ClaimsIdentity claimsIdentity)
             {
                 NameClaimType = claimsIdentity.NameClaimType;
@@ -28,16 +28,23 @@ namespace BlazorWasm_CSharp.Shared.Models
             if (claimsPrincipal.Claims.Any())
             {
                 var claims = new List<ClaimValue>();
-                foreach (var claim in claimsPrincipal.Claims)
+                var nameClaims = claimsPrincipal.FindAll(NameClaimType);
+                foreach (var claim in nameClaims)
                 {
-                    claims.Add(new ClaimValue(claim.Type, claim.Value));
+                    claims.Add(new ClaimValue(NameClaimType, claim.Value));
                 }
+                
+                // Uncomment this code if you want to send additional claims to the client.
+                //foreach (var claim in claimsPrincipal.Claims.Except(nameClaims))
+                //{
+                //    claims.Add(new ClaimValue(claim.Type, claim.Value));
+                //}
 
                 Claims = claims;
             }
         }
 
-        public string AuthenticationType { get; set; }
+        public bool IsAuthenticated { get; set; }
 
         public string NameClaimType { get; set; }
 

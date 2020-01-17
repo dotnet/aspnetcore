@@ -96,7 +96,7 @@ namespace Templates.Test
         [InlineData(false)]
         public async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + (useLocalDb ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

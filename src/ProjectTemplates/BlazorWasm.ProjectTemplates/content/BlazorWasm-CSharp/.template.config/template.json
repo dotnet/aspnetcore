@@ -109,7 +109,7 @@
           ]
         },
         {
-          "condition": "(NoAuth)",
+          "condition": "(NoAuth && Hosted)",
           "rename": {
             "Client/Shared/MainLayout.NoAuth.razor": "Client/Shared/MainLayout.razor"
           },
@@ -119,7 +119,17 @@
           ]
         },
         {
-          "condition": "(!NoAuth)",
+          "condition": "(!Hosted)",
+          "rename": {
+            "Client/Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Client/Shared/LoginDisplay.*.razor",
+            "Client/Shared/MainLayout.Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!NoAuth && Hosted)",
           "rename": {
             "Client/Shared/MainLayout.Auth.razor": "Client/Shared/MainLayout.razor"
           },
