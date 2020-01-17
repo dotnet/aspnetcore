@@ -14,6 +14,12 @@
   <ItemGroup>
     <!-- Avoid referencing the AspNetCore framework since we want the ability to target work-in-progress shims -->
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+
+    <!-- RID specific installs attempts to restore runtime packs which cause cyclical dependencies .-->
+    <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
+    <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App.WPF" />
+    <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App.WindowsForms" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">

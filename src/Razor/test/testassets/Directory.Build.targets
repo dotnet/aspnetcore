@@ -2,11 +2,7 @@
   <Import Project="RazorTest.Introspection.targets" />
 
   <PropertyGroup>
-    <!--
-      The runtime version is only useful to restore and compile test projects, and not used to run tests.
-      We'll keep it pinned to a version that has already been shipped.
-     -->
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">$(MicrosoftNETCoreAppRefPackageVersion)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">$(MicrosoftNETCoreApp50PackageVersion)</RuntimeFrameworkVersion>
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
