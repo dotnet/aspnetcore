@@ -3,9 +3,11 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 
 namespace System.Buffers
 {
@@ -174,87 +176,137 @@ namespace System.Buffers
         private static unsafe void EncodeAsciiCharsToBytes(char* input, byte* output, int length)
         {
             // Note: Not BIGENDIAN or check for non-ascii
-            const int Shift16Shift24 = (1 << 16) | (1 << 24);
-            const int Shift8Identity = (1 << 8) | (1);
-
-            // Encode as bytes up to the first non-ASCII byte and return count encoded
-            int i = 0;
-            // Use Intrinsic switch
-            if (IntPtr.Size == 8) // 64 bit
+            if (Bmi2.IsSupported)
             {
-                if (length < 4) goto trailing;
-
-                int unaligned = (int)(((ulong)input) & 0x7) >> 1;
-                // Unaligned chars
-                for (; i < unaligned; i++)
+                if (length < 4)
                 {
-                    char ch = *(input + i);
-                    *(output + i) = (byte)ch; // Cast convert
+                    // Convert the chars to bytes one by one if there are less than 4.
+                    for (int i = 0; i < length; i++)
+                    {
+                        char ch = input[i];
+                        output[i] = (byte)ch; // Cast convert
+                    }
                 }
+                else if (Bmi2.X64.IsSupported) // 64-bit, 4+ chars
+                {
+                    // Convert all the 4 char sequences, except final 1 - 4 char sequence.
+                    int firstLength = length - sizeof(int);
+                    Debug.Assert(firstLength >= 0);
+                    for (int i = 0; i < firstLength; i += sizeof(int))
+                    {
+                        *(uint*)(output + i) = (uint)Bmi2.X64.ParallelBitExtract(
+                            *(ulong*)(input + i),
+                            0x00FF00FF_00FF00FFul);
+                    }
 
-                // Aligned
-                int ulongDoubleCount = (length - i) & ~0x7;
-                for (; i < ulongDoubleCount; i += 8)
-                {
-                    ulong inputUlong0 = *(ulong*)(input + i);
-                    ulong inputUlong1 = *(ulong*)(input + i + 4);
-                    // Pack 16 ASCII chars into 16 bytes
-                    *(uint*)(output + i) =
-                        ((uint)((inputUlong0 * Shift16Shift24) >> 24) & 0xffff) |
-                        ((uint)((inputUlong0 * Shift8Identity) >> 24) & 0xffff0000);
-                    *(uint*)(output + i + 4) =
-                        ((uint)((inputUlong1 * Shift16Shift24) >> 24) & 0xffff) |
-                        ((uint)((inputUlong1 * Shift8Identity) >> 24) & 0xffff0000);
+                    // Convert the final sequence of 4 from the end.
+                    // This may overlap with the last sequence of the loop, if length is not a multiple of 4.
+                    *(uint*)(output + firstLength) = (uint)Bmi2.X64.ParallelBitExtract(
+                        *(ulong*)(input + firstLength),
+                        0x00FF00FF_00FF00FFul);
                 }
-                if (length - 4 > i)
+                else // 32-bit, 4+ chars
                 {
-                    ulong inputUlong = *(ulong*)(input + i);
-                    // Pack 8 ASCII chars into 8 bytes
-                    *(uint*)(output + i) =
-                        ((uint)((inputUlong * Shift16Shift24) >> 24) & 0xffff) |
-                        ((uint)((inputUlong * Shift8Identity) >> 24) & 0xffff0000);
-                    i += 4;
-                }
+                    // Convert all the 2 char sequences, except final 1 - 2 char sequence
+                    int firstLength = length - sizeof(ushort);
+                    Debug.Assert(firstLength >= 0);
+                    for (int i = 0; i < firstLength; i += sizeof(ushort))
+                    {
+                        *(ushort*)(output + i) = (ushort)Bmi2.ParallelBitExtract(
+                            *(uint*)(input + i),
+                            0x00FF00FFu);
+                    }
 
-                trailing:
-                for (; i < length; i++)
-                {
-                    char ch = *(input + i);
-                    *(output + i) = (byte)ch; // Cast convert
+                    // Convert the final sequence of 2 from the end.
+                    // This may overlap with the last sequence of the loop, if length is not a multiple of 2
+                    *(ushort*)(output + firstLength) = (ushort)Bmi2.ParallelBitExtract(
+                        *(uint*)(input + firstLength),
+                        0x00FF00FFu);
                 }
             }
-            else // 32 bit
+            else
             {
-                // Unaligned chars
-                if ((unchecked((int)input) & 0x2) != 0)
-                {
-                    char ch = *input;
-                    i = 1;
-                    *(output) = (byte)ch; // Cast convert
-                }
+                const int Shift16Shift24 = (1 << 16) | (1 << 24);
+                const int Shift8Identity = (1 << 8) | (1);
 
-                // Aligned
-                int uintCount = (length - i) & ~0x3;
-                for (; i < uintCount; i += 4)
+                int i = 0;
+                // Use Intrinsic switch
+                if (IntPtr.Size == 8) // 64 bit
                 {
-                    uint inputUint0 = *(uint*)(input + i);
-                    uint inputUint1 = *(uint*)(input + i + 2);
-                    // Pack 4 ASCII chars into 4 bytes
-                    *(ushort*)(output + i) = (ushort)(inputUint0 | (inputUint0 >> 8));
-                    *(ushort*)(output + i + 2) = (ushort)(inputUint1 | (inputUint1 >> 8));
-                }
-                if (length - 1 > i)
-                {
-                    uint inputUint = *(uint*)(input + i);
-                    // Pack 2 ASCII chars into 2 bytes
-                    *(ushort*)(output + i) = (ushort)(inputUint | (inputUint >> 8));
-                    i += 2;
-                }
+                    if (length < 4) goto trailing;
 
-                if (i < length)
+                    int unaligned = (int)(((ulong)input) & 0x7) >> 1;
+                    // Unaligned chars
+                    for (; i < unaligned; i++)
+                    {
+                        char ch = input[i];
+                        output[i] = (byte)ch; // Cast convert
+                    }
+
+                    // Aligned
+                    int ulongDoubleCount = (length - i) & ~0x7;
+                    for (; i < ulongDoubleCount; i += 8)
+                    {
+                        ulong inputUlong0 = *(ulong*)(input + i);
+                        ulong inputUlong1 = *(ulong*)(input + i + 4);
+                        // Pack 16 ASCII chars into 16 bytes
+                        *(uint*)(output + i) =
+                            ((uint)((inputUlong0 * Shift16Shift24) >> 24) & 0xffff) |
+                            ((uint)((inputUlong0 * Shift8Identity) >> 24) & 0xffff0000);
+                        *(uint*)(output + i + 4) =
+                            ((uint)((inputUlong1 * Shift16Shift24) >> 24) & 0xffff) |
+                            ((uint)((inputUlong1 * Shift8Identity) >> 24) & 0xffff0000);
+                    }
+                    if (length - 4 > i)
+                    {
+                        ulong inputUlong = *(ulong*)(input + i);
+                        // Pack 8 ASCII chars into 8 bytes
+                        *(uint*)(output + i) =
+                            ((uint)((inputUlong * Shift16Shift24) >> 24) & 0xffff) |
+                            ((uint)((inputUlong * Shift8Identity) >> 24) & 0xffff0000);
+                        i += 4;
+                    }
+
+                trailing:
+                    for (; i < length; i++)
+                    {
+                        char ch = input[i];
+                        output[i] = (byte)ch; // Cast convert
+                    }
+                }
+                else // 32 bit
                 {
-                    char ch = *(input + i);
-                    *(output + i) = (byte)ch; // Cast convert
+                    // Unaligned chars
+                    if ((unchecked((int)input) & 0x2) != 0)
+                    {
+                        char ch = *input;
+                        i = 1;
+                        output[0] = (byte)ch; // Cast convert
+                    }
+
+                    // Aligned
+                    int uintCount = (length - i) & ~0x3;
+                    for (; i < uintCount; i += 4)
+                    {
+                        uint inputUint0 = *(uint*)(input + i);
+                        uint inputUint1 = *(uint*)(input + i + 2);
+                        // Pack 4 ASCII chars into 4 bytes
+                        *(ushort*)(output + i) = (ushort)(inputUint0 | (inputUint0 >> 8));
+                        *(ushort*)(output + i + 2) = (ushort)(inputUint1 | (inputUint1 >> 8));
+                    }
+                    if (length - 1 > i)
+                    {
+                        uint inputUint = *(uint*)(input + i);
+                        // Pack 2 ASCII chars into 2 bytes
+                        *(ushort*)(output + i) = (ushort)(inputUint | (inputUint >> 8));
+                        i += 2;
+                    }
+
+                    if (i < length)
+                    {
+                        char ch = input[i];
+                        output[i] = (byte)ch; // Cast convert
+                    }
                 }
             }
         }
