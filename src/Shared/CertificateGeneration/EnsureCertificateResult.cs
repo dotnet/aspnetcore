@@ -15,3 +15,4 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         FailedToMakeKeyAccessible,
     }
 }
+
