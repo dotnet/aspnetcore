@@ -30,10 +30,6 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual IStringLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
-
-        /// <inheritdoc />
         public virtual LocalizedString this[string name]
         {
             get

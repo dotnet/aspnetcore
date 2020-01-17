@@ -42,13 +42,13 @@ namespace Microsoft.JSInterop
     {
         public JSInvokableAttribute() { }
         public JSInvokableAttribute(string identifier) { }
-        public string Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class JSRuntime : Microsoft.JSInterop.IJSRuntime
     {
         protected JSRuntime() { }
-        protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected internal System.Text.Json.JsonSerializerOptions JsonSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected internal System.Text.Json.JsonSerializerOptions JsonSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
         protected internal abstract void EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult invocationResult);
         public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) { throw null; }
@@ -82,10 +82,10 @@ namespace Microsoft.JSInterop.Infrastructure
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public DotNetInvocationInfo(string assemblyName, string methodIdentifier, long dotNetObjectId, string callId) { throw null; }
-        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string CallId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public long DotNetObjectId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string MethodIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string CallId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public long DotNetObjectId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string MethodIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct DotNetInvocationResult
@@ -94,9 +94,9 @@ namespace Microsoft.JSInterop.Infrastructure
         private readonly int _dummyPrimitive;
         public DotNetInvocationResult(System.Exception exception, string errorKind) { throw null; }
         public DotNetInvocationResult(object result) { throw null; }
-        public string ErrorKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool Success { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ErrorKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool Success { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }

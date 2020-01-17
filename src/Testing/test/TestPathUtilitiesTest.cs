@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class TestPathUtilitiesTest
     {
-        // Entire test pending removal - see https://github.com/aspnet/Extensions/issues/1697
+        // Entire test pending removal - see https://github.com/dotnet/extensions/issues/1697
 #pragma warning disable 0618
 
         [Fact]

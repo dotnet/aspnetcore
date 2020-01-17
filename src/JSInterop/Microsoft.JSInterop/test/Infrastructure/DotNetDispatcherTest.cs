@@ -298,7 +298,7 @@ namespace Microsoft.JSInterop.Infrastructure
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12357")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/12357")]
         public void EndInvoke_AfterCancel()
         {
             // Arrange
@@ -527,7 +527,7 @@ namespace Microsoft.JSInterop.Infrastructure
             Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
-            // https://github.com/aspnet/AspNetCore/issues/8612
+            // https://github.com/dotnet/aspnetcore/issues/8612
             Assert.Contains(nameof(ThrowingClass.ThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
         }
 
@@ -549,7 +549,7 @@ namespace Microsoft.JSInterop.Infrastructure
             Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
-            // https://github.com/aspnet/AspNetCore/issues/8612
+            // https://github.com/dotnet/aspnetcore/issues/8612
             Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
         }
 

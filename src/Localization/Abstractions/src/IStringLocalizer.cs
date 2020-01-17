@@ -35,13 +35,5 @@ namespace Microsoft.Extensions.Localization
         /// </param>
         /// <returns>The strings.</returns>
         IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
-
-        /// <summary>
-        /// Creates a new <see cref="IStringLocalizer"/> for a specific <see cref="CultureInfo"/>.
-        /// </summary>
-        /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
-        /// <returns>A culture-specific <see cref="IStringLocalizer"/>.</returns>
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        IStringLocalizer WithCulture(CultureInfo culture);
     }
 }
