@@ -103,16 +103,6 @@
       }
     };
 
-    el('invokeWipedMethod').onsubmit = function (evt) {
-      evt.preventDefault();
-      try {
-        invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'InvokeWipedMethod', []);
-        el('invokeWipedMethodStackTrace').value = 'WARNING: No exception occurred';
-      } catch (ex) {
-        el('invokeWipedMethodStackTrace').value = ex.toString();
-      }
-    };
-
     el('callJs').onsubmit = function (evt) {
       evt.preventDefault();
       var expression = el('callJsEvalExpression').value;
