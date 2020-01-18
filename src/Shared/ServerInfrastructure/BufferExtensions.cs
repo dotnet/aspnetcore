@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
+using System.Text;
 
 namespace System.Buffers
 {
@@ -42,27 +40,26 @@ namespace System.Buffers
             return result;
         }
 
-        internal static unsafe void WriteAsciiNoValidation(ref this BufferWriter<PipeWriter> buffer, string data)
+        internal static unsafe void WriteAscii(ref this BufferWriter<PipeWriter> buffer, string data)
         {
             if (string.IsNullOrEmpty(data))
             {
                 return;
             }
 
-            var dest = buffer.Span;
-            var destLength = dest.Length;
-            var sourceLength = data.Length;
+            var dataLength = data.Length;
+            var bytes = buffer.Span;
+            var bytesLength = bytes.Length;
 
-            // Fast path, try copying to the available memory directly
-            if (sourceLength <= destLength)
+            // Fast path, try encoding to the available memory directly
+            if (dataLength <= bytesLength)
             {
-                fixed (char* input = data)
-                fixed (byte* output = dest)
+                fixed (char* charsPtr = data)
+                fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
                 {
-                    EncodeAsciiCharsToBytes(input, output, sourceLength);
+                    Encoding.ASCII.GetBytes(charsPtr, dataLength, bytesPtr, bytesLength);
+                    buffer.Advance(dataLength);
                 }
-
-                buffer.Advance(sourceLength);
             }
             else
             {
@@ -144,170 +141,43 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe static void WriteAsciiMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data)
         {
-            var remaining = data.Length;
+            Debug.Assert(!string.IsNullOrEmpty(data));
 
-            fixed (char* input = data)
+            fixed (char* charsPtr = data)
             {
-                var inputSlice = input;
-
-                while (remaining > 0)
+                var dataLength = data.Length;
+                var offset = 0;
+                var bytes = buffer.Span;
+                var bytesLength = bytes.Length;
+                do
                 {
-                    var writable = Math.Min(remaining, buffer.Span.Length);
+                    var writable = Math.Min(dataLength - offset, bytesLength);
+                    // Zero length spans are possible
+                    if (writable > 0)
+                    {
+                        fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
+                        {
+                            Encoding.ASCII.GetBytes(charsPtr + offset, writable, bytesPtr, bytesLength);
 
-                    if (writable == 0)
+                            buffer.Advance(writable);
+                            offset += writable;
+                        }
+                    }
+
+                    // Get new span if more to encode, and reset bytesLength
+                    if (offset < dataLength)
                     {
                         buffer.Ensure();
+                        bytes = buffer.Span;
+                        bytesLength = bytes.Length;
                         continue;
                     }
-
-                    fixed (byte* output = buffer.Span)
+                    else
                     {
-                        EncodeAsciiCharsToBytes(inputSlice, output, writable);
+                        // Encoded everything
+                        break;
                     }
-
-                    inputSlice += writable;
-                    remaining -= writable;
-
-                    buffer.Advance(writable);
-                }
-            }
-        }
-
-        private static unsafe void EncodeAsciiCharsToBytes(char* input, byte* output, int length)
-        {
-            // Note: Not BIGENDIAN or check for non-ascii
-            if (Bmi2.IsSupported)
-            {
-                if (length < 4)
-                {
-                    // Convert the chars to bytes one by one if there are less than 4.
-                    for (int i = 0; i < length; i++)
-                    {
-                        char ch = input[i];
-                        output[i] = (byte)ch; // Cast convert
-                    }
-                }
-                else if (Bmi2.X64.IsSupported) // 64-bit, 4+ chars
-                {
-                    // Convert all the 4 char sequences, except final 1 - 4 char sequence.
-                    int firstLength = length - sizeof(int);
-                    Debug.Assert(firstLength >= 0);
-                    for (int i = 0; i < firstLength; i += sizeof(int))
-                    {
-                        *(uint*)(output + i) = (uint)Bmi2.X64.ParallelBitExtract(
-                            *(ulong*)(input + i),
-                            0x00FF00FF_00FF00FFul);
-                    }
-
-                    // Convert the final sequence of 4 from the end.
-                    // This may overlap with the last sequence of the loop, if length is not a multiple of 4.
-                    *(uint*)(output + firstLength) = (uint)Bmi2.X64.ParallelBitExtract(
-                        *(ulong*)(input + firstLength),
-                        0x00FF00FF_00FF00FFul);
-                }
-                else // 32-bit, 4+ chars
-                {
-                    // Convert all the 2 char sequences, except final 1 - 2 char sequence
-                    int firstLength = length - sizeof(ushort);
-                    Debug.Assert(firstLength >= 0);
-                    for (int i = 0; i < firstLength; i += sizeof(ushort))
-                    {
-                        *(ushort*)(output + i) = (ushort)Bmi2.ParallelBitExtract(
-                            *(uint*)(input + i),
-                            0x00FF00FFu);
-                    }
-
-                    // Convert the final sequence of 2 from the end.
-                    // This may overlap with the last sequence of the loop, if length is not a multiple of 2
-                    *(ushort*)(output + firstLength) = (ushort)Bmi2.ParallelBitExtract(
-                        *(uint*)(input + firstLength),
-                        0x00FF00FFu);
-                }
-            }
-            else
-            {
-                const int Shift16Shift24 = (1 << 16) | (1 << 24);
-                const int Shift8Identity = (1 << 8) | (1);
-
-                int i = 0;
-                // Use Intrinsic switch
-                if (IntPtr.Size == 8) // 64 bit
-                {
-                    if (length < 4) goto trailing;
-
-                    int unaligned = (int)(((ulong)input) & 0x7) >> 1;
-                    // Unaligned chars
-                    for (; i < unaligned; i++)
-                    {
-                        char ch = input[i];
-                        output[i] = (byte)ch; // Cast convert
-                    }
-
-                    // Aligned
-                    int ulongDoubleCount = (length - i) & ~0x7;
-                    for (; i < ulongDoubleCount; i += 8)
-                    {
-                        ulong inputUlong0 = *(ulong*)(input + i);
-                        ulong inputUlong1 = *(ulong*)(input + i + 4);
-                        // Pack 16 ASCII chars into 16 bytes
-                        *(uint*)(output + i) =
-                            ((uint)((inputUlong0 * Shift16Shift24) >> 24) & 0xffff) |
-                            ((uint)((inputUlong0 * Shift8Identity) >> 24) & 0xffff0000);
-                        *(uint*)(output + i + 4) =
-                            ((uint)((inputUlong1 * Shift16Shift24) >> 24) & 0xffff) |
-                            ((uint)((inputUlong1 * Shift8Identity) >> 24) & 0xffff0000);
-                    }
-                    if (length - 4 > i)
-                    {
-                        ulong inputUlong = *(ulong*)(input + i);
-                        // Pack 8 ASCII chars into 8 bytes
-                        *(uint*)(output + i) =
-                            ((uint)((inputUlong * Shift16Shift24) >> 24) & 0xffff) |
-                            ((uint)((inputUlong * Shift8Identity) >> 24) & 0xffff0000);
-                        i += 4;
-                    }
-
-                trailing:
-                    for (; i < length; i++)
-                    {
-                        char ch = input[i];
-                        output[i] = (byte)ch; // Cast convert
-                    }
-                }
-                else // 32 bit
-                {
-                    // Unaligned chars
-                    if ((unchecked((int)input) & 0x2) != 0)
-                    {
-                        char ch = *input;
-                        i = 1;
-                        output[0] = (byte)ch; // Cast convert
-                    }
-
-                    // Aligned
-                    int uintCount = (length - i) & ~0x3;
-                    for (; i < uintCount; i += 4)
-                    {
-                        uint inputUint0 = *(uint*)(input + i);
-                        uint inputUint1 = *(uint*)(input + i + 2);
-                        // Pack 4 ASCII chars into 4 bytes
-                        *(ushort*)(output + i) = (ushort)(inputUint0 | (inputUint0 >> 8));
-                        *(ushort*)(output + i + 2) = (ushort)(inputUint1 | (inputUint1 >> 8));
-                    }
-                    if (length - 1 > i)
-                    {
-                        uint inputUint = *(uint*)(input + i);
-                        // Pack 2 ASCII chars into 2 bytes
-                        *(ushort*)(output + i) = (ushort)(inputUint | (inputUint >> 8));
-                        i += 2;
-                    }
-
-                    if (i < length)
-                    {
-                        char ch = input[i];
-                        output[i] = (byte)ch; // Cast convert
-                    }
-                }
+                } while (true);
             }
         }
 

@@ -11538,7 +11538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         if (value != null)
                         {
                             output.Write(headerKey);
-                            output.WriteAsciiNoValidation(value);
+                            output.WriteAscii(value);
                         }
                     }
                 }
