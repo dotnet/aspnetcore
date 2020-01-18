@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers.Binary;
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
@@ -369,8 +370,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
         }
+        private static ReadOnlySpan<byte> HexEncodeMap => new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
 
-        private static ReadOnlySpan<byte> s_hexEncodeMap => new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
+        private static readonly SpanAction<char, (string str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
+
+        private static readonly Vector128<byte> s_shuffleMask = Vector128.Create((byte)
+            0xF, 0xF, 3, 0xF,
+            0xF, 0xF, 2, 0xF,
+            0xF, 0xF, 1, 0xF,
+            0xF, 0xF, 0, 0xF);
+
+        private static readonly Vector128<byte> s_asciiUpperCase = Vector128.Create(
+            (byte)'0', (byte)'1', (byte)'2', (byte)'3',
+            (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+            (byte)'8', (byte)'9', (byte)'A', (byte)'B',
+            (byte)'C', (byte)'D', (byte)'E', (byte)'F');
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -379,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="separator"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static string ConcatAsHexSuffix(string str, char separator, uint number)
+        public unsafe static string ConcatAsHexSuffix(string str, char separator, uint number)
         {
             var length = 1 + 8;
             if (str != null)
@@ -387,29 +401,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            return string.Create(length, (str, separator, number), (buffer, tuple) =>
+            return string.Create(length, (str, separator, number), s_populateSpanWithHexSuffix);
+        }
+
+        private static void PopulateSpanWithHexSuffix(Span<char> buffer, (string str, char separator, uint number) tuple)
+        {
+            var (tupleStr, tupleSeparator, tupleNumber) = tuple;
+
+            var i = 0;
+            if (tupleStr != null)
             {
-                var (tupleStr, tupleSeparator, tupleNumber) = tuple;
-                var hexEncodeMap = s_hexEncodeMap;
+                tupleStr.AsSpan().CopyTo(buffer);
+                i = tupleStr.Length;
+            }
 
-                var i = 0;
-                if (tupleStr != null)
-                {
-                    tupleStr.AsSpan().CopyTo(buffer);
-                    i = tupleStr.Length;
-                }
+            buffer[i] = tupleSeparator;
+            i++;
 
+            if (Ssse3.IsSupported)
+            {
+                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalar(tupleNumber).AsByte(),s_shuffleMask);
+                var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
+                var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
+                // Lookup the hex values at the positions of the indices
+                var hex = Ssse3.Shuffle(s_asciiUpperCase, indices);
+                // The high bytes (0x00) of the chars have also been converted to ascii hex '0', so clear them out.
+                hex = Sse2.And(hex, Vector128.Create((ushort)0xFF).AsByte());
+
+                // This generates much more efficient asm than fixing the buffer and using
+                // Sse2.Store((byte*)(p + i), chars.AsByte());
+                Unsafe.WriteUnaligned(
+                    ref Unsafe.As<char, byte>(
+                        ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), i)),
+                    hex);
+            }
+            else
+            {
+                var hexEncodeMap = HexEncodeMap;
                 var number = (int)tupleNumber;
-                buffer[i + 8] = (char)hexEncodeMap[number & 0xF];
-                buffer[i + 7] = (char)hexEncodeMap[(number >> 4) & 0xF];
-                buffer[i + 6] = (char)hexEncodeMap[(number >> 8) & 0xF];
-                buffer[i + 5] = (char)hexEncodeMap[(number >> 12) & 0xF];
-                buffer[i + 4] = (char)hexEncodeMap[(number >> 16) & 0xF];
-                buffer[i + 3] = (char)hexEncodeMap[(number >> 20) & 0xF];
-                buffer[i + 2] = (char)hexEncodeMap[(number >> 24) & 0xF];
-                buffer[i + 1] = (char)hexEncodeMap[(number >> 28) & 0xF];
-                buffer[i] = tupleSeparator;
-            });
+
+                buffer[i + 7] = (char)hexEncodeMap[number & 0xF];
+                buffer[i + 6] = (char)hexEncodeMap[(number >> 4) & 0xF];
+                buffer[i + 5] = (char)hexEncodeMap[(number >> 8) & 0xF];
+                buffer[i + 4] = (char)hexEncodeMap[(number >> 12) & 0xF];
+                buffer[i + 3] = (char)hexEncodeMap[(number >> 16) & 0xF];
+                buffer[i + 2] = (char)hexEncodeMap[(number >> 20) & 0xF];
+                buffer[i + 1] = (char)hexEncodeMap[(number >> 24) & 0xF];
+                buffer[i + 0] = (char)hexEncodeMap[(number >> 28) & 0xF];
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
