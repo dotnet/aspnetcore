@@ -226,6 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             bool result;
             try
             {
+                // Throws InvalidOperationException if the object graph is too deep
                 result = VisitImplementation(ref metadata, ref key, model);
             }
             finally
