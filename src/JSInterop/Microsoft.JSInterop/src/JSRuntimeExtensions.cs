@@ -16,7 +16,7 @@ namespace Microsoft.JSInterop
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
         public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, params object[] args)
@@ -38,7 +38,7 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public static ValueTask<TValue> InvokeAsync<TValue>(this IJSRuntime jsRuntime, string identifier, params object[] args)
@@ -56,7 +56,7 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="cancellationToken">
         /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
         /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
@@ -77,7 +77,7 @@ namespace Microsoft.JSInterop
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="cancellationToken">
         /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
         /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
@@ -98,7 +98,7 @@ namespace Microsoft.JSInterop
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
@@ -120,7 +120,7 @@ namespace Microsoft.JSInterop
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>

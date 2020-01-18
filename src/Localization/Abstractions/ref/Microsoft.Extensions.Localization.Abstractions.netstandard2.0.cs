@@ -8,8 +8,6 @@ namespace Microsoft.Extensions.Localization
         Microsoft.Extensions.Localization.LocalizedString this[string name] { get; }
         Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get; }
         System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures);
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture);
     }
     public partial interface IStringLocalizerFactory
     {
@@ -24,10 +22,10 @@ namespace Microsoft.Extensions.Localization
         public LocalizedString(string name, string value) { }
         public LocalizedString(string name, string value, bool resourceNotFound) { }
         public LocalizedString(string name, string value, bool resourceNotFound, string searchedLocation) { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool ResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string SearchedLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool ResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string SearchedLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static implicit operator string (Microsoft.Extensions.Localization.LocalizedString localizedString) { throw null; }
         public override string ToString() { throw null; }
     }
@@ -43,7 +41,5 @@ namespace Microsoft.Extensions.Localization
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
         public System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
 }

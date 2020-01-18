@@ -18,13 +18,13 @@ namespace Microsoft.Extensions.Localization
     public partial class LocalizationOptions
     {
         public LocalizationOptions() { }
-        public string ResourcesPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ResourcesPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=false)]
     public partial class ResourceLocationAttribute : System.Attribute
     {
         public ResourceLocationAttribute(string resourceLocation) { }
-        public string ResourceLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ResourceLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class ResourceManagerStringLocalizer : Microsoft.Extensions.Localization.IStringLocalizer
     {
@@ -36,8 +36,6 @@ namespace Microsoft.Extensions.Localization
         public virtual System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
         protected System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures, System.Globalization.CultureInfo culture) { throw null; }
         protected string GetStringSafely(string name, System.Globalization.CultureInfo culture) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public Microsoft.Extensions.Localization.IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
     public partial class ResourceManagerStringLocalizerFactory : Microsoft.Extensions.Localization.IStringLocalizerFactory
     {
@@ -52,14 +50,6 @@ namespace Microsoft.Extensions.Localization
         protected virtual string GetResourcePrefix(string location, string baseName, string resourceLocation) { throw null; }
         protected virtual Microsoft.Extensions.Localization.RootNamespaceAttribute GetRootNamespaceAttribute(System.Reflection.Assembly assembly) { throw null; }
     }
-    [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-    public partial class ResourceManagerWithCultureStringLocalizer : Microsoft.Extensions.Localization.ResourceManagerStringLocalizer
-    {
-        public ResourceManagerWithCultureStringLocalizer(System.Resources.ResourceManager resourceManager, System.Reflection.Assembly resourceAssembly, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, System.Globalization.CultureInfo culture, Microsoft.Extensions.Logging.ILogger logger) : base (default(System.Resources.ResourceManager), default(System.Reflection.Assembly), default(string), default(Microsoft.Extensions.Localization.IResourceNamesCache), default(Microsoft.Extensions.Logging.ILogger)) { }
-        public override Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
-        public override Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
-        public override System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
-    }
     public partial class ResourceNamesCache : Microsoft.Extensions.Localization.IResourceNamesCache
     {
         public ResourceNamesCache() { }
@@ -69,7 +59,7 @@ namespace Microsoft.Extensions.Localization
     public partial class RootNamespaceAttribute : System.Attribute
     {
         public RootNamespaceAttribute(string rootNamespace) { }
-        public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.Localization.Internal
@@ -77,7 +67,7 @@ namespace Microsoft.Extensions.Localization.Internal
     public partial class AssemblyWrapper
     {
         public AssemblyWrapper(System.Reflection.Assembly assembly) { }
-        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual string FullName { get { throw null; } }
         public virtual System.IO.Stream GetManifestResourceStream(string name) { throw null; }
     }

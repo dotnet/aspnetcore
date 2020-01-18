@@ -93,6 +93,12 @@ namespace Microsoft.AspNetCore.Testing
             return Path.Combine(baseDirectory, assembly.GetName().Name, attribute.TargetFramework);
         }
 
+        public static bool GetPreserveExistingLogsInOutput(Assembly assembly)
+        {
+            var attribute = assembly.GetCustomAttributes().OfType<TestOutputDirectoryAttribute>().FirstOrDefault();
+            return attribute.PreserveExistingLogsInOutput;
+        }
+
         public static string GetTestClassName(Type type)
         {
             var shortNameAttribute =

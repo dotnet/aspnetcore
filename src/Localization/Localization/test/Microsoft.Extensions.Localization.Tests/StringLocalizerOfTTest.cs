@@ -34,28 +34,6 @@ namespace Microsoft.Extensions.Localization
         }
 
         [Fact]
-        public void WithCulture_InvokesWithCultureFromInnerLocalizer()
-        {
-            // Arrange
-            var factory = new Mock<IStringLocalizerFactory>();
-            var innerLocalizer = new Mock<IStringLocalizer>();
-            factory.Setup(mock => mock.Create(typeof(object)))
-                .Returns(innerLocalizer.Object);
-
-            var localizer = new StringLocalizer<object>(factory.Object);
-
-            // Act
-#pragma warning disable CS0618
-            localizer.WithCulture(CultureInfo.GetCultureInfo("fr-FR"));
-#pragma warning restore CS0618
-
-            // Assert
-#pragma warning disable CS0618
-            innerLocalizer.Verify(mock => mock.WithCulture(CultureInfo.GetCultureInfo("fr-FR")), Times.Once());
-#pragma warning restore CS0618
-        }
-
-        [Fact]
         public void Indexer_ThrowsAnExceptionForNullName()
         {
             // Arrange

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -25,16 +24,6 @@ namespace Microsoft.AspNetCore.Testing
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
                 "Test should not be running on MacOSX.");
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
-        public void RunTest_DoesNotRunOnWin7OrWin2008R2()
-        {
-            Assert.False(
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Environment.OSVersion.Version.ToString().StartsWith("6.1"),
-                "Test should not be running on Win7 or Win2008R2.");
         }
 
         [ConditionalFact]
