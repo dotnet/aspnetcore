@@ -26,12 +26,12 @@
 </div>
 
 @code {
-    bool collapseNavMenu = true;
+    private bool _collapseNavMenu = true;
 
-    string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => _collapseNavMenu ? "collapse" : null;
 
-    void ToggleNavMenu()
+    private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        _collapseNavMenu = !_collapseNavMenu;
     }
 }

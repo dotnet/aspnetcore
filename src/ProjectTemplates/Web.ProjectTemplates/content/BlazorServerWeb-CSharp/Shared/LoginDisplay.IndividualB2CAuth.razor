@@ -4,7 +4,7 @@
 
 <AuthorizeView>
     <Authorized>
-        @if (canEditProfile)
+        @if (_canEditProfile)
         {
             <a href="AzureADB2C/Account/EditProfile">Hello, @context.User.Identity.Name!</a>
         }
@@ -20,11 +20,11 @@
 </AuthorizeView>
 
 @code {
-    private bool canEditProfile;
+    private bool _canEditProfile;
 
     protected override void OnInitialized()
     {
         var options = AzureADB2COptions.Get(AzureADB2CDefaults.AuthenticationScheme);
-        canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
+        _canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
     }
 }

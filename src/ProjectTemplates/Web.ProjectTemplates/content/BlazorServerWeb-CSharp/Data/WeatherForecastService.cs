@@ -6,7 +6,7 @@ namespace BlazorServerWeb_CSharp.Data
 {
     public class WeatherForecastService
     {
-        private static readonly string[] Summaries = new[]
+        private static readonly string[] _summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
@@ -14,11 +14,12 @@ namespace BlazorServerWeb_CSharp.Data
         public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
         {
             var rng = new Random();
+
             return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = startDate.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
+                Summary = _summaries[rng.Next(_summaries.Length)]
             }).ToArray());
         }
     }
