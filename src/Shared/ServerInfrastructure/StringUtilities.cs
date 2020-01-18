@@ -394,6 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="number"></param>
         /// <returns></returns>
         public unsafe static string ConcatAsHexSuffix(string str, char separator, uint number)
+        public static string ConcatAsHexSuffix(string str, char separator, uint number)
         {
             var length = 1 + 8;
             if (str != null)
