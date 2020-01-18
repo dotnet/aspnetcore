@@ -258,6 +258,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
+        public void WriteReadOnlySpanChar_WritesToStream(int byteLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var span = new ReadOnlySpan<char>(array);
+                writer.Write(span);
+            }
+
+            // Assert
+            Assert.Equal(byteLength, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(1023)]
+        [InlineData(1024)]
+        [InlineData(1050)]
+        [InlineData(2048)]
         public async Task WriteCharAsync_WritesToStream(int byteLength)
         {
             // Arrange

@@ -127,6 +127,25 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        public override void Write(ReadOnlySpan<char> values)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
+            }
+
+            bool completed;
+            do
+            {
+                if (_charBufferCount == _charBufferSize)
+                {
+                    FlushInternal(flushEncoder: false);
+                }
+
+                completed = CopyToCharBuffer(ref values);
+            } while (!completed);
+        }
+
         public override void Write(string value)
         {
             if (_disposed)
@@ -421,6 +440,25 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount += remaining;
             index += remaining;
             count -= remaining;
+        }
+
+        private bool CopyToCharBuffer(ref ReadOnlySpan<char> values)
+        {
+            var remaining = Math.Min(_charBufferSize - _charBufferCount, values.Length);
+
+            var source = values.Slice(0, remaining);
+            var destination = new Span<char>(_charBuffer, _charBufferCount, remaining);
+            source.CopyTo(destination);
+
+            _charBufferCount += remaining;
+
+            if (remaining < values.Length)
+            {
+                values = values.Slice(remaining);
+                return false;
+            }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
