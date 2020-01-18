@@ -370,21 +370,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
         }
-        private static ReadOnlySpan<byte> HexEncodeMap => new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
-
+        
         private static readonly SpanAction<char, (string str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
-
-        private static readonly Vector128<byte> s_shuffleMask = Vector128.Create((byte)
-            0xF, 0xF, 3, 0xF,
-            0xF, 0xF, 2, 0xF,
-            0xF, 0xF, 1, 0xF,
-            0xF, 0xF, 0, 0xF);
-
-        private static readonly Vector128<byte> s_asciiUpperCase = Vector128.Create(
-            (byte)'0', (byte)'1', (byte)'2', (byte)'3',
-            (byte)'4', (byte)'5', (byte)'6', (byte)'7',
-            (byte)'8', (byte)'9', (byte)'A', (byte)'B',
-            (byte)'C', (byte)'D', (byte)'E', (byte)'F');
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -393,7 +380,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="separator"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        public unsafe static string ConcatAsHexSuffix(string str, char separator, uint number)
         public static string ConcatAsHexSuffix(string str, char separator, uint number)
         {
             var length = 1 + 8;
@@ -421,11 +407,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (Ssse3.IsSupported)
             {
-                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalar(tupleNumber).AsByte(),s_shuffleMask);
+                // These must be explicity typed as ReadOnlySpan<byte>
+                // They then become a non-allocating mappings to the data section of the assembly.
+                ReadOnlySpan<byte> shuffleMaskData = new byte[16]
+                {
+                    0xF, 0xF, 3, 0xF,
+                    0xF, 0xF, 2, 0xF,
+                    0xF, 0xF, 1, 0xF,
+                    0xF, 0xF, 0, 0xF
+                };
+
+                ReadOnlySpan<byte> asciiUpperCaseData = new byte[16]
+                {
+                    (byte)'0', (byte)'1', (byte)'2', (byte)'3',
+                    (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+                    (byte)'8', (byte)'9', (byte)'A', (byte)'B',
+                    (byte)'C', (byte)'D', (byte)'E', (byte)'F'
+                };
+
+                // Load from data section memory into Vector128 registers
+                var shuffleMask = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(shuffleMaskData));
+                var asciiUpperCase = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(asciiUpperCaseData));
+
+                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(),shuffleMask);
                 var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
                 var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
                 // Lookup the hex values at the positions of the indices
-                var hex = Ssse3.Shuffle(s_asciiUpperCase, indices);
+                var hex = Ssse3.Shuffle(asciiUpperCase, indices);
                 // The high bytes (0x00) of the chars have also been converted to ascii hex '0', so clear them out.
                 hex = Sse2.And(hex, Vector128.Create((ushort)0xFF).AsByte());
 
@@ -438,17 +446,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             else
             {
-                var hexEncodeMap = HexEncodeMap;
                 var number = (int)tupleNumber;
+                // Slice the buffer so we can use constant offsets in a backwards order
+                // and the highest index [8] will eliminate the bounds checks for all the lower indicies.
+                buffer = buffer.Slice(i);
 
-                buffer[i + 7] = (char)hexEncodeMap[number & 0xF];
-                buffer[i + 6] = (char)hexEncodeMap[(number >> 4) & 0xF];
-                buffer[i + 5] = (char)hexEncodeMap[(number >> 8) & 0xF];
-                buffer[i + 4] = (char)hexEncodeMap[(number >> 12) & 0xF];
-                buffer[i + 3] = (char)hexEncodeMap[(number >> 16) & 0xF];
-                buffer[i + 2] = (char)hexEncodeMap[(number >> 20) & 0xF];
-                buffer[i + 1] = (char)hexEncodeMap[(number >> 24) & 0xF];
-                buffer[i + 0] = (char)hexEncodeMap[(number >> 28) & 0xF];
+                // This must be explicity typed as ReadOnlySpan<byte>
+                // This then becomes a non-allocating mapping to the data section of the assembly.
+                // If it is a var, Span<byte> or byte[], it allocates the byte array per call.
+                ReadOnlySpan<byte> hexEncodeMap = new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
+                // Note: this only works with byte due to endian ambiguity for other types,
+                // hence the later (char) casts
+
+                buffer[7] = (char)hexEncodeMap[number & 0xF];
+                buffer[6] = (char)hexEncodeMap[(number >> 4) & 0xF];
+                buffer[5] = (char)hexEncodeMap[(number >> 8) & 0xF];
+                buffer[4] = (char)hexEncodeMap[(number >> 12) & 0xF];
+                buffer[3] = (char)hexEncodeMap[(number >> 16) & 0xF];
+                buffer[2] = (char)hexEncodeMap[(number >> 20) & 0xF];
+                buffer[1] = (char)hexEncodeMap[(number >> 24) & 0xF];
+                buffer[0] = (char)hexEncodeMap[(number >> 28) & 0xF];
             }
         }
 
