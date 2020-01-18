@@ -277,6 +277,39 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Theory]
+        [InlineData(1022, "\n")]
+        [InlineData(1023, "\n")]
+        [InlineData(1024, "\n")]
+        [InlineData(1050, "\n")]
+        [InlineData(2047, "\n")]
+        [InlineData(2048, "\n")]
+        [InlineData(1021, "\r\n")]
+        [InlineData(1022, "\r\n")]
+        [InlineData(1023, "\r\n")]
+        [InlineData(1024, "\r\n")]
+        [InlineData(1050, "\r\n")]
+        [InlineData(2046, "\r\n")]
+        [InlineData(2048, "\r\n")]
+        public void WriteLineReadOnlySpanChar_WritesToStream(int byteLength, string newLine)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            writer.NewLine = newLine;
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var span = new ReadOnlySpan<char>(array);
+                writer.WriteLine(span);
+            }
+
+            // Assert
+            Assert.Equal(byteLength + newLine.Length, stream.Length);
+        }
+
+        [Theory]
         [InlineData(1023)]
         [InlineData(1024)]
         [InlineData(1050)]

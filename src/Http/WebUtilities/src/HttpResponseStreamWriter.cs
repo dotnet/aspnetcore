@@ -176,6 +176,17 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        public override void WriteLine(ReadOnlySpan<char> values)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
+            }
+
+            Write(values);
+            Write(NewLine);
+        }
+
         public override Task WriteAsync(char value)
         {
             if (_disposed)
