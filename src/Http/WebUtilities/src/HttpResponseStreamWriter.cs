@@ -134,16 +134,21 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            bool completed;
-            do
+            int written = 0;
+            while (written < values.Length)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     FlushInternal(flushEncoder: false);
                 }
 
-                completed = CopyToCharBuffer(ref values);
-            } while (!completed);
+                written = CopyToCharBuffer(values);
+
+                if (written < values.Length)
+                {
+                    values = values.Slice(written);
+                }
+            };
         }
 
         public override void Write(string value)
@@ -442,7 +447,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             count -= remaining;
         }
 
-        private bool CopyToCharBuffer(ref ReadOnlySpan<char> values)
+        private int CopyToCharBuffer(ReadOnlySpan<char> values)
         {
             var remaining = Math.Min(_charBufferSize - _charBufferCount, values.Length);
 
@@ -452,13 +457,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             _charBufferCount += remaining;
 
-            if (remaining < values.Length)
-            {
-                values = values.Slice(remaining);
-                return false;
-            }
-
-            return true;
+            return remaining;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
