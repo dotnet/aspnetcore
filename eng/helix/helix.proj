@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <HelixSource>pr/dotnet/aspnetcore</HelixSource>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
@@ -31,8 +30,6 @@
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <EnableXUnitReporter>true</EnableXUnitReporter>
-    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>    
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
