@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 var number = (int)tupleNumber;
                 // Slice the buffer so we can use constant offsets in a backwards order
-                // and the highest index [8] will eliminate the bounds checks for all the lower indicies.
+                // and the highest index [7] will eliminate the bounds checks for all the lower indicies.
                 buffer = buffer.Slice(i);
 
                 // This must be explicity typed as ReadOnlySpan<byte>
