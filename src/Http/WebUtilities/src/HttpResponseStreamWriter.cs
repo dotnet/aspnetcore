@@ -356,6 +356,43 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
         }
 
+        public override Task WriteLineAsync(ReadOnlyMemory<char> values, CancellationToken cancellationToken = default)
+        {
+            if (_disposed)
+            {
+                return GetObjectDisposedTask();
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled(cancellationToken);
+            }
+
+            if (values.IsEmpty && NewLine.Length == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            var remaining = _charBufferSize - _charBufferCount;
+            if (remaining >= values.Length + NewLine.Length)
+            {
+                // Enough room in buffer, no need to go async
+                CopyToCharBuffer(values.Span);
+                CopyToCharBuffer(NewLine);
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return WriteLineAsyncAwaited(values);
+            }
+        }
+
+        private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> values)
+        {
+            await WriteAsyncAwaited(values);
+            await WriteAsyncAwaited(NewLine);
+        }
+
         // We want to flush the stream when Flush/FlushAsync is explicitly
         // called by the user (example: from a Razor view).
 

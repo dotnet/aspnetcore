@@ -395,6 +395,62 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Theory]
+        [InlineData(0, 1)]
+        [InlineData(1022, 1)]
+        [InlineData(1023, 1)]
+        [InlineData(1024, 1)]
+        [InlineData(1050, 1)]
+        [InlineData(2047, 1)]
+        [InlineData(2048, 1)]
+        [InlineData(1021, 2)]
+        [InlineData(1022, 2)]
+        [InlineData(1023, 2)]
+        [InlineData(1024, 2)]
+        [InlineData(1024, 1023)]
+        [InlineData(1024, 1024)]
+        [InlineData(1024, 1050)]
+        [InlineData(1050, 2)]
+        [InlineData(2046, 2)]
+        [InlineData(2048, 2)]
+        public async Task WriteLineReadOnlyMemoryAsync_WritesToStream(int byteLength, int newLineLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+            writer.NewLine = new string('\n', newLineLength);
+
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var memory = new ReadOnlyMemory<char>(array);
+                await writer.WriteLineAsync(memory);
+            }
+
+            // Assert
+            Assert.Equal(byteLength + newLineLength, stream.Length);
+        }
+
+        [Fact]
+        public async Task WriteLineReadOnlyMemoryAsync_TokenCanceled_ReturnsCanceledTask()
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+            var memory = new ReadOnlyMemory<char>(new char[] { 'a' });
+            var cancellationToken = new CancellationToken(true);
+
+            // Act
+            using (writer)
+            {
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writer.WriteLineAsync(memory, cancellationToken));
+            }
+
+            // Assert
+            Assert.Equal(0, stream.Length);
+        }
+
+        [Theory]
         [InlineData("你好世界", "utf-16")]
         [InlineData("హలో ప్రపంచ", "iso-8859-1")]
         [InlineData("வணக்கம் உலக", "utf-32")]
@@ -667,6 +723,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
                 await httpResponseStreamWriter.WriteAsync(new ReadOnlyMemory<char>(new char[] { 'a', 'b' }));
+            })};
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteLineAsync(new ReadOnlyMemory<char>(new char[] { 'a', 'b' }));
             })};
 
             yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
