@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -301,6 +302,58 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 CopyToCharBuffer(value, ref index, ref count);
             }
+        }
+
+        public override Task WriteAsync(ReadOnlyMemory<char> values, CancellationToken cancellationToken = default)
+        {
+            if (_disposed)
+            {
+                return GetObjectDisposedTask();
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled(cancellationToken);
+            }
+
+            if (values.IsEmpty)
+            {
+                return Task.CompletedTask;
+            }
+
+            var remaining = _charBufferSize - _charBufferCount;
+            if (remaining >= values.Length)
+            {
+                // Enough room in buffer, no need to go async
+                CopyToCharBuffer(values.Span);
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return WriteAsyncAwaited(values);
+            }
+        }
+
+        private async Task WriteAsyncAwaited(ReadOnlyMemory<char> values)
+        {
+            Debug.Assert(values.Length > 0);
+            Debug.Assert(_charBufferSize - _charBufferCount < values.Length);
+
+            int written = 0;
+            while (written < values.Length)
+            {
+                if (_charBufferCount == _charBufferSize)
+                {
+                    await FlushInternalAsync(flushEncoder: false);
+                }
+
+                written = CopyToCharBuffer(values.Span);
+
+                if (written < values.Length)
+                {
+                    values = values.Slice(written);
+                }
+            };
         }
 
         // We want to flush the stream when Flush/FlushAsync is explicitly
