@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             count = (total >> 2) + 3;
 
             // This must be explicity typed as ReadOnlySpan<byte>
-            // They then become a non-allocating mappings to the data section of the assembly.
+            // It then becomes a non-allocating mapping to the data section of the assembly.
             // For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
             ReadOnlySpan<byte> hex = new byte[16] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f' };
 
