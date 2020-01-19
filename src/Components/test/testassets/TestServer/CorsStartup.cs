@@ -46,7 +46,7 @@ namespace TestServer
             app.Map("/subdir", app =>
             {
                 app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
 
                 app.UseRouting();
 
@@ -55,7 +55,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html");
                 });
             });
         }

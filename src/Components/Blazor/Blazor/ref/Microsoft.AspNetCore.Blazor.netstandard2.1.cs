@@ -12,38 +12,38 @@ namespace Microsoft.AspNetCore.Blazor
 }
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
-    public static partial class BlazorWebAssemblyHost
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct RootComponentMapping
     {
-        public static Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder CreateDefaultBuilder() { throw null; }
+        private readonly object _dummy;
+        public RootComponentMapping(System.Type componentType, string selector) { throw null; }
+        public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Selector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public partial interface IWebAssemblyHost : System.IDisposable
+    public partial class RootComponentMappingCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.Blazor.Hosting.RootComponentMapping>
     {
-        System.IServiceProvider Services { get; }
-        System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public RootComponentMappingCollection() { }
+        public void Add(System.Type componentType, string selector) { }
+        public void AddRange(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Blazor.Hosting.RootComponentMapping> items) { }
+        public void Add<TComponent>(string selector) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
     }
-    public partial interface IWebAssemblyHostBuilder
+    public sealed partial class WebAssemblyHost : System.IAsyncDisposable
     {
-        System.Collections.Generic.IDictionary<object, object> Properties { get; }
-        Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHost Build();
-        Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Blazor.Hosting.WebAssemblyHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureDelegate);
-        Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TContainerBuilder> factory);
-        Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(System.Func<Microsoft.AspNetCore.Blazor.Hosting.WebAssemblyHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TContainerBuilder>> factory);
+        internal WebAssemblyHost() { }
+        public Microsoft.Extensions.Configuration.IConfiguration Configuration { get { throw null; } }
+        public System.IServiceProvider Services { get { throw null; } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+        public System.Threading.Tasks.Task RunAsync() { throw null; }
     }
-    public sealed partial class WebAssemblyHostBuilderContext
+    public sealed partial class WebAssemblyHostBuilder
     {
-        public WebAssemblyHostBuilderContext(System.Collections.Generic.IDictionary<object, object> properties) { }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public static partial class WebAssemblyHostBuilderExtensions
-    {
-        public static Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder ConfigureServices(this Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder hostBuilder, System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> configureDelegate) { throw null; }
-        public static Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder UseBlazorStartup(this Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder builder, System.Type startupType) { throw null; }
-        public static Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder UseBlazorStartup<TStartup>(this Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHostBuilder builder) { throw null; }
-    }
-    public static partial class WebAssemblyHostExtensions
-    {
-        public static void Run(this Microsoft.AspNetCore.Blazor.Hosting.IWebAssemblyHost host) { }
+        internal WebAssemblyHostBuilder() { }
+        public Microsoft.Extensions.Configuration.IConfigurationBuilder Configuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Blazor.Hosting.RootComponentMappingCollection RootComponents { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Blazor.Hosting.WebAssemblyHost Build() { throw null; }
+        public static Microsoft.AspNetCore.Blazor.Hosting.WebAssemblyHostBuilder CreateDefault(string[] args = null) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Blazor.Http
@@ -65,17 +65,5 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     {
         [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
         public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Components.Builder
-{
-    public static partial class ComponentsApplicationBuilderExtensions
-    {
-        public static void AddComponent<TComponent>(this Microsoft.AspNetCore.Components.Builder.IComponentsApplicationBuilder app, string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
-    }
-    public partial interface IComponentsApplicationBuilder
-    {
-        System.IServiceProvider Services { get; }
-        void AddComponent(System.Type componentType, string domElementSelector);
     }
 }
