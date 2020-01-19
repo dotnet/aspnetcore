@@ -49,17 +49,12 @@ namespace System.Buffers
 
             var dataLength = data.Length;
             var bytes = buffer.Span;
-            var bytesLength = bytes.Length;
 
             // Fast path, try encoding to the available memory directly
-            if (dataLength <= bytesLength)
+            if (dataLength <= bytes.Length)
             {
-                fixed (char* charsPtr = data)
-                fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
-                {
-                    Encoding.ASCII.GetBytes(charsPtr, dataLength, bytesPtr, bytesLength);
-                    buffer.Advance(dataLength);
-                }
+                Encoding.ASCII.GetBytes(data, bytes);
+                buffer.Advance(dataLength);
             }
             else
             {
@@ -141,44 +136,34 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe static void WriteAsciiMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data)
         {
-            Debug.Assert(!string.IsNullOrEmpty(data));
-
-            fixed (char* charsPtr = data)
+            var dataLength = data.Length;
+            var offset = 0;
+            var bytes = buffer.Span;
+            do
             {
-                var dataLength = data.Length;
-                var offset = 0;
-                var bytes = buffer.Span;
-                var bytesLength = bytes.Length;
-                do
+                var writable = Math.Min(dataLength - offset, bytes.Length);
+                // Zero length spans are possible
+                if (writable > 0)
                 {
-                    var writable = Math.Min(dataLength - offset, bytesLength);
-                    // Zero length spans are possible
-                    if (writable > 0)
-                    {
-                        fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
-                        {
-                            Encoding.ASCII.GetBytes(charsPtr + offset, writable, bytesPtr, bytesLength);
+                    Encoding.ASCII.GetBytes(data.AsSpan(offset, writable), bytes);
 
-                            buffer.Advance(writable);
-                            offset += writable;
-                        }
-                    }
+                    buffer.Advance(writable);
+                    offset += writable;
+                }
 
-                    // Get new span if more to encode, and reset bytesLength
-                    if (offset < dataLength)
-                    {
-                        buffer.Ensure();
-                        bytes = buffer.Span;
-                        bytesLength = bytes.Length;
-                        continue;
-                    }
-                    else
-                    {
-                        // Encoded everything
-                        break;
-                    }
-                } while (true);
-            }
+                // Get new span if more to encode, and reset bytesLength
+                if (offset < dataLength)
+                {
+                    buffer.Ensure();
+                    bytes = buffer.Span;
+                    continue;
+                }
+                else
+                {
+                    // Encoded everything
+                    break;
+                }
+            } while (true);
         }
 
         private static byte[] NumericBytesScratch => _numericBytesScratch ?? CreateNumericBytesScratch();
