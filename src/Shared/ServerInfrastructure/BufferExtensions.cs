@@ -40,21 +40,20 @@ namespace System.Buffers
             return result;
         }
 
-        internal static unsafe void WriteAscii(ref this BufferWriter<PipeWriter> buffer, string data)
+        internal static void WriteAscii(ref this BufferWriter<PipeWriter> buffer, string data)
         {
             if (string.IsNullOrEmpty(data))
             {
                 return;
             }
 
-            var dataLength = data.Length;
-            var bytes = buffer.Span;
-
+            var dest = buffer.Span;
+            var sourceLength = data.Length;
             // Fast path, try encoding to the available memory directly
-            if (dataLength <= bytes.Length)
+            if (sourceLength <= dest.Length)
             {
-                Encoding.ASCII.GetBytes(data, bytes);
-                buffer.Advance(dataLength);
+                Encoding.ASCII.GetBytes(data, dest);
+                buffer.Advance(sourceLength);
             }
             else
             {
@@ -134,7 +133,7 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe static void WriteAsciiMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data)
+        private static void WriteAsciiMultiWrite(ref this BufferWriter<PipeWriter> buffer, string data)
         {
             var dataLength = data.Length;
             var offset = 0;
@@ -142,27 +141,23 @@ namespace System.Buffers
             do
             {
                 var writable = Math.Min(dataLength - offset, bytes.Length);
-                // Zero length spans are possible
-                if (writable > 0)
-                {
-                    Encoding.ASCII.GetBytes(data.AsSpan(offset, writable), bytes);
+                // Zero length spans are possible, though unlikely.
+                // ASCII.GetBytes and .Advance will both handle them so we won't special case for them.
+                Encoding.ASCII.GetBytes(data.AsSpan(offset, writable), bytes);
+                buffer.Advance(writable);
 
-                    buffer.Advance(writable);
-                    offset += writable;
-                }
-
-                // Get new span if more to encode, and reset bytesLength
-                if (offset < dataLength)
+                // The `add` will macro-op fuse with `if` test.
+                offset += writable;
+                if (offset >= dataLength)
                 {
-                    buffer.Ensure();
-                    bytes = buffer.Span;
-                    continue;
-                }
-                else
-                {
+                    Debug.Assert(offset == dataLength);
                     // Encoded everything
                     break;
                 }
+
+                // Get new span, more to encode.
+                buffer.Ensure();
+                bytes = buffer.Span;
             } while (true);
         }
 
