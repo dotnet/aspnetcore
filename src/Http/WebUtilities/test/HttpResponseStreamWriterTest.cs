@@ -595,11 +595,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  httpResponseStreamWriter.Write(new char[] { 'a', 'b' }, 0, 1);
             })};
-
             yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
             {
                 httpResponseStreamWriter.Write("hello");
             })};
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                httpResponseStreamWriter.Write(new ReadOnlySpan<char>(new char[] { 'a', 'b' }));
+            })};
+
             yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
             {
                 httpResponseStreamWriter.Flush();
