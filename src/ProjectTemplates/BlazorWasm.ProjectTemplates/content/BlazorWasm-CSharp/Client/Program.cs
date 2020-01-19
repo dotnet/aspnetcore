@@ -1,4 +1,12 @@
-﻿using Microsoft.AspNetCore.Blazor.Hosting;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Text;
+using Microsoft.AspNetCore.Blazor.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+#if (!NoAuth)
+using Microsoft.AspNetCore.Components.Authorization;
+#endif
 
 #if (Hosted)
 namespace BlazorWasm_CSharp.Client
@@ -8,13 +16,19 @@ namespace BlazorWasm_CSharp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            var builder = WebAssemblyHostBuilder.CreateDefault(args);
+            builder.RootComponents.Add<App>("app");
 
-        public static IWebAssemblyHostBuilder CreateHostBuilder(string[] args) =>
-            BlazorWebAssemblyHost.CreateDefaultBuilder()
-                .UseBlazorStartup<Startup>();
+            // use builder.Services to configure application services.
+#if (IndividualLocalAuth)
+            builder.Services.AddOptions();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddSingleton<AuthenticationStateProvider, HostAuthenticationStateProvider>();
+#endif
+
+            await builder.Build().RunAsync();
+        }
     }
 }

@@ -83,7 +83,7 @@ namespace BlazorWasm_CSharp.Server
 
 #endif
             app.UseStaticFiles();
-            app.UseClientSideBlazorFiles<Client.Startup>();
+            app.UseClientSideBlazorFiles<Client.Program>();
 
             app.UseRouting();
 
@@ -99,7 +99,7 @@ namespace BlazorWasm_CSharp.Server
 #endif
                 endpoints.MapControllers();
 
-                endpoints.MapFallbackToClientSideBlazor<Client.Startup>("index.html");
+                endpoints.MapFallbackToClientSideBlazor<Client.Program>("index.html");
             });
         }
     }

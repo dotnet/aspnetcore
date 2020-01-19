@@ -100,7 +100,7 @@ namespace Wasm.Performance.Driver
                 Format = "n2",
             });
 
-            var testAssembly = typeof(TestApp.Startup).Assembly;
+            var testAssembly = typeof(TestApp.Program).Assembly;
             var testAssemblyLocation = new FileInfo(testAssembly.Location);
             var testApp = new DirectoryInfo(Path.Combine(
                 testAssemblyLocation.Directory.FullName,
@@ -143,7 +143,7 @@ namespace Wasm.Performance.Driver
             var args = new[]
             {
                 "--urls", "http://127.0.0.1:0",
-                "--applicationpath", typeof(TestApp.Startup).Assembly.Location,
+                "--applicationpath", typeof(TestApp.Program).Assembly.Location,
             };
 
             var host = DevHostServerProgram.BuildWebHost(args);

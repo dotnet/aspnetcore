@@ -36,7 +36,7 @@ namespace TestServer
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
             app.Map("/subdir", app =>
             {
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
             });
 
             // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
@@ -46,7 +46,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html");
                 });
             });
 
@@ -56,7 +56,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("test/{*path:nonfile}", "index.html");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("test/{*path:nonfile}", "index.html");
                 });
             });
 
@@ -66,7 +66,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Startup).Assembly.Location, "index.html");
+                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Program).Assembly.Location, "index.html");
                 });
             });
 
@@ -76,7 +76,7 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Startup).Assembly.Location, "test/{*path:nonfile}", "index.html");
+                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Program).Assembly.Location, "test/{*path:nonfile}", "index.html");
                 });
             });
         }
