@@ -161,10 +161,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override System.Threading.Tasks.Task FlushAsync() { throw null; }
         public override void Write(char value) { }
         public override void Write(char[] values, int index, int count) { }
+        public override void Write(System.ReadOnlySpan<char> values) { }
         public override void Write(string value) { }
         public override System.Threading.Tasks.Task WriteAsync(char value) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(char[] values, int index, int count) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(string value) { throw null; }
+        public override void WriteLine(System.ReadOnlySpan<char> values) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct KeyValueAccumulator
