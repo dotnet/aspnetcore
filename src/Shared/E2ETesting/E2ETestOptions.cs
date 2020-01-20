@@ -56,5 +56,20 @@ namespace Microsoft.AspNetCore.E2ETesting
         public string ScreenShotsPath { get; set; }
 
         public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+
+        public bool SauceTest { get; set; } = false;
+
+        public SauceOptions Sauce { get; set; }
+
+        public class SauceOptions
+        {
+            public string Username { get; set; }
+
+            public string AccessKey { get; set; }
+
+            public string TunnelIdentifier { get; set; }
+
+            public string HostName { get; set; }
+        }
     }
 }
