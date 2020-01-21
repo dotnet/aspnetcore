@@ -1,8 +1,9 @@
 <Project>
 
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
+  <ItemGroup>
+    <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll" />
+    <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +35,10 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
+
+  <ItemGroup>
+    <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
+  </ItemGroup>
 
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
