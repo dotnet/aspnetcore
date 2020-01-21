@@ -70,10 +70,6 @@
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
     <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
     <AssemblyVersion Condition="$(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion.Substring(0, $(BaselinePackageVersion.IndexOf('-')))).0</AssemblyVersion>
@@ -87,9 +83,6 @@
     -->
     <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
     <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
-
-    <!-- For servicing builds, we want to resolve basline versions of project packages that aren't building, always -->
-    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
