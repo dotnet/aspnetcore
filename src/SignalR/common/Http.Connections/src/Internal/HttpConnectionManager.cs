@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimeSpan _disconnectTimeout;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
-            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
+            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconnectTimeout }))
         {
         }
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
-            _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
+            _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconnectTimeout;
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
 
                     // This is most likely a long polling connection. The transport here ends because
-                    // a poll completed and has been inactive for > 5 seconds so we wait for the 
+                    // a poll completed and has been inactive for > 5 seconds so we wait for the
                     // application to finish gracefully
                     _ = DisposeAndRemoveAsync(connection, closeGracefully: true);
                 }

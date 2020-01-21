@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http.Connections
     }
     public partial class ConnectionOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Http.Connections.ConnectionOptions>
     {
-        public static System.TimeSpan DefaultDisconectTimeout;
+        public static System.TimeSpan DefaultDisconnectTimeout;
         public ConnectionOptionsSetup() { }
         public void Configure(Microsoft.AspNetCore.Http.Connections.ConnectionOptions options) { }
     }

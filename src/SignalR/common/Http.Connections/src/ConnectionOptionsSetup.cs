@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Http.Connections
 {
     public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
     {
-        public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
+        public static TimeSpan DefaultDisconnectTimeout = TimeSpan.FromSeconds(15);
 
         public void Configure(ConnectionOptions options)
         {
             if (options.DisconnectTimeout == null)
             {
-                options.DisconnectTimeout = DefaultDisconectTimeout;
+                options.DisconnectTimeout = DefaultDisconnectTimeout;
             }
         }
     }
