@@ -165,7 +165,7 @@ class Benchmark extends EventEmitter {
         this._group = group;
         this.name = name;
         this._fn = fn;
-        this._options = options;
+        this._options = options || {};
         this._state = { status: BenchmarkStatus.idle };
     }
 
@@ -205,13 +205,23 @@ class Benchmark extends EventEmitter {
                         await this._group.runTeardown();
                     }
 
-                    reportBenchmarkEvent(BenchmarkEvent.benchmarkCompleted, { 'name': this.name, success: true, numExecutions: this._state.numExecutions, duration: this._state.estimatedExecutionDurationMs });
+                    reportBenchmarkEvent(BenchmarkEvent.benchmarkCompleted, {
+                        name: this.name,
+                        success: true,
+                        numExecutions: this._state.numExecutions,
+                        duration: this._state.estimatedExecutionDurationMs,
+                        descriptor: this._options.descriptor
+                    });
 
                     this._updateState({ status: BenchmarkStatus.idle });
                 } catch (ex) {
                     this._updateState({ status: BenchmarkStatus.error });
                     console.error(ex);
-                    reportBenchmarkEvent(BenchmarkEvent.benchmarkError, { 'name': this.name, success: false });
+                    reportBenchmarkEvent(BenchmarkEvent.benchmarkError, {
+                        name: this.name,
+                        success: false,
+                        descriptor: this._options.descriptor
+                    });
                 }
             });
         }
