@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     var duration = stopwatch.GetElapsedTime();
                     entry = new HealthReportEntry(
                         status: HealthStatus.Unhealthy,
-                        description: "A timeout occured while running check.",
+                        description: "A timeout occurred while running check.",
                         duration: duration,
                         exception: ex,
                         data: null);
