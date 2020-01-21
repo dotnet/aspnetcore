@@ -16,6 +16,7 @@ Microsoft.Extensions.Caching.Memory.IMemoryCache</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

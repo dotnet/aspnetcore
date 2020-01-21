@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             token.ThrowIfCancellationRequested();
 
-            var value = await _dbOperations.GetCacheItemAsync(key, token);
+            var value = await _dbOperations.GetCacheItemAsync(key, token).ConfigureAwait(false);
 
             ScanForExpiredItemsIfRequired();
 
@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             token.ThrowIfCancellationRequested();
 
-            await _dbOperations.RefreshCacheItemAsync(key, token);
+            await _dbOperations.RefreshCacheItemAsync(key, token).ConfigureAwait(false);
 
             ScanForExpiredItemsIfRequired();
         }
@@ -163,7 +163,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             token.ThrowIfCancellationRequested();
 
-            await _dbOperations.DeleteCacheItemAsync(key, token);
+            await _dbOperations.DeleteCacheItemAsync(key, token).ConfigureAwait(false);
 
             ScanForExpiredItemsIfRequired();
         }
@@ -217,7 +217,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             GetOptions(ref options);
 
-            await _dbOperations.SetCacheItemAsync(key, value, options, token);
+            await _dbOperations.SetCacheItemAsync(key, value, options, token).ConfigureAwait(false);
 
             ScanForExpiredItemsIfRequired();
         }
