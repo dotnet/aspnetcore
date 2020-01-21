@@ -44,7 +44,7 @@ REM only puts the explicit filter traits the user provided in
 REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
 set NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
 echo Running non-flaky tests.
-%DOTNET_ROOT%\dotnet vstest %target% --logger:trx --TestCaseFilter:%NONFLAKY_FILTER%
+%DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%NONFLAKY_FILTER%
 if errorlevel 1 (
     echo Failure in non-flaky test 1>&2
     set exit_code=1
