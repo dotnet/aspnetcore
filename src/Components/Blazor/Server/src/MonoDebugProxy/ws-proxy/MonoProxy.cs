@@ -223,7 +223,7 @@ namespace WsProxy {
 			Info ("RUNTIME READY, PARTY TIME");
 			await RuntimeReady (token);
 			await SendCommand ("Debugger.resume", new JObject (), token);
-			SendEvent ("Mono.runtimeReady", new JObject (), token);
+			SendEvent ("Mono.runtimeReady", new JObject (), token);			
 		}
 
 		async Task OnBreakPointHit (JObject args, CancellationToken token)
@@ -274,12 +274,18 @@ namespace WsProxy {
 					var frames = new List<Frame> ();
 					int frame_id = 0;
 					var the_mono_frames = res.Value? ["result"]? ["value"]? ["frames"]?.Values<JObject> ();
+
 					foreach (var mono_frame in the_mono_frames) {
 						var il_pos = mono_frame ["il_pos"].Value<int> ();
 						var method_token = mono_frame ["method_token"].Value<int> ();
 						var assembly_name = mono_frame ["assembly_name"].Value<string> ();
 
 						var asm = store.GetAssemblyByName (assembly_name);
+						if (asm == null) {
+							Info ($"Unable to find assembly: {assembly_name}");
+							continue;
+						}
+
 						var method = asm.GetMethodByToken (method_token);
 
 						if (method == null) {
@@ -374,7 +380,7 @@ namespace WsProxy {
 			//Debug ($"\t{is_ready}");
 			if (is_ready.HasValue && is_ready.Value == true) {
 				Debug ("RUNTIME LOOK READY. GO TIME!");
-				await RuntimeReady (token);
+				await OnRuntimeReady (token);
 			}
 		}
 
@@ -426,33 +432,38 @@ namespace WsProxy {
 				return;
 			}
 
-			var values = res.Value?["result"]?["value"]?.Values<JObject>().ToArray();
+			try {
+				var values = res.Value?["result"]?["value"]?.Values<JObject>().ToArray() ?? Array.Empty<JObject>();
+				var var_list = new List<JObject>();
 
-			var var_list = new List<JObject>();
+				// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
+				// results in a "Memory access out of bounds", causing 'values' to be null,
+				// so skip returning variable values in that case.
+				for (int i = 0; i < values.Length; i+=2)
+				{
+					string fieldName = (string)values[i]["name"];
+					if (fieldName.Contains("k__BackingField")){
+						fieldName = fieldName.Replace("k__BackingField", "");
+						fieldName = fieldName.Replace("<", "");
+						fieldName = fieldName.Replace(">", "");
+					}
+					var value = values [i + 1]? ["value"];
+					if (((string)value ["description"]) == null)
+						value ["description"] = value ["value"]?.ToString ();
 
-			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
-			// results in a "Memory access out of bounds", causing 'values' to be null,
-			// so skip returning variable values in that case.
-			for (int i = 0; i < values.Length; i+=2)
-			{
-				string fieldName = (string)values[i]["name"];
-				if (fieldName.Contains("k__BackingField")){
-				fieldName = fieldName.Replace("k__BackingField", "");
-				fieldName = fieldName.Replace("<", "");
-				fieldName = fieldName.Replace(">", "");
+					var_list.Add(JObject.FromObject(new {
+						name = fieldName,
+						value
+					}));
+
+				}
+				o = JObject.FromObject(new
+				{
+					result = var_list
+				});
+			} catch (Exception e) {
+				Debug ($"failed to parse {res.Value}");
 			}
-			var_list.Add(JObject.FromObject(new
-			{
-				name = fieldName,
-				value = values[i+1]["value"]
-			}));
-
-			}
-			o = JObject.FromObject(new
-			{
-				result = var_list
-			});
-
 			SendResponse(msg_id, Result.Ok(o), token);
 		}
 
@@ -481,41 +492,51 @@ namespace WsProxy {
 				return;
 			}
 
-			var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
+			try {
+				var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 
-			var var_list = new List<JObject> ();
-			int i = 0;
-			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
-			// results in a "Memory access out of bounds", causing 'values' to be null,
-			// so skip returning variable values in that case.
-			while (values != null && i < vars.Length && i < values.Length) {
-				var value = values [i] ["value"];
-				if (((string)value ["description"]) == null)
-					value ["description"] = value ["value"]?.ToString();
+				var var_list = new List<JObject> ();
+				int i = 0;
+				// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
+				// results in a "Memory access out of bounds", causing 'values' to be null,
+				// so skip returning variable values in that case.
+				while (values != null && i < vars.Length && i < values.Length) {
+					var value = values [i] ["value"];
+					if (((string)value ["description"]) == null)
+						value ["description"] = value ["value"]?.ToString ();
 
-				var_list.Add (JObject.FromObject (new {
-					name = vars [i].Name,
-					value = values [i] ["value"]
-				}));
-				i++;
+					var_list.Add (JObject.FromObject (new {
+						name = vars [i].Name,
+						value
+					}));
+					i++;
+				}
+				//Async methods are special in the way that local variables can be lifted to generated class fields
+				//value of "this" comes here either
+				while (i < values.Length) {
+					String name = values [i] ["name"].ToString ();
+
+					if (name.IndexOf (">", StringComparison.Ordinal) > 0)
+						name = name.Substring (1, name.IndexOf (">", StringComparison.Ordinal) - 1);
+
+					var value = values [i + 1] ["value"];
+					if (((string)value ["description"]) == null)
+						value ["description"] = value ["value"]?.ToString ();
+
+					var_list.Add (JObject.FromObject (new {
+						name,
+						value
+					}));
+					i = i + 2;
+				}
+				o = JObject.FromObject (new {
+					result = var_list
+				});
+				SendResponse (msg_id, Result.Ok (o), token);
 			}
-			//Async methods are special in the way that local variables can be lifted to generated class fields
-			//value of "this" comes here either
-			while (i < values.Length) {
-				String name = values [i] ["name"].ToString ();
-
-				if (name.IndexOf (">", StringComparison.Ordinal) > 0)
-					name = name.Substring (1, name.IndexOf (">", StringComparison.Ordinal) - 1);
-				var_list.Add (JObject.FromObject (new {
-					name =  name,
-					value = values [i+1] ["value"]
-				}));
-				i = i + 2;
+			catch (Exception exc) {
+				SendResponse (msg_id, res, token);
 			}
-			o = JObject.FromObject (new {
-				result = var_list
-			});
-			SendResponse (msg_id, Result.Ok (o), token);
 		}
 
 		async Task<Result> EnableBreakPoint (Breakpoint bp, CancellationToken token)
