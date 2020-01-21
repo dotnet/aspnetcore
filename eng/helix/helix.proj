@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <HelixSource>pr/dotnet/aspnetcore</HelixSource>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
@@ -30,7 +29,7 @@
     <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <EnableXUnitReporter>true</EnableXUnitReporter>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
