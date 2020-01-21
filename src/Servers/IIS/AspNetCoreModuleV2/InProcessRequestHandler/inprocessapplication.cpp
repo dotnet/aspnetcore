@@ -165,8 +165,8 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
         errorContext.statusCode = 500;
         errorContext.subStatusCode = 37;
-        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
-        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+        errorContext.generalErrorType = "ASP.NET Core app failed to start within startup time limit";
+        errorContext.errorReason = format("ASP.NET Core app failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
 
         m_waitForShutdown = false;
         StopClr();
