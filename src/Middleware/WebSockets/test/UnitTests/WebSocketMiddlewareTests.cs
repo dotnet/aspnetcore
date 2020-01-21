@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     await client.ConnectAsync(new Uri($"ws://localhost:{port}/"), CancellationToken.None);
                 }
             }
-            Assert.True(false); // Make this fail to look at logs
         }
 
         [Fact]
