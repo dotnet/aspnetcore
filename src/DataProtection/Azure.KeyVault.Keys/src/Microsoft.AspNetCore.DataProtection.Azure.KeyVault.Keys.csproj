@@ -9,7 +9,6 @@
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <PreReleaseVersionLabel>$(AzureSDKPreReleaseVersionLabel)</PreReleaseVersionLabel>
     <DotNetFinalVersionKind />
-    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
