@@ -5,6 +5,6 @@
   <PropertyGroup>
     <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
          target the latest patch before a preview release. -->
-    <LatestAspNetCoreReferenceVersion>3.1.0</LatestAspNetCoreReferenceVersion>
+    <LatestAspNetCoreReferenceVersion>3.1.1</LatestAspNetCoreReferenceVersion>
   </PropertyGroup>
 </Project>
