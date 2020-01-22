@@ -146,7 +146,6 @@ namespace System.Buffers
                 Encoding.ASCII.GetBytes(data.AsSpan(offset, writable), bytes);
                 buffer.Advance(writable);
 
-                // The `add` will macro-op fuse with `if` test.
                 offset += writable;
                 if (offset >= dataLength)
                 {
