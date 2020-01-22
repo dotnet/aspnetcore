@@ -83,7 +83,7 @@
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.1</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>4.6.0</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0</SystemSecurityCryptographyXmlPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.6.0</SystemSecurityPermissionsPackageVersion>
