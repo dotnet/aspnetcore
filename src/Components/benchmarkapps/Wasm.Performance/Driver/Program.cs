@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
@@ -55,8 +56,9 @@ namespace Wasm.Performance.Driver
             browser.Url = launchUrl;
             browser.Navigate();
 
-            var results = await benchmarkResult.Task;
-            FormatAsBenchmarksOutput(results);
+            var appSize = GetBlazorAppSize();
+            await Task.WhenAll(benchmarkResult.Task, appSize);
+            FormatAsBenchmarksOutput(benchmarkResult.Task.Result, appSize.Result);
 
             Console.WriteLine("Done executing benchmark");
             return 0;
@@ -67,7 +69,7 @@ namespace Wasm.Performance.Driver
             benchmarkResult.TrySetResult(result);
         }
 
-        private static void FormatAsBenchmarksOutput(List<BenchmarkResult> results)
+        private static void FormatAsBenchmarksOutput(List<BenchmarkResult> results, (long publishSize, long compressedSize) sizes)
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
@@ -100,17 +102,11 @@ namespace Wasm.Performance.Driver
                 Format = "n2",
             });
 
-            var testAssembly = typeof(TestApp.Program).Assembly;
-            var testAssemblyLocation = new FileInfo(testAssembly.Location);
-            var testApp = new DirectoryInfo(Path.Combine(
-                testAssemblyLocation.Directory.FullName,
-                testAssembly.GetName().Name));
-
             output.Measurements.Add(new BenchmarkMeasurement
             {
                 Timestamp = DateTime.UtcNow,
-                Name = "Publish size",
-                Value = GetDirectorySize(testApp) / 1024,
+                Name = "blazorwasm/publish-size",
+                Value = sizes.publishSize / 1024,
             });
 
             output.Metadata.Add(new BenchmarkMetadata
@@ -122,15 +118,11 @@ namespace Wasm.Performance.Driver
                 Format = "n2",
             });
 
-            var gzip = new FileInfo(Path.Combine(
-                testAssemblyLocation.Directory.FullName,
-                $"{testAssembly.GetName().Name}.gzip"));
-
             output.Measurements.Add(new BenchmarkMeasurement
             {
                 Timestamp = DateTime.UtcNow,
-                Name = "Publish size (compressed)",
-                Value = (gzip.Exists ? gzip.Length : 0) / 1024,
+                Name = "blazorwasm/compressed-publish-size",
+                Value = sizes.compressedSize / 1024,
             });
 
             Console.WriteLine("#StartJobStatistics");
@@ -205,6 +197,17 @@ namespace Wasm.Performance.Driver
                 .First();
         }
 
+        static async Task<(long size, long compressedSize)> GetBlazorAppSize()
+        {
+            var testAssembly = typeof(TestApp.Startup).Assembly;
+            var testAssemblyLocation = new FileInfo(testAssembly.Location);
+            var testApp = new DirectoryInfo(Path.Combine(
+                testAssemblyLocation.Directory.FullName,
+                testAssembly.GetName().Name));
+
+            return (GetDirectorySize(testApp), await GetBrotliCompressedSize(testApp));
+        }
+
         static long GetDirectorySize(DirectoryInfo directory)
         {
             // This can happen if you run the app without publishing it.
@@ -227,6 +230,42 @@ namespace Wasm.Performance.Driver
             }
 
             return size;
+        }
+
+        static async Task<long> GetBrotliCompressedSize(DirectoryInfo directory)
+        {
+            if (!directory.Exists)
+            {
+                return 0;
+    }
+
+            var tasks = new List<Task<long>>();
+            foreach (var item in directory.EnumerateFileSystemInfos())
+            {
+                if (item is FileInfo fileInfo)
+                {
+                    tasks.Add(GetCompressedFileSize(fileInfo));
+                }
+                else if (item is DirectoryInfo directoryInfo)
+                {
+                    tasks.Add(GetBrotliCompressedSize(directoryInfo));
+                }
+            }
+
+            return (await Task.WhenAll(tasks)).Sum(s => s);
+
+            async Task<long> GetCompressedFileSize(FileInfo fileInfo)
+            {
+                using var inputStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, useAsync: true);
+                using var outputStream = new MemoryStream();
+
+                using  (var brotliStream = new BrotliStream(outputStream, CompressionLevel.Optimal, leaveOpen: true))
+                {
+                    await inputStream.CopyToAsync(brotliStream);
+                }
+
+                return outputStream.Length;
+            }
         }
     }
 }
