@@ -17,8 +17,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <!-- References to Blazor projects are explicitly ProjectReferences, so that our reference resolution never tries to use the baseline -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />
   </ItemGroup>
 
   <!-- Pack settings -->

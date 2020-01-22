@@ -12,6 +12,12 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <!-- References to Blazor projects are explicitly ProjectReferences, so that our reference resolution never tries to use the baseline -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj" />
+  </ItemGroup>
+
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
