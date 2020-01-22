@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {
+            Debug.Assert(input != null);
+            Debug.Assert(output != null);
+
             var end = input + count;
 
             if (Sse2.IsSupported)
@@ -472,7 +475,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
                 return !value.Contains('\0');
             }
-            catch (DecoderFallbackException) {
+            catch (DecoderFallbackException)
+            {
                 return false;
             }
         }
