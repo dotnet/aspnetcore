@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.E2ETesting
         private Process _sentinelProcess;
         private static IMessageSink _diagnosticsMessageSink;
 
-        // 1h 30 min
-        private static int SauceConnectProcessTimeout = 3600;
+        // 2h
+        private static int SauceConnectProcessTimeout = 7200;
 
         public SauceConnectServer(IMessageSink diagnosticsMessageSink)
         {

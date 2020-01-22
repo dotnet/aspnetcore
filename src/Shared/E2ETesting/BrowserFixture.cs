@@ -157,21 +157,59 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         private async Task<(IWebDriver browser, ILogs log)> CreateSauceBrowserAsync(string context, ITestOutputHelper output)
         {
-            var name = "Blazor E2E tests";
+            var sauce = E2ETestOptions.Instance.Sauce;
+
+            if (sauce == null ||
+                string.IsNullOrEmpty(sauce.TestName) ||
+                string.IsNullOrEmpty(sauce.Username) ||
+                string.IsNullOrEmpty(sauce.AccessKey) ||
+                string.IsNullOrEmpty(sauce.TunnelIdentifier) ||
+                string.IsNullOrEmpty(sauce.PlatformName) ||
+                string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                throw new InvalidOperationException("Required SauceLabs environment variables not set.");
+            }
+
+            var name = sauce.TestName;
             if (!string.IsNullOrEmpty(context))
             {
                 name = $"{name} - {context}";
             }
 
             var capabilities = new DesiredCapabilities();
-            capabilities.SetCapability("username", E2ETestOptions.Instance.Sauce.Username);
-            capabilities.SetCapability("accessKey", E2ETestOptions.Instance.Sauce.AccessKey);
-            capabilities.SetCapability("tunnelIdentifier", E2ETestOptions.Instance.Sauce.TunnelIdentifier);
-            capabilities.SetCapability("name", name);
 
-            capabilities.SetCapability("browserName", "Chrome");
-            capabilities.SetCapability("platform", "macOS 10.13");
-            capabilities.SetCapability("version", "latest");
+            // Required config
+            capabilities.SetCapability("username", sauce.Username);
+            capabilities.SetCapability("accessKey", sauce.AccessKey);
+            capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
+            capabilities.SetCapability("name", name);
+            capabilities.SetCapability("platformName", sauce.PlatformName);
+            capabilities.SetCapability("browserName", sauce.BrowserName);
+
+            if (!string.IsNullOrEmpty(sauce.BrowserVersion))
+            {
+                capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.PlatformVersion))
+            {
+                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceName))
+            {
+                capabilities.SetCapability("deviceName", sauce.DeviceName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
+            {
+                capabilities.SetCapability("deviceOrientation", sauce.DeviceOrientation);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.AppiumVersion))
+            {
+                capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
+            }
 
             await SauceConnectServer.StartAsync(output);
 
@@ -201,7 +239,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             } while (attempt < maxAttempts);
 
-            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+            throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client. The server is irresponsive");
         }
     }
 }
