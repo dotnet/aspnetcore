@@ -145,44 +145,44 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[3.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.0.0, )" />
-    <BaselinePackageReference Include="Mono.WebAssembly.Interop" Version="[3.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[3.1.0-preview3.19555.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.0-preview3.19553.2, )" />
+    <BaselinePackageReference Include="Mono.WebAssembly.Interop" Version="[3.1.0-preview3.19553.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor.Build-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Build' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Build' AND '$(TargetFramework)' == 'any' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="[3.0.0-preview9.19462.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="[3.1.0-preview3.19531.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor.DevServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.DevServer' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor.HttpClient-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.HttpClient' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.HttpClient' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="System.Text.Json" Version="[4.6.0, )" />
+    <BaselinePackageReference Include="System.Text.Json" Version="[4.7.0-preview3.19551.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor.Server-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Server' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Server' AND '$(TargetFramework)' == 'netcoreapp3.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="[3.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[3.0.0, )" />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Server' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="[3.1.0-preview3.19555.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[3.1.0-preview3.19553.2, )" />
     <BaselinePackageReference Include="Mono.Cecil" Version="[0.10.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Blazor.Templates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Templates' ">
-    <BaselinePackageVersion>3.0.0-preview9.19465.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' ">
