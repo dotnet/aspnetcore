@@ -184,6 +184,13 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Templates' ">
     <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
+  <!-- Package: Mono.WebAssembly.Interop-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Mono.WebAssembly.Interop' ">
+    <BaselinePackageVersion>3.1.0-preview3.19553.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Mono.WebAssembly.Interop' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.JSInterop" Version="[3.1.0-preview3.19553.2, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' ">
     <BaselinePackageVersion>3.1.1</BaselinePackageVersion>
