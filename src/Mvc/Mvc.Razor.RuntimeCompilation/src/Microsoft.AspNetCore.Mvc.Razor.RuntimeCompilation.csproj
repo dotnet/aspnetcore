@@ -12,6 +12,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.CodeAnalysis.Razor" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
