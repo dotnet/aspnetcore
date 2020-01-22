@@ -5,31 +5,11 @@
       "longName": "no-restore",
       "shortName": ""
     },
-    "Hosted": {
-      "longName": "hosted"
-    },
+      "Hosted": {
+        "longName": "hosted"
+      },
     "Framework": {
       "longName": "framework"
-    },
-    "UseLocalDB": {
-      "longName": "use-local-db"
-    },
-    "HttpPort": {
-      "isHidden": true
-    },
-    "HttpsPort": {
-      "isHidden": true
-    },
-    "ExcludeLaunchSettings": {
-      "longName": "exclude-launch-settings",
-      "shortName": ""
-    },
-    "UserSecretsId": {
-      "isHidden": true
-    },
-    "NoHttps": {
-      "longName": "no-https",
-      "shortName": ""
     }
   }
 }

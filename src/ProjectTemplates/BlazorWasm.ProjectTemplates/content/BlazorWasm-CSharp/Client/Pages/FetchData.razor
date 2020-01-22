@@ -1,12 +1,6 @@
 ﻿@page "/fetchdata"
-@*#if  (!NoAuth)
-@using Microsoft.AspNetCore.Authorization
-#endif*@
 @*#if  (Hosted)
 @using BlazorWasm_CSharp.Shared
-#endif*@
-@*#if  (!NoAuth)
-@attribute [Authorize]
 #endif*@
 @inject HttpClient Http
 

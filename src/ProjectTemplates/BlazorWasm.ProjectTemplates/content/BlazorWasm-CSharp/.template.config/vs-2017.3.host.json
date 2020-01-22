@@ -18,30 +18,6 @@
   "additionalWizardParameters": {
     "$isMultiProjectTemplate$": "true"
   },
-  "supportedAuthentications": [
-    {
-      "auth": "None",
-      "authenticationType": "NoAuth",
-      "allowUnsecured": true
-    },
-    {
-      "auth": "Individual",
-      "authenticationType": "IndividualAuth",
-      "b2cAuthenticationOptions": "Local"
-    }
-  ],
-  "ports": [
-    {
-      "name": "HttpPort",
-      "useHttps": false
-    },
-    {
-      "name": "HttpsPort",
-      "useHttps": true
-    }
-  ],
-  "excludeLaunchSettings": false,
-  "disableHttpsSymbol": "NoHttps",
   "symbolInfo": [
     {
       "id": "Hosted",
