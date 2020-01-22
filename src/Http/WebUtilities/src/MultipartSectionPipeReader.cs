@@ -342,24 +342,29 @@ namespace Microsoft.AspNetCore.WebUtilities
             var sequenceReader = new SequenceReader<byte>(sequence);
 
             bool reachedNewLine = sequenceReader.TryReadTo(out var remainder, CrlfDelimiter);
-            // Don't buffer indefinately
+            // Don't buffer indefinitely
             if (sequenceReader.Consumed > 100)
             {
                 _pipeReader.AdvanceTo(sequence.Start, sequence.End);
                 throw new InvalidDataException($"Line length limit 100 exceeded.");
             }
 
-            //check if we reached -- for the final boundary, and that there is only whitespace left
+            // Check if we reached "--" for the final boundary, and that there is only whitespace left
             var remainderReader = new SequenceReader<byte>(remainder);
-            remainderReader.AdvancePast(0);
+            // Whitespace consists of space or horizontal tab
+            remainderReader.AdvancePastAny(0x20, 0x09);
             if (!remainderReader.End)
             {
                 if (!remainderReader.TryReadTo(out var buffer, EndOfFileDelimiter) || buffer.Length != 0)
                 {
-                    Debug.Print("Un-expected data found on the boundary line");
+                    throw new InvalidDataException("Un-expected data found on the boundary line");
                 }
-                remainderReader.AdvancePast(0);
-                Debug.Assert(remainderReader.End, "Un-expected data found on the boundary line");
+
+                remainderReader.AdvancePastAny(0x20, 0x09);
+                if (!remainderReader.End)
+                {
+                    throw new InvalidDataException("Un-consumed data found on the boundary line");
+                }
             }
 
             // there is still more that can be read before the end

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 "text default\r\n" +
 "--9051914041544843365972754266--\r\n";
         private const string OnePartBodyWithTrailingWhitespace =
-"--9051914041544843365972754266             \r\n" +
+"--9051914041544843365972754266 \t   \t   \t     \t \r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
 "\r\n" +
 "text default\r\n" +
