@@ -70,6 +70,10 @@
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
     <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
     <AssemblyVersion Condition="$(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion.Substring(0, $(BaselinePackageVersion.IndexOf('-')))).0</AssemblyVersion>
@@ -162,5 +166,9 @@
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
+
+  <PropertyGroup>
+    <PackageVersionForPackageVersionInfo Condition="'$(UseLatestPackageReferences)' != 'true'">$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
+  </PropertyGroup>
 
 </Project>

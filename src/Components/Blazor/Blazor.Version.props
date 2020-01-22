@@ -3,6 +3,5 @@
     <!-- Override version labels -->
     <VersionPrefix>3.2.0</VersionPrefix>
     <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
-    <DotNetFinalVersionKind />
   </PropertyGroup>
 </Project>
