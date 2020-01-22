@@ -1,11 +1,4 @@
 {
   "DefaultWaitTimeoutInSeconds": 20,
   "ScreenShotsPath": "../../screenshots",
-  "SauceTest":  true,
-  "Sauce": {
-    "Username": "placeholder",
-    "AccessKey": "placeholder",
-    "TunnelIdentifier": "blazor-e2e-sc-proxy-tunnel",
-    "HostName": "sauce.local"
-  }
 }

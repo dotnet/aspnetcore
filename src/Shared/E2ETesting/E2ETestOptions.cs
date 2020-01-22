@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 }
 
                 Configuration = builder 
-                    .AddEnvironmentVariables("E2ETESTS")
+                    .AddEnvironmentVariables("E2ETESTS_")
                     .Build();
 
                 var instance = new E2ETestOptions();
