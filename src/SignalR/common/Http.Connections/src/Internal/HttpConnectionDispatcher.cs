@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            Log.TerminatingConection(_logger);
+            Log.TerminatingConnection(_logger);
 
             // Complete the receiving end of the pipe
             connection.Application.Output.Complete();
