@@ -39,12 +39,9 @@
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
     <!--
-      Projects should only use the project references instead of baseline package references when:
-        * when a project is a test or sample project
-      We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
+      Always use project references. When building against the baseline, prioritize picking baseline packages over ProjectReferences.
     -->
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
 
     <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
     <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
@@ -71,8 +68,6 @@
     <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
 
-    <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
-
     <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
 
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
@@ -84,24 +79,6 @@
         @(_CompilationOnlyReference);
         @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <_OriginalReferences Include="@(Reference)" />
-    <!--
-      Turn Reference items into a ProjectReference when UseProjectReferences is true.
-      Order matters. This comes before package resolution because projects should be used when possible instead of packages.
-    -->
-    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
-      Include="@(ProjectReferenceProvider)"
-      Exclude="@(_UnusedProjectReferenceProvider)" />
-
-    <!-- Use ref assembly project paths for ref assembly projects -->
-    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
-      <IsReferenceAssembly>false</IsReferenceAssembly>
-    </ProjectReference>
-
-    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
-      <IsReferenceAssembly>true</IsReferenceAssembly>
-    </ProjectReference>
-
-    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
   <!--
@@ -137,7 +114,7 @@
       </Reference>
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(PackageReference)" />
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
 
@@ -178,6 +155,27 @@
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
+
+      <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
+
+      <!--
+        Turn Reference items into a ProjectReference when UseProjectReferences is true.
+        Order matters. This comes after package resolution because packages should be used when possible instead of projects in this branch.
+      -->
+      <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
+        Include="@(ProjectReferenceProvider)"
+        Exclude="@(_UnusedProjectReferenceProvider)" />
+
+      <!-- Use ref assembly project paths for ref assembly projects -->
+      <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+        <IsReferenceAssembly>false</IsReferenceAssembly>
+      </ProjectReference>
+
+      <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+        <IsReferenceAssembly>true</IsReferenceAssembly>
+      </ProjectReference>
+
+      <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
       <!-- Free up memory for unnecessary items -->
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
