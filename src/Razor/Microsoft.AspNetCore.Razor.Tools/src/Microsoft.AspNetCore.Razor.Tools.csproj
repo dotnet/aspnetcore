@@ -7,7 +7,7 @@
       This is intentionally targeting netcoreapp3.0. This allows using the Microsoft.NET.Sdk.Razor package without having to solve diamond dependency problems in AspNetCore.
       We use a runtimeconfig.json.template to allow roll forwards.
       In addition, the SDK stamps an exact version of the shared fx to use in all runtimeconfig.json that are contained in the SDK.
-      See the discussion here: https://github.com/aspnet/AspNetCore-Internal/issues/3201#issuecomment-539631557
+      See the discussion here: https://github.com/dotnet/aspnetcore-internal/issues/3201#issuecomment-539631557
     -->
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>

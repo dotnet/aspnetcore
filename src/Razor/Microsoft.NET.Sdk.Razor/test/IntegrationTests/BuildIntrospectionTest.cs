@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task IntrospectRazorTasksDllPath()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/17308
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/17308
             var solutionRoot = GetType().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(a => a.Key == "Testing.RepoRoot")
                 .Value;
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var expected = Path.Combine(solutionRoot, "artifacts", "bin", "Microsoft.NET.Sdk.Razor", Configuration, "sdk-output", "tasks", tfm, "Microsoft.NET.Sdk.Razor.Tasks.dll");
 
-            // Verifies the fix for https://github.com/aspnet/AspNetCore/issues/17308
+            // Verifies the fix for https://github.com/dotnet/aspnetcore/issues/17308
             var result = await DotnetMSBuild("_IntrospectRazorTasks");
 
             Assert.BuildPassed(result);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var tfm = "net46";
             var expected = Path.Combine(solutionRoot, "artifacts", "bin", "Microsoft.NET.Sdk.Razor", Configuration, "sdk-output", "tasks", tfm, "Microsoft.NET.Sdk.Razor.Tasks.dll");
 
-            // Verifies the fix for https://github.com/aspnet/AspNetCore/issues/17308
+            // Verifies the fix for https://github.com/dotnet/aspnetcore/issues/17308
             var result = await DotnetMSBuild("_IntrospectRazorTasks", msBuildProcessKind: MSBuildProcessKind.Desktop);
 
             Assert.BuildPassed(result);
