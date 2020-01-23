@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override void Write(ReadOnlySpan<char> values)
+        public override void Write(ReadOnlySpan<char> value)
         {
             if (_disposed)
             {
@@ -136,18 +136,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             var written = 0;
-            while (written < values.Length)
+            while (written < value.Length)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     FlushInternal(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(values);
+                written = CopyToCharBuffer(value);
 
-                if (written < values.Length)
+                if (written < value.Length)
                 {
-                    values = values.Slice(written);
+                    value = value.Slice(written);
                 }
             };
         }
@@ -177,14 +177,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override void WriteLine(ReadOnlySpan<char> values)
+        public override void WriteLine(ReadOnlySpan<char> value)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            Write(values);
+            Write(value);
             Write(NewLine);
         }
 
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override Task WriteAsync(ReadOnlyMemory<char> values, CancellationToken cancellationToken = default)
+        public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
             if (_disposed)
             {
@@ -316,47 +316,47 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return Task.FromCanceled(cancellationToken);
             }
 
-            if (values.IsEmpty)
+            if (value.IsEmpty)
             {
                 return Task.CompletedTask;
             }
 
             var remaining = _charBufferSize - _charBufferCount;
-            if (remaining >= values.Length)
+            if (remaining >= value.Length)
             {
                 // Enough room in buffer, no need to go async
-                CopyToCharBuffer(values.Span);
+                CopyToCharBuffer(value.Span);
                 return Task.CompletedTask;
             }
             else
             {
-                return WriteAsyncAwaited(values);
+                return WriteAsyncAwaited(value);
             }
         }
 
-        private async Task WriteAsyncAwaited(ReadOnlyMemory<char> values)
+        private async Task WriteAsyncAwaited(ReadOnlyMemory<char> value)
         {
-            Debug.Assert(values.Length > 0);
-            Debug.Assert(_charBufferSize - _charBufferCount < values.Length);
+            Debug.Assert(value.Length > 0);
+            Debug.Assert(_charBufferSize - _charBufferCount < value.Length);
 
             int written = 0;
-            while (written < values.Length)
+            while (written < value.Length)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     await FlushInternalAsync(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(values.Span);
+                written = CopyToCharBuffer(value.Span);
 
-                if (written < values.Length)
+                if (written < value.Length)
                 {
-                    values = values.Slice(written);
+                    value = value.Slice(written);
                 }
             };
         }
 
-        public override Task WriteLineAsync(ReadOnlyMemory<char> values, CancellationToken cancellationToken = default)
+        public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
         {
             if (_disposed)
             {
@@ -368,28 +368,28 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return Task.FromCanceled(cancellationToken);
             }
 
-            if (values.IsEmpty && NewLine.Length == 0)
+            if (value.IsEmpty && NewLine.Length == 0)
             {
                 return Task.CompletedTask;
             }
 
             var remaining = _charBufferSize - _charBufferCount;
-            if (remaining >= values.Length + NewLine.Length)
+            if (remaining >= value.Length + NewLine.Length)
             {
                 // Enough room in buffer, no need to go async
-                CopyToCharBuffer(values.Span);
+                CopyToCharBuffer(value.Span);
                 CopyToCharBuffer(NewLine);
                 return Task.CompletedTask;
             }
             else
             {
-                return WriteLineAsyncAwaited(values);
+                return WriteLineAsyncAwaited(value);
             }
         }
 
-        private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> values)
+        private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> value)
         {
-            await WriteAsyncAwaited(values);
+            await WriteAsyncAwaited(value);
             await WriteAsyncAwaited(NewLine);
         }
 
@@ -548,11 +548,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             count -= remaining;
         }
 
-        private int CopyToCharBuffer(ReadOnlySpan<char> values)
+        private int CopyToCharBuffer(ReadOnlySpan<char> value)
         {
-            var remaining = Math.Min(_charBufferSize - _charBufferCount, values.Length);
+            var remaining = Math.Min(_charBufferSize - _charBufferCount, value.Length);
 
-            var source = values.Slice(0, remaining);
+            var source = value.Slice(0, remaining);
             var destination = new Span<char>(_charBuffer, _charBufferCount, remaining);
             source.CopyTo(destination);
 
