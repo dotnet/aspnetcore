@@ -29,17 +29,12 @@
 
   <PropertyGroup>
     <!--
-      Projects should only use the latest package references when:
-        * when a project is a test or sample project
-        * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+      Always use LatestPackageReferences, but prioritize baseline packages, then ProjectReferences.
     -->
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' == 'true' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">true</UseLatestPackageReferences>
 
     <!--
-      Always use project references. When building against the baseline, prioritize picking baseline packages over ProjectReferences.
+      Always use project references. When building against the baseline, prioritize picking baseline packages over ProjectReferences, and ProjectReferences over LatestPackageReferences.
     -->
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
 
@@ -122,15 +117,6 @@
         MSBuild does not provide a way to join on matching identities in a Condition,
         but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
       -->
-      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
-        <Id>%(LatestPackageReference.Identity)</Id>
-        <Version>%(LatestPackageReference.Version)</Version>
-      </_LatestPackageReferenceWithVersion>
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
-
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
-      <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
       <!-- Resolve references from BaselinePackageReference for servicing builds. -->
       <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
@@ -176,6 +162,16 @@
       </ProjectReference>
 
       <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+
+      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+        <Id>%(LatestPackageReference.Identity)</Id>
+        <Version>%(LatestPackageReference.Version)</Version>
+      </_LatestPackageReferenceWithVersion>
+      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
+      <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
       <!-- Free up memory for unnecessary items -->
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
