@@ -130,13 +130,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
 
-        protected string _parsedPath = null;
         public string Path { get; set; }
-
-        protected string _parsedQueryString = null;
         public string QueryString { get; set; }
-
-        protected string _parsedRawTarget = null;
         public string RawTarget { get; set; }
 
         public string HttpVersion
