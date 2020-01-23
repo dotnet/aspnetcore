@@ -39,7 +39,7 @@ namespace Templates.Test
             var buildResult = await project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            await BuildAndRunTest(project.ProjectName, project);
+            // await BuildAndRunTest(project.ProjectName, project);
 
             var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
             AspNetProcess.EnsureDevelopmentCertificates();
