@@ -53,12 +53,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override Stream AsStream(bool leaveOpen = false)
-        {
-            //we use our on stream to allow using Stream.Length when needed.
-            return new PipeReaderStream(this, leaveOpen);
-        }
-
         public override void AdvanceTo(SequencePosition consumed)
         {
             AdvanceTo(consumed, consumed);
