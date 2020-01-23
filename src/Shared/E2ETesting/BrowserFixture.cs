@@ -183,17 +183,22 @@ namespace Microsoft.AspNetCore.E2ETesting
             capabilities.SetCapability("accessKey", sauce.AccessKey);
             capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
             capabilities.SetCapability("name", name);
-            capabilities.SetCapability("platformName", sauce.PlatformName);
             capabilities.SetCapability("browserName", sauce.BrowserName);
+
+            if (!string.IsNullOrEmpty(sauce.PlatformVersion))
+            {
+                capabilities.SetCapability("platformName", sauce.PlatformName);
+                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+            }
+            else
+            {
+                // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
+                capabilities.SetCapability("platform", sauce.PlatformName);
+            }
 
             if (!string.IsNullOrEmpty(sauce.BrowserVersion))
             {
                 capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
-            }
-
-            if (!string.IsNullOrEmpty(sauce.PlatformVersion))
-            {
-                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceName))
