@@ -147,7 +147,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' ">
     <BaselinePackageVersion>3.1.0-preview3.19555.2</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' AND '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[3.1.0-preview3.19555.2, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.0-preview3.19553.2, )" />
     <BaselinePackageReference Include="Mono.WebAssembly.Interop" Version="[3.1.0-preview3.19553.2, )" />
@@ -188,7 +188,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Mono.WebAssembly.Interop' ">
     <BaselinePackageVersion>3.1.0-preview3.19553.2</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Mono.WebAssembly.Interop' AND '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Mono.WebAssembly.Interop' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.JSInterop" Version="[3.1.0-preview3.19553.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
