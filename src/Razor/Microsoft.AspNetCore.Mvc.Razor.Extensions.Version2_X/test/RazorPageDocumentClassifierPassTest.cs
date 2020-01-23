@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             // Arrange
             var content = @"
 @* some comment *@
-     
+
 @page
 ";
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(content, "Test.cshtml"));
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
         {
             PageDirective.Register(builder);
         }
-        
+
         private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
