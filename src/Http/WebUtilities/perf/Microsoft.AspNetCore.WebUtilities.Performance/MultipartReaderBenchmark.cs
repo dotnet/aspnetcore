@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             for (var i = 0; i < 1000; i++)
             {
-                var multipartReader = new MultipartPipeReader(Boundary,PipeReader.Create(stream), true);
+                var multipartReader = new MultipartPipeReader(Boundary, PipeReader.Create(stream));
                 for (int j = 0; j < 2; j++)
                 {
                     await multipartReader.ReadNextSectionAsync();

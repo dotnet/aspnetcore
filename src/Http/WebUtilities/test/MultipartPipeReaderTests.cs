@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ReadSinglePartBody_Success()
         {
             var pipeReader = MakeReader(OnePartBody);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_HeaderCountExceeded_Throws()
         {
             var pipeReader = MakeReader(OnePartBodyTwoHeaders);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true)
+            var reader = new MultipartPipeReader(Boundary, pipeReader)
             {
                 HeadersCountLimit = 1,
             };
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_HeadersLengthExceeded_Throws()
         {
             var pipeReader = MakeReader(OnePartBodyTwoHeaders);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true)
+            var reader = new MultipartPipeReader(Boundary, pipeReader)
             {
                 HeadersLengthLimit = 60,
             };
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ReadSinglePartBodyWithTrailingWhitespace_Success()
         {
             var pipeReader = MakeReader(OnePartBodyWithTrailingWhitespace);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ReadSinglePartBodyWithoutLastCRLF_Success()
         {
             var pipeReader = MakeReader(OnePartBodyWithoutFinalCRLF);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ReadTwoPartBody_Success()
         {
             var pipeReader = MakeReader(TwoPartBody);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ReadTwoPartBodyWithUnicodeFileName_Success()
         {
             var pipeReader = MakeReader(TwoPartBodyWithUnicodeFileName);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_ThreePartBody_Success()
         {
             var pipeReader = MakeReader(ThreePartBody);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
         {
             var pipeReader = MakeReader(TwoPartBodyIncompleteBuffer);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
             var buffer = new byte[128];
 
             //first section can be read successfully
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             stream.Write(bytes, 0, bytes.Length);
             stream.Seek(0, SeekOrigin.Begin);
             var pipeReader = PipeReader.Create(stream);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             stream.Seek(0, SeekOrigin.Begin);
 
             var pipeReader = PipeReader.Create(stream);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
@@ -383,38 +383,27 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Null(await reader.ReadNextSectionAsync());
         }
 
-
         [Fact]
-        public async Task MultipartPipeReader_ReadThreePartBody_CorrectBaseoffsetAndLength()
+        public async Task MultipartPipeReader_ReadThreePartBody_Success()
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(ThreePartBody));
             var pipeReader = PipeReader.Create(stream);
-            var reader = new MultipartPipeReader(Boundary, pipeReader, true);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            await section.Body.DrainAsync(default);
-            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
-            var buffer = new byte[section.Body.Length];
-            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer));
+            var sectionText = await section.ReadAsStringAsync();
+            Assert.Equal("text default", sectionText);
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            await section.Body.DrainAsync(default);
-            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
-            buffer = new byte[section.Body.Length];
-            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
-            Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer));
+            sectionText = await section.ReadAsStringAsync();
+            Assert.Equal("Content of a.txt.\r\n", sectionText);
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-
-            await section.Body.DrainAsync(default);
-            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
-            buffer = new byte[section.Body.Length];
-            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
-            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer));
+            sectionText = await section.ReadAsStringAsync();
+            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", sectionText);
         }
     }
 }

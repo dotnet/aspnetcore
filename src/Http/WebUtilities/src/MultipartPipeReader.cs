@@ -20,15 +20,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int StackAllocThreshold = 128;
 
         private readonly PipeReader _pipeReader;
-        private long _bytesConsumed = 0;
         private readonly MultipartBoundary _boundary;
         private MultipartSectionPipeReader _currentSection;
-        private readonly bool _trackBaseOffsets;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
-        public MultipartPipeReader(string boundary, PipeReader pipeReader, bool trackBaseOffsets)
+        public MultipartPipeReader(string boundary, PipeReader pipeReader)
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
             _boundary = new MultipartBoundary(boundary ?? throw new ArgumentNullException(nameof(boundary)), false);
@@ -36,7 +34,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
             _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
-            _trackBaseOffsets = trackBaseOffsets;
         }
 
         /// <summary>
@@ -57,8 +54,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentSection.DrainAsync(cancellationToken);
-            _bytesConsumed += _currentSection.RawLength;
-
 
             var headersAccumulator = new KeyValueAccumulator();
             _boundary.ExpectLeadingCrlf = true;
@@ -93,11 +88,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 if (finishedParsing)
                 {
-                    _bytesConsumed += headersLength;
                     _pipeReader.AdvanceTo(buffer.Start);
                     _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
-                    long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
-                    return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection, BaseStreamOffset = baseStreamOffset }; ;
+                    return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection }; ;
                 }
                 if (readResult.IsCompleted)
                 {
@@ -105,7 +98,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
                 _pipeReader.AdvanceTo(buffer.Start, buffer.End);
-
             }
 
         }

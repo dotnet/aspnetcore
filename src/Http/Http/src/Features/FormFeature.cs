@@ -141,112 +141,28 @@ namespace Microsoft.AspNetCore.Http.Features
             FormCollection formFields = null;
             FormFileCollection files = null;
 
-            // Some of these code paths use StreamReader which does not support cancellation tokens.
-            using (cancellationToken.Register((state) => ((HttpContext)state).Abort(), _request.HttpContext))
+            var contentType = ContentType;
+            // Check the content-type
+            if (HasApplicationFormContentType(contentType))
             {
-                var contentType = ContentType;
-                // Check the content-type
-                if (HasApplicationFormContentType(contentType))
+                var encoding = FilterEncoding(contentType.Encoding);
+                var formReader = new FormPipeReader(_request.BodyReader, encoding)
                 {
-                    var encoding = FilterEncoding(contentType.Encoding);
-                    var formReader = new FormPipeReader(_request.BodyReader, encoding)
-                    {
-                        ValueCountLimit = _options.ValueCountLimit,
-                        KeyLengthLimit = _options.KeyLengthLimit,
-                        ValueLengthLimit = _options.ValueLengthLimit,
-                    };
-                    formFields = new FormCollection(await formReader.ReadFormAsync(cancellationToken));
+                    ValueCountLimit = _options.ValueCountLimit,
+                    KeyLengthLimit = _options.KeyLengthLimit,
+                    ValueLengthLimit = _options.ValueLengthLimit,
+                };
+                formFields = new FormCollection(await formReader.ReadFormAsync(cancellationToken));
+            }
+            else if (HasMultipartFormContentType(contentType))
+            {
+                if (_options.BufferBody)
+                {
+                    (formFields, files) = await ParseMultipartStreamAsync(contentType, cancellationToken);
                 }
-                else if (HasMultipartFormContentType(contentType))
+                else
                 {
-                    var formAccumulator = new KeyValueAccumulator();
-
-                    var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
-                    var multipartReader = new MultipartPipeReader(boundary, _request.BodyReader, _request.Body.CanSeek)
-                    {
-                        HeadersCountLimit = _options.MultipartHeadersCountLimit,
-                        HeadersLengthLimit = _options.MultipartHeadersLengthLimit,
-                        BodyLengthLimit = _options.MultipartBodyLengthLimit,
-                    };
-                    var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
-                    while (section != null)
-                    {
-                        // Parse the content disposition here and pass it further to avoid reparsings
-                        if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
-                        {
-                            throw new InvalidDataException("Form section has invalid Content-Disposition value: " + section.ContentDisposition);
-                        }
-
-                        if (contentDisposition.IsFileDisposition())
-                        {
-                            var fileSection = new FileMultipartSection(section, contentDisposition);
-
-                            var name = fileSection.Name;
-                            var fileName = fileSection.FileName;
-
-                            FormFile file;
-                            if (section.BaseStreamOffset.HasValue)
-                            {
-                                await section.Body.DrainAsync(cancellationToken);
-
-                                // Relative reference to buffered request body
-                                file = new FormFile(_request.Body, section.BaseStreamOffset.GetValueOrDefault(), section.Body.Length, name, fileName);
-                            }
-                            else
-                            {
-                                // Enable buffering for the file if not already done for the full body
-                                var stream = section.EnableRewind(
-                                    _request.HttpContext.Response.RegisterForDispose,
-                                    _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
-
-                                // Find the end
-                                await stream.Body.DrainAsync(cancellationToken);
-
-                                // Individually buffered file body
-                                file = new FormFile(stream.Body, 0, stream.Body.Length, name, fileName);
-                            }
-                            file.Headers = new HeaderDictionary(section.Headers);
-
-                            if (files == null)
-                            {
-                                files = new FormFileCollection();
-                            }
-                            if (files.Count >= _options.ValueCountLimit)
-                            {
-                                throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
-                            }
-                            files.Add(file);
-                        }
-                        else if (contentDisposition.IsFormDisposition())
-                        {
-                            var formDataSection = new FormMultipartSection(section, contentDisposition);
-
-                            // Content-Disposition: form-data; name="key"
-                            //
-                            // value
-
-                            // Do not limit the key name length here because the multipart headers length limit is already in effect.
-                            var key = formDataSection.Name;
-                            var value = await formDataSection.GetValueAsync();
-
-                            formAccumulator.Append(key, value);
-                            if (formAccumulator.ValueCount > _options.ValueCountLimit)
-                            {
-                                throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
-                            }
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
-                        }
-
-                        section = await multipartReader.ReadNextSectionAsync(cancellationToken);
-                    }
-
-                    if (formAccumulator.HasValues)
-                    {
-                        formFields = new FormCollection(formAccumulator.GetResults(), files);
-                    }
+                    (formFields, files) = await ParseMultipartPipeAsync(contentType, cancellationToken);
                 }
             }
 
@@ -270,6 +186,183 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             return Form;
+        }
+        private async Task<(FormCollection, FormFileCollection)> ParseMultipartStreamAsync(MediaTypeHeaderValue contentType, CancellationToken cancellationToken)
+        {
+            FormCollection formFields = null;
+            FormFileCollection files = null;
+            var formAccumulator = new KeyValueAccumulator();
+
+            var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
+            var multipartReader = new MultipartReader(boundary, _request.Body)
+            {
+                HeadersCountLimit = _options.MultipartHeadersCountLimit,
+                HeadersLengthLimit = _options.MultipartHeadersLengthLimit,
+                BodyLengthLimit = _options.MultipartBodyLengthLimit,
+            };
+            var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+            while (section != null)
+            {
+                // Parse the content disposition here and pass it further to avoid reparsings
+                if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
+                {
+                    throw new InvalidDataException("Form section has invalid Content-Disposition value: " + section.ContentDisposition);
+                }
+
+                if (contentDisposition.IsFileDisposition())
+                {
+                    var fileSection = new FileMultipartSection(section, contentDisposition);
+
+                    // Enable buffering for the file if not already done for the full body
+                    section.EnableRewind(
+                        _request.HttpContext.Response.RegisterForDispose,
+                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
+
+                    // Find the end
+                    await section.Body.DrainAsync(cancellationToken);
+
+                    var name = fileSection.Name;
+                    var fileName = fileSection.FileName;
+
+                    FormFile file;
+                    if (section.BaseStreamOffset.HasValue)
+                    {
+                        // Relative reference to buffered request body
+                        file = new FormFile(_request.Body, section.BaseStreamOffset.GetValueOrDefault(), section.Body.Length, name, fileName);
+                    }
+                    else
+                    {
+                        // Individually buffered file body
+                        file = new FormFile(section.Body, 0, section.Body.Length, name, fileName);
+                    }
+                    file.Headers = new HeaderDictionary(section.Headers);
+
+                    if (files == null)
+                    {
+                        files = new FormFileCollection();
+                    }
+                    if (files.Count >= _options.ValueCountLimit)
+                    {
+                        throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
+                    }
+                    files.Add(file);
+                }
+                else if (contentDisposition.IsFormDisposition())
+                {
+                    var formDataSection = new FormMultipartSection(section, contentDisposition);
+
+                    // Content-Disposition: form-data; name="key"
+                    //
+                    // value
+
+                    // Do not limit the key name length here because the multipart headers length limit is already in effect.
+                    var key = formDataSection.Name;
+                    var value = await formDataSection.GetValueAsync(cancellationToken);
+
+                    formAccumulator.Append(key, value);
+                    if (formAccumulator.ValueCount > _options.ValueCountLimit)
+                    {
+                        throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
+                }
+
+                section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+            }
+
+            if (formAccumulator.HasValues)
+            {
+                formFields = new FormCollection(formAccumulator.GetResults(), files);
+            }
+
+            return (formFields, files);
+        }
+
+        private async Task<(FormCollection, FormFileCollection)> ParseMultipartPipeAsync(MediaTypeHeaderValue contentType, CancellationToken cancellationToken)
+        {
+            FormCollection formFields = null;
+            FormFileCollection files = null;
+            var formAccumulator = new KeyValueAccumulator();
+
+            var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
+            var multipartReader = new MultipartPipeReader(boundary, _request.BodyReader)
+            {
+                HeadersCountLimit = _options.MultipartHeadersCountLimit,
+                HeadersLengthLimit = _options.MultipartHeadersLengthLimit,
+                BodyLengthLimit = _options.MultipartBodyLengthLimit,
+            };
+            var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+            while (section != null)
+            {
+                // Parse the content disposition here and pass it further to avoid reparsings
+                if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
+                {
+                    throw new InvalidDataException("Form section has invalid Content-Disposition value: " + section.ContentDisposition);
+                }
+
+                if (contentDisposition.IsFileDisposition())
+                {
+                    var fileSection = new FileMultipartSection(section, contentDisposition);
+
+                    var name = fileSection.Name;
+                    var fileName = fileSection.FileName;
+
+                    // Enable buffering for the file
+                    var stream = section.EnableRewind(
+                        _request.HttpContext.Response.RegisterForDispose,
+                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
+
+                    // Find the end
+                    await stream.Body.DrainAsync(cancellationToken);
+
+                    // Individually buffered file body
+                    var file = new FormFile(stream.Body, 0, stream.Body.Length, name, fileName)
+                    {
+                        Headers = new HeaderDictionary(section.Headers)
+                    };
+
+                    files ??= new FormFileCollection();
+                    if (files.Count >= _options.ValueCountLimit)
+                    {
+                        throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
+                    }
+                    files.Add(file);
+                }
+                else if (contentDisposition.IsFormDisposition())
+                {
+                    var formDataSection = new FormMultipartSection(section, contentDisposition);
+
+                    // Content-Disposition: form-data; name="key"
+                    //
+                    // value
+
+                    // Do not limit the key name length here because the multipart headers length limit is already in effect.
+                    var key = formDataSection.Name;
+                    var value = await formDataSection.GetValueAsync();
+
+                    formAccumulator.Append(key, value);
+                    if (formAccumulator.ValueCount > _options.ValueCountLimit)
+                    {
+                        throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
+                }
+
+                section = await multipartReader.ReadNextSectionAsync(cancellationToken);
+            }
+
+            if (formAccumulator.HasValues)
+            {
+                formFields = new FormCollection(formAccumulator.GetResults(), files);
+            }
+
+            return (formFields, files);
         }
 
         private Encoding FilterEncoding(Encoding encoding)

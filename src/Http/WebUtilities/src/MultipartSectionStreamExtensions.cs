@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
@@ -18,7 +19,16 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section to read from</param>
         /// <returns>The body steam as string</returns>
-        public static async Task<string> ReadAsStringAsync(this MultipartSection section)
+        public static Task<string> ReadAsStringAsync(this MultipartSection section)
+            => ReadAsStringAsync(section, CancellationToken.None);
+
+        /// <summary>
+        /// Reads the body of the section as a string
+        /// </summary>
+        /// <param name="section">The section to read from</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>The body steam as string</returns>
+        public static async Task<string> ReadAsStringAsync(this MultipartSection section, CancellationToken cancellationToken)
         {
             if (section == null)
             {
@@ -34,7 +44,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 streamEncoding = Encoding.UTF8;
             }
 
-            return await section.BodyReader.ReadToEndAsync(streamEncoding);
+            return await section.BodyReader.ReadToEndAsync(streamEncoding, cancellationToken);
         }
     }
 }
