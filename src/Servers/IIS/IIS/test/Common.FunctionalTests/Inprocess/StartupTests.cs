@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             {
                 Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
             }
-            else 
+            else
             {
                 Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
             }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2221")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
