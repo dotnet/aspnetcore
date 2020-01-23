@@ -13,7 +13,7 @@ Directory.Build.props checks this property using the following condition:
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
+  <PropertyGroup>
     <PackagesInPatch>
       Microsoft.AspNetCore.Blazor;
       Microsoft.AspNetCore.Blazor.Build;
