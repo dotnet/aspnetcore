@@ -254,6 +254,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task CanHandleTwoAbsoluteFormRequestsInARow()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/18438
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET http://localhost/ HTTP/1.1",
+                        "Host: localhost",
+                        "",
+                        "GET http://localhost/ HTTP/1.1",
+                        "Host: localhost",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
         public async Task AppCanSetTraceIdentifier()
         {
             const string knownId = "xyz123";
@@ -357,7 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
         }
-
 
         [Fact]
         public async Task Http10NotKeptAliveByDefault()
