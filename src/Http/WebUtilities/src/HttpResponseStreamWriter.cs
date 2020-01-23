@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            int written = 0;
+            var written = 0;
             while (written < values.Length)
             {
                 if (_charBufferCount == _charBufferSize)
