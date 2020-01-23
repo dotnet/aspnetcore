@@ -10,7 +10,7 @@ This script can be used to invoke various targets, such as targets to produce pa
 build projects, run tests, and generate code.
 
 .PARAMETER CI
-Sets up CI specific settings and variables.
+Sets up CI-specific settings and variables.
 
 .PARAMETER Restore
 Run restore.
