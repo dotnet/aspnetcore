@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
 </Project>
