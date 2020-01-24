@@ -93,7 +93,7 @@ fi
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
 NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
 echo "Running non-flaky tests."
-$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
+$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit;LogFileName=testResults.xml --TestCaseFilter:"$NONFLAKY_FILTER"
 nonflaky_exitcode=$?
 if [ $nonflaky_exitcode != 0 ]; then
     echo "Non-flaky tests failed!" 1>&2
@@ -109,6 +109,7 @@ if [ $? != 0 ]; then
 fi
 
 echo "Copying TestResults/* to Root/"
+ls -la TestResults
 cp TestResults/* .
 echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/../"
 shopt -s globstar
