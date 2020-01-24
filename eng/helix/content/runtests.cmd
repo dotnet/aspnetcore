@@ -61,9 +61,6 @@ if errorlevel 1 (
 
 echo "Copying TestResults\TestResults.xml to ."
 copy TestResults\TestResults.xml testResults.xml
-echo "Copying artifacts/logs to %HELIX_WORKITEM_UPLOAD_ROOT%/../"
-for /r artifacts\log %x in (*.*) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\..\
-for /r artifacts\log %x in (*.*) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\
 
 exit /b %exit_code%
 
