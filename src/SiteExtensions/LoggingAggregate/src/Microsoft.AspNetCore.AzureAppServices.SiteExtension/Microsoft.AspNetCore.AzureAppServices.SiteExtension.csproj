@@ -21,14 +21,15 @@
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
+
+    <SiteExtensionVersion>$(PackageVersion)</SiteExtensionVersion>
+    <SiteExtensionVersion Condition=" '$(_PreReleaseLabel)' != '' " >$(SiteExtensionVersion)-$(_PreReleaseLabel)</SiteExtensionVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
     <!-- When updating this add the previous SiteExtension(s) to the list above -->
-    <SiteExtensionVersion>$(PackageVersion)</SiteExtensionVersion>
-    <SiteExtensionVersion Condition=" '$(_PreReleaseLabel)' != '' " >$(SiteExtensionVersion)-$(_PreReleaseLabel)</SiteExtensionVersion>
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" Version="$(SiteExtensionVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(SiteExtensionVersion)" PrivateAssets="All" />
   </ItemGroup>
