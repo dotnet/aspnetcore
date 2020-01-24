@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
-    public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
+    internal class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
     {
-        public static readonly TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
+        public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
 
         public void Configure(ConnectionOptions options)
         {

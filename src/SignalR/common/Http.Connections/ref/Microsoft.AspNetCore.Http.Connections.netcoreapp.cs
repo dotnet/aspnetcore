@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public ConnectionOptions() { }
         public System.TimeSpan? DisconnectTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
-    public partial class ConnectionOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Http.Connections.ConnectionOptions>
+    internal partial class ConnectionOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Http.Connections.ConnectionOptions>
     {
         public static readonly System.TimeSpan DefaultDisconectTimeout;
         public ConnectionOptionsSetup() { }
