@@ -498,11 +498,12 @@ export class HttpConnection implements IConnection {
         this.connectionId = undefined;
         this.connectionState = ConnectionState.Disconnected;
 
-        if (this.onclose && this.connectionStarted) {
+        if (this.connectionStarted) {
             this.connectionStarted = false;
-
             try {
-                this.onclose(error);
+                if (this.onclose) {
+                    this.onclose(error);
+                }
             } catch (e) {
                 this.logger.log(LogLevel.Error, `HttpConnection.onclose(${error}) threw error '${e}'.`);
             }
