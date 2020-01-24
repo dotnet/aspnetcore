@@ -119,7 +119,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-
             ThrowIfCompleted();
 
             if (!_finished)
@@ -154,7 +153,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             if (!_metadataSkipped)
             {
-                var readResult = await _pipeReader.ReadAsync();
+                var readResult = await _pipeReader.ReadAsync(cancellationToken);
                 var sequence = readResult.Buffer;
                 var isCurrentCompleted = TrySkipMetadata(ref sequence, readResult.IsCompleted);
                 if (isCurrentCompleted)
@@ -264,9 +263,11 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (isFinalBlock && sequence.Length < _boundary.FinalBoundaryLength - _partialMatchIndex)
             {
+                _pipeReader.AdvanceTo(sequence.Start);
                 throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
             }
 
+            // TODO: This while loop isn't looping, all code paths return. This means partial matches break the loop early, even when there's more data to consume.
             while (!sequenceReader.End)
             {
                 // read until the first byte of the boundaryBytes
@@ -343,6 +344,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new InvalidDataException($"Line length limit 100 exceeded.");
             }
 
+            // Some formatters leave off the final CRLF
+            if (!reachedNewLine && isFinalBlock)
+            {
+                remainder = sequence;
+            }
+
             // Check if we reached "--" for the final boundary, and that there is only whitespace left
             var remainderReader = new SequenceReader<byte>(remainder);
             // Whitespace consists of space or horizontal tab
@@ -368,10 +375,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return false;
             }
 
-            sequence = sequence.Slice(sequenceReader.Position);
-            RawLength += sequenceReader.Consumed;
+            if (reachedNewLine)
+            {
+                sequence = sequence.Slice(sequenceReader.Position);
+                RawLength += sequenceReader.Consumed;
+            }
+            else
+            {
+                sequence = sequence.Slice(remainderReader.Position);
+                RawLength += remainderReader.Consumed;
+            }
             return true;
-
         }
     }
 }

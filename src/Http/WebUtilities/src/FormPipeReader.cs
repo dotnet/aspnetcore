@@ -91,23 +91,26 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 var buffer = readResult.Buffer;
 
-                if (!buffer.IsEmpty)
+                try
                 {
-                    ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
-                }
-
-                if (readResult.IsCompleted)
-                {
-                    _pipeReader.AdvanceTo(buffer.End);
-
                     if (!buffer.IsEmpty)
                     {
-                        throw new InvalidOperationException("End of body before form was fully parsed.");
+                        ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
                     }
-                    break;
-                }
 
-                _pipeReader.AdvanceTo(buffer.Start, buffer.End);
+                    if (readResult.IsCompleted)
+                    {
+                        if (!buffer.IsEmpty)
+                        {
+                            throw new InvalidOperationException("End of body before form was fully parsed.");
+                        }
+                        break;
+                    }
+                }
+                finally
+                {
+                    _pipeReader.AdvanceTo(buffer.Start, buffer.End);
+                }
             }
 
             return accumulator.GetResults();

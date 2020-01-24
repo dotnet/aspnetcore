@@ -80,24 +80,27 @@ namespace Microsoft.AspNetCore.WebUtilities
                     continue;
                 }
 
-                var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
-                if (headersLength > DefaultHeadersLengthLimit)
+                try
                 {
-                    _pipeReader.AdvanceTo(buffer.Start, buffer.End); // free memory 
-                    throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                    var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
+                    if (headersLength > DefaultHeadersLengthLimit)
+                    {
+                        throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                    }
+                    if (finishedParsing)
+                    {
+                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
+                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection }; ;
+                    }
+                    if (readResult.IsCompleted)
+                    {
+                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
+                    }
                 }
-                if (finishedParsing)
+                finally
                 {
-                    _pipeReader.AdvanceTo(buffer.Start);
-                    _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
-                    return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection }; ;
+                    _pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
-                if (readResult.IsCompleted)
-                {
-                    _pipeReader.AdvanceTo(buffer.Start, buffer.End); // free memory 
-                    throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
-                }
-                _pipeReader.AdvanceTo(buffer.Start, buffer.End);
             }
 
         }
@@ -149,7 +152,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // If we're not in the final block, then consume nothing
                 else
                 {
-                    // Don't buffer indefinately
+                    // Don't buffer indefinitely
                     if (span.Length > lengthLimit)
                     {
                         throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
