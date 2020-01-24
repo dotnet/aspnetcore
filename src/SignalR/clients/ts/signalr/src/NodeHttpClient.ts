@@ -35,6 +35,13 @@ export class NodeHttpClient extends HttpClient {
     }
 
     public send(httpRequest: HttpRequest): Promise<HttpResponse> {
+        // Check that abort was not signaled before calling send
+        if (httpRequest.abortSignal) {
+            if (httpRequest.abortSignal.aborted) {
+                return Promise.reject(new AbortError());
+            }
+        }
+
         return new Promise<HttpResponse>((resolve, reject) => {
 
             let requestBody: Buffer | string;
