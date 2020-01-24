@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void NotAllConnectionsAborted();
 
-        void HeartbeatSlow(TimeSpan interval, DateTimeOffset now);
+        void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now);
 
         void ApplicationNeverCompleted(string connectionId);
 

@@ -386,6 +386,54 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
+        {
+            // Arrange
+            var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            RequestDelegate appDelegate = async ctx =>
+            {
+                var pendingReadTask = ctx.Request.Body.ReadAsync(new byte[1024], 0, 1024);
+                ctx.Response.Headers["test-header"] = "true";
+                await ctx.Response.Body.FlushAsync();
+            };
+
+            Stream requestStream = null;
+
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
+            httpRequest.Version = new Version(2, 0);
+            httpRequest.Content = new PushContent(async stream =>
+            {
+                requestStream = stream;
+                await requestStreamTcs.Task;
+            });
+
+            // Act
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+
+            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("true", response.Headers.GetValues("test-header").Single());
+
+            // Read response
+            var ex = await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                byte[] buffer = new byte[1024];
+                var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            });
+            Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
+
+            // Unblock request
+            requestStreamTcs.TrySetResult(null);
+        }
+
+        [Fact]
         public async Task ClientStreaming_ServerAbort()
         {
             // Arrange
@@ -822,6 +870,49 @@ namespace Microsoft.AspNetCore.TestHost
             var resp = await client.GetAsync("/");
 
             Assert.Same(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task SendAsync_Default_Protocol11()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(1, 1), message.Version);
+        }
+
+        [Fact]
+        public async Task SendAsync_ExplicitlySet_Protocol20()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+            request.Version = new Version(2, 0);
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(2, 0), message.Version);
         }
     }
 }

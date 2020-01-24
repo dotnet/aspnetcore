@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     attributeRoutingConfigurationErrors);
             }
 
-            if (attributeRoutingConfigurationErrors.Any())
+            if (attributeRoutingConfigurationErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(attributeRoutingConfigurationErrors.Values);
 
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             var namedRoutedErrors = ValidateNamedAttributeRoutedActions(actionsByRouteName);
-            if (namedRoutedErrors.Any())
+            if (namedRoutedErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(namedRoutedErrors);
                 throw new InvalidOperationException(message);
             }
 
-            if (routeTemplateErrors.Any())
+            if (routeTemplateErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(routeTemplateErrors);
                 throw new InvalidOperationException(message);

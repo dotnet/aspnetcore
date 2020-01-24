@@ -116,4 +116,8 @@ if [ $? != 0 ]; then
     # DO NOT EXIT
 fi
 
+echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/../"
+shopt -s globstar
+cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/../
+cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/
 exit $nonflaky_exitcode

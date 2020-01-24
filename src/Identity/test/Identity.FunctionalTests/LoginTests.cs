@@ -231,6 +231,33 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
+        public async Task CanResendConfirmingEmail()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            void ConfigureTestServices(IServiceCollection services) => services
+                .SetupTestEmailSender(emailSender)
+                .SetupEmailRequired();
+
+            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            // Use a new client to simulate a new browser session.
+            await UserStories.ResendConfirmEmailAsync(server.CreateClient(), userName);
+            Assert.Equal(2, emailSender.SentEmails.Count);
+            var email = emailSender.SentEmails.Last();
+            await UserStories.ConfirmEmailAsync(email, newClient);
+        }
+
+        [Fact]
         public async Task CanLogInAfterConfirmingEmail_WithGlobalAuthorizeFilter()
         {
             // Arrange

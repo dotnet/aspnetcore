@@ -41,7 +41,7 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("web", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
-            // Avoid the F# compiler. See https://github.com/aspnet/AspNetCore/issues/14022
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
             if (languageOverride != null)
             {
                 return;

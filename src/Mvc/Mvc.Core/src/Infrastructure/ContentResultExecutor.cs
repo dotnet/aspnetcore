@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 response.ContentLength = resolvedContentTypeEncoding.GetByteCount(result.Content);
 
-                using (var textWriter = _httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+                await using (var textWriter = _httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
                 {
                     await textWriter.WriteAsync(result.Content);
 

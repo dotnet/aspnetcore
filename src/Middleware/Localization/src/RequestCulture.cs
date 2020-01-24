@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Localization
     public class RequestCulture
     {
         /// <summary>
-        /// Creates a new <see cref="RequestCulture"/> object has its <see cref="Culture"/> and <see cref="UICulture"/>
+        /// Creates a new <see cref="RequestCulture"/> object with its <see cref="Culture"/> and <see cref="UICulture"/>
         /// properties set to the same <see cref="CultureInfo"/> value.
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> for the request.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         /// <summary>
-        /// Creates a new <see cref="RequestCulture"/> object has its <see cref="Culture"/> and <see cref="UICulture"/>
+        /// Creates a new <see cref="RequestCulture"/> object with its <see cref="Culture"/> and <see cref="UICulture"/>
         /// properties set to the same <see cref="CultureInfo"/> value.
         /// </summary>
         /// <param name="culture">The culture for the request.</param>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         /// <summary>
-        /// Creates a new <see cref="RequestCulture"/> object has its <see cref="Culture"/> and <see cref="UICulture"/>
+        /// Creates a new <see cref="RequestCulture"/> object with its <see cref="Culture"/> and <see cref="UICulture"/>
         /// properties set to the respective <see cref="CultureInfo"/> values provided.
         /// </summary>
         /// <param name="culture">The culture for the request to be used for formatting.</param>
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         /// <summary>
-        /// Creates a new <see cref="RequestCulture"/> object has its <see cref="Culture"/> and <see cref="UICulture"/>
+        /// Creates a new <see cref="RequestCulture"/> object with its <see cref="Culture"/> and <see cref="UICulture"/>
         /// properties set to the respective <see cref="CultureInfo"/> values provided.
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> for the request to be used for formatting.</param>

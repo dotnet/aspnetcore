@@ -43,7 +43,9 @@ namespace Microsoft.AspNetCore.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
+#if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+#endif
         private IServiceProvider _services;
 
         /// <summary>
@@ -2428,7 +2430,11 @@ namespace Microsoft.AspNetCore.Identity
         private static string NewSecurityStamp()
         {
             byte[] bytes = new byte[20];
+#if NETSTANDARD2_0
             _rng.GetBytes(bytes);
+#else
+            RandomNumberGenerator.Fill(bytes);
+#endif
             return Base32.ToBase32(bytes);
         }
 
@@ -2463,16 +2469,12 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-
         /// <summary>
         /// Generates the token purpose used to change email.
         /// </summary>
         /// <param name="newEmail">The new email address.</param>
         /// <returns>The token purpose.</returns>
-        protected static string GetChangeEmailTokenPurpose(string newEmail)
-        {
-            return "ChangeEmail:" + newEmail;
-        }
+        public static string GetChangeEmailTokenPurpose(string newEmail) => "ChangeEmail:" + newEmail;
 
         /// <summary>
         /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is

@@ -149,10 +149,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.User = new ClaimsPrincipal(identity);
 
             byte[] data = new byte[256 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(data);
-            }
+            RandomNumberGenerator.Fill(data);
             var base64ClaimUId = Convert.ToBase64String(data);
             var expectedClaimUid = new BinaryBlob(256, data);
 

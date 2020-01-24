@@ -58,7 +58,7 @@ namespace System.Buffers
             _isDisposed = true;
 
             Array = null;
-            NativePointer = IntPtr.Zero;;
+            NativePointer = IntPtr.Zero;
 
             if (_gcHandle.IsAllocated)
             {

@@ -688,7 +688,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
         }
 
-        protected Task SendPreambleAsync() => SendAsync(new ArraySegment<byte>(Http2Connection.ClientPreface));
+        protected Task SendPreambleAsync() => SendAsync(Http2Connection.ClientPreface);
 
         protected async Task SendSettingsAsync()
         {

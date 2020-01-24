@@ -997,7 +997,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact] // TODO https://github.com/aspnet/AspNetCore/issues/7034
+        [Fact] // TODO https://github.com/dotnet/aspnetcore/issues/7034
         public async Task ContentLength_Response_FirstWriteMoreBytesWritten_Throws_Sends500()
         {
             var headers = new[]

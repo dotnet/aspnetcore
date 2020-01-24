@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new AppWithDeps(logger);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8267")]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();

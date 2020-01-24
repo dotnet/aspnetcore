@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments)
         {
             // If there are no policies we don't need to run auth
-            if (!policies.Any())
+            if (policies.Count == 0)
             {
                 return TaskCache.True;
             }

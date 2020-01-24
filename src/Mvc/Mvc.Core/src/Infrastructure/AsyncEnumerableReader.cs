@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -17,8 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 #endif
 {
-    using ReaderFunc = Func<IAsyncEnumerable<object>, Task<ICollection>>;
-
     /// <summary>
     /// Type that reads an <see cref="IAsyncEnumerable{T}"/> instance into a
     /// generic collection instance.
@@ -34,8 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             nameof(ReadInternal),
             BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private readonly ConcurrentDictionary<Type, ReaderFunc> _asyncEnumerableConverters =
-            new ConcurrentDictionary<Type, ReaderFunc>();
+        private readonly ConcurrentDictionary<Type, Func<object, Task<ICollection>>> _asyncEnumerableConverters =
+            new ConcurrentDictionary<Type, Func<object, Task<ICollection>>>();
         private readonly MvcOptions _mvcOptions;
 
         /// <summary>
@@ -48,37 +45,39 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <summary>
-        /// Reads a <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
+        /// Attempts to produces a delegate that reads an <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
         /// </summary>
-        /// <param name="value">The <see cref="IAsyncEnumerable{T}"/> to read.</param>
-        /// <returns>The <see cref="ICollection"/>.</returns>
-        public Task<ICollection> ReadAsync(IAsyncEnumerable<object> value)
+        /// <param name="type">The type to read.</param>
+        /// <param name="reader">A delegate that when awaited reads the <see cref="IAsyncEnumerable{T}"/>.</param>
+        /// <returns><see langword="true" /> when <paramref name="type"/> is an instance of <see cref="IAsyncEnumerable{T}"/>, othwerise <see langword="false"/>.</returns>
+        public bool TryGetReader(Type type, out Func<object, Task<ICollection>> reader)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            var type = value.GetType();
-            if (!_asyncEnumerableConverters.TryGetValue(type, out var result))
+            if (!_asyncEnumerableConverters.TryGetValue(type, out reader))
             {
                 var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IAsyncEnumerable<>));
-                Debug.Assert(enumerableType != null);
+                if (enumerableType is null)
+                {
+                    // Not an IAsyncEnumerable<T>. Cache this result so we avoid reflection the next time we see this type.
+                    reader = null;
+                    _asyncEnumerableConverters.TryAdd(type, reader);
+                }
+                else
+                {
+                    var enumeratedObjectType = enumerableType.GetGenericArguments()[0];
 
-                var enumeratedObjectType = enumerableType.GetGenericArguments()[0];
+                    var converter = (Func<object, Task<ICollection>>)Converter
+                        .MakeGenericMethod(enumeratedObjectType)
+                        .CreateDelegate(typeof(Func<object, Task<ICollection>>), this);
 
-                var converter = (ReaderFunc)Converter
-                    .MakeGenericMethod(enumeratedObjectType)
-                    .CreateDelegate(typeof(ReaderFunc), this);
-
-                _asyncEnumerableConverters.TryAdd(type, converter);
-                result = converter;
+                    reader = converter;
+                    _asyncEnumerableConverters.TryAdd(type, reader);
+                }
             }
 
-            return result(value);
+            return reader != null;
         }
 
-        private async Task<ICollection> ReadInternal<T>(IAsyncEnumerable<object> value)
+        private async Task<ICollection> ReadInternal<T>(object value)
         {
             var asyncEnumerable = (IAsyncEnumerable<T>)value;
             var result = new List<T>();

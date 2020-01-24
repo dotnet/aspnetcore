@@ -13,7 +13,6 @@
 
 #define STARTUP_TIME_LIMIT_INCREMENT_IN_MILLISECONDS 5000
 
-
 HRESULT
 SERVER_PROCESS::Initialize(
     PROCESS_MANAGER      *pProcessManager,
@@ -26,6 +25,7 @@ SERVER_PROCESS::Initialize(
     BOOL                  fAnonymousAuthEnabled,
     std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
     BOOL                  fStdoutLogEnabled,
+    BOOL                  fEnableOutOfProcessConsoleRedirection,
     BOOL                  fWebSocketSupported,
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
@@ -44,6 +44,7 @@ SERVER_PROCESS::Initialize(
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
     m_fBasicAuthEnabled = fBasicAuthEnabled;
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
+    m_fEnableOutOfProcessConsoleRedirection = fEnableOutOfProcessConsoleRedirection;
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
@@ -1031,6 +1032,15 @@ SERVER_PROCESS::SetupStdHandles(
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
+    if (!m_fEnableOutOfProcessConsoleRedirection)
+    {
+        pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
+        pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdError = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdOutput = INVALID_HANDLE_VALUE;
+        return hr;
+    }
+
     if (!m_fStdoutLogEnabled)
     {
         CreatePipe(&m_hStdoutHandle, &m_hStdErrWritePipe, &saAttr, 0 /*nSize*/);
@@ -1771,6 +1781,8 @@ SERVER_PROCESS::SERVER_PROCESS() :
     m_dwListeningProcessId(0),
     m_hListeningProcessHandle(NULL),
     m_hShutdownHandle(NULL),
+    m_hStdErrWritePipe(NULL),
+    m_hReadThread(nullptr),
     m_randomGenerator(std::random_device()())
 {
     //InterlockedIncrement(&g_dwActiveServerProcesses);
@@ -1867,13 +1879,15 @@ SERVER_PROCESS::~SERVER_PROCESS()
         m_pProcessManager = NULL;
     }
 
-    if (m_hStdoutHandle != NULL)
+    if (m_hStdErrWritePipe != NULL)
     {
-        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        if (m_hStdErrWritePipe != INVALID_HANDLE_VALUE)
         {
-            CloseHandle(m_hStdoutHandle);
+            FlushFileBuffers(m_hStdErrWritePipe);
+            CloseHandle(m_hStdErrWritePipe);
         }
-        m_hStdoutHandle = NULL;
+
+        m_hStdErrWritePipe = NULL;
     }
 
     // Forces ReadFile to cancel, causing the read loop to complete.
@@ -1906,6 +1920,15 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         CloseHandle(m_hReadThread);
         m_hReadThread = nullptr;
+    }
+
+    if (m_hStdoutHandle != NULL)
+    {
+        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(m_hStdoutHandle);
+        }
+        m_hStdoutHandle = NULL;
     }
 
     if (m_fStdoutLogEnabled)

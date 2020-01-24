@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Routing
             var expected = "Endpoint Test contains CORS metadata, but a middleware was not found that supports CORS." +
                 Environment.NewLine +
                 "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code. " +
-                "The call to app.UseAuthorization() must appear between app.UseRouting() and app.UseEndpoints(...).";
+                "The call to app.UseCors() must appear between app.UseRouting() and app.UseEndpoints(...).";
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = new ServiceProvider()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0.
 // See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
@@ -9,6 +9,8 @@ namespace System.Net.Http.HPack
 {
     internal static class StatusCodes
     {
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+
         private static ReadOnlySpan<byte> BytesStatus100 => new byte[] { (byte)'1', (byte)'0', (byte)'0' };
         private static ReadOnlySpan<byte> BytesStatus101 => new byte[] { (byte)'1', (byte)'0', (byte)'1' };
         private static ReadOnlySpan<byte> BytesStatus102 => new byte[] { (byte)'1', (byte)'0', (byte)'2' };

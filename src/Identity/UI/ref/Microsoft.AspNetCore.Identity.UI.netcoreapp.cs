@@ -207,6 +207,22 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public abstract partial class ResendEmailConfirmationModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected ResendEmailConfirmationModel() { }
+        [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
+        public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual void OnGet() { }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public partial class InputModel
+        {
+            public InputModel() { }
+            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
+            [System.ComponentModel.DataAnnotations.RequiredAttribute]
+            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public partial class ResetPasswordConfirmationModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         public ResetPasswordConfirmationModel() { }
@@ -654,6 +670,22 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             [System.ComponentModel.DataAnnotations.RequiredAttribute]
             [System.ComponentModel.DataAnnotations.StringLengthAttribute(100, ErrorMessage="The {0} must be at least {2} and at max {1} characters long.", MinimumLength=6)]
             public string Password { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public abstract partial class ResendEmailConfirmationModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected ResendEmailConfirmationModel() { }
+        [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
+        public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual void OnGet() { }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public partial class InputModel
+        {
+            public InputModel() { }
+            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
+            [System.ComponentModel.DataAnnotations.RequiredAttribute]
+            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]

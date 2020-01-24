@@ -133,6 +133,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string AccessControlRequestMethod;
         public static readonly string Age;
         public static readonly string Allow;
+        public static readonly string AltSvc;
         public static readonly string Authority;
         public static readonly string Authorization;
         public static readonly string CacheControl;

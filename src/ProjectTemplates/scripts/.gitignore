@@ -3,6 +3,7 @@ tmp/
 CustomHive/
 angular/
 blazorserver/
+blazorwasm/
 mvc/
 razor/
 react/

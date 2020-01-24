@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature,
-        IHttpSysRequestInfoFeature
+        IHttpSysRequestInfoFeature,
+        IHttpResponseTrailersFeature,
+        IHttpResetFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private PipeWriter _pipeWriter;
         private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
+        private IHeaderDictionary _responseTrailers;
 
         private Fields _initializedFields;
 
@@ -178,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    _httpProtocolVersion = Request.ProtocolVersion.GetHttpProtocolVersion();
+                    _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -346,6 +349,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Request.IsHttps ? this : null;
         }
 
+        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
+            {
+                return this;
+            }
+            return null;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsReset)
+            {
+                return this;
+            }
+            return null;
+        }
+
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
@@ -389,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _responseHeaders = value; }
         }
 
-        bool IHttpResponseFeature.HasStarted => Response.HasStarted;
+        bool IHttpResponseFeature.HasStarted => _responseStarted;
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
@@ -443,6 +464,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            _requestContext.SetResetCode(errorCode);
+            _requestContext.Abort();
+        }
 
         internal async Task CompleteAsync()
         {
@@ -546,6 +573,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
         IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => _responseTrailers ??= Response.Trailers;
+            set => _responseTrailers = value;
+        }
 
         internal async Task OnResponseStart()
         {

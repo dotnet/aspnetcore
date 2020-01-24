@@ -2136,7 +2136,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     nameof(StreamingHub.CounterAsyncEnumerable),
                     nameof(StreamingHub.CounterAsyncEnumerableAsync),
                     nameof(StreamingHub.CounterAsyncEnumerableImpl),
-                    nameof(StreamingHub.AsyncEnumerableIsPreferedOverChannelReader),
+                    nameof(StreamingHub.AsyncEnumerableIsPreferredOverChannelReader),
                 };
 
                 foreach (var method in methods)
@@ -3753,7 +3753,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // The usage of TypeNameHandling.All is a security risk.
                         // If you're implementing this in your own application instead use your own 'type' field and a custom JsonConverter
                         // or ensure you're restricting to only known types with a custom SerializationBinder like we are here.
-                        // See https://github.com/aspnet/AspNetCore/issues/11495#issuecomment-505047422
+                        // See https://github.com/dotnet/aspnetcore/issues/11495#issuecomment-505047422
                         TypeNameHandling = TypeNameHandling.All,
                         SerializationBinder = StreamingHub.DerivedParameterKnownTypesBinder.Instance
                     }

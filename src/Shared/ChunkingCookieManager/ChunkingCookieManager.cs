@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Internal
                     SameSite = options.SameSite,
                     Secure = options.Secure,
                     IsEssential = options.IsEssential,
-                    Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    Expires = DateTimeOffset.UnixEpoch,
                     HttpOnly = options.HttpOnly,
                 });
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Internal
                         SameSite = options.SameSite,
                         Secure = options.Secure,
                         IsEssential = options.IsEssential,
-                        Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                        Expires = DateTimeOffset.UnixEpoch,
                         HttpOnly = options.HttpOnly,
                     });
             }

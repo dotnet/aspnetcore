@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            if (context.GetEndpoint() == null &&
-                Helpers.IsGetOrHeadMethod(context.Request.Method)
+            if (context.GetEndpoint() == null
+                && Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         {
                             // If the path matches a directory but does not end in a slash, redirect to add the slash.
                             // This prevents relative links from breaking.
-                            if (!Helpers.PathEndsInSlash(context.Request.Path) && _options.RedirectToAppendTrailingSlash)
+                            if (_options.RedirectToAppendTrailingSlash && !Helpers.PathEndsInSlash(context.Request.Path))
                             {
                                 Helpers.RedirectToPathWithSlash(context);
                                 return Task.CompletedTask;

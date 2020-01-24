@@ -559,7 +559,26 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="HttpParserTlsOverHttpError" xml:space="preserve">
     <value>Detected a TLS handshake to an endpoint that does not have TLS enabled.</value>
-  </data>  <data name="BadDeveloperCertificateState" xml:space="preserve">
+  </data>
+  <data name="BadDeveloperCertificateState" xml:space="preserve">
     <value>The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.</value>
+  </data>
+  <data name="QPackErrorIndexOutOfRange" xml:space="preserve">
+    <value>Index {index} is outside the bounds of the header field table.</value>
+  </data>
+  <data name="QPackErrorIntegerTooBig" xml:space="preserve">
+    <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
+  </data>
+  <data name="QPackHuffmanError" xml:space="preserve">
+    <value>Huffman decoding error.</value>
+  </data>
+  <data name="QPackStringLengthTooLarge" xml:space="preserve">
+    <value>Decoded string length of {length} octets is greater than the configured maximum length of {maxStringLength} octets.</value>
+  </data>
+  <data name="QuicTransportNotFound" xml:space="preserve">
+    <value>Quic transport not found when using HTTP/3.</value>
+  </data>
+  <data name="TransportNotFound" xml:space="preserve">
+    <value>Unable to resolve service for type 'Microsoft.AspNetCore.Connections.IConnectionListenerFactory' while attempting to activate 'Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer'.</value>
   </data>
 </root>

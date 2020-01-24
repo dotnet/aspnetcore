@@ -8,7 +8,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal static class MsQuicConstants
     {
-        private const uint Success = 0;
+        internal static uint InternalError = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.InternalError : Linux.InternalError;
+        internal static uint Success = 0;
+        internal static uint Pending = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.Pending : Linux.Pending;
+        private const uint SuccessConst = 0;
 
         internal static Func<uint, string> ErrorTypeFromErrorCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.GetError : (Func<uint, string>)Linux.GetError;
 
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 switch (status)
                 {
-                    case Success:
+                    case SuccessConst:
                         return "SUCCESS";
                     case Pending:
                         return "PENDING";
@@ -103,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 switch (status)
                 {
-                    case Success:
+                    case SuccessConst:
                         return "SUCCESS";
                     case Pending:
                         return "PENDING";

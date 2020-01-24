@@ -120,7 +120,7 @@ try {
 
     foreach ($unexpectedVar in $versionVars) {
         LogError `
-            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/aspnet/AspNetCore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
+            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/dotnet/aspnetcore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
             -filepath "$repoRoot\eng\Versions.props"
     }
 
@@ -129,7 +129,8 @@ try {
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
             # These .sln files are used by the templating engine.
-            ($_.Name -ne "BlazorServerWeb_CSharp.sln")
+            ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
+            ($_.Name -ne "BlazorWasm-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"

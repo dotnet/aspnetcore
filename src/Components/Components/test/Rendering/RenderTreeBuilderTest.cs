@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         [Fact]
         public void CanAddMultipleAttributes_WithChildRegion()
         {
-            // This represents bug https://github.com/aspnet/AspNetCore/issues/16570
+            // This represents bug https://github.com/dotnet/aspnetcore/issues/16570
             // If a sequence of attributes is terminated by a call to builder.OpenRegion,
             // then the attribute deduplication logic wasn't working correctly
 

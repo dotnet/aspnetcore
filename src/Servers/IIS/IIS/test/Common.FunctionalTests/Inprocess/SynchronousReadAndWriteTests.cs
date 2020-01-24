@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/dotnet/aspnetcore/issues/7341", FlakyOn.Helix.All)]
         public async Task ReadAndWriteSynchronously()
         {
             for (int i = 0; i < 100; i++)

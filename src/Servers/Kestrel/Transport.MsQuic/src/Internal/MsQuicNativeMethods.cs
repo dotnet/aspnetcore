@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     /// </summary>
     internal unsafe static class MsQuicNativeMethods
     {
-        internal const string dllName = "msquic.dll";
+        internal const string dllName = "msquic";
 
         [DllImport(dllName)]
         internal static extern int MsQuicOpen(int version, out NativeApi* registration);
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         internal delegate void SetCallbackHandlerDelegate(
             IntPtr Handle,
-            IntPtr Handler,
+            Delegate del,
             IntPtr Context);
 
         internal delegate uint SetParamDelegate(
@@ -81,8 +82,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             IntPtr Handle,
             uint Level,
             uint Param,
-            IntPtr BufferLength,
-            IntPtr Buffer);
+            out uint BufferLength,
+            out byte* Buffer);
 
         internal delegate uint RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
 
@@ -413,61 +414,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             internal QUIC_STREAM_EVENT Type;
             internal StreamEventDataUnion Data;
-            internal uint ReceiveAbortError => Data.PeerRecvAbort.ErrorCode;
-            internal uint SendAbortError => Data.PeerSendAbort.ErrorCode;
-            internal ulong AbsoluteOffset => Data.Recv.AbsoluteOffset;
-            internal ulong TotalBufferLength => Data.Recv.TotalBufferLength;
-            internal void CopyToBuffer(Span<byte> buffer)
-            {
-                var length = (int)Data.Recv.Buffers[0].Length;
-                new Span<byte>(Data.Recv.Buffers[0].Buffer, length).CopyTo(buffer);
-            }
-            internal bool Canceled => Data.SendComplete.IsCanceled();
-            internal IntPtr ClientContext => Data.SendComplete.ClientContext;
-            internal bool GracefulShutdown => Data.SendShutdownComplete.Graceful;
-        }
-
-        internal delegate uint StreamCallbackDelegate(
-            IntPtr Stream,
-            IntPtr Context,
-            ref StreamEvent Event);
-
-        internal delegate uint StreamOpenDelegate(
-            IntPtr Connection,
-            uint Flags,
-            StreamCallbackDelegate Handler,
-            IntPtr Context,
-            out IntPtr Stream);
-
-        internal delegate uint StreamStartDelegate(
-            IntPtr Stream,
-            uint Flags
-            );
-
-        internal delegate uint StreamCloseDelegate(
-            IntPtr Stream);
-
-        internal delegate uint StreamShutdownDelegate(
-            IntPtr Stream,
-            uint Flags,
-            ushort ErrorCode);
-
-        internal delegate uint StreamSendDelegate(
-            IntPtr Stream,
-            QuicBuffer* Buffers,
-            uint BufferCount,
-            uint Flags,
-            IntPtr ClientSendContext);
-
-        internal delegate uint StreamReceiveCompleteDelegate(
-            IntPtr Stream,
-            ulong BufferLength);
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal unsafe struct QuicBuffer
-        {
-            internal uint Length;
-            internal byte* Buffer;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -535,6 +481,110 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal SOCKADDR_IN6 Ipv6;
             [FieldOffset(0)]
             internal ushort si_family;
+        }
+
+        internal delegate uint StreamCallbackDelegate(
+            IntPtr Stream,
+            IntPtr Context,
+            StreamEvent Event);
+
+        internal delegate uint StreamOpenDelegate(
+            IntPtr Connection,
+            uint Flags,
+            StreamCallbackDelegate Handler,
+            IntPtr Context,
+            out IntPtr Stream);
+
+        internal delegate uint StreamStartDelegate(
+            IntPtr Stream,
+            uint Flags
+            );
+
+        internal delegate uint StreamCloseDelegate(
+            IntPtr Stream);
+
+        internal delegate uint StreamShutdownDelegate(
+            IntPtr Stream,
+            uint Flags,
+            ushort ErrorCode);
+
+        internal delegate uint StreamSendDelegate(
+            IntPtr Stream,
+            QuicBuffer* Buffers,
+            uint BufferCount,
+            uint Flags,
+            IntPtr ClientSendContext);
+
+        internal delegate uint StreamReceiveCompleteDelegate(
+            IntPtr Stream,
+            ulong BufferLength);
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal unsafe struct QuicBuffer
+        {
+            internal uint Length;
+            internal byte* Buffer;
+        }
+
+        private const ushort IPv4 = 2;
+        private const ushort IPv6 = 23;
+        
+        public static SOCKADDR_INET Convert(IPEndPoint endpoint)
+        {
+            var socketAddress = new SOCKADDR_INET();
+            var buffer = endpoint.Address.GetAddressBytes();
+            if (endpoint.Address != IPAddress.Any && endpoint.Address != IPAddress.IPv6Any)
+            {
+                switch (endpoint.Address.AddressFamily)
+                {
+                    case AddressFamily.InterNetwork:
+                        socketAddress.Ipv4.sin_addr0 = buffer[0];
+                        socketAddress.Ipv4.sin_addr1 = buffer[1];
+                        socketAddress.Ipv4.sin_addr2 = buffer[2];
+                        socketAddress.Ipv4.sin_addr3 = buffer[3];
+                        socketAddress.Ipv4.sin_family = IPv4;
+                        break;
+                    case AddressFamily.InterNetworkV6:
+                        socketAddress.Ipv6.sin6_addr0 = buffer[0];
+                        socketAddress.Ipv6.sin6_addr1 = buffer[1];
+                        socketAddress.Ipv6.sin6_addr2 = buffer[2];
+                        socketAddress.Ipv6.sin6_addr3 = buffer[3];
+                        socketAddress.Ipv6.sin6_addr4 = buffer[4];
+                        socketAddress.Ipv6.sin6_addr5 = buffer[5];
+                        socketAddress.Ipv6.sin6_addr6 = buffer[6];
+                        socketAddress.Ipv6.sin6_addr7 = buffer[7];
+                        socketAddress.Ipv6.sin6_addr8 = buffer[8];
+                        socketAddress.Ipv6.sin6_addr9 = buffer[9];
+                        socketAddress.Ipv6.sin6_addr10 = buffer[10];
+                        socketAddress.Ipv6.sin6_addr11 = buffer[11];
+                        socketAddress.Ipv6.sin6_addr12 = buffer[12];
+                        socketAddress.Ipv6.sin6_addr13 = buffer[13];
+                        socketAddress.Ipv6.sin6_addr14 = buffer[14];
+                        socketAddress.Ipv6.sin6_addr15 = buffer[15];
+                        socketAddress.Ipv6.sin6_family = IPv6;
+                        break;
+                    default:
+                        throw new ArgumentException("Only IPv4 or IPv6 are supported");
+                }
+            }
+
+            SetPort(endpoint.Address.AddressFamily, ref socketAddress, endpoint.Port);
+            return socketAddress;
+        }
+
+        private static void SetPort(AddressFamily addressFamily, ref SOCKADDR_INET socketAddrInet, int originalPort)
+        {
+            var convertedPort = (ushort)IPAddress.HostToNetworkOrder((short)originalPort);
+            switch (addressFamily)
+            {
+                case AddressFamily.InterNetwork:
+                    socketAddrInet.Ipv4.sin_port = convertedPort;
+                    break;
+                case AddressFamily.InterNetworkV6:
+                default:
+                    socketAddrInet.Ipv6.sin6_port = convertedPort;
+                    break;
+            }
         }
     }
 }

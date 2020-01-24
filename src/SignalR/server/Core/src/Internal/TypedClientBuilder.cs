@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var genericTypeNames =
                 paramTypes.Where(p => p.IsGenericParameter).Select(p => p.Name).Distinct().ToArray();
 
-            if (genericTypeNames.Any())
+            if (genericTypeNames.Length > 0)
             {
                 methodBuilder.DefineGenericParameters(genericTypeNames);
             }
