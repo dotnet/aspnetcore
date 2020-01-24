@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Win32Exception exception)
             {
-                _logger.LogError(0, exception, "GetConnectionToken");
+                _logger.LogError(LoggerEventIds.TokenError, exception, "GetConnectionToken");
                 return CancellationToken.None;
             }
         }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private unsafe CancellationToken CreateDisconnectToken(ulong connectionId)
         {
-            _logger.LogDebug("CreateDisconnectToken; Registering connection for disconnect for connection ID: " + connectionId);
+            _logger.LogDebug(LoggerEventIds.TokenDisconnect, "CreateDisconnectToken; Registering connection for disconnect for connection ID: " + connectionId);
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
             var cts = new CancellationTokenSource();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             nativeOverlapped = new SafeNativeOverlapped(boundHandle, boundHandle.AllocateNativeOverlapped(
                 (errorCode, numBytes, overlappedPtr) =>
                 {
-                    _logger.LogDebug("CreateDisconnectToken; http.sys disconnect callback fired for connection ID: " + connectionId);
+                    _logger.LogDebug(LoggerEventIds.TokenDisconnectTriggered, "CreateDisconnectToken; http.sys disconnect callback fired for connection ID: " + connectionId);
 
                     // Free the overlapped
                     nativeOverlapped.Dispose();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (AggregateException exception)
                     {
-                        _logger.LogError(0, exception, "CreateDisconnectToken Callback");
+                        _logger.LogError(LoggerEventIds.TokenDisconnectError, exception, "CreateDisconnectToken Callback");
                     }
                 },
                 null, null));
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             catch (Win32Exception exception)
             {
                 statusCode = (uint)exception.NativeErrorCode;
-                _logger.LogError(0, exception, "CreateDisconnectToken");
+                _logger.LogError(LoggerEventIds.TokenDisconnectError, exception, "CreateDisconnectToken");
             }
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 nativeOverlapped.Dispose();
                 ConnectionCancellation ignored;
                 _connectionCancellationTokens.TryRemove(connectionId, out ignored);
-                _logger.LogDebug(0, new Win32Exception((int)statusCode), "HttpWaitForDisconnectEx");
+                _logger.LogDebug(LoggerEventIds.WaitTokenClosed, new Win32Exception((int)statusCode), "HttpWaitForDisconnectEx");
                 cts.Cancel();
             }
 
