@@ -59,12 +59,11 @@ if errorlevel 1 (
     REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
 )
 
-echo "Copying TestResults\* to Root\"
-for /r TestResults %x in (*.xml) do copy "%x" out
+echo "Copying TestResults\TestResults.xml to ."
+copy TestResults\TestResults.xml testResults.xml
 echo "Copying artifacts/logs to %HELIX_WORKITEM_UPLOAD_ROOT%/../"
-shopt -s globstar
-for /r artifacts\log %x in (*.xml) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\..\
-for /r artifacts\log %x in (*.xml) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\
+for /r artifacts\log %x in (*.*) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\..\
+for /r artifacts\log %x in (*.*) do copy "%x" %HELIX_WORKITEM_UPLOAD_ROOT%\
 
 exit /b %exit_code%
 
