@@ -30,7 +30,6 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 # Used by SkipOnHelix attribute
 export helix="$helix_queue_name"
 
-
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
@@ -94,7 +93,7 @@ fi
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
 NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
 echo "Running non-flaky tests."
-$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
+$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
 nonflaky_exitcode=$?
 if [ $nonflaky_exitcode != 0 ]; then
     echo "Non-flaky tests failed!" 1>&2
@@ -109,6 +108,8 @@ if [ $? != 0 ]; then
     # DO NOT EXIT
 fi
 
+echo "Copying TestResults/TestResults to ."
+cp TestResults/TestResults.xml testResults.xml
 echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/../"
 shopt -s globstar
 cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/../
