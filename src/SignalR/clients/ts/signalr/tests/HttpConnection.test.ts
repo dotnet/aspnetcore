@@ -1199,6 +1199,44 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("send after restarting connection works", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => defaultNegotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            const closePromise = new PromiseSource();
+            connection.onclose = (e) => {
+                closePromise.resolve();
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            let startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            await connection.send("text");
+            TestWebSocket.webSocket.close();
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            await closePromise;
+
+            startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+            await connection.send("text");
+        });
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)
