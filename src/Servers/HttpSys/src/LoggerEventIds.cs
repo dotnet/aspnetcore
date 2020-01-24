@@ -17,10 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId TokenDisconnect = new EventId(11, "TokenDisconnect");
         public static EventId WaitTokenClosed = new EventId(12, "WaitTokenClosed");
         public static EventId TokenDisconnectError= new EventId(13, "TokenDisconnectError");
-        public static EventId TokenDisconnectTriggered = new EventId(13, "TokenDisconnectTriggered");
         public static EventId Started = new EventId(14, "Started");
-        public static EventId ErrorInStopping = new EventId(1, "ErrorInStopping");
-        public static EventId Disposed = new EventId(14, "Disposed");
         public static EventId ErrorInDispose = new EventId(15, "ErrorInDispose");
         public static EventId ContextException = new EventId(16, "ContextException");
         public static EventId AttachedToQueue = new EventId(17, "AttachedToQueue");
@@ -50,7 +47,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId IOCompletedCancelled = new EventId(41, "IOCompletedCancelled");
         public static EventId IOCompletedFailed= new EventId(42, "IOCompletedFailed");
         public static EventId IOCompletedFailQuiet = new EventId(43, "IOCompletedFailQuiet");
-
-
+        public static EventId TokenDisconnectTriggered = new EventId(44, "TokenDisconnectTriggered");
+        public static EventId ErrorInStopping = new EventId(45, "ErrorInStopping");
+        public static EventId Disposed = new EventId(46, "Disposed");
     }
 }
