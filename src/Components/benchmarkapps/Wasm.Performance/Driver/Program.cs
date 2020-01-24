@@ -199,7 +199,7 @@ namespace Wasm.Performance.Driver
 
         static async Task<(long size, long compressedSize)> GetBlazorAppSize()
         {
-            var testAssembly = typeof(TestApp.Startup).Assembly;
+            var testAssembly = typeof(TestApp.Program).Assembly;
             var testAssemblyLocation = new FileInfo(testAssembly.Location);
             var testApp = new DirectoryInfo(Path.Combine(
                 testAssemblyLocation.Directory.FullName,
