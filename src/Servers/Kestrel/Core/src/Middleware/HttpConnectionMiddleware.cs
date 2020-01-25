@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                MemoryPool = memoryPoolFeature.MemoryPool,
+                MemoryPool = memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
                 Transport = connectionContext.Transport,
                 LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
@@ -43,5 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             return connection.ProcessRequestsAsync(_application);
         }
+
     }
 }
