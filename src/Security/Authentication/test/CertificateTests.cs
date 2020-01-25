@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents
+                    Events = successfulValidationEvents
                 }, Certificates.SignedClient);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents,
+                    Events = successfulValidationEvents,
                     CustomTrustStore = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                     ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                     RevocationMode = X509RevocationMode.NoCheck
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
-                    Events = sucessfulValidationEvents,
+                    Events = successfulValidationEvents,
                     CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
                     ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                     RevocationMode = X509RevocationMode.NoCheck
