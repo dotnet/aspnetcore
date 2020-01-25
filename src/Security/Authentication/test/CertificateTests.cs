@@ -682,3 +682,4 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
     }
 }
+
