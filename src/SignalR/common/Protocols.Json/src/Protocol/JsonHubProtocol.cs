@@ -509,7 +509,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 writer.WritePropertyName(ResultPropertyNameBytes);
-                JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                if (message.Result == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                }
             }
         }
 
@@ -523,7 +530,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             writer.WritePropertyName(ItemPropertyNameBytes);
-            JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            if (message.Item == null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            }
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -564,7 +578,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
-                JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
+                if (argument == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
+                }
             }
             writer.WriteEndArray();
         }
