@@ -461,7 +461,7 @@ namespace WsProxy {
 				{
 					result = var_list
 				});
-			} catch (Exception e) {
+			} catch (Exception) {
 				Debug ($"failed to parse {res.Value}");
 			}
 			SendResponse(msg_id, Result.Ok(o), token);
@@ -534,7 +534,7 @@ namespace WsProxy {
 				});
 				SendResponse (msg_id, Result.Ok (o), token);
 			}
-			catch (Exception exc) {
+			catch (Exception) {
 				SendResponse (msg_id, res, token);
 			}
 		}
