@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2176", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2176", FlakyOn.All)]
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);

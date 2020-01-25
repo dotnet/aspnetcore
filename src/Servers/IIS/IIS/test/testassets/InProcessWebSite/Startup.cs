@@ -32,6 +32,8 @@ namespace TestSite
 {
     public partial class Startup
     {
+        public static bool StartupHookCalled;
+
         public void Configure(IApplicationBuilder app)
         {
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
@@ -911,6 +913,11 @@ namespace TestSite
             RecursiveFunction(i - 1);
         }
 
+        private async Task StartupHook(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(StartupHookCalled.ToString());
+        }
+
         private async Task GetServerVariableStress(HttpContext ctx)
         {
             // This test simulates the scenario where native Flush call is being
@@ -1008,6 +1015,13 @@ namespace TestSite
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
+
+        public async Task SlowOnCompleted(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
+            await context.Response.WriteAsync("SlowOnCompleted");
         }
     }
 }

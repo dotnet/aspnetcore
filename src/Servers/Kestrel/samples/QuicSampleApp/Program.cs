@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace QuicSampleApp
 {
@@ -46,6 +47,7 @@ namespace QuicSampleApp
 
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
+                         listenOptions.Protocols = HttpProtocols.Http3;
                          listenOptions.Use((next) =>
                          {
                              return async connection =>

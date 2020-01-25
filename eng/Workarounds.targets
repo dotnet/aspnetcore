@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <!--
-    Workaround https://github.com/aspnet/AspNetCore/issues/4257.
+    Workaround https://github.com/dotnet/aspnetcore/issues/4257.
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
   -->
   <ItemGroup>
@@ -25,7 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
-  <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
+  <!-- Workaround https://github.com/dotnet/aspnetcore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so do not apply this worksaround. -->
   <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
           Name="_EnsureSourceLinkHappensBeforeRazorComponentGeneration"
@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.0 -->
-    <KnownAppHostPack 
+    <KnownAppHostPack
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
       TargetFramework="$(DefaultNetCoreTargetFramework)"
       Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"

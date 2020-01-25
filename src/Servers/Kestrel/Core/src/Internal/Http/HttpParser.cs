@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
+    public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly bool _showErrorDetails;
 
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 TakeSingleHeader(pHeader, length, handler);
                             }
-                            // Read the header sucessfully, skip the reader forward past the header line.
+                            // Read the header successfully, skip the reader forward past the header line.
                             reader.Advance(length);
                             span = span.Slice(length);
                         }

@@ -6,7 +6,7 @@
 
   <assembly fullname="mscorlib">
     <!-- Preserve all methods on WasmRuntime, because these are called by JS-side code
-    to implement timers. Fixes https://github.com/aspnet/Blazor/issues/239 -->
+    to implement timers. Fixes https://github.com/dotnet/blazor/issues/239 -->
     <type fullname="System.Threading.WasmRuntime" />
   </assembly>
 

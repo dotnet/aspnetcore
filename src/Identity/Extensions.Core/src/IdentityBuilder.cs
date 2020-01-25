@@ -238,5 +238,13 @@ namespace Microsoft.AspNetCore.Identity
             }
             return AddScoped(managerType, typeof(TRoleManager));
         }
+
+        /// <summary>
+        /// Adds a <see cref="IUserConfirmation{TUser}"/> for the <seealso cref="UserType"/>.
+        /// </summary>
+        /// <typeparam name="TUserConfirmation">The type of the user confirmation to add.</typeparam>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public virtual IdentityBuilder AddUserConfirmation<TUserConfirmation>() where TUserConfirmation : class
+            => AddScoped(typeof(IUserConfirmation<>).MakeGenericType(UserType), typeof(TUserConfirmation));
     }
 }

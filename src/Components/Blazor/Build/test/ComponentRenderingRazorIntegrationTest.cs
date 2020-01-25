@@ -408,7 +408,7 @@ namespace Test
                 frame => AssertFrame.Text(frame, "Some text", 4));
         }
 
-        [Fact] // https://github.com/aspnet/Blazor/issues/773
+        [Fact] // https://github.com/dotnet/blazor/issues/773
         public void Regression_773()
         {
             // Arrange
@@ -470,7 +470,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "style", "background: #FFFFFF;", 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6185")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/6185")]
         public void Render_Component_HtmlEncoded()
         {
             // Arrange
@@ -501,7 +501,7 @@ namespace Test
         }
 
         // Integration test for HTML block rewriting
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6183")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/6183")]
         public void Render_HtmlBlock_Integration()
         {
             // Arrange

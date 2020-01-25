@@ -164,7 +164,7 @@ if [[ "$internal" == true ]]; then
     fi
 fi
 
-common_setup_arguments="--frameworks $framework --queue $queue --build-number $build_number --build-configs $configurations"
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
 if [[ "$run_from_perf_repo" = true ]]; then

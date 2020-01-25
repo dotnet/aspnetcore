@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
@@ -63,7 +63,7 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
     <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
     <NoWarn>$(NoWarn);NU5131</NoWarn>
-    <!-- Needed until we resolve https://github.com/aspnet/AspNetCore-Internal/issues/3103 -->
+    <!-- Needed until we resolve https://github.com/dotnet/aspnetcore-internal/issues/3103 -->
     <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 

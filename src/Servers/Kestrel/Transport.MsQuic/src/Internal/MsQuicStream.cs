@@ -17,7 +17,7 @@ using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQui
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class MsQuicStream : TransportConnection, IUnidirectionalStreamFeature
+    internal class MsQuicStream : TransportConnection, IQuicStreamFeature
     {
         private Task _processingTask;
         private MsQuicConnection _connection;
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private GCHandle _handle;
         private StreamCallbackDelegate _delegate;
         private string _connectionId;
+        private long _streamId = -1;
 
         internal ResettableCompletionSource _resettableCompletion;
         private MemoryHandle[] _bufferArrays;
@@ -56,15 +57,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
-            // TODO when stream is unidirectional, don't create an output pipe.
-            if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
-            {
-                Features.Set<IUnidirectionalStreamFeature>(this);
-            }
+            Features.Set<IQuicStreamFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs). 
-            var feature = new FakeTlsConnectionFeature();
-            Features.Set<ITlsConnectionFeature>(feature);
+            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
+            if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
+            {
+                IsUnidirectional = true;
+            }
 
             Transport = pair.Transport;
             Application = pair.Application;
@@ -72,21 +72,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetCallbackHandler();
 
             _processingTask = ProcessSends();
-
-            // Concatenate stream id with ConnectionId.
-            _log.NewStream(ConnectionId);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
 
+        public bool IsUnidirectional { get; }
+
+        public long StreamId
+        {
+            get
+            {
+                if (_streamId == -1)
+                {
+                    _streamId = GetStreamId();
+                }
+
+                return _streamId;
+            }
+        }
+
         public override string ConnectionId {
             get
             {
                 if (_connectionId == null)
                 {
-                    _connectionId = $"{_connection.ConnectionId}:{base.ConnectionId}";
+                    _connectionId = $"{_connection.ConnectionId}:{StreamId}";
                 }
                 return _connectionId;
             }
@@ -390,20 +402,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetParam(QUIC_PARAM_STREAM.RECEIVE_ENABLED, buffer);
         }
 
+        private unsafe long GetStreamId()
+        {
+            byte* ptr = stackalloc byte[sizeof(long)];
+            var buffer = new QuicBuffer
+            {
+                Length = sizeof(long),
+                Buffer = ptr
+            };
+            GetParam(QUIC_PARAM_STREAM.ID, buffer);
+            return *(long*)ptr;
+        }
+
+        private void GetParam(
+            QUIC_PARAM_STREAM param,
+            QuicBuffer buf)
+        {
+            MsQuicStatusException.ThrowIfFailed(Api.UnsafeGetParam(
+                _nativeObjPtr,
+                (uint)QUIC_PARAM_LEVEL.STREAM,
+                (uint)param,
+                ref buf));
+        }
+
         private void SetParam(
               QUIC_PARAM_STREAM param,
               QuicBuffer buf)
         {
             MsQuicStatusException.ThrowIfFailed(Api.UnsafeSetParam(
                 _nativeObjPtr,
-                (uint)QUIC_PARAM_LEVEL.SESSION,
+                (uint)QUIC_PARAM_LEVEL.STREAM,
                 (uint)param,
                 buf));
         }
 
         ~MsQuicStream()
         {
-            _log.LogDebug("Destructor");
             Dispose(false);
         }
 

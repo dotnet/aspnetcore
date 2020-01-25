@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 await StartAsync();
             }
 
-            var connection = await _session.ConnectionOpenAsync(endPoint as IPEndPoint, _transportContext);
+            var connection = await _session.ConnectionOpenAsync(ipEndPoint, _transportContext);
             return connection;
         }
 

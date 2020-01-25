@@ -6,20 +6,19 @@ param(
   [Parameter(Mandatory=$true)][string] $ToolDestinationPath     # Where the validation tool should be downloaded to
 )
 
-. $PSScriptRoot\post-build-utils.ps1
-
 try {
-  $url = "https://raw.githubusercontent.com/NuGet/NuGetGallery/jver-verify/src/VerifyMicrosoftPackage/verify.ps1" 
+  . $PSScriptRoot\post-build-utils.ps1
 
-  New-Item -ItemType "directory" -Path ${ToolDestinationPath} -Force
+  $url = 'https://raw.githubusercontent.com/NuGet/NuGetGallery/jver-verify/src/VerifyMicrosoftPackage/verify.ps1'
+
+  New-Item -ItemType 'directory' -Path ${ToolDestinationPath} -Force
 
   Invoke-WebRequest $url -OutFile ${ToolDestinationPath}\verify.ps1 
 
   & ${ToolDestinationPath}\verify.ps1 ${PackagesPath}\*.nupkg
 } 
 catch {
-  Write-PipelineTaskError "NuGet package validation failed. Please check error logs."
-  Write-Host $_
   Write-Host $_.ScriptStackTrace
+  Write-PipelineTelemetryError -Category 'NuGetValidation' -Message $_
   ExitWithExitCode 1
 }

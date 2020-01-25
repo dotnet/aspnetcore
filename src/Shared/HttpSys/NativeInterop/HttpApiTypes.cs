@@ -51,6 +51,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpResponseInfoTypeQosProperty,
         }
 
+        internal enum HTTP_REQUEST_PROPERTY
+        {
+            HttpRequestPropertyIsb,
+            HttpRequestPropertyTcpInfoV0,
+            HttpRequestPropertyQuicStats,
+            HttpRequestPropertyTcpInfoV1,
+            HttpRequestPropertySni,
+            HttpRequestPropertyStreamError,
+        }
+
         internal enum HTTP_TIMEOUT_TYPE
         {
             EntityBody,
@@ -59,6 +69,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             IdleConnection,
             HeaderWait,
             MinSendRate,
+        }
+
+        internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
+        {
+            internal uint ErrorCode;
         }
 
         internal const int MaxTimeout = 6;

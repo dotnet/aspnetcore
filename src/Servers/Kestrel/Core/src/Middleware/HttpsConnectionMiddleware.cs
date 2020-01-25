@@ -79,11 +79,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             _options = options;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
+
         public async Task OnConnectionAsync(ConnectionContext context)
         {
             await Task.Yield();
 
             bool certificateRequired;
+            if (context.Features.Get<ITlsConnectionFeature>() != null)
+            {
+                await _next(context);
+                return;
+            }
+
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
@@ -217,11 +224,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         !CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
                         CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
                     {
-                        _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                        _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     }
                     else
                     {
-                        _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
                     }
 
                     await sslStream.DisposeAsync();
@@ -283,20 +290,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             return new X509Certificate2(certificate);
-        }
-
-        private class SslDuplexPipe : DuplexPipeStreamAdapter<SslStream>
-        {
-            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions)
-                : this(transport, readerOptions, writerOptions, s => new SslStream(s))
-            {
-
-            }
-
-            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, SslStream> factory) :
-                base(transport, readerOptions, writerOptions, factory)
-            {
-            }
         }
     }
 }

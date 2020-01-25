@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             listOfClasses.RemoveAll(x => x.Equals(encodedClassValue));
 
-            if (listOfClasses.Any())
+            if (listOfClasses.Count > 0)
             {
                 var joinedClasses = new HtmlString(string.Join(" ", listOfClasses));
                 tagHelperOutput.Attributes.SetAttribute(classAttribute.Name, joinedClasses);

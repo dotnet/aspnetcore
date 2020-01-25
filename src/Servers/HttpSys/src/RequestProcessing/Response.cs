@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Trailers are supported on this OS, it's HTTP/2, and the app added a Trailer response header to announce trailers were intended.
         // Needed to delay the completion of Content-Length responses.
         internal bool TrailersExpected => HasTrailers
-            || (ComNetOS.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
+            || (HttpApi.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20
                     && Headers.ContainsKey(HttpKnownHeaderNames.Trailer));
 
         internal long ExpectedBodyLength

@@ -7,7 +7,7 @@
     "PresetHeaders": "Html",
     "ReadyStateText": "Application started.",
     "Source": {
-      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "Repository": "https://github.com/dotnet/aspnetcore.git",
       "BranchOrCommit": "master",
       "Project": "src/Mvc/benchmarkapps/BasicViews/BasicViews.csproj"
     }
@@ -20,19 +20,19 @@
   },
   "BasicViews.Post": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/postWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicViews/postWithToken.lua"
     },
     "Path": "/Home/Index"
   },
   "BasicViews.PostIgnoringToken": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/postWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicViews/postWithToken.lua"
     },
     "Path": "/Home/IndexWithoutToken"
   },
   "BasicViews.PostWithoutToken": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/post.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicViews/post.lua"
     },
     "Path": "/Home/IndexWithoutToken"
   }

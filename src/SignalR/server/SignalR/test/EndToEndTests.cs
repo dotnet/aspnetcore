@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalTheory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1383", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1383", FlakyOn.All)]
         [WebSocketsSupportedCondition]
         [InlineData(5 * 4096)]
         [InlineData(1000 * 4096 + 32)]

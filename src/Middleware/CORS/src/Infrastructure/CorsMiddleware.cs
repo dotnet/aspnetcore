@@ -143,10 +143,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (corsMetadata is IDisableCorsAttribute)
             {
-                var isOptionsRequest = string.Equals(
-                    context.Request.Method,
-                    CorsConstants.PreflightHttpMethod,
-                    StringComparison.OrdinalIgnoreCase);
+                var isOptionsRequest = HttpMethods.IsOptions(context.Request.Method);
 
                 var isCorsPreflightRequest = isOptionsRequest && context.Request.Headers.ContainsKey(CorsConstants.AccessControlRequestMethod);
 

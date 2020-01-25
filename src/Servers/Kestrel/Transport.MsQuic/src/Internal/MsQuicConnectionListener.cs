@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _session.SetPeerUnidirectionalStreamCount(_transportContext.Options.MaxBidirectionalStreamCount);
 
             var address = MsQuicNativeMethods.Convert(EndPoint as IPEndPoint);
+
             MsQuicStatusException.ThrowIfFailed(_api.ListenerStartDelegate(
                 _nativeObjPtr,
                 ref address));
@@ -111,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 case QUIC_LISTENER_EVENT.NEW_CONNECTION:
                     {
+
                         evt.Data.NewConnection.SecurityConfig = _secConfig.NativeObjPtr;
                         var msQuicConnection = new MsQuicConnection(_api, _transportContext, evt.Data.NewConnection.Connection);
                         _acceptConnectionQueue.Writer.TryWrite(msQuicConnection);

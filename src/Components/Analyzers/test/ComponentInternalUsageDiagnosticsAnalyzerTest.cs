@@ -44,6 +44,11 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 diagnostic =>
                 {
                     Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMInvocation"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMProperty"], diagnostic.Location);
                 },
                 diagnostic =>
@@ -84,6 +89,16 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMProperty"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMNewObject2"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMInvocation"], diagnostic.Location);
                 });
         }
     }

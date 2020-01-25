@@ -1,0 +1,150 @@
+parameters:
+  artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
+  publishInstallersAndChecksums: false
+  symbolPublishingAdditionalParameters: ''
+  stageName: ''
+  channelName: ''
+  channelId: ''
+  transportFeed: ''
+  shippingFeed: ''
+  symbolsFeed: ''
+
+stages:
+- stage: ${{ parameters.stageName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+    - template: ../common-variables.yml
+  displayName: ${{ parameters.channelName }} Publishing
+  jobs:
+  - template: ../setup-maestro-vars.yml
+
+  - job: publish_symbols
+    displayName: Symbol Publishing
+    dependsOn: setupMaestroVars
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} ))
+    variables:
+      - group: DotNet-Symbol-Server-Pats
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Build Assets
+        continueOnError: true
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          itemPattern: |
+            PDBArtifacts/**
+            BlobArtifacts/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise it'll complain about accessing a private feed.
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
+      - task: PowerShell@2
+        displayName: Publish
+        inputs:
+          filePath: eng\common\sdk-task.ps1
+          arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+            /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
+            /p:Configuration=Release
+            ${{ parameters.symbolPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'SymbolPublishing'
+
+  - job: publish_assets
+    displayName: Publish Assets
+    dependsOn: setupMaestroVars
+    variables:
+      - name: BARBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+      - name: IsStableBuild
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Build Assets
+        continueOnError: true
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          itemPattern: |
+            PackageArtifacts/**
+            BlobArtifacts/**
+            AssetManifests/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+      - task: NuGetToolInstaller@1
+        displayName: 'Install NuGet.exe'
+
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
+      - task: PowerShell@2
+        displayName: Publish Assets
+        inputs:
+          filePath: eng\common\sdk-task.ps1
+          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
+            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
+            /p:IsStableBuild=$(IsStableBuild)
+            /p:IsInternalBuild=$(IsInternalBuild)
+            /p:RepositoryName=$(Build.Repository.Name)
+            /p:CommitSha=$(Build.SourceVersion)
+            /p:NugetPath=$(NuGetExeToolPath)
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)'
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)'
+            /p:BARBuildId=$(BARBuildId)
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)'
+            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/'
+            /p:Configuration=Release
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
+            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
+            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
+            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
+            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:AzureDevOpsStaticShippingFeed='${{ parameters.shippingFeed }}'
+            /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticTransportFeed='${{ parameters.transportFeed }}'
+            /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
+            /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            ${{ parameters.artifactsPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'AssetsPublishing'
+
+      - template: ../../steps/promote-build.yml
+        parameters:
+          ChannelId: ${{ parameters.channelId }}

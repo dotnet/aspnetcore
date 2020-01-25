@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
 
             var frame = /*MMNewObject*/new RenderTreeFrame();
             GC.KeepAlive(/*MMProperty*/frame.Component);
-        }
 
+            var range = /*MMNewObject2*/new ArrayRange<string>(null, 0);
+            /*MMInvocation*/range.Clone();
+        }
     }
 }

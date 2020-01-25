@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             SetIdleTimeout(_context.Options.IdleTimeout);
 
+            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             Features.Set<IQuicStreamListenerFeature>(this);
             Features.Set<IQuicCreateStreamFeature>(this);
 

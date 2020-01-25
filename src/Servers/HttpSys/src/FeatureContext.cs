@@ -36,7 +36,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature,
         IHttpSysRequestInfoFeature,
-        IHttpResponseTrailersFeature
+        IHttpResponseTrailersFeature,
+        IHttpResetFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    _httpProtocolVersion = Request.ProtocolVersion.GetHttpProtocolVersion();
+                    _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -350,7 +351,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
         {
-            if (Request.ProtocolVersion >= HttpVersion.Version20 && ComNetOS.SupportsTrailers)
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
+            {
+                return this;
+            }
+            return null;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsReset)
             {
                 return this;
             }
@@ -454,6 +464,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            _requestContext.SetResetCode(errorCode);
+            _requestContext.Abort();
+        }
 
         internal async Task CompleteAsync()
         {

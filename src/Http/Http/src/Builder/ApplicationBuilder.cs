@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Builder
                     throw new InvalidOperationException(message);
                 }
 
-                context.Response.StatusCode = 404;
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
                 return Task.CompletedTask;
             };
 

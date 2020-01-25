@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     // IMPORTANT
     //
     // Many of these names are used in code generation. Keep these in sync with the code generation code
-    // See: aspnet/AspNetCore-Tooling
+    // See: dotnet/aspnetcore-tooling
 
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.

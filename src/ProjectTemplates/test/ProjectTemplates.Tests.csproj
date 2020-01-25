@@ -12,8 +12,9 @@
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
     <OutputPath />
 
@@ -46,6 +47,7 @@
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../BlazorWasm.ProjectTemplates/Microsoft.AspNetCore.Blazor.Templates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,6 +58,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
       <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Test.DefaultTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>

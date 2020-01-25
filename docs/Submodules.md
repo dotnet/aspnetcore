@@ -9,7 +9,7 @@ For full information, see the [official docs for git submodules](https://git-scm
 
 ## Fundamental concept
 
-The parent repo (aspnet/AspNetCore) stores two pieces of info about each submodule.
+The parent repo (dotnet/aspnetcore) stores two pieces of info about each submodule.
 
 1. Where to clone the submodule from. This is stored in the .gitmodules file
 2. The commit hash of the submodule to use.
@@ -22,7 +22,7 @@ Other info may appear in the .gitmodules file, but it is only used when attempti
 
 By default, submodules will not be present. Use `--recursive` to clone all submodules.
 
-    git clone https://github.com/aspnet/AspNetCore.git --recursive
+    git clone https://github.com/dotnet/aspnetcore.git --recursive
 
 If you have already cloned, run this to initialize all submodules.
 
@@ -72,7 +72,7 @@ that contains the new commit.
     git add modules/KestrelhttpServer/
     git commit -m "Update Kestrel to latest version"
 
-## PowerShell is slow in aspnet/AspNetCore
+## PowerShell is slow in dotnet/aspnetcore
 
 Many users have post-git, and extension that shows git status on the prompt line. Because `git status` with submodules
 on Windows is very slow, it can make PowerShell unbearable to use.

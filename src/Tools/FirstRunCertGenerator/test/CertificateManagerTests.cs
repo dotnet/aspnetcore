@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         public ITestOutputHelper Output { get; }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
         {
             _fixture.CleanupCertificates();
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateForEmptyVersionField()
         {
             _fixture.CleanupCertificates();
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsValidIfVersionIsZero()
         {
             _fixture.CleanupCertificates();
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnValidIfCertIsNewer()
         {
             _fixture.CleanupCertificates();

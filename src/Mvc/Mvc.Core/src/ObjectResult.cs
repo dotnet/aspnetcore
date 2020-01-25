@@ -54,14 +54,21 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (Value is ProblemDetails details)
+            {
+                if (details.Status != null && StatusCode == null)
+                {
+                    StatusCode = details.Status;
+                }
+                else if (details.Status == null && StatusCode != null)
+                {
+                    details.Status = StatusCode;
+                }
+            }
+
             if (StatusCode.HasValue)
             {
                 context.HttpContext.Response.StatusCode = StatusCode.Value;
-
-                if (Value is ProblemDetails details && !details.Status.HasValue)
-                {
-                    details.Status = StatusCode.Value;
-                }
             }
         }
     }

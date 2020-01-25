@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.WebSockets
         };
 
         // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        private static ReadOnlySpan<byte> _encodedWebSocketKey => new byte[]
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+        private static ReadOnlySpan<byte> EncodedWebSocketKey => new byte[]
         {
             (byte)'2', (byte)'5', (byte)'8', (byte)'E', (byte)'A', (byte)'F', (byte)'A', (byte)'5', (byte)'-',
             (byte)'E', (byte)'9', (byte)'1', (byte)'4', (byte)'-', (byte)'4', (byte)'7', (byte)'D', (byte)'A',
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
                 Span<byte> mergedBytes = stackalloc byte[60];
                 Encoding.UTF8.GetBytes(requestKey, mergedBytes);
-                _encodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
+                EncodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
 
                 Span<byte> hashedBytes = stackalloc byte[20];
                 var success = algorithm.TryComputeHash(mergedBytes, hashedBytes, out var written);

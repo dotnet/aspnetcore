@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var items = project.GetItems(tagName);
             var fileItems = items.Where(i => string.Equals(GetFullPath(i.EvaluatedInclude), GetFullPath(sourceFile), StringComparison.Ordinal));
 
-            if (fileItems.Count() > 0)
+            if (fileItems.Any())
             {
                 Warning.Write($"One or more references to {sourceFile} already exist in '{project.FullPath}'. Duplicate references could lead to unexpected behavior.");
                 return;
@@ -200,44 +200,52 @@ namespace Microsoft.DotNet.OpenApi.Commands
                 var packageId = kvp.Key;
                 var version = urlPackages != null && urlPackages.ContainsKey(packageId) ? urlPackages[packageId] : kvp.Value;
 
-                var args = new[] {
-                    "add",
-                    "package",
-                    packageId,
-                    "--version",
-                    version,
-                    "--no-restore"
-                };
+                await TryAddPackage(packageId, version, projectFile);
+            }
+        }
 
-                var muxer = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(muxer))
-                {
-                    throw new ArgumentException($"dotnet was not found on the path.");
-                }
+        private async Task TryAddPackage(string packageId, string packageVersion, FileInfo projectFile)
+        {
+            var args = new[] {
+                "add",
+                "package",
+                packageId,
+                "--version",
+                packageVersion,
+                "--no-restore"
+            };
 
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = muxer,
-                    Arguments = string.Join(" ", args),
-                    WorkingDirectory = projectFile.Directory.FullName,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                };
+            var muxer = DotNetMuxer.MuxerPathOrDefault();
+            if (string.IsNullOrEmpty(muxer))
+            {
+                throw new ArgumentException($"dotnet was not found on the path.");
+            }
 
-                var process = Process.Start(startInfo);
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = muxer,
+                Arguments = string.Join(" ", args),
+                WorkingDirectory = projectFile.Directory.FullName,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+            };
 
-                var timeout = 20;
-                if (!process.WaitForExit(timeout * 1000))
-                {
-                    throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
-                }
+            using var process = Process.Start(startInfo);
 
-                if (process.ExitCode != 0)
-                {
-                    Out.Write(process.StandardOutput.ReadToEnd());
-                    Error.Write(process.StandardError.ReadToEnd());
-                    throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}`");
-                }
+            var timeout = 20;
+            if (!process.WaitForExit(timeout * 1000))
+            {
+                throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
+            }
+
+            if (process.ExitCode != 0)
+            {
+                var output = await process.StandardOutput.ReadToEndAsync();
+                var error = await process.StandardError.ReadToEndAsync();
+                await Out.WriteAsync(output);
+                await Error.WriteAsync(error);
+
+                throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}` due to: `{error}`");
             }
         }
 
@@ -368,7 +376,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             else
             {
                 var uri = new Uri(url);
-                if (uri.Segments.Count() > 0 && uri.Segments.Last() != "/")
+                if (uri.Segments.Any() && uri.Segments.Last() != "/")
                 {
                     var lastSegment = uri.Segments.Last();
                     if (!Path.HasExtension(lastSegment))
