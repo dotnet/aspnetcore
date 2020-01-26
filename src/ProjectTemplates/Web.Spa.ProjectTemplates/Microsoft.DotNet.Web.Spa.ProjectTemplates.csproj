@@ -6,6 +6,8 @@
     <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- By default Pack will exclude files that start with '.', we want to include those files -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
     <PropertyGroup>
