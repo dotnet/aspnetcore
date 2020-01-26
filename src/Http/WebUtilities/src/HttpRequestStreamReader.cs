@@ -200,6 +200,57 @@ namespace Microsoft.AspNetCore.WebUtilities
             return charsRead;
         }
 
+        public override int Read(Span<char> buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            var count = buffer.Length;
+            var charsRead = 0;
+            while (count > 0)
+            {
+                var charsRemaining = _charsRead - _charBufferIndex;
+                if (charsRemaining == 0)
+                {
+                    charsRemaining = ReadIntoBuffer();
+                }
+
+                if (charsRemaining == 0)
+                {
+                    break;  // We're at EOF
+                }
+
+                if (charsRemaining > count)
+                {
+                    charsRemaining = count;
+                }
+
+                var source = new ReadOnlySpan<char>(_charBuffer, _charBufferIndex, charsRemaining);
+                source.CopyTo(buffer);
+
+                _charBufferIndex += charsRemaining;
+
+                charsRead += charsRemaining;
+                count -= charsRemaining;
+
+                if (count > 0)
+                {
+                    buffer = buffer.Slice(charsRemaining, count);
+                }
+
+                // If we got back fewer chars than we asked for, then it's likely the underlying stream is blocked.
+                // Send the data back to the caller so they can process it.
+                if (_isBlocked)
+                {
+                    break;
+                }
+            }
+
+            return charsRead;
+        }
+
         public override async Task<int> ReadAsync(char[] buffer, int index, int count)
         {
             if (buffer == null)

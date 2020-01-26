@@ -195,6 +195,44 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Null(eol);
         }
 
+        [Fact]
+        public static void Read_Span_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public static void Read_Span_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
         [Theory]
         [MemberData(nameof(HttpRequestNullData))]
         public static void NullInputsInConstructor_ExpectArgumentNullException(Stream stream, Encoding encoding, ArrayPool<byte> bytePool, ArrayPool<char> charPool)
@@ -253,15 +291,27 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
             });
         }
+
         private static HttpRequestStreamReader CreateReader()
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+        }
+
+        private static HttpRequestStreamReader CreateReader(int bufferSize)
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8, bufferSize);
+        }
+
+        private static MemoryStream CreateStream()
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
             writer.Write(CharData);
             writer.Flush();
             stream.Position = 0;
-
-            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+            return stream;
         }
 
         private static MemoryStream GetSmallStream()
