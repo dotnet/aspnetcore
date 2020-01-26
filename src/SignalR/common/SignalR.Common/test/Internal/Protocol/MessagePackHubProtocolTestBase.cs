@@ -381,8 +381,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new MessageSizeTestData("InvocationMessage_WithInvocationId", new InvocationMessage("1", "Target", new object[] { 1 }), 16),
             new MessageSizeTestData("InvocationMessage_WithInvocationIdAndStreamId", new InvocationMessage("1", "Target", new object[] { 1 }, new string[] { "2" }), 18),
 
-            new MessageSizeTestData("CloseMessage_Empty", CloseMessage.Empty, 4),
-            new MessageSizeTestData("CloseMessage_WithError", new CloseMessage("error"), 9),
+            new MessageSizeTestData("CloseMessage_Empty", CloseMessage.Empty, 5),
+            new MessageSizeTestData("CloseMessage_WithError", new CloseMessage("error"), 10),
 
             new MessageSizeTestData("StreamItemMessage_WithNullItem", new StreamItemMessage("1", null), 7),
             new MessageSizeTestData("StreamItemMessage_WithItem", new StreamItemMessage("1", 1), 7),
