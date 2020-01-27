@@ -12,7 +12,7 @@
   <PropertyGroup>
     <CreateHelixPayload>true</CreateHelixPayload>
     <HelixTimeout>00:30:00</HelixTimeout>
-    <IsFlakyRun>false</IsFlakyRun>
+    <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
     <HelixTestName>$(MSBuildProjectName)-$(TargetFramework)</HelixTestName>
