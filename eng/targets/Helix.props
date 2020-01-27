@@ -15,17 +15,15 @@
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
-    <HelixTestName>$(MSBuildProjectName)-$(TargetFramework)</HelixTestName>
+    <_HelixRunType Condition="'$(RunQuarantinedTests)' == 'true'">quarantined</_HelixRunType>
+    <_HelixRunType Condition="'$(RunQuarantinedTests)' != 'true'">unquarantined</_HelixRunType>    
+    <HelixTestName>$(MSBuildProjectName)/$(TargetFramework)/$(_HelixRunType)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <HelixProjectPlatform Include="Windows" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <ItemGroup>
     <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
   </ItemGroup>
 
