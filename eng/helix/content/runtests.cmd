@@ -42,7 +42,7 @@ set exit_code=0
 if (%flaky%==true) (
     set FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
     echo Running known-flaky tests.
-    %DOTNET_ROOT%\dotnet vstest %target% --TestCaseFilter:%FLAKY_FILTER%
+    %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%FLAKY_FILTER%
     if errorlevel 1 (
         echo Failure in flaky test 1>&2
         REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
