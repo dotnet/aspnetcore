@@ -401,11 +401,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf109642300c1acc7b885de5412f2e30669dea8e</Sha>
     </Dependency>
-    <!-- Keep these dependencies at the bottom of ProductDependencies, else they will be picked as the parent for CoherentParentDependencies -->
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
