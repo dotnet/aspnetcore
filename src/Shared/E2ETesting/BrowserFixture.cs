@@ -183,7 +183,11 @@ namespace Microsoft.AspNetCore.E2ETesting
             capabilities.SetCapability("accessKey", sauce.AccessKey);
             capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
             capabilities.SetCapability("name", name);
-            capabilities.SetCapability("browserName", sauce.BrowserName);
+
+            if (!string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                capabilities.SetCapability("browserName", sauce.BrowserName);
+            }
 
             if (!string.IsNullOrEmpty(sauce.PlatformVersion))
             {
@@ -216,6 +220,11 @@ namespace Microsoft.AspNetCore.E2ETesting
                 capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
             }
 
+            if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
+            {
+                capabilities.SetCapability("seleniumVersion", sauce.SeleniumVersion);
+            }
+
             await SauceConnectServer.StartAsync(output);
 
             var attempt = 0;
@@ -244,7 +253,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             } while (attempt < maxAttempts);
 
-            throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client. The server is irresponsive");
+            throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
         }
     }
 }

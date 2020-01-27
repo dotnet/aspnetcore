@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public string TestName { get; set; }
 
+        public bool IsRealDevice { get; set; }
+
         public string PlatformName { get; set; }
 
         public string PlatformVersion { get; set; }
@@ -28,5 +30,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         public string DeviceOrientation { get; set; }
 
         public string AppiumVersion { get; set; }
+
+        public string SeleniumVersion { get; set; }
     }
 }
