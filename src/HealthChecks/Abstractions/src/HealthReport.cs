@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// </summary>
         /// <remarks>
         /// The keys in this dictionary map the name of each executed health check to a <see cref="HealthReportEntry"/> for the
-        /// result data retruned from the corresponding health check.
+        /// result data returned from the corresponding health check.
         /// </remarks>
         public IReadOnlyDictionary<string, HealthReportEntry> Entries { get; }
 
