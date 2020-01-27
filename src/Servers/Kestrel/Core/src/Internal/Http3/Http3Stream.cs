@@ -31,8 +31,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _receivedHeaders;
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, HttpConnectionContext context) : base(context)
+        public Http3Stream(Http3Connection http3Connection, HttpConnectionContext context) 
         {
+            Initialize(context);
             // First, determine how we know if an Http3stream is unidirectional or bidirectional
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             var http3Limits = httpLimits.Http3;

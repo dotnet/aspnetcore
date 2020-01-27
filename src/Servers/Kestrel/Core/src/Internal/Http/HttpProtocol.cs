@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _responseBytesWritten;
 
-        private readonly HttpConnectionContext _context;
+        private HttpConnectionContext _context;
         private RouteValueDictionary _routeValues;
         private Endpoint _endpoint;
 
@@ -75,12 +75,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
-        public HttpProtocol(HttpConnectionContext context)
+        public void Initialize(HttpConnectionContext context)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
             HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
+            RequestHeaders = HttpRequestHeaders;
+
             HttpResponseControl = this;
         }
 
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        protected KestrelServerOptions ServerOptions { get; }
+        protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
@@ -306,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; }
+        protected HttpRequestHeaders HttpRequestHeaders { get; set; }
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -378,6 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isLeasedMemoryInvalid = true;
             _hasAdvanced = false;
             _canWriteResponseBody = true;
+            _keepAlive = true;
 
             if (_scheme == null)
             {

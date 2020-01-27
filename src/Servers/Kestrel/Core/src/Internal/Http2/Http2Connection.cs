@@ -67,6 +67,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
+        private readonly Http2Stream[] _streamPool;
+        private int _pooledStreamCount;
+
+        // Since the number of streams per connection is user configurable, we need a max just in case that number is too big
+        // 200 seems reasonable since the default is 100
+        private static readonly int _maxPooledStreams = 200;
+
         public Http2Connection(HttpConnectionContext context)
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
@@ -106,6 +113,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+
+            // Max number of streams we will accept is 2 times the max streams per connection.
+            _streamPool = new Http2Stream[Math.Min(_maxPooledStreams, http2Limits.MaxStreamsPerConnection * 2)];
+
             _inputTask = ReadInputAsync();
         }
 
@@ -554,29 +565,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // Start a new stream
-                _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
-                {
-                    ConnectionId = ConnectionId,
-                    StreamId = _incomingFrame.StreamId,
-                    ServiceContext = _context.ServiceContext,
-                    ConnectionFeatures = _context.ConnectionFeatures,
-                    MemoryPool = _context.MemoryPool,
-                    LocalEndPoint = _context.LocalEndPoint,
-                    RemoteEndPoint = _context.RemoteEndPoint,
-                    StreamLifetimeHandler = this,
-                    ClientPeerSettings = _clientSettings,
-                    ServerPeerSettings = _serverSettings,
-                    FrameWriter = _frameWriter,
-                    ConnectionInputFlowControl = _inputFlowControl,
-                    ConnectionOutputFlowControl = _outputFlowControl,
-                    TimeoutControl = TimeoutControl,
-                });
+                _currentHeadersStream = CreateStream(application);
 
-                _currentHeadersStream.Reset();
                 _headerFlags = _incomingFrame.HeadersFlags;
 
                 var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
                 return DecodeHeadersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
+            }
+        }
+
+        private Http2Stream CreateStream<TContext>(IHttpApplication<TContext> application)
+        {
+            Http2Stream<TContext> stream = null;
+
+            lock (_streamPool)
+            {
+                if (_pooledStreamCount > 0)
+                {
+                    _pooledStreamCount--;
+                    stream = (Http2Stream<TContext>)_streamPool[_pooledStreamCount];
+                    stream.Reset();
+                    stream.Initialize(GetHttp2StreamContext());
+                }
+            }
+
+            if (stream == null)
+            {
+                stream = new Http2Stream<TContext>(
+                    application,
+                    GetHttp2StreamContext());
+                stream.Reset();
+            }
+
+            return stream;
+        }
+
+        private Http2StreamContext GetHttp2StreamContext()
+        {
+            return new Http2StreamContext
+            {
+                ConnectionId = ConnectionId,
+                StreamId = _incomingFrame.StreamId,
+                ServiceContext = _context.ServiceContext,
+                ConnectionFeatures = _context.ConnectionFeatures,
+                MemoryPool = _context.MemoryPool,
+                LocalEndPoint = _context.LocalEndPoint,
+                RemoteEndPoint = _context.RemoteEndPoint,
+                StreamLifetimeHandler = this,
+                ClientPeerSettings = _clientSettings,
+                ServerPeerSettings = _serverSettings,
+                FrameWriter = _frameWriter,
+                ConnectionInputFlowControl = _inputFlowControl,
+                ConnectionOutputFlowControl = _outputFlowControl,
+                TimeoutControl = TimeoutControl,
+            };
+        }
+
+        private void ReturnStream(Http2Stream stream)
+        {
+            lock (_streamPool)
+            {
+                if (_pooledStreamCount < _streamPool.Length)
+                {
+                    _streamPool[_pooledStreamCount] = stream;
+                    _pooledStreamCount++;
+                }
             }
         }
 
@@ -1028,6 +1081,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     _streams.Remove(stream.StreamId);
+                    ReturnStream(stream);
                 }
                 else
                 {
@@ -1054,6 +1108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _streams.Remove(stream.StreamId);
+                ReturnStream(stream);
             }
         }
 
