@@ -102,7 +102,7 @@ if [ "$flaky" == true ]; then
         # DO NOT EXIT
     fi
 else
-    echo "Running non-flaky tests."
+    echo "Running non-flaky tests. $NONFLAKY_FILTER"
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
     nonflaky_exitcode=$?
     if [ $nonflaky_exitcode != 0 ]; then
