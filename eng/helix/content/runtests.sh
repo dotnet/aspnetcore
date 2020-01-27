@@ -4,6 +4,8 @@ test_binary_path="$1"
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
 helix_queue_name="$4"
+target_arch="$5"
+flaky="$6"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -87,25 +89,27 @@ if grep -q "Exception thrown" discovered.txt; then
     exit 1
 fi
 
-# Run non-flaky tests first
-# We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
-# only puts the explicit filter traits the user provided in the flaky attribute
-# Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
-echo "Running non-flaky tests."
-$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
-nonflaky_exitcode=$?
-if [ $nonflaky_exitcode != 0 ]; then
-    echo "Non-flaky tests failed!" 1>&2
-    # DO NOT EXIT
-fi
-
-FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
-echo "Running known-flaky tests."
-$DOTNET_ROOT/dotnet vstest $test_binary_path --TestCaseFilter:"$FLAKY_FILTER"
-if [ $? != 0 ]; then
-    echo "Flaky tests failed!" 1>&2
-    # DO NOT EXIT
+if [ "$flaky" == true ]; then
+    FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
+    echo "Running known-flaky tests."
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$FLAKY_FILTER"
+    if [ $? != 0 ]; then
+        echo "Flaky tests failed!" 1>&2
+        # DO NOT EXIT
+    fi
+else
+    # Run non-flaky tests first
+    # We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
+    # only puts the explicit filter traits the user provided in the flaky attribute
+    # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
+    NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
+    echo "Running non-flaky tests."
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
+    nonflaky_exitcode=$?
+    if [ $nonflaky_exitcode != 0 ]; then
+        echo "Non-flaky tests failed!" 1>&2
+        # DO NOT EXIT
+    fi
 fi
 
 echo "Copying TestResults/TestResults to ."
