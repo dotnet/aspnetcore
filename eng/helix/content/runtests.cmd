@@ -8,7 +8,7 @@ set sdkVersion=%3
 set runtimeVersion=%4
 set helixQueue=%5
 set arch=%6
-set flaky=%7
+set quarantined=%7
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%arch%
@@ -23,11 +23,6 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 set HELIX=%helixQueue%
 
-if (%targetFrameworkIdentifier%==.NETFramework) (
-    xunit.console.exe %target% -xml testResults.xml
-    exit /b %ERRORLEVEL%
-)
-
 %DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt
 REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
@@ -39,11 +34,10 @@ if not errorlevel 1 (
 
 set exit_code=0
 
-set NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
-set FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
-if (%flaky%==true) (
-    echo Running known-flaky tests.
-    %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%FLAKY_FILTER%
+set NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
+if (%quarantined%==true) (
+    echo Running all tests (including quarantined).
+    %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit
     if errorlevel 1 (
         echo Failure in flaky test 1>&2
         REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
@@ -52,8 +46,8 @@ if (%flaky%==true) (
     REM We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
     REM only puts the explicit filter traits the user provided in
     REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-    echo Running non-flaky tests. %NONFLAKY_FILTER%
-    %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%NONFLAKY_FILTER%
+    echo Running non-quarantined tests.
+    %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%NONQUARANTINE_FILTER%
     if errorlevel 1 (
         echo Failure in non-flaky test 1>&2
         set exit_code=1
