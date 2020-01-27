@@ -89,8 +89,12 @@ if grep -q "Exception thrown" discovered.txt; then
     exit 1
 fi
 
+# We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
+# only puts the explicit filter traits the user provided in the flaky attribute
+# Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
+NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
+FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
 if [ "$flaky" == true ]; then
-    FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
     echo "Running known-flaky tests."
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$FLAKY_FILTER"
     if [ $? != 0 ]; then
@@ -98,11 +102,6 @@ if [ "$flaky" == true ]; then
         # DO NOT EXIT
     fi
 else
-    # Run non-flaky tests first
-    # We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
-    # only puts the explicit filter traits the user provided in the flaky attribute
-    # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-    NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
     echo "Running non-flaky tests."
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
     nonflaky_exitcode=$?
