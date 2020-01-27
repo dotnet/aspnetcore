@@ -5,7 +5,7 @@ dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
 helix_queue_name="$4"
 target_arch="$5"
-flaky="$6"
+quarantined="$6"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -89,24 +89,23 @@ if grep -q "Exception thrown" discovered.txt; then
     exit 1
 fi
 
-# We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
+# We need to specify all possible quarantined filters that apply to this environment, because the quarantine attribute
 # only puts the explicit filter traits the user provided in the flaky attribute
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
-FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
-if [ "$flaky" == true ]; then
-    echo "Running known-flaky tests."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$FLAKY_FILTER"
+NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
+if [ "$quarantined" == true ]; then
+    echo "Running all tests including quarantined."
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit"
     if [ $? != 0 ]; then
-        echo "Flaky tests failed!" 1>&2
+        echo "Quarantined tests failed!" 1>&2
         # DO NOT EXIT
     fi
 else
-    echo "Running non-flaky tests. $NONFLAKY_FILTER"
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONFLAKY_FILTER"
+    echo "Running non-quarantined tests."
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONQUARANTINE_FILTER"
     nonflaky_exitcode=$?
     if [ $nonflaky_exitcode != 0 ]; then
-        echo "Non-flaky tests failed!" 1>&2
+        echo "Non-quarantined tests failed!" 1>&2
         # DO NOT EXIT
     fi
 fi
