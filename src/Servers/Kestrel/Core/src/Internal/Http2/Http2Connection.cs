@@ -578,16 +578,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             Http2Stream<TContext> stream = null;
 
-            lock (_streamPool)
-            {
-                if (_pooledStreamCount > 0)
-                {
-                    _pooledStreamCount--;
-                    stream = (Http2Stream<TContext>)_streamPool[_pooledStreamCount];
-                    stream.Reset();
-                    stream.Initialize(GetHttp2StreamContext());
-                }
-            }
+            //lock (_streamPool)
+            //{
+            //    if (_pooledStreamCount > 0)
+            //    {
+            //        _pooledStreamCount--;
+            //        stream = (Http2Stream<TContext>)_streamPool[_pooledStreamCount];
+            //        stream.Reset();
+            //        stream.Initialize(GetHttp2StreamContext());
+            //    }
+            //}
 
             if (stream == null)
             {
