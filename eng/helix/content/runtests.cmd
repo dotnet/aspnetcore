@@ -36,7 +36,6 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     
     set PATH=!PATH!;%DOTNET_CLI_HOME%\.dotnet\tools
 )
-
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
 set HELIX=%$helixQueue%
 set HELIX_DIR=%HELIX_WORKITEM_ROOT%
@@ -52,6 +51,13 @@ mkdir logs
 dir
 
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
+dir /s
+
+if (%targetFrameworkIdentifier%==.NETFramework) (
+    xunit.console.exe %target% -xml testResults.xml
+    exit /b %ERRORLEVEL%
+)
+
 find /c "Exception thrown" discovered.txt
 REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
 if not errorlevel 1 (

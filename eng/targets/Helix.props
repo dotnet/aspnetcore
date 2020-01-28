@@ -21,6 +21,7 @@
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
+    <JdkVersion>11.0.3</JdkVersion>
     <AppRuntimeVersion>5.0.0-ci</AppRuntimeVersion>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
   </PropertyGroup>
@@ -37,4 +38,12 @@
     <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TestDependsOnJava)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd InstallJdk.ps1 $(JdkVersion) || exit /b 1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnYarn)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call InstallYarn.cmd || exit /b 1" />
+  </ItemGroup>
+  
 </Project>

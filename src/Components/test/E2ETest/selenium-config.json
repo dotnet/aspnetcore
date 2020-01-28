@@ -1,0 +1,6 @@
+{
+  "drivers": {
+    "chrome": {}
+  },
+  "ignoreExtraDrivers": true  
+}
