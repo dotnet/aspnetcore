@@ -35,7 +35,7 @@ set exit_code=0
 
 set NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
 if (%quarantined%==true) (
-    echo Running all tests (including quarantined).
+    echo Running all tests.
     %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit
     if errorlevel 1 (
         echo Failure in flaky test 1>&2
