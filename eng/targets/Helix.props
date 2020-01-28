@@ -23,7 +23,11 @@
     <NodeVersion>10.15.3</NodeVersion>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <HelixProjectPlatform Include="Windows" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
   </ItemGroup>
 
