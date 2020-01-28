@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Internal
         // Similar logic here to VisitDeclarationSymbol, keep these in sync.
         private void VisitOperationSymbol(OperationAnalysisContext context, ISymbol symbol)
         {
-            if (symbol.ContainingAssembly == context.Compilation.Assembly)
+            if (symbol == null || symbol.ContainingAssembly == context.Compilation.Assembly)
             {
                 // The type is being referenced within the same assembly. This is valid use of an "internal" type
                 return;
@@ -155,7 +155,7 @@ namespace Microsoft.Extensions.Internal
         // Similar logic here to VisitOperationSymbol, keep these in sync.
         private void VisitDeclarationSymbol(SymbolAnalysisContext context, ISymbol symbol, ISymbol symbolForDiagnostic)
         {
-            if (symbol.ContainingAssembly == context.Compilation.Assembly)
+            if (symbol == null || symbol.ContainingAssembly == context.Compilation.Assembly)
             {
                 // This is part of the compilation, avoid this analyzer when building from source.
                 return;

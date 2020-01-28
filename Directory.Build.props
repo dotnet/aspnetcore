@@ -30,6 +30,9 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
+
+    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
