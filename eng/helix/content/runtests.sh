@@ -89,6 +89,8 @@ if grep -q "Exception thrown" discovered.txt; then
     exit 1
 fi
 
+exit_code=0
+
 # We need to specify all possible quarantined filters that apply to this environment, because the quarantine attribute
 # only puts the explicit filter traits the user provided in the flaky attribute
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
@@ -103,8 +105,8 @@ if [ "$quarantined" == true ]; then
 else
     echo "Running non-quarantined tests."
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONQUARANTINE_FILTER"
-    nonflaky_exitcode=$?
-    if [ $nonflaky_exitcode != 0 ]; then
+    exit_code=$?
+    if [ $exit_code != 0 ]; then
         echo "Non-quarantined tests failed!" 1>&2
         # DO NOT EXIT
     fi
@@ -116,4 +118,4 @@ echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/../"
 shopt -s globstar
 cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/../
 cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/
-exit $nonflaky_exitcode
+exit $exit_code
