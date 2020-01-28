@@ -95,7 +95,7 @@ fi
 NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
 if [ "$quarantined" == true ]; then
     echo "Running all tests including quarantined."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit"
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit
     if [ $? != 0 ]; then
         echo "Quarantined tests failed!" 1>&2
         # DO NOT EXIT
