@@ -362,7 +362,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var remoteEndPoint = RemoteEndPoint;
             RemoteIpAddress = remoteEndPoint?.Address;
             RemotePort = remoteEndPoint?.Port ?? 0;
-
             var localEndPoint = LocalEndPoint;
             LocalIpAddress = localEndPoint?.Address;
             LocalPort = localEndPoint?.Port ?? 0;
@@ -380,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _hasAdvanced = false;
             _canWriteResponseBody = true;
             _keepAlive = true;
+            _connectionAborted = false;
 
             if (_scheme == null)
             {
