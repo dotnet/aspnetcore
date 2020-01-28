@@ -76,17 +76,19 @@ namespace Microsoft.AspNetCore.Identity
         {
             var userId = await UserManager.GetUserIdAsync(user);
             var userName = await UserManager.GetUserNameAsync(user);
-            var email = await UserManager.GetEmailAsync(user);
             var id = new ClaimsIdentity("Identity.Application", // REVIEW: Used to match Application scheme
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
-            if (!string.IsNullOrEmpty(email))
+            if (UserManager.SupportsUserEmail)
             {
-                id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, email));
+                var email = await UserManager.GetEmailAsync(user);
+                if (!string.IsNullOrEmpty(email))
+                {
+                    id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, email));
+                }
             }
-
             if (UserManager.SupportsUserSecurityStamp)
             {
                 id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType,
