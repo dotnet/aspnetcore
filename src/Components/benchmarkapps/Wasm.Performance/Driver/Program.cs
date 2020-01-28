@@ -75,10 +75,11 @@ namespace Wasm.Performance.Driver
             var output = new BenchmarkOutput();
             foreach (var result in results)
             {
+                var scenarioName = result.Descriptor.Name;
                 output.Metadata.Add(new BenchmarkMetadata
                 {
                     Source = "BlazorWasm",
-                    Name = result.Descriptor.Name,
+                    Name = scenarioName,
                     ShortDescription = result.Name,
                     LongDescription = result.Descriptor.Description,
                     Format = "n2"
@@ -87,7 +88,7 @@ namespace Wasm.Performance.Driver
                 output.Measurements.Add(new BenchmarkMeasurement
                 {
                     Timestamp = DateTime.UtcNow,
-                    Name = result.Name,
+                    Name = scenarioName,
                     Value = result.Duration,
                 });
             }
