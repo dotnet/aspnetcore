@@ -1,3 +1,7 @@
 <Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\eng\Versions.props" />
+  <PropertyGroup>
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
+  <!-- Skip the parent folder to prevent getting test package references. -->
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
 </Project>

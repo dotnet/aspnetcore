@@ -13,6 +13,10 @@ namespace InteropTests.Helpers
 
         public string Path { get; set; }
 
+
+        public string ServerPort { get; private set; }
+
+
         public async Task EnsureStarted(ITestOutputHelper output)
         {
             if (_process != null)
@@ -28,6 +32,8 @@ namespace InteropTests.Helpers
             _process = new WebsiteProcess(Path, output);
 
             await _process.WaitForReady();
+
+            ServerPort = _process.ServerPort;
         }
 
         public void Dispose()

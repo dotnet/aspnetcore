@@ -23,7 +23,8 @@ namespace InteropTests
 
         public InteropTests(InteropTestsFixture fixture, ITestOutputHelper output)
         {
-            var attributes = typeof(InteropTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().ToList();
+            var attributes = Assembly.GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>();
 
             fixture.Path = attributes.Single(a => a.Key == "InteropTestsWebsiteDir").Value;
             _clientPath = attributes.Single(a => a.Key == "InteropTestsClientDir").Value;
@@ -38,7 +39,7 @@ namespace InteropTests
         {
             await _fixture.EnsureStarted(_output).TimeoutAfter(DefaultTimeout);
 
-            using (var clientProcess = new ClientProcess(_output, _clientPath, 50052, name))
+            using (var clientProcess = new ClientProcess(_output, _clientPath, _fixture.ServerPort, name))
             {
                 await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
 

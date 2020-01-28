@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
-    <IsUnitTestProject>false</IsUnitTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,14 +12,13 @@
     <Protobuf Include="..\Proto\grpc\testing\empty.proto" GrpcServices="None" Link="Protos\empty.proto" />
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-
-    <PackageReference Include="Grpc.Net.Client" Version="$(GrpcAspNetCorePackageVersion)" />
-
-    <PackageReference Include="CommandLineParser" Version="2.3.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.10.0" />
-    <PackageReference Include="Grpc.Auth" Version="2.25.0" PrivateAssets="All" />
-    <PackageReference Include="Grpc.Tools" Version="2.25.0" PrivateAssets="All" />
+    <Reference Include="CommandLineParser" />
+    <Reference Include="Google.Protobuf" />
+    <Reference Include="Grpc.Auth" PrivateAssets="All" />
+    <Reference Include="Grpc.Net.Client" />
+    <Reference Include="Grpc.Tools" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
 </Project>

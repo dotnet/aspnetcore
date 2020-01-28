@@ -1,12 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
-    <IsUnitTestProject>false</IsUnitTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +13,7 @@
     <Protobuf Include="..\Proto\grpc\testing\empty.proto" GrpcServices="None" Link="Protos\empty.proto" />
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
-    <PackageReference Include="Grpc.AspNetCore" Version="$(GrpcAspNetCorePackageVersion)" />
+    <Reference Include="Grpc.AspNetCore" />
   </ItemGroup>
 
 </Project>

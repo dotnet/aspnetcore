@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 
 // Copyright 2019 The gRPC Authors
 //
@@ -18,7 +18,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -41,11 +40,10 @@ namespace InteropTestsWebsite
                     {
                         // Support --port and --use_tls cmdline arguments normally supported
                         // by gRPC interop servers.
-                        var port = context.Configuration.GetValue<int>("port", 50052);
-                        var useTls = context.Configuration.GetValue<bool>("use_tls", false);
+                        var useTls = context.Configuration.GetValue("use_tls", false);
 
                         options.Limits.MinRequestBodyDataRate = null;
-                        options.ListenAnyIP(port, listenOptions =>
+                        options.ListenAnyIP(0, listenOptions =>
                         {
                             Console.WriteLine($"Enabling connection encryption: {useTls}");
 

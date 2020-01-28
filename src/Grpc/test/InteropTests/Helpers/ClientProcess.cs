@@ -15,7 +15,7 @@ namespace InteropTests.Helpers
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
 
-        public ClientProcess(ITestOutputHelper output, string path, int port, string testCase)
+        public ClientProcess(ITestOutputHelper output, string path, string serverPort, string testCase)
         {
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo
@@ -23,7 +23,7 @@ namespace InteropTests.Helpers
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 FileName = "dotnet.exe",
-                Arguments = @$"run -p {path} --use_tls false --server_port {port} --client_type httpclient --test_case {testCase}"
+                Arguments = @$"run -p {path} --use_tls false --server_port {serverPort} --client_type httpclient --test_case {testCase}"
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;

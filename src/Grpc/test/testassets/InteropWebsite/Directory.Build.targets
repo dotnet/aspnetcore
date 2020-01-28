@@ -1,0 +1,24 @@
+<Project>
+  <!-- Skip the parent folder to prevent getting test package references. -->
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
+    <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">$(TargetingPackVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
+  </PropertyGroup>
+
+  <!-- Use the shared framework that was produced -->
+  <ItemGroup>
+    <KnownFrameworkReference
+      Include="Microsoft.AspNetCore.App"
+      TargetFramework="$(DefaultNetCoreTargetFramework)"
+      RuntimeFrameworkName="Microsoft.AspNetCore.App"
+      TargetingPackName="Microsoft.AspNetCore.App.Ref"
+      RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
+      DefaultRuntimeFrameworkVersion="$(SharedFxVersion)"
+      LatestRuntimeFrameworkVersion="$(SharedFxVersion)"
+      TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+      RuntimePackRuntimeIdentifiers="$(SupportedRuntimeIdentifiers)" />
+  </ItemGroup>
+</Project>
