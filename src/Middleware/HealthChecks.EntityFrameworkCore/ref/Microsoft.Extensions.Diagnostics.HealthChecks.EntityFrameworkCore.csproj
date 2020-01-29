@@ -8,8 +8,5 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks"  />
-    <Reference Include="Microsoft.Extensions.Caching.Memory"  />
-    <Reference Include="Microsoft.Extensions.DependencyInjection"  />
-    <Reference Include="Microsoft.Extensions.Logging"  />
   </ItemGroup>
 </Project>

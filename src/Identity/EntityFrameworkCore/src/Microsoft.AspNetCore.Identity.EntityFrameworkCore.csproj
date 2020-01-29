@@ -11,9 +11,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
 </Project>
