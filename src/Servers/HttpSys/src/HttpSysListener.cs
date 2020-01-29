@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                Logger.LogError(LoggerEventIds.CtorException, exception, ".Ctor");
+                Logger.LogError(LoggerEventIds.HttpSysListenerCtorException, exception, ".Ctor");
                 throw;
             }
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             CheckDisposed();
 
-            Logger.LogTrace(LoggerEventIds.Started, "Starting the listener.");
+            Logger.LogTrace(LoggerEventIds.ListenerStarting, "Starting the listener.");
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception exception)
             {
-                Logger.LogError(LoggerEventIds.ErrorInStopping, exception, "Stop");
+                Logger.LogError(LoggerEventIds.ListenerStopError, exception, "Stop");
                 throw;
             }
         }

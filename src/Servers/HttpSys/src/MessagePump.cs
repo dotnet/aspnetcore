@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
-                    _logger.LogError(LoggerEventIds.RequestListenderProcessFailed, ex, "ProcessRequestAsync");
+                    _logger.LogError(LoggerEventIds.RequestListenerProcessFailed, ex, "ProcessRequestAsync");
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
