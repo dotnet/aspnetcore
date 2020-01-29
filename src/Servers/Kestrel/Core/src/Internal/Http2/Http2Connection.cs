@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private Http2StreamStack _streamPool;
 
         internal const int InitialStreamPoolSize = 20;
-        internal const int MaxStreamPoolSize = 20;
+        internal const int MaxStreamPoolSize = 50;
 
         public Http2Connection(HttpConnectionContext context)
         {
