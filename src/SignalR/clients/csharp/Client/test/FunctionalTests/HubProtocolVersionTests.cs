@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         [Theory]
         [MemberData(nameof(TransportTypes))]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientUsingOldCallWithNewProtocol(HttpTransportType transportType)
         {
             using (StartServer<VersionStartup>(out var server))

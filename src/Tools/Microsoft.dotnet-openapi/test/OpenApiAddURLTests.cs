@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -459,6 +460,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.False(File.Exists(jsonFile));
         }
 
+        [Flaky("<No longer needed, tracked in Kusto>", FlakyOn.All)]
         [Fact]
         public void OpenApi_Add_URL_ActualResponse()
         {

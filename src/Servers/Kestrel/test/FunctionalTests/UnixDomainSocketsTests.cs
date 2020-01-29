@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #endif
         [ConditionalFact]
         [CollectDump]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task TestUnixDomainSocket()
         {
             var path = Path.GetTempFileName();
