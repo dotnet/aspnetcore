@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
-        private readonly Http2StreamStack _streamPool;
+        private Http2StreamStack _streamPool;
 
         internal const int InitialStreamPoolSize = 20;
         internal const int MaxStreamPoolSize = 200;
@@ -574,7 +574,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application)
         {
-
             if (_streamPool.TryPop(out var stream))
             {
                 stream.Initialize(CreateHttp2StreamContext());
