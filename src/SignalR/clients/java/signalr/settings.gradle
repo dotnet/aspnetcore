@@ -1,6 +1,2 @@
 rootProject.name = 'signalr'
 include 'main'
-
-// This is required for Gradle 4.6+ to support importing BOMs, like we do for the Microsoft super pom.
-// See here: https://docs.gradle.org/4.6/release-notes.html?_ga=2.220409368.162752831.1539212384-1601231980.1538950297#bom-import
-enableFeaturePreview('IMPROVED_POM_SUPPORT')

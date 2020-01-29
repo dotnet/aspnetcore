@@ -22,7 +22,6 @@ and are generated based on the last package release.
   <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" Version="$(MicrosoftAzureSignalRPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
@@ -121,6 +120,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
