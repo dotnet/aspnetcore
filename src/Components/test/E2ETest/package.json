@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "selenium-standalone": "selenium-standalone",
-    "prepare": "selenium-standalone install"
+    "prepare": "selenium-standalone install --singleDriverInstall=chrome"
   },
   "author": "",
   "license": "Apache-2.0",
