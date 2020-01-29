@@ -112,8 +112,8 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         protected void AssertNoErrors(int appExitCode)
         {
-            Assert.Equal(0, appExitCode);
             Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.Equal(0, appExitCode);
         }
 
         public void Dispose()
