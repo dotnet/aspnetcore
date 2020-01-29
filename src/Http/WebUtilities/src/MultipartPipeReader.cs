@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class MultipartPipeReader
     {
-        public const int DefaultHeadersCountLimit = 16;
-        public const int DefaultHeadersLengthLimit = 1024 * 16;
         private const int StackAllocThreshold = 128;
 
         private readonly PipeReader _pipeReader;
@@ -40,12 +38,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// The limit for the number of headers to read.
         /// </summary>
-        public int HeadersCountLimit { get; set; } = DefaultHeadersCountLimit;
+        public int HeadersCountLimit { get; set; } = MultipartReader.DefaultHeadersCountLimit;
 
         /// <summary>
         /// The combined size limit for headers per multipart section.
         /// </summary>
-        public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
+        public int HeadersLengthLimit { get; set; } = MultipartReader.DefaultHeadersLengthLimit;
 
         /// <summary>
         /// The optional limit for the total response body length.

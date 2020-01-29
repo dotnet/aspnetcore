@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Threading.Tasks.Task<string> GetValueAsync() { throw null; }
+        public System.Threading.Tasks.Task<string> GetValueAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public partial class FormPipeReader
     {
@@ -181,6 +182,15 @@ namespace Microsoft.AspNetCore.WebUtilities
         public void Append(string key, string value) { }
         public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> GetResults() { throw null; }
     }
+    public partial class MultipartPipeReader
+    {
+        public MultipartPipeReader(string boundary, System.IO.Pipelines.PipeReader pipeReader) { }
+        public long? BodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int HeadersCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int HeadersLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.WebUtilities.MultipartSection> ReadNextSectionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
     public partial class MultipartReader
     {
         public const int DefaultHeadersCountLimit = 16;
@@ -197,7 +207,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         public MultipartSection() { }
         public long? BaseStreamOffset { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.IO.Stream Body { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeReader BodyReader { get { throw null; } set { } }
         public string ContentDisposition { get { throw null; } }
         public string ContentType { get { throw null; } }
         public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -210,8 +221,9 @@ namespace Microsoft.AspNetCore.WebUtilities
     }
     public static partial class MultipartSectionStreamExtensions
     {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task<string> ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartSection section) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task<string> ReadAsStringAsync(this Microsoft.AspNetCore.WebUtilities.MultipartSection section, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public static partial class QueryHelpers
     {
