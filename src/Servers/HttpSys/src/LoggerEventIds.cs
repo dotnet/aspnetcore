@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal static class LoggerEventIds
     {
-        public static EventId CtorException = new EventId(1, "CtorException");
+        public static EventId ListenerCtorException = new EventId(1, "ListenerCtorException");
         public static EventId BindingDefaulted = new EventId(2, "BindingDefaulted");
         public static EventId Cleared = new EventId(3, "Cleared");
         public static EventId Stopping = new EventId(4, "Stopping");

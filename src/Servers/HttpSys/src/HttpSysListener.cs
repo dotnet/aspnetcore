@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    Logger.LogError(LoggerEventIds.Started, exception, "Start");
+                    Logger.LogError(LoggerEventIds.ListenerStartException, exception, "Start");
                     throw;
                 }
             }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Logger.LogTrace(LoggerEventIds.Stopping,"Stopping the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerStopping,"Stopping the listener.");
 
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    Logger.LogTrace(LoggerEventIds.Disposed, "Disposing the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerDisposing, "Disposing the listener.");
 
                     Stop();
                     DisposeInternal();
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception exception)
             {
-                Logger.LogError(LoggerEventIds.ContextException, exception, "GetContextAsync");
+                Logger.LogError(LoggerEventIds.AcceptError, exception, "AcceptAsync");
                 throw;
             }
 

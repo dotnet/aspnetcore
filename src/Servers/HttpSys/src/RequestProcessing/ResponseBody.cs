@@ -175,14 +175,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (ThrowWriteExceptions)
                 {
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.WriteFlushed, exception, "Flush");
+                    Logger.LogError(LoggerEventIds.WriteError, exception, "Flush");
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug(LoggerEventIds.WriteFlushedIgnored, $"Flush; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"Flush; Ignored write exception: {statusCode}");
                     Abort(dispose: false);
                 }
             }
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug(LoggerEventIds.AbortButDonotClose,$"FlushAsync; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.WriteErrorIgnored,$"FlushAsync; Ignored write exception: {statusCode}");
                     asyncResult.FailSilently();
                 }
             }
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug(LoggerEventIds.FileSendAsyncAbortButDonotClose,$"SendFileAsync; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.FileSendAsyncErrorIgnored,$"SendFileAsync; Ignored write exception: {statusCode}");
                     asyncResult.FailSilently();
                 }
             }

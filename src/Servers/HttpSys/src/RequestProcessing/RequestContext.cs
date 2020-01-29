@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-            Logger.LogInformation(LoggerEventIds.ChannelBindingRetrived,"Channel binding retrieved.");
+            Logger.LogDebug(LoggerEventIds.ChannelBindingRetrived,"Channel binding retrieved.");
             return value != null;
         }
 
