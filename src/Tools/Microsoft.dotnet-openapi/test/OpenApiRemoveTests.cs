@@ -29,8 +29,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "file", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -45,8 +44,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -74,8 +72,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -90,8 +87,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
@@ -125,8 +121,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var refProjFile = Path.Join(refProj.Root, $"{refProjName}.csproj");
             var run = app.Execute(new[] { "add", "project", refProjFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             using (var csprojStream = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj")).OpenRead())
@@ -140,8 +135,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var remove = GetApplication();
             run = app.Execute(new[] { "remove", refProjFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             using (var csprojStream = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj")).OpenRead())
@@ -170,20 +164,17 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var add = GetApplication();
             var run = add.Execute(new[] { "add", "file", nswagJsonFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             add = GetApplication();
             run = add.Execute(new[] { "add", "file", swagFile2 });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", nswagJsonFile, swagFile2 });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, removeRun);
+            AssertNoErrors(removeRun);
 
             // csproj contents
             var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
