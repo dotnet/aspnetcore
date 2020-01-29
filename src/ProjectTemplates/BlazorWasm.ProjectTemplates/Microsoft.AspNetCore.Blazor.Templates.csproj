@@ -20,15 +20,9 @@
       MicrosoftAspNetCoreBlazorBuildPackageVersion=$(MicrosoftAspNetCoreBlazorBuildPackageVersion);
       MicrosoftAspNetCoreBlazorDevServerPackageVersion=$(MicrosoftAspNetCoreBlazorDevServerPackageVersion);
       MicrosoftAspNetCoreBlazorHttpClientPackageVersion=$(MicrosoftAspNetCoreBlazorHttpClientPackageVersion);
-      MicrosoftAspNetCoreBlazorServerPackageVersion=$(MicrosoftAspNetCoreBlazorServerPackageVersion);
-      MicrosoftAspNetCoreComponentsAuthorizationPackageVersion=$(MicrosoftAspNetCoreComponentsAuthorizationPackageVersion);
-      MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
-      MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
-      MicrosoftAspNetCoreIdentityUIPackageVersion=$(MicrosoftAspNetCoreIdentityUIPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
-      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MonoWebAssemblyInteropPackageVersion=$(MonoWebAssemblyInteropPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftAspNetCoreBlazorServerPackageVersion=$(MicrosoftAspNetCoreBlazorServerPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

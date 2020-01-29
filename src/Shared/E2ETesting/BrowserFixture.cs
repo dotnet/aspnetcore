@@ -72,13 +72,24 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
         {
-            if (!IsHostAutomationSupported())
+            Func<string, ITestOutputHelper, Task<(IWebDriver, ILogs)>> createBrowserFunc;
+            if (E2ETestOptions.Instance.SauceTest)
             {
-                output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return Task.FromResult<(IWebDriver, ILogs)>(default);
+                createBrowserFunc = CreateSauceBrowserAsync;
+            }
+            else
+            {
+                if (!IsHostAutomationSupported())
+                {
+                    output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
+                    return Task.FromResult<(IWebDriver, ILogs)>(default);
+                }
+
+                createBrowserFunc = CreateBrowserAsync;
             }
 
-            return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
+
+            return _browsers.GetOrAdd(isolationContext, createBrowserFunc, output);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
@@ -142,6 +153,107 @@ namespace Microsoft.AspNetCore.E2ETesting
             } while (attempt < maxAttempts);
 
             throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+        }
+
+        private async Task<(IWebDriver browser, ILogs log)> CreateSauceBrowserAsync(string context, ITestOutputHelper output)
+        {
+            var sauce = E2ETestOptions.Instance.Sauce;
+
+            if (sauce == null ||
+                string.IsNullOrEmpty(sauce.TestName) ||
+                string.IsNullOrEmpty(sauce.Username) ||
+                string.IsNullOrEmpty(sauce.AccessKey) ||
+                string.IsNullOrEmpty(sauce.TunnelIdentifier) ||
+                string.IsNullOrEmpty(sauce.PlatformName) ||
+                string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                throw new InvalidOperationException("Required SauceLabs environment variables not set.");
+            }
+
+            var name = sauce.TestName;
+            if (!string.IsNullOrEmpty(context))
+            {
+                name = $"{name} - {context}";
+            }
+
+            var capabilities = new DesiredCapabilities();
+
+            // Required config
+            capabilities.SetCapability("username", sauce.Username);
+            capabilities.SetCapability("accessKey", sauce.AccessKey);
+            capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
+            capabilities.SetCapability("name", name);
+
+            if (!string.IsNullOrEmpty(sauce.BrowserName))
+            {
+                capabilities.SetCapability("browserName", sauce.BrowserName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.PlatformVersion))
+            {
+                capabilities.SetCapability("platformName", sauce.PlatformName);
+                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+            }
+            else
+            {
+                // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
+                capabilities.SetCapability("platform", sauce.PlatformName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.BrowserVersion))
+            {
+                capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceName))
+            {
+                capabilities.SetCapability("deviceName", sauce.DeviceName);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
+            {
+                capabilities.SetCapability("deviceOrientation", sauce.DeviceOrientation);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.AppiumVersion))
+            {
+                capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
+            }
+
+            if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
+            {
+                capabilities.SetCapability("seleniumVersion", sauce.SeleniumVersion);
+            }
+
+            await SauceConnectServer.StartAsync(output);
+
+            var attempt = 0;
+            const int maxAttempts = 3;
+            do
+            {
+                try
+                {
+                    // Attempt to create a new browser in SauceLabs.
+                    var driver = new RemoteWebDriver(
+                        new Uri("http://localhost:4445/wd/hub"),
+                        capabilities,
+                        TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
+
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+                    var logs = new RemoteLogs(driver);
+
+                    return (driver, logs);
+                }
+                catch (Exception ex)
+                {
+                    output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
+                }
+
+                attempt++;
+
+            } while (attempt < maxAttempts);
+
+            throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
         }
     }
 }

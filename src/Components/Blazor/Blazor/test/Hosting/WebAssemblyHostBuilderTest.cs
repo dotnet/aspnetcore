@@ -3,160 +3,100 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Hosting.Test
+namespace Microsoft.AspNetCore.Blazor.Hosting
 {
     public class WebAssemblyHostBuilderTest
     {
         [Fact]
-        public void HostBuilder_CanCallBuild_BuildsServices()
+        public void Build_AllowsConfiguringConfiguration()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder();
+            var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            // Act
-            var host = builder.Build();
-
-            // Assert
-            Assert.NotNull(host.Services.GetService(typeof(IWebAssemblyHost)));
-        }
-
-        [Fact]
-        public void HostBuilder_CanConfigureAdditionalServices()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.ConfigureServices((c, s) => s.AddSingleton<string>("foo"));
-            builder.ConfigureServices((c, s) => s.AddSingleton<StringBuilder>(new StringBuilder("bar")));
-
-            // Act
-            var host = builder.Build();
-
-            // Assert
-            Assert.Equal("foo", host.Services.GetService(typeof(string)));
-            Assert.Equal("bar", host.Services.GetService(typeof(StringBuilder)).ToString());
-        }
-
-        [Fact]
-        public void HostBuilder_UseBlazorStartup_CanConfigureAdditionalServices()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.UseBlazorStartup<MyStartup>();
-            builder.ConfigureServices((c, s) => s.AddSingleton<StringBuilder>(new StringBuilder("bar")));
-
-            // Act
-            var host = builder.Build();
-
-            // Assert
-            Assert.Equal("foo", host.Services.GetService(typeof(string)));
-            Assert.Equal("bar", host.Services.GetService(typeof(StringBuilder)).ToString());
-        }
-
-        [Fact]
-        public void HostBuilder_UseBlazorStartup_DoesNotAllowMultiple()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.UseBlazorStartup<MyStartup>();
-
-            // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => builder.UseBlazorStartup<MyStartup>());
-
-            // Assert
-            Assert.Equal("A startup class has already been registered.", ex.Message);
-        }
-
-        private class MyStartup
-        {
-            public void ConfigureServices(IServiceCollection services)
+            builder.Configuration.AddInMemoryCollection(new[]
             {
-                services.AddSingleton<string>("foo");
-            }
-        }
-
-        [Fact]
-        public void HostBuilder_CanCustomizeServiceFactory()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.UseServiceProviderFactory(new TestServiceProviderFactory());
-
-            // Act
-            var host = builder.Build();
-
-            // Assert
-            Assert.IsType<TestServiceProvider>(host.Services);
-        }
-
-        [Fact]
-        public void HostBuilder_CanCustomizeServiceFactoryWithContext()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.UseServiceProviderFactory(context =>
-            {
-                Assert.NotNull(context.Properties);
-                Assert.Same(builder.Properties, context.Properties);
-                return new TestServiceProviderFactory();
+                new KeyValuePair<string, string>("key", "value"),
             });
 
             // Act
             var host = builder.Build();
 
             // Assert
-            Assert.IsType<TestServiceProvider>(host.Services);
+            Assert.Equal("value", host.Configuration["key"]);
         }
 
-        private class TestServiceProvider : IServiceProvider
+        [Fact] 
+        public void Build_AllowsConfiguringServices()
         {
-            private readonly IServiceProvider _underlyingProvider;
+            // Arrange
+            var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            public TestServiceProvider(IServiceProvider underlyingProvider)
-            {
-                _underlyingProvider = underlyingProvider;
-            }
+            // This test also verifies that we create a scope.
+            builder.Services.AddScoped<StringBuilder>();
 
-            public object GetService(Type serviceType)
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
+        }
+
+        [Fact]
+        public void Build_AddsConfigurationToServices()
+        {
+            // Arrange
+            var builder = WebAssemblyHostBuilder.CreateDefault();
+
+            builder.Configuration.AddInMemoryCollection(new[]
             {
-                if (serviceType == typeof(IWebAssemblyHost))
+                new KeyValuePair<string, string>("key", "value"),
+            });
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            var configuration = host.Services.GetRequiredService<IConfiguration>();
+            Assert.Equal("value", configuration["key"]);
+        }
+
+        private static IReadOnlyList<Type> DefaultServiceTypes
+        {
+            get
+            {
+                return new Type[]
                 {
-                    // Since the test will make assertions about the resulting IWebAssemblyHost,
-                    // show that custom DI containers have the power to substitute themselves
-                    // as the IServiceProvider
-                    return new WebAssemblyHost(
-                        this, _underlyingProvider.GetRequiredService<IJSRuntime>());
-                }
-                else
-                {
-                    return _underlyingProvider.GetService(serviceType);
-                }
+                    typeof(IJSRuntime),
+                    typeof(NavigationManager),
+                    typeof(INavigationInterception),
+                    typeof(ILoggerFactory),
+                    typeof(HttpClient),
+                    typeof(ILogger<>),
+                };
             }
         }
 
-        private class TestServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
+        [Fact]
+        public void Constructor_AddsDefaultServices()
         {
-            public IServiceCollection CreateBuilder(IServiceCollection services)
-            {
-                return new TestServiceCollection(services);
-            }
+            // Arrange & Act
+            var builder = WebAssemblyHostBuilder.CreateDefault();
 
-            public IServiceProvider CreateServiceProvider(IServiceCollection serviceCollection)
+            // Assert
+            Assert.Equal(DefaultServiceTypes.Count, builder.Services.Count);
+            foreach (var type in DefaultServiceTypes)
             {
-                Assert.IsType<TestServiceCollection>(serviceCollection);
-                return new TestServiceProvider(serviceCollection.BuildServiceProvider());
-            }
-
-            class TestServiceCollection : List<ServiceDescriptor>, IServiceCollection
-            {
-                public TestServiceCollection(IEnumerable<ServiceDescriptor> collection)
-                    : base(collection)
-                {
-                }
+                Assert.Single(builder.Services, d => d.ServiceType == type);
             }
         }
     }

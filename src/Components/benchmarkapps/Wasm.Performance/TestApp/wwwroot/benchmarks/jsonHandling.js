@@ -16,21 +16,46 @@ group('JSON handling', () => {
   teardown(() => app.dispose());
 
   benchmark('Serialize 1kb', () =>
-    benchmarkJson(app, '#serialize-small', '#serialized-length', 935));
+    benchmarkJson(app, '#serialize-small', '#serialized-length', 935), {
+      descriptor: {
+        name: 'blazorwasm/jsonserialize-1kb',
+        description: 'Serialize JSON 1kb - Time in ms'
+      }
+    });
 
   benchmark('Serialize 340kb', () =>
-    benchmarkJson(app, '#serialize-large', '#serialized-length', 339803));
+    benchmarkJson(app, '#serialize-large', '#serialized-length', 339803), {
+      descriptor: {
+        name: 'blazorwasm/jsonserialize-340kb',
+        description: 'Serialize JSON 340kb - Time in ms'
+      }
+    });
 
   benchmark('Deserialize 1kb', () =>
-    benchmarkJson(app, '#deserialize-small', '#deserialized-count', 5));
+    benchmarkJson(app, '#deserialize-small', '#deserialized-count', 5), {
+      descriptor: {
+        name: 'blazorwasm/jsondeserialize-1kb',
+        description: 'Deserialize JSON 1kb - Time in ms'
+      }
+    });
 
   benchmark('Deserialize 340kb', () =>
-    benchmarkJson(app, '#deserialize-large', '#deserialized-count', 1365));
+    benchmarkJson(app, '#deserialize-large', '#deserialized-count', 1365), {
+      descriptor: {
+        name: 'blazorwasm/jsondeserialize-340kb',
+        description: 'Deserialize JSON 340kb - Time in ms'
+      }
+    });
 
   benchmark('Serialize 340kb (JavaScript)', () => {
     const json = JSON.stringify(largeObjectToSerialize);
     if (json.length !== 339803) {
       throw new Error(`Incorrect length: ${json.length}`);
+    }
+  }, {
+    descriptor: {
+      name: 'blazorwasm/jsonserialize-javascript-340kb',
+      description: 'Serialize JSON 340kb using JavaScript - Time in ms'
     }
   });
 
@@ -38,6 +63,11 @@ group('JSON handling', () => {
     const parsed = JSON.parse(largeJsonToDeserialize);
     if (parsed.name !== 'CEO - Subordinate 0') {
       throw new Error('Incorrect result');
+    }
+  }, {
+    descriptor: {
+      name: 'blazorwasm/jsondeserialize-javascript-340kb',
+      description: 'Deserialize JSON 340kb using JavaScript - Time in ms'
     }
   });
 });

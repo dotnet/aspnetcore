@@ -10,7 +10,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="${MicrosoftAspNetCoreBlazorBuildPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="${MicrosoftAspNetCoreBlazorDevServerPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="${MicrosoftAspNetCoreBlazorHttpClientPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="${MicrosoftAspNetCoreComponentsAuthorizationPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
   </ItemGroup>
   <!--#if Hosted -->
   <ItemGroup>

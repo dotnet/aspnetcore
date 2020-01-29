@@ -7,6 +7,6 @@
     <Compile Include="Microsoft.AspNetCore.Blazor.netstandard2.1.cs" />
     <Reference Include="Mono.WebAssembly.Interop"  />
     <Reference Include="Microsoft.AspNetCore.Components.Web"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
+    <Reference Include="Microsoft.Extensions.Configuration"  />
   </ItemGroup>
 </Project>
