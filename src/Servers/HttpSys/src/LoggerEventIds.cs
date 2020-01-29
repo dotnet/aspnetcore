@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal static class LoggerEventIds
     {
-        public static EventId CtorException = new EventId(1, "CtorException");
+        public static EventId ListenerCtorException = new EventId(1, "ListenerCtorException");
         public static EventId BindingDefaulted = new EventId(2, "BindingDefaulted");
         public static EventId Cleared = new EventId(3, "Cleared");
         public static EventId Stopping = new EventId(4, "Stopping");
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId TokenDisconnect = new EventId(11, "TokenDisconnect");
         public static EventId WaitTokenClosed = new EventId(12, "WaitTokenClosed");
         public static EventId TokenDisconnectError= new EventId(13, "TokenDisconnectError");
-        public static EventId Started = new EventId(14, "Started");
+        public static EventId ListenerStarting = new EventId(14, "ListenerStarting");
         public static EventId ErrorInDispose = new EventId(15, "ErrorInDispose");
         public static EventId ContextException = new EventId(16, "ContextException");
         public static EventId AttachedToQueue = new EventId(17, "AttachedToQueue");
@@ -50,5 +50,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId TokenDisconnectTriggered = new EventId(44, "TokenDisconnectTriggered");
         public static EventId ErrorInStopping = new EventId(45, "ErrorInStopping");
         public static EventId Disposed = new EventId(46, "Disposed");
+        public static EventId ListenerStartException = new EventId(47, "ListenerStartException");
+        public static EventId RequestListenderProcessFailed = new EventId(48, "RequestProcessFailed");
+        public static EventId RequestFailed = new EventId(49, "RequestProcessFailed");
     }
 }
