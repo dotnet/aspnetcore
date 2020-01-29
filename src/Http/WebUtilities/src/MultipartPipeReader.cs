@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary);
+            _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary) { LengthLimit = HeadersLengthLimit };
         }
 
         /// <summary>
