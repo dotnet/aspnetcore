@@ -233,18 +233,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (asyncResult._cancellationToken.IsCancellationRequested)
                     {
-                        logger.LogDebug(LoggerEventIds.IOCompletedCancelled,$"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteCancelled,$"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
                         asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
                         var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
-                        logger.LogError(LoggerEventIds.IOCompletedCancelled, exception, "FlushAsync.IOCompleted");
+                        logger.LogError(LoggerEventIds.WriteError, exception, "FlushAsync.IOCompleted");
                         asyncResult.Fail(exception);
                     }
                     else
                     {
-                        logger.LogDebug(LoggerEventIds.IOCompletedFailQuiet, $"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
                         asyncResult.FailSilently();
                     }
                 }
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                logger.LogError(LoggerEventIds.IOCompletedFailed, e, "FlushAsync.IOCompleted");
+                logger.LogError(LoggerEventIds.WriteError, e, "FlushAsync.IOCompleted");
                 asyncResult.Fail(e);
             }
         }

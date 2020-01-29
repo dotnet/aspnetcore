@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.CryptoException, ce, "An error occurred reading the client certificate.");
+                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
                     }
                     catch (SecurityException se)
                     {
