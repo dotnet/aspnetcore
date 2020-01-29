@@ -301,6 +301,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 b.Name = ComponentMetadata.ChildContent.ParameterAttributeName;
                 b.TypeName = typeof(string).FullName;
                 b.Metadata.Add(ComponentMetadata.Component.ChildContentParameterNameKey, bool.TrueString);
+                b.Metadata.Add(TagHelperMetadata.Common.PropertyName, b.Name);
 
                 if (childContentName == null)
                 {
