@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private readonly PipeReader _pipeReader;
         private readonly MultipartBoundary _boundary;
-        private MultipartSectionPipeReader _currentSection;
+        private MultipartSectionPipeReader _currentSectionReader;
+        private long _totalBytesRead;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
+            _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary);
         }
 
         /// <summary>
@@ -53,9 +54,11 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
-            await _currentSection.DrainAsync(cancellationToken);
+            await _currentSectionReader.DrainAsync(cancellationToken);
 
-            if (_currentSection.FinalBoundaryFound)
+            _totalBytesRead += _currentSectionReader.ConsumedLength;
+
+            if (_currentSectionReader.FinalBoundaryFound)
             {
                 return null;
             }
@@ -73,30 +76,30 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var buffer = readResult.Buffer;
-
-                if (buffer.IsEmpty)
-                {
-                    if (readResult.IsCompleted)
-                    {
-                        return null;
-                    }
-                    // This is a buggy PipeReader implementation that returns 0 byte reads even though the PipeReader
-                    // isn't completed or canceled - still think it should continue
-                    continue;
-                }
-
                 try
                 {
                     var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
-                    if (headersLength > DefaultHeadersLengthLimit)
+                    if (headersLength > HeadersLengthLimit)
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                     }
+                    if (BodyLengthLimit.HasValue && headersLength > BodyLengthLimit - _totalBytesRead)
+                    {
+                        throw new InvalidDataException($"Multipart body length limit {BodyLengthLimit} exceeded.");
+                    }
+
                     if (finishedParsing)
                     {
-                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
-                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection }; ;
+                        _totalBytesRead += headersLength;
+                        _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary);
+                        _currentSectionReader.LengthLimit = !BodyLengthLimit.HasValue ? null : BodyLengthLimit - _totalBytesRead;
+                        return new MultipartSection()
+                        {
+                            Headers = headersAccumulator.GetResults(),
+                            BodyReader = _currentSectionReader,
+                        };
                     }
+
                     if (readResult.IsCompleted)
                     {
                         throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");

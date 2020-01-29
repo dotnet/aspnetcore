@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         // The count of data fully consumed by the caller.
         public long ConsumedLength { get; private set; } = 0;
 
-        public long? LengthLimit { get; private set; }
+        public long? LengthLimit { get; set; }
 
         // This was the last section in the multipart form
         public bool FinalBoundaryFound { get; private set; }
@@ -401,7 +401,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
             }
 
-            _unconsumedData = _unconsumedData.Slice(reachedNewLine ? sequenceReader.Position : remainderReader.Position);
+            var consumed = _unconsumedData.Slice(0, reachedNewLine ? sequenceReader.Position : remainderReader.Position).Length;
+            _unconsumedData = _unconsumedData.Slice(consumed);
+            ConsumedLength += consumed;
 
             return true;
         }
