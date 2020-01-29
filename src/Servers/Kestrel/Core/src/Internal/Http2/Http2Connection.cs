@@ -67,12 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
-        private readonly Http2Stream[] _streamPool;
-        private int _pooledStreamCount;
+        private readonly Http2StreamStack _streamPool;
 
-        // Since the number of streams per connection is user configurable, we need a max just in case that number is too big
-        // 200 seems reasonable since the default is 100
-        private static readonly int _maxPooledStreams = 200;
+        internal const int InitialStreamPoolSize = 20;
+        internal const int MaxStreamPoolSize = 200;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -115,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             // Max number of streams we will accept is 2 times the max streams per connection.
-            _streamPool = new Http2Stream[Math.Min(_maxPooledStreams, http2Limits.MaxStreamsPerConnection * 2)];
+            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection * 2));
 
             _inputTask = ReadInputAsync();
         }
@@ -565,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // Start a new stream
-                _currentHeadersStream = CreateStream(application);
+                _currentHeadersStream = GetStream(application);
 
                 _headerFlags = _incomingFrame.HeadersFlags;
 
@@ -574,33 +572,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private Http2Stream CreateStream<TContext>(IHttpApplication<TContext> application)
+        private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application)
         {
-            Http2Stream<TContext> stream = null;
 
-            lock (_streamPool)
+            if (_streamPool.TryPop(out var stream))
             {
-                if (_pooledStreamCount > 0)
-                {
-                    _pooledStreamCount--;
-                    stream = (Http2Stream<TContext>)_streamPool[_pooledStreamCount];
-                    stream.Reset();
-                    stream.Initialize(GetHttp2StreamContext());
-                }
+                stream.Initialize(CreateHttp2StreamContext());
+                return stream;
             }
 
-            if (stream == null)
-            {
-                stream = new Http2Stream<TContext>(
+            return new Http2Stream<TContext>(
                     application,
-                    GetHttp2StreamContext());
-                stream.Reset();
-            }
-
-            return stream;
+                    CreateHttp2StreamContext());
         }
 
-        private Http2StreamContext GetHttp2StreamContext()
+        private Http2StreamContext CreateHttp2StreamContext()
         {
             return new Http2StreamContext
             {
@@ -623,13 +609,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ReturnStream(Http2Stream stream)
         {
-            lock (_streamPool)
+            if (_streamPool.Count < MaxStreamPoolSize)
             {
-                if (_pooledStreamCount < _streamPool.Length)
-                {
-                    _streamPool[_pooledStreamCount] = stream;
-                    _pooledStreamCount++;
-                }
+                _streamPool.Push(stream);
             }
         }
 
@@ -1453,6 +1435,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Scheme = 0x8,
             Status = 0x10,
             Unknown = 0x40000000
+        }
+
+        private struct Http2StreamStack
+        {
+            private Http2StreamAsValueType[] _array;
+            private int _size;
+
+            public Http2StreamStack(int size)
+            {
+                _array = new Http2StreamAsValueType[size];
+                _size = 0;
+            }
+
+            public int Count => _size;
+
+            public bool TryPop(out Http2Stream result)
+            {
+                int size = _size - 1;
+                Http2StreamAsValueType[] array = _array;
+
+                if ((uint)size >= (uint)array.Length)
+                {
+                    result = default;
+                    return false;
+                }
+
+                _size = size;
+                result = array[size];
+                array[size] = default;
+                return true;
+            }
+
+            // Pushes an item to the top of the stack.
+            public void Push(Http2Stream item)
+            {
+                int size = _size;
+                Http2StreamAsValueType[] array = _array;
+
+                if ((uint)size < (uint)array.Length)
+                {
+                    array[size] = item;
+                    _size = size + 1;
+                }
+                else
+                {
+                    PushWithResize(item);
+                }
+            }
+
+            // Non-inline from Stack.Push to improve its code quality as uncommon path
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private void PushWithResize(Http2Stream item)
+            {
+                Array.Resize(ref _array, 2 * _array.Length);
+                _array[_size] = item;
+                _size++;
+            }
+
+            private readonly struct Http2StreamAsValueType
+            {
+                private readonly Http2Stream _value;
+                private Http2StreamAsValueType(Http2Stream value) => _value = value;
+                public static implicit operator Http2StreamAsValueType(Http2Stream s) => new Http2StreamAsValueType(s);
+                public static implicit operator Http2Stream(Http2StreamAsValueType s) => s._value;
+            }
         }
 
         private static class GracefulCloseInitiator

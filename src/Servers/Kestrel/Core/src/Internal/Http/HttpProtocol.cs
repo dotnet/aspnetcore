@@ -80,7 +80,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
+
+            Reset();
+
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
+            RequestHeaders = RequestHeaders;
 
             HttpResponseControl = this;
         }
