@@ -20,6 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
+$InstallDir = '.' # Try to install to workitem directory
 
 Set-StrictMode -Version 1
 
@@ -59,9 +60,8 @@ else {
 
 Write-Host "Expanded NodeJs"
 New-Item -Path "$InstallDir" -ItemType "directory" -Force
-Write-Host "Copying $tempDir\$nodeFile\node.exe to $InstallDir"
-Copy-Item "$tempDir\$nodeFile\node.exe" "$InstallDir\node.exe"
-
+Write-Host "Copying $tempDir\$nodeFile\* to $InstallDir"
+Copy-Item "$tempDir\$nodeFile\*" "$InstallDir" -Recurse
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"

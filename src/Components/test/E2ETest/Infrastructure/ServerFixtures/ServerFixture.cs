@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
-                return Path.Combine(AppContext.BaseDirectory, projectName.Split(",")[0]);
+                return Path.Combine(AppContext.BaseDirectory, "BasicTestApp");
             }
-
+        
             var projects = _projects.Value;
             if (projects.TryGetValue(projectName, out var dir))
             {

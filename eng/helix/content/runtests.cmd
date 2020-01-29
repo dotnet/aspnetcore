@@ -17,7 +17,7 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
-set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
+set PATH=%DOTNET_ROOT%;%HELIX_CORRELATION_PAYLOAD%\node\bin;.\jdk\bin;!PATH!
 echo Set path to: %PATH%
 echo "Installing SDK"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
@@ -49,7 +49,15 @@ echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
 mkdir logs
 
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Version %sdkVersion% -InstallDir %DOTNET_ROOT%"
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Runtime dotnet -Version %runtimeVersion% -InstallDir %DOTNET_ROOT%"
+
 dir
+
+if (%targetFrameworkIdentifier%==.NETFramework) (
+    xunit.console.exe %target% -xml testResults.xml
+    exit /b %ERRORLEVEL%
+)
 
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt

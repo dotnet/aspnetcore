@@ -15,6 +15,9 @@
 
     <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <TestDependsOnNode>true</TestDependsOnNode>
+    <TestDependsOnJava>true</TestDependsOnJava>
+    <TestDependsOnYarn>true</TestDependsOnYarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,9 +59,9 @@
   </Target>
    
   <ItemGroup>
-    <HelixPreCommand Include="call npm i yarn;call node_modules\.bin\yarn install" />
     <HelixContent Include="package.json" />
     <HelixContent Include="yarn.lock" />
+    <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
   </ItemGroup>
