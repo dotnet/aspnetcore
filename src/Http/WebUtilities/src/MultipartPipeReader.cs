@@ -55,6 +55,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             await _currentSection.DrainAsync(cancellationToken);
 
+            if (_currentSection.FinalBoundaryFound)
+            {
+                return null;
+            }
+
             var headersAccumulator = new KeyValueAccumulator();
             _boundary.ExpectLeadingCrlf = true;
             long headersLength = 0;

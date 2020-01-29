@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             return PipeReader.Create(new MemoryStream(Encoding.UTF8.GetBytes(text)));
         }
 
-        private static string GetString(byte[] buffer, int count)
+        private static string GetString(ReadOnlySequence<byte> buffer)
         {
-            return Encoding.ASCII.GetString(buffer, 0, count);
+            return Encoding.ASCII.GetString(buffer);
         }
 
         [Fact]
@@ -269,44 +269,33 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Null(await reader.ReadNextSectionAsync());
         }
 
-        //[Fact]
-        //public void MultipartReader_BufferSizeMustBeLargerThanBoundary_Throws()
-        //{
-        //    var pipeReader = MakeReader(ThreePartBody);
-        //    Assert.Throws<ArgumentOutOfRangeException>(() =>
-        //    {
-        //        var reader = new MultipartPipeReader(Boundary, pipeReader, 5);
-        //    });
-        //}
-
         [Fact]
-        public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
+        public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_OneSectionReadsSuccessfullySecondSectionThrows()
         {
             var pipeReader = MakeReader(TwoPartBodyIncompleteBuffer);
             var reader = new MultipartPipeReader(Boundary, pipeReader);
             var buffer = new byte[128];
 
-            //first section can be read successfully
+            // The first section can be read successfully
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var read = section.Body.Read(buffer, 0, buffer.Length);
-            Assert.Equal("text default", GetString(buffer, read));
+            var readResult = await section.BodyReader.ReadAsync();
+            Assert.Equal("text default", GetString(readResult.Buffer));
+            section.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-            //second section can be read successfully (even though the bottom boundary is truncated)
+            // The second section header can be read successfully (even though the bottom boundary is truncated)
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
-            read = await section.Body.ReadAsync(buffer, 0, buffer.Length);
-            Assert.Equal("Content of a.txt.\r\n", GetString(buffer, read));
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                        // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
-                        section = await reader.ReadNextSectionAsync();
+                // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
+                await section.BodyReader.ReadAsync();
             });
         }
 
