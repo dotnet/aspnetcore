@@ -383,14 +383,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    var ex = await Assert.ThrowsAsync<IOException>(
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(
                         async () => await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                 }
             }
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1976", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1976", FlakyOn.All)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalTheory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1950", FlakyOn.Helix.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1950", FlakyOn.Helix.All)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ValidationFailureRejectsConnection(ClientCertificateMode mode)

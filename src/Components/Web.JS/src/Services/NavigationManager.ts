@@ -1,4 +1,4 @@
-import '@dotnet/jsinterop';
+import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/EventDelegator';
 

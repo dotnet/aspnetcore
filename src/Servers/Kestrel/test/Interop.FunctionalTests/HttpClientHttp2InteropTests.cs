@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -201,7 +201,7 @@ namespace Interop.FunctionalTests
         private class BulkContent : HttpContent
         {
             private static readonly byte[] Content;
-            private static readonly int Repititions = 200;
+            private static readonly int Repetitions = 200;
 
             static BulkContent()
             {
@@ -214,7 +214,7 @@ namespace Interop.FunctionalTests
 
             protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
-                for (var i = 0; i < Repititions; i++)
+                for (var i = 0; i < Repetitions; i++)
                 {
                     using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
@@ -244,7 +244,7 @@ namespace Interop.FunctionalTests
                 while (read > 0)
                 {
                     totalRead += read;
-                    Assert.True(totalRead <= Repititions * Content.Length, "Too Long");
+                    Assert.True(totalRead <= Repetitions * Content.Length, "Too Long");
 
                     for (var offset = 0; offset < read; offset++)
                     {
@@ -256,7 +256,7 @@ namespace Interop.FunctionalTests
                     read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token).DefaultTimeout();
                 }
 
-                Assert.True(totalRead == Repititions * Content.Length, "Too Short");
+                Assert.True(totalRead == Repetitions * Content.Length, "Too Short");
             }
         }
 
@@ -1064,7 +1064,7 @@ namespace Interop.FunctionalTests
             {
                 request.Headers.Add("header" + i, oneKbString + i);
             }
-            request.Headers.Host = "localhost"; // The default Host header has a random port value wich can cause the length to vary.
+            request.Headers.Host = "localhost"; // The default Host header has a random port value which can cause the length to vary.
             var requestTask = client.SendAsync(request);
             var response = await requestTask.DefaultTimeout();
             await serverResult.Task.DefaultTimeout();
@@ -1128,7 +1128,7 @@ namespace Interop.FunctionalTests
         [Theory]
         // Expect this to change when the client implements dynamic request header compression.
         // Will the client send the first headers before receiving our settings frame?
-        // We'll probobly need to ensure the settings changes are ack'd before enforcing them.
+        // We'll probably need to ensure the settings changes are ack'd before enforcing them.
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_HeaderTableSize_CanBeReduced_Server(string scheme)
         {
@@ -1186,7 +1186,7 @@ namespace Interop.FunctionalTests
         }
 
         // Settings_HeaderTableSize_CanBeReduced_Client - The client uses the default 4k HPACK dynamic table size and it cannot be changed.
-        // Nor does Kestrel yet support sending dynaimc table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
+        // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
@@ -1243,7 +1243,7 @@ namespace Interop.FunctionalTests
 
             // SKIP: https://github.com/dotnet/aspnetcore/issues/17842
             // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
-            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
+            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes successfully despite the logged errors.
             // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
 
             await host.StopAsync().DefaultTimeout();
@@ -1304,7 +1304,7 @@ namespace Interop.FunctionalTests
 
             // SKIP: https://github.com/dotnet/aspnetcore/issues/17842
             // The client initially issues all 10 requests before receiving the settings, has 5 refused (after receiving the settings),
-            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes sucesfully despite the logged errors.
+            // waits for the first 5 to finish, retries the refused 5, and in the end each request completes successfully despite the logged errors.
             // Assert.Empty(TestSink.Writes.Where(context => context.Message.Contains("HTTP/2 stream error")));
 
             await host.StopAsync().DefaultTimeout();
@@ -1356,7 +1356,7 @@ namespace Interop.FunctionalTests
                 {
                     ConfigureKestrel(webHostBuilder, scheme);
                     webHostBuilder.ConfigureServices(AddTestLogging)
-                    .Configure(app => app.Run(context => throw new NotImplementedException() ));
+                    .Configure(app => app.Run(context => throw new NotImplementedException()));
                 });
             using var host = await hostBuilder.StartAsync().DefaultTimeout();
 

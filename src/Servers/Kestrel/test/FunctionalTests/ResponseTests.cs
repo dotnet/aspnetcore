@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1972", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1972", FlakyOn.All)]
         [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
@@ -734,7 +734,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2181", FlakyOn.All)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseChunks()
         {
             var chunkSize = 64 * 128 * 1024;

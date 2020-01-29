@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 TakeSingleHeader(pHeader, length, handler);
                             }
-                            // Read the header sucessfully, skip the reader forward past the header line.
+                            // Read the header successfully, skip the reader forward past the header line.
                             reader.Advance(length);
                             span = span.Slice(length);
                         }

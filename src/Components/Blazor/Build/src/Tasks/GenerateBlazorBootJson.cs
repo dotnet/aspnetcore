@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -27,12 +28,23 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public override bool Execute()
         {
             var entryAssemblyName = AssemblyName.GetAssemblyName(AssemblyPath).Name;
-            var assemblies = References.Select(c => Path.GetFileName(c.ItemSpec)).ToArray();
+            var assemblies = References.Select(GetUriPath).OrderBy(c => c, StringComparer.Ordinal).ToArray();
 
             using var fileStream = File.Create(OutputPath);
             WriteBootJson(fileStream, entryAssemblyName, assemblies, LinkerEnabled);
 
             return true;
+
+            static string GetUriPath(ITaskItem item)
+            {
+                var outputPath = item.GetMetadata("RelativeOutputPath");
+                if (string.IsNullOrEmpty(outputPath))
+                {
+                    outputPath = Path.GetFileName(item.ItemSpec);
+                }
+
+                return outputPath.Replace('\\', '/');
+            }
         }
 
         internal static void WriteBootJson(Stream stream, string entryAssemblyName, string[] assemblies, bool linkerEnabled)

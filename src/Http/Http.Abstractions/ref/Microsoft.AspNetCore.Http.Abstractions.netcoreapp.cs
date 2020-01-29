@@ -250,6 +250,18 @@ namespace Microsoft.AspNetCore.Http
         public static bool IsPut(string method) { throw null; }
         public static bool IsTrace(string method) { throw null; }
     }
+    public static partial class HttpProtocol
+    {
+        public static readonly string Http10;
+        public static readonly string Http11;
+        public static readonly string Http2;
+        public static readonly string Http3;
+        public static string GetHttpProtocol(System.Version version) { throw null; }
+        public static bool IsHttp10(string protocol) { throw null; }
+        public static bool IsHttp11(string protocol) { throw null; }
+        public static bool IsHttp2(string protocol) { throw null; }
+        public static bool IsHttp3(string protocol) { throw null; }
+    }
     public abstract partial class HttpRequest
     {
         protected HttpRequest() { }

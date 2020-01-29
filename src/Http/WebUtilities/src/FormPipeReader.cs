@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // If we're not in the final block, then consume nothing
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
+                        // Don't buffer indefinitely
                         if ((uint)span.Length > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
+                        // Don't buffer indefinitely
                         if ((uint)(sequenceReader.Consumed - consumedBytes) > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();

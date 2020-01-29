@@ -1,7 +1,7 @@
 import { renderBatch } from '../../Rendering/Renderer';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Logger, LogLevel } from '../Logging/Logger';
-import { HubConnection } from '@aspnet/signalr';
+import { HubConnection } from '@microsoft/signalr';
 
 export class RenderQueue {
   private static instance: RenderQueue;

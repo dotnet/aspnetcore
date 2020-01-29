@@ -30,6 +30,9 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
+
+    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
@@ -63,7 +66,7 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
     <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
     <NoWarn>$(NoWarn);NU5131</NoWarn>
-    <!-- Needed until we resolve https://github.com/aspnet/AspNetCore-Internal/issues/3103 -->
+    <!-- Needed until we resolve https://github.com/dotnet/aspnetcore-internal/issues/3103 -->
     <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 

@@ -99,6 +99,7 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
