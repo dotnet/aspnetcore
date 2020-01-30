@@ -23,6 +23,12 @@
     <NodeVersion>10.15.3</NodeVersion>
   </PropertyGroup>
 
+  <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <ItemGroup>
+    <HelixProperties Condition="'$(BUILD_BUILDNUMBER)' != ''" Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" />
+    <HelixProperties Condition="'$(BUILD_DEFINITIONNAME)' != ''" Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <HelixProjectPlatform Include="Windows" />
   </ItemGroup>
