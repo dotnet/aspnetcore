@@ -15,18 +15,20 @@
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
-    <_HelixRunType Condition="'$(RunQuarantinedTests)' == 'true'">quarantined</_HelixRunType>
-    <_HelixRunType Condition="'$(RunQuarantinedTests)' != 'true'">unquarantined</_HelixRunType>    
-    <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)--$(_HelixRunType)</HelixTestName>
+    <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
   </PropertyGroup>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
   <ItemGroup>
     <HelixProperties Condition="'$(BUILD_BUILDNUMBER)' != ''" Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" />
     <HelixProperties Condition="'$(BUILD_DEFINITIONNAME)' != ''" Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" />
+    <HelixProperties Condition="'$(BUILD_DEFINITIONNAME)' != ''" Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
