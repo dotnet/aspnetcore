@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Reset();
 
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
-            RequestHeaders = RequestHeaders;
 
             HttpResponseControl = this;
         }
