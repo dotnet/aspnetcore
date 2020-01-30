@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (!RequestContext.DisconnectToken.IsCancellationRequested)
                 {
                     // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                    Logger.LogError(LoggerEventIds.LessBytesThenExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
+                    Logger.LogError(LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
                 }
                 _requestContext.Abort();
                 return;
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(LoggerEventIds.FileSendAsyncFailed, e, "SendFileAsync");
+                Logger.LogError(LoggerEventIds.FileSendAsyncError, e, "SendFileAsync");
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     asyncResult.Dispose();
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.FileSendAsyncFailed, exception, "SendFileAsync");
+                    Logger.LogError(LoggerEventIds.FileSendAsyncError, exception, "SendFileAsync");
                     Abort();
                     throw exception;
                 }

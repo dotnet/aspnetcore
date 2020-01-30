@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogDebug(LoggerEventIds.AbortException, ex, "Abort");
+                    Logger.LogDebug(LoggerEventIds.AbortError, ex, "Abort");
                 }
                 _requestAbortSource.Dispose();
             }

@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
-                    _logger.LogError(LoggerEventIds.RequestListenerProcessFailed, ex, "ProcessRequestAsync");
+                    _logger.LogError(LoggerEventIds.RequestListenerProcessError, ex, "ProcessRequestAsync");
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(LoggerEventIds.RequestProcessFailed, ex, "ProcessRequestAsync");
+                    _logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
                     _application.DisposeContext(context, ex);
                     if (requestContext.Response.HasStarted)
                     {
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception ex)
             {
-                _logger.LogError(LoggerEventIds.RequestFailed, ex, "ProcessRequestAsync");
+                _logger.LogError(LoggerEventIds.RequestError, ex, "ProcessRequestAsync");
                 requestContext.Abort();
             }
         }

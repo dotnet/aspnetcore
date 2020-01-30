@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                Logger.LogError(LoggerEventIds.HttpSysListenerCtorException, exception, ".Ctor");
+                Logger.LogError(LoggerEventIds.HttpSysListenerCtorError, exception, ".Ctor");
                 throw;
             }
         }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    Logger.LogError(LoggerEventIds.ListenerStartException, exception, "Start");
+                    Logger.LogError(LoggerEventIds.ListenerStartError, exception, "Start");
                     throw;
                 }
             }
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception exception)
                 {
-                    Logger.LogError(LoggerEventIds.ErrorInDispose, exception, "Dispose");
+                    Logger.LogError(LoggerEventIds.ListenerDisposeError, exception, "Dispose");
                     throw;
                 }
                 finally

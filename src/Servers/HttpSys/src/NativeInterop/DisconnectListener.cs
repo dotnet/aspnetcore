@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private unsafe CancellationToken CreateDisconnectToken(ulong connectionId)
         {
-            _logger.LogDebug(LoggerEventIds.RegisterDisconnectListener, "CreateDisconnectToken; Registering connection for disconnect for connection ID: " + connectionId);
+            _logger.LogDebug(LoggerEventIds.RegisterDisconnectListener, "CreateDisconnectToken; Registering connection for disconnect for connection ID: {0}" , connectionId);
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
             var cts = new CancellationTokenSource();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             nativeOverlapped = new SafeNativeOverlapped(boundHandle, boundHandle.AllocateNativeOverlapped(
                 (errorCode, numBytes, overlappedPtr) =>
                 {
-                    _logger.LogDebug(LoggerEventIds.DisconnectTriggered, "CreateDisconnectToken; http.sys disconnect callback fired for connection ID: " + connectionId);
+                    _logger.LogDebug(LoggerEventIds.DisconnectTriggered, "CreateDisconnectToken; http.sys disconnect callback fired for connection ID: {0}" , connectionId);
 
                     // Free the overlapped
                     nativeOverlapped.Dispose();
