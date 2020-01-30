@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling msquic to close the stream.
+            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 

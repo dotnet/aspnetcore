@@ -6,20 +6,20 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
-    public class MsQuicTransportFactory : IMultiplexedConnectionListenerFactory
+    public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
-        private MsQuicTrace _log;
+        private QuicTrace _log;
         private IHostApplicationLifetime _applicationLifetime;
-        private MsQuicTransportOptions _options;
+        private QuicTransportOptions _options;
 
-        public MsQuicTransportFactory(IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<MsQuicTransportOptions> options)
+        public QuicTransportFactory(IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
         {
             if (options == null)
             {
@@ -32,16 +32,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic");
-            _log = new MsQuicTrace(logger);
+            _log = new QuicTrace(logger);
             _applicationLifetime = applicationLifetime;
             _options = options.Value;
         }
 
-        public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+        public  ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-            var transport = new MsQuicConnectionListener(_options, _applicationLifetime, _log, endpoint);
-            await transport.BindAsync();
-            return transport;
+            var transport = new QuicConnectionListener(_options, _applicationLifetime, _log, endpoint);
+            return new ValueTask<IConnectionListener>(transport);
         }
     }
 }

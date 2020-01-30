@@ -26,7 +26,7 @@ namespace Http3SampleApp
                  {
                      webHost.UseKestrel()
                      // Things like APLN and cert should be able to be passed from corefx into bedrock
-                     .UseMsQuic(options =>
+                     .UseQuic(options =>
                      {
                          options.Certificate = cert;
                          options.RegistrationName = "Quic";

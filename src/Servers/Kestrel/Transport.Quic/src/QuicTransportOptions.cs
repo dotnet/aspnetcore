@@ -5,9 +5,9 @@ using System;
 using System.Buffers;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
-    public class MsQuicTransportOptions
+    public class QuicTransportOptions
     {
         /// <summary>
         /// The maximum number of concurrent bi-directional streams per connection.
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         public string Alpn { get; set; }
 
         /// <summary>
-        /// The registration name to use in MsQuic.
+        /// The registration name to use in Quic.
         /// </summary>
         public string RegistrationName { get; set; }
 
@@ -48,6 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         /// The maximum write size.
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
+        /// <summary>
+        /// The error code to abort with
+        /// </summary>
+        public long AbortErrorCode { get; set; } = 0;
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 

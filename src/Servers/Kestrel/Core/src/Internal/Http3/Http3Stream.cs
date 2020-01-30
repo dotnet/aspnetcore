@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling msquic to close the stream.
+            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                     catch (Http3StreamErrorException)
                     {
-                        // TODO 
+                        // TODO
                     }
                     finally
                     {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (Exception)
             {
-                // TODO 
+                // TODO
             }
             finally
             {
