@@ -11,6 +11,6 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "selenium-standalone": "^6.15.4"
+    "selenium-standalone": "^6.17.0"
   }
 }
