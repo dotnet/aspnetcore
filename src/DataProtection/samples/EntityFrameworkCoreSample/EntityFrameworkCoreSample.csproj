@@ -3,9 +3,6 @@
   <PropertyGroup>
     <OutputType>exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Temporary workaround - the build thinks 'alpha1.111' is newer than 'alpha.1.222'.
-         Remove once we can ingest EF again: https://github.com/dotnet/aspnetcore/issues/17949 -->
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
