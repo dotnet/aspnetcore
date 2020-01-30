@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Watcher
             cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
                 cancelledTaskSource);
 
+            Task<IFileSet> preStartedFileSetCreationTaskFromPreviousIteration = null;
             var iteration = 1;
 
             while (true)
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = iteration.ToString(CultureInfo.InvariantCulture);
                 iteration++;
 
-                var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
+                var fileSet = await (preStartedFileSetCreationTaskFromPreviousIteration ?? fileSetFactory.CreateAsync(cancellationToken));
 
                 if (fileSet == null)
                 {
@@ -93,6 +94,7 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == processTask)
                     {
+                        preStartedFileSetCreationTaskFromPreviousIteration = fileSetFactory.CreateAsync(cancellationToken);
                         // Now wait for a file to change before restarting process
                         await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
                     }
