@@ -13,8 +13,14 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <PackageReference Include="MsQuicPackage.win-x64" Version="1.0.9">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Unix'">
+    <PackageReference Include="MsQuicPackage.linux-x64" Version="1.0.9">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
   </ItemGroup>
