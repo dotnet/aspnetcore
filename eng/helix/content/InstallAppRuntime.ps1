@@ -7,13 +7,18 @@
      The path to the app runtime package to install.
  .PARAMETER InstallDir
      The directory to install the shared framework to.     
+ .PARAMETER Framework
+     The framework directory to copy the shared framework from.
  #> 
 param(
     [Parameter(Mandatory = $true)]
     $AppRuntimePath,
     
     [Parameter(Mandatory = $true)]
-    $InstallDir)
+    $InstallDir,
+    
+    [Parameter(Mandatory = $true)]
+    $Framework)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
@@ -37,6 +42,6 @@ else {
 }
 
 Write-Host "Copying managed files to $InstallDir"
-Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\lib\netcoreapp5.0\*" $InstallDir
+Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\native\*" $InstallDir
