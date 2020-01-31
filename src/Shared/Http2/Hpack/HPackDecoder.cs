@@ -470,9 +470,9 @@ namespace System.Net.Http.HPack
         {
             try
             {
-                return index <= StaticTable.Count
-                    ? StaticTable.Get(index - 1)
-                    : _dynamicTable[index - StaticTable.Count - 1];
+                return index <= H2StaticTable.Count
+                    ? H2StaticTable.Get(index - 1)
+                    : _dynamicTable[index - H2StaticTable.Count - 1];
             }
             catch (IndexOutOfRangeException)
             {

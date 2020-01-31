@@ -6,6 +6,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Http;
+using System.Net.Http.QPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly MinDataRate _minResponseDataRate;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
-        private readonly Http3Frame _outgoingFrame;
+        private readonly Http3RawFrame _outgoingFrame;
         private readonly TimingPipeFlusher _flusher;
 
         // TODO update max frame size
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _minResponseDataRate = minResponseDataRate;
             _memoryPool = memoryPool;
             _log = log;
-            _outgoingFrame = new Http3Frame();
+            _outgoingFrame = new Http3RawFrame();
             _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
             _headerEncodingBuffer = new byte[_maxFrameSize];
         }
@@ -172,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _unflushedBytes += headerLength + _outgoingFrame.Length;
         }
 
-        internal static int WriteHeader(Http3Frame frame, PipeWriter output)
+        internal static int WriteHeader(Http3RawFrame frame, PipeWriter output)
         {
             // max size of the header is 16, most likely it will be smaller.
             var buffer = output.GetSpan(16);

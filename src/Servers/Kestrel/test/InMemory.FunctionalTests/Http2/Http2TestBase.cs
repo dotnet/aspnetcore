@@ -1285,6 +1285,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return bufferSize ?? 0;
         }
 
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal class Http2FrameWithPayload : Http2Frame
         {
             public Http2FrameWithPayload() : base()

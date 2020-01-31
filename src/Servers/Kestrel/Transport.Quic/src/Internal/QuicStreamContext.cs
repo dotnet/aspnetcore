@@ -95,8 +95,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             try
             {
                 // Spawn send and receive logic
-                var receiveTask = DoReceive();
-                var sendTask = DoSend();
+                var receiveTask = Task.CompletedTask;
+                var sendTask = Task.CompletedTask;
+
+                if (_stream.CanRead)
+                {
+                    receiveTask = DoReceive();
+                }
+
+                if (_stream.CanWrite)
+                {
+                    sendTask = DoSend();
+                }
 
                 // Now wait for both to complete
                 await receiveTask;

@@ -6,12 +6,12 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.QPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _isClosed;
         private int _gracefulCloseInitiator;
         private readonly HttpConnectionContext _context;
-        private readonly Http3Frame _incomingFrame = new Http3Frame();
+        private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
@@ -59,9 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ServiceContext.Log);
             RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
             Output = _http3Output;
+            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
         }
 
-        public QPackDecoder QPackDecoder { get; set; } = new QPackDecoder(10000, 10000);
+        public QPackDecoder QPackDecoder { get; }
 
         public PipeReader Input => _context.Transport.Input;
 
@@ -80,6 +81,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void OnHeadersComplete(bool endStream)
         {
             OnHeadersComplete();
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            var knownHeader = H3StaticTable.Instance[index];
+            OnHeader(knownHeader.Name, knownHeader.Value);
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            var knownHeader = H3StaticTable.Instance[index];
+            OnHeader(knownHeader.Name, value);
         }
 
         public void HandleReadDataRateTimeout()

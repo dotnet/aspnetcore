@@ -1,19 +1,19 @@
-The code in this directory is shared between dotnet/runtime and aspnet/AspNetCore. This contains HTTP/2 protocol infrastructure such as an HPACK implementation. Any changes to this dir need to be checked into both repositories.
+The code in this directory is shared between dotnet/runtime and aspnet/AspNetCore. This contains HTTP/3 protocol infrastructure such as a QPACK implementation. Any changes to this dir need to be checked into both repositories.
 
 dotnet/runtime code paths:
-- runtime\src\libraries\Common\src\System\Net\Http\Http2
-- runtime\src\libraries\Common\tests\Tests\System\Net\Http2
-
+- runtime\src\libraries\Common\src\System\Net\Http\Http3
+- runtime\src\libraries\Common\tests\Tests\System\Net\Http3
 aspnet/AspNetCore code paths:
-- AspNetCore\src\Shared\Http2
-- AspNetCore\src\Shared\test\Shared.Tests\Http2
+- AspNetCore\src\Shared\Http3
+- AspNetCore\src\Shared\test\Shared.Tests\Http3
 
 ## Copying code
-- To copy code from dotnet/runtime to aspnet/AspNetCore, set ASPNETCORE_REPO to the AspNetCore repo root and then run CopyToAspNetCore.cmd.
-- To copy code from aspnet/AspNetCore to dotnet/runtime, set RUNTIME_REPO to the runtime repo root and then run CopyToRuntime.cmd.
+To copy code from dotnet/runtime to aspnet/AspNetCore, set ASPNETCORE_REPO to the AspNetCore repo root and then run CopyToAspNetCore.cmd.
+To copy code from aspnet/AspNetCore to dotnet/runtime, set RUNTIME_REPO to the runtime repo root and then run CopyToRuntime.cmd.
 
 ## Building dotnet/runtime code:
-- https://github.com/dotnet/runtime/tree/master/docs/workflow
+- https://github.com/dotnet/runtime/blob/master/docs/libraries/building/windows-instructions.md
+- https://github.com/dotnet/runtime/blob/master/docs/libraries/project-docs/developer-guide.md
 - Run libraries.cmd from the root once: `PS D:\github\runtime> .\libraries.cmd`
 - Build the individual projects:
 - `PS D:\github\dotnet\src\libraries\Common\tests> dotnet msbuild /t:rebuild`

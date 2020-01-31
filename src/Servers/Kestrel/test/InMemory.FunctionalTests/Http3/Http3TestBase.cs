@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.QPack;
 using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
-            private QPackDecoder _qpackDecoder = new QPackDecoder(10000, 10000);
+            private QPackDecoder _qpackDecoder = new QPackDecoder(10000);
             private long _bytesReceived;
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
             {
                 var outputWriter = _pair.Application.Output;
-                var frame = new Http3Frame();
+                var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
@@ -261,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             internal async Task SendDataAsync(Memory<byte> data)
             {
                 var outputWriter = _pair.Application.Output;
-                var frame = new Http3Frame();
+                var frame = new Http3RawFrame();
                 frame.PrepareData();
                 frame.Length = data.Length;
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
@@ -329,9 +330,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public void OnHeadersComplete(bool endHeaders)
             {
             }
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                var knownHeader = H3StaticTable.Instance[index];
+                _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = ((Span<byte>)knownHeader.Value).GetAsciiOrUTF8StringNonNullCharacters();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+            }
         }
 
-        internal class Http3FrameWithPayload : Http3Frame
+        internal class Http3FrameWithPayload : Http3RawFrame
         {
             public Http3FrameWithPayload() : base()
             {

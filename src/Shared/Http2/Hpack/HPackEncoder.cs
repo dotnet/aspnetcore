@@ -73,7 +73,7 @@ namespace System.Net.Http.HPack
                 case 400:
                 case 404:
                 case 500:
-                    buffer[0] = (byte)(0x80 | StaticTable.StatusIndex[statusCode]);
+                    buffer[0] = (byte)(0x80 | H2StaticTable.StatusIndex[statusCode]);
                     return 1;
                 default:
                     // Send as Literal Header Field Without Indexing - Indexed Name

@@ -319,7 +319,8 @@ namespace System.Net.Http.HPack
                 // Note that if lastDecodeBits is 3 or more, then we will only get 5 bits (or less)
                 // from src[i]. Thus we need to read 5 bytes here to ensure that we always have
                 // at least 30 bits available for decoding.
-                // TODO ISSUE 31751: Rework this as part of Huffman perf improvements
+                // TODO https://github.com/dotnet/runtime/issues/1506:
+                // Rework this as part of Huffman perf improvements
                 uint next = (uint)(src[i] << 24 + lastDecodedBits);
                 next |= (i + 1 < src.Length ? (uint)(src[i + 1] << 16 + lastDecodedBits) : 0);
                 next |= (i + 2 < src.Length ? (uint)(src[i + 2] << 8 + lastDecodedBits) : 0);

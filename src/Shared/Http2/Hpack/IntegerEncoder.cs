@@ -9,6 +9,11 @@ namespace System.Net.Http.HPack
     internal static class IntegerEncoder
     {
         /// <summary>
+        /// The maximum bytes required to encode a 32-bit int, regardless of prefix length.
+        /// </summary>
+        public const int MaxInt32EncodedLength = 6;
+
+        /// <summary>
         /// Encodes an integer into one or more bytes.
         /// </summary>
         /// <param name="value">The value to encode. Must not be negative.</param>

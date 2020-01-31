@@ -1342,6 +1342,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
+        }
+
         private class StreamCloseAwaitable : ICriticalNotifyCompletion
         {
             private static readonly Action _callbackCompleted = () => { };
