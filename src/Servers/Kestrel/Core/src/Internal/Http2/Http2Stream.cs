@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
 
-        public virtual void Initialize(Http2StreamContext context)
+        public void Initialize(Http2StreamContext context)
         {
             base.Initialize(context);
 
@@ -66,6 +66,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
             Output = _http2Output;
+        }
+
+        public void InitializeWithExistingContext(int streamId)
+        {
+            _context.StreamId = streamId;
+            Initialize(_context);
         }
 
         public int StreamId => _context.StreamId;

@@ -8,11 +8,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -23,7 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -69,8 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Http2StreamStack _streamPool;
 
-        internal const int InitialStreamPoolSize = 20;
-        internal const int MaxStreamPoolSize = 50;
+        internal const int InitialStreamPoolSize = 10;
+        internal const int MaxStreamPoolSize = 40;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -112,8 +109,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
-            // Max number of streams we will accept is 2 times the max streams per connection.
-            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection * 2));
+            // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
+            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
             _inputTask = ReadInputAsync();
         }
@@ -576,13 +573,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_streamPool.TryPop(out var stream))
             {
-                stream.Initialize(CreateHttp2StreamContext());
+                stream.InitializeWithExistingContext(_incomingFrame.StreamId);
                 return stream;
             }
 
             return new Http2Stream<TContext>(
-                    application,
-                    CreateHttp2StreamContext());
+                application,
+                CreateHttp2StreamContext());
         }
 
         private Http2StreamContext CreateHttp2StreamContext()
@@ -1436,70 +1433,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Unknown = 0x40000000
         }
 
-        private struct Http2StreamStack
-        {
-            private Http2StreamAsValueType[] _array;
-            private int _size;
-
-            public Http2StreamStack(int size)
-            {
-                _array = new Http2StreamAsValueType[size];
-                _size = 0;
-            }
-
-            public int Count => _size;
-
-            public bool TryPop(out Http2Stream result)
-            {
-                int size = _size - 1;
-                Http2StreamAsValueType[] array = _array;
-
-                if ((uint)size >= (uint)array.Length)
-                {
-                    result = default;
-                    return false;
-                }
-
-                _size = size;
-                result = array[size];
-                array[size] = default;
-                return true;
-            }
-
-            // Pushes an item to the top of the stack.
-            public void Push(Http2Stream item)
-            {
-                int size = _size;
-                Http2StreamAsValueType[] array = _array;
-
-                if ((uint)size < (uint)array.Length)
-                {
-                    array[size] = item;
-                    _size = size + 1;
-                }
-                else
-                {
-                    PushWithResize(item);
-                }
-            }
-
-            // Non-inline from Stack.Push to improve its code quality as uncommon path
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private void PushWithResize(Http2Stream item)
-            {
-                Array.Resize(ref _array, 2 * _array.Length);
-                _array[_size] = item;
-                _size++;
-            }
-
-            private readonly struct Http2StreamAsValueType
-            {
-                private readonly Http2Stream _value;
-                private Http2StreamAsValueType(Http2Stream value) => _value = value;
-                public static implicit operator Http2StreamAsValueType(Http2Stream s) => new Http2StreamAsValueType(s);
-                public static implicit operator Http2Stream(Http2StreamAsValueType s) => s._value;
-            }
-        }
 
         private static class GracefulCloseInitiator
         {
