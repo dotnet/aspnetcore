@@ -24,8 +24,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -58,8 +57,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url});
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "nodisposition.yaml";
 
@@ -92,8 +90,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -126,8 +123,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "contoso.json";
 
@@ -159,8 +155,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -192,8 +187,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var firstExpectedJsonName = "filename.json";
 
@@ -219,8 +213,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             app = GetApplication();
             run = app.Execute(new[] { "add", "url", NoExtensionUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var secondExpectedJsonName = "filename1.json";
 
@@ -254,8 +247,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "NSwagCSharp" });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -287,8 +279,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "NSwagTypeScript" });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -320,8 +311,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", Path.Combine("outputdir", "file.yaml") });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = Path.Combine("outputdir", "file.yaml");
 
@@ -352,10 +342,9 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
 
             var app = GetApplication();
             var outputFile = Path.Combine("outputdir", "file.yaml");
-            var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", outputFile });
+            var appExitCode = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", outputFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(appExitCode);
 
             var expectedJsonName = Path.Combine("outputdir", "file.yaml");
 
@@ -380,8 +369,8 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
 
             // Second reference, same output
             app = GetApplication();
-            run = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
-            Assert.Equal(1, run);
+            appExitCode = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
+            Assert.Equal(1, appExitCode);
             Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), $"Should have aborted to avoid conflicts");
 
             // csproj contents
@@ -412,14 +401,12 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             app = GetApplication();
             run = app.Execute(new[] { "add", "url", "--output-file", "openapi.yaml", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(project.Project.Path);
@@ -470,14 +457,12 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var url = ActualUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             app = GetApplication(realHttp: true);
             run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(project.Project.Path);

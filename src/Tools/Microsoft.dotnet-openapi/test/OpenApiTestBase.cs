@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.Tools.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Tests
@@ -109,6 +110,12 @@ namespace Microsoft.DotNet.OpenApi.Tests
             };
         }
 
+        protected void AssertNoErrors(int appExitCode)
+        {
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.Equal(0, appExitCode);
+        }
+
         public void Dispose()
         {
             _outputHelper.WriteLine(_output.ToString());
@@ -150,7 +157,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             return true;
         }
 
-        private ContentDispositionHeaderValue _contentDisposition;
+        private readonly ContentDispositionHeaderValue _contentDisposition;
 
         public TestHttpResponseMessageWrapper(
             MemoryStream stream,
