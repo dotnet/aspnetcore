@@ -293,7 +293,7 @@
     <ItemGroup>
       <ReferencePath>
         <ReferenceAssembly
-            Condition=" '%(ReferencePath.ReferenceAssembly)' == '' AND Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') ">$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll</ReferenceAssembly>
+            Condition=" '%(ReferencePath.ReferenceAssembly)' == '' AND Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') AND '%(FileName)' != 'Microsoft.AspNetCore.Testing' ">$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll</ReferenceAssembly>
       </ReferencePath>
     </ItemGroup>
   </Target>
