@@ -13,8 +13,10 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormFeatureTests
     {
-        [Fact]
-        public async Task ReadFormAsync_0ContentLength_ReturnsEmptyForm()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_0ContentLength_ReturnsEmptyForm(bool bufferBody)
         {
             var context = new DefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Features
             context.Request.ContentType = MultipartContentType;
             context.Request.ContentLength = 0;
 
-            var formFeature = new FormFeature(context.Request, new FormOptions());
+            var formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferBody });
             context.Features.Set<IFormFeature>(formFeature);
 
             var formCollection = await context.Request.ReadFormAsync();

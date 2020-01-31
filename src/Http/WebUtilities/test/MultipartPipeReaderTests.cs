@@ -253,7 +253,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
-
             result = await section.ReadAsStringAsync();
             Assert.Equal("Content of a.txt.\r\n", result) ;
 
@@ -262,7 +261,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file2\"; filename=\"a.html\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/html", section.Headers["Content-Type"][0]);
-
             result = await section.ReadAsStringAsync();
             Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", result);
 
@@ -370,29 +368,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
-        }
-
-        [Fact]
-        public async Task MultipartPipeReader_ReadThreePartBody_Success()
-        {
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(ThreePartBody));
-            var pipeReader = PipeReader.Create(stream);
-            var reader = new MultipartPipeReader(Boundary, pipeReader);
-
-            var section = await reader.ReadNextSectionAsync();
-            Assert.NotNull(section);
-            var sectionText = await section.ReadAsStringAsync();
-            Assert.Equal("text default", sectionText);
-
-            section = await reader.ReadNextSectionAsync();
-            Assert.NotNull(section);
-            sectionText = await section.ReadAsStringAsync();
-            Assert.Equal("Content of a.txt.\r\n", sectionText);
-
-            section = await reader.ReadNextSectionAsync();
-            Assert.NotNull(section);
-            sectionText = await section.ReadAsStringAsync();
-            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", sectionText);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 "text default\r\n" +
 "--9051914041544843365972754266--\r\n";
         private const string OnePartBodyWithTrailingWhitespace =
-"--9051914041544843365972754266             \r\n" +
+"--9051914041544843365972754266 \t   \t   \t     \t \r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
 "\r\n" +
 "text default\r\n" +
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MultipartReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
+        public async Task MultipartPipeReader_TwoPartBodyIncompleteBuffer_OneSectionReadsSuccessfullySecondSectionThrows()
         {
             var stream = MakeStream(TwoPartBodyIncompleteBuffer);
             var reader = new MultipartReader(Boundary, stream);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             await Assert.ThrowsAsync<IOException>(async () =>
             {
                 // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
-                section = await reader.ReadNextSectionAsync();
+                read = await section.Body.ReadAsync(buffer, 0, buffer.Length);
             });
         }
 

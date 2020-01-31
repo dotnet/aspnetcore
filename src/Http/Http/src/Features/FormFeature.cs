@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     // Enable buffering for the file
                     var stream = section.EnableRewind(
                         _request.HttpContext.Response.RegisterForDispose,
-                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
+                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit); // TODO: MultipartBodyLengthLimit is the limit for the whole request body, not just this section
 
                     // Find the end
                     await stream.Body.DrainAsync(cancellationToken);
