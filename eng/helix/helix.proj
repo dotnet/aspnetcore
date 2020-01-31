@@ -39,6 +39,17 @@
     <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
   </PropertyGroup>
 
+  <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
+  <ItemGroup>
+    <HelixProperties Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" />
+    <HelixProperties Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" />
+    <HelixProperties Include="commitSha" Value="$(BUILD_SOURCEVERSION)" />
+    <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
+  </ItemGroup>
+
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
