@@ -342,6 +342,10 @@ if ($tmpBinaryLog) {
     $MSBuildArguments += "/bl:$LogDir/Build.binlog"
 }
 
+# Prevent the root Directory.Build.props and Directory.Build.targets from being imported by files in the TempDir
+Copy-Item (Join-Path $EngRoot 'Empty.Directory.Build.props') (Join-Path $TempDir 'Directory.Build.props') -ea Ignore
+Copy-Item (Join-Path $EngRoot 'Empty.Directory.Build.targets') (Join-Path $TempDir 'Directory.Build.targets') -ea Ignore
+
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
 
