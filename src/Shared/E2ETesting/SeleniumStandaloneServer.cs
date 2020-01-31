@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             if (seleniumConfigPath == null)
             {
-                throw new InvalidOperationException("Selenium config path not configured. Does this project import the E2ETesting.targets");
+                throw new InvalidOperationException("Selenium config path not configured. Does this project import the E2ETesting.targets?");
             }
 
             var psi = new ProcessStartInfo
