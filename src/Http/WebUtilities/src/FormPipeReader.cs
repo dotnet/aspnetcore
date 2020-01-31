@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (buffer.IsSingleSegment)
             {
-                ParseFormValuesFast(buffer.First.Span,
+                ParseFormValuesFast(buffer.FirstSpan,
                     ref accumulator,
                     isFinalBlock,
                     out var consumed);
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (ros.IsSingleSegment)
             {
-                return GetDecodedString(ros.First.Span);
+                return GetDecodedString(ros.FirstSpan);
             }
 
             if (ros.Length < StackAllocThreshold)

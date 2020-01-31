@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             examined = buffer.End;
 
             // Prepare the first span
-            var span = buffer.First.Span;
+            var span = buffer.FirstSpan;
             var lineIndex = span.IndexOf(ByteLF);
             if (lineIndex >= 0)
             {
