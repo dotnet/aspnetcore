@@ -655,9 +655,6 @@ Write-PipelineSetVariable -Name 'Artifacts.Log' -Value $LogDir
 Write-PipelineSetVariable -Name 'TEMP' -Value $TempDir
 Write-PipelineSetVariable -Name 'TMP' -Value $TempDir
 
-$env:TEMP=$TempDir
-$env:TMP=$TempDir
-
 # Import custom tools configuration, if present in the repo.
 # Note: Import in global scope so that the script set top-level variables without qualification.
 if (!$disableConfigureToolsetImport) {
