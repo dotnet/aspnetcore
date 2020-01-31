@@ -1,5 +1,5 @@
-<Project DefaultTargets="Build">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
 
@@ -15,6 +15,9 @@
 
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+    <PublishDir>$(OutputPath)</PublishDir>
+    <TestDependsOnJava>true</TestDependsOnJava>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +27,9 @@
         signalr-$(PackageVersion)-sources.jar;" />
     <PomFile Include="signalr-$(PackageVersion).pom" />
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
+
+    <HelixProjectPlatform Include="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
   </ItemGroup>
 
   <Target Name="Restore" />
@@ -58,8 +64,28 @@
     <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+  <Target Name="Publish">
+    <ItemGroup>
+      <Files Include="**/*.java" />
+      <Files Include="**/gradle-wrapper.jar" />
+      <Files Include="**/gradle-wrapper.properties" />
+      <Files Include="gradlew" />
+      <Files Include="build.gradle" />
+      <Files Include="gradlew.bat" />
+      <Files Include="settings.gradle" />
+      <Files Include="@(Content)" />
+    </ItemGroup>
+    <Copy DestinationFiles="@(Files->'$(PublishDir)\%(RecursiveDir)%(FileName)%(Extension)')" SourceFiles="@(Files)" />
+  </Target>
+
   <PropertyGroup>
     <!-- Pass the Java Package Version down to Gradle -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
+    <HelixCommand>call gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
   </PropertyGroup>
+
+  <ItemGroup>
+    <HelixPostCommand Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\testResults.xml &amp;&amp; dir" />
+    </ItemGroup>
+
 </Project>

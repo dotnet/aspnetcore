@@ -1,10 +1,27 @@
 <Project>
 
+  <ItemGroup Condition="'$(TestDependsOnJava)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixContent Include="$(RepoRoot)eng\scripts\InstallJdk.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
+  </ItemGroup>
+
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
   </ItemGroup>
-  
+
 <!--
 
 This target is meant to be used when invoking helix tests on one project at a time.
@@ -85,6 +102,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <PostCommands>@(HelixPostCommand)</PostCommands>
         <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
+        <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

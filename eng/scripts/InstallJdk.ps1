@@ -10,16 +10,23 @@
 #>
 param(
     [string]$JdkVersion,
-    [switch]$Force
+    [switch]$Force,
+    [Parameter(Mandatory = $false)]
+    $InstallDir
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
 Set-StrictMode -Version 1
 
-$repoRoot = Resolve-Path "$PSScriptRoot\..\.."
-$installDir = "$repoRoot\.tools\jdk\win-x64\"
-$tempDir = "$repoRoot\obj"
+if ($InstallDir) {
+    $installDir = $InstallDir;
+}
+else {
+    $repoRoot = Resolve-Path "$PSScriptRoot\..\.."
+    $installDir = "$repoRoot\.tools\jdk\win-x64\"
+}
+$tempDir = "$installDir\obj"
 if (-not $JdkVersion) {
     $globalJson = Get-Content "$repoRoot\global.json" | ConvertFrom-Json
     $JdkVersion = $globalJson.tools.jdk
@@ -46,6 +53,7 @@ Write-Host "Expanded JDK to $tempDir"
 Write-Host "Installing JDK to $installDir"
 Move-Item "$tempDir/jdk/jdk-${JdkVersion}/*" $installDir
 Write-Host "Done installing JDK to $installDir"
+Remove-Item -Force -Recurse $tempDir -ErrorAction Ignore | out-null
 
 if ($env:TF_BUILD) {
     Write-Host "##vso[task.prependpath]$installDir\bin"
