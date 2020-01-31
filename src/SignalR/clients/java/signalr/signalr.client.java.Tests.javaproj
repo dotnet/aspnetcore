@@ -27,9 +27,6 @@
         signalr-$(PackageVersion)-sources.jar;" />
     <PomFile Include="signalr-$(PackageVersion).pom" />
     <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
-
-    <HelixProjectPlatform Include="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
   </ItemGroup>
 
   <Target Name="Restore" />
