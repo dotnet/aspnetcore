@@ -96,6 +96,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             ResetHttp2Features();
         }
 

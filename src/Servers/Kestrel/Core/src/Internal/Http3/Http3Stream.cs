@@ -116,7 +116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             try
             {
-
                 while (_isClosed == 0)
                 {
                     var result = await Input.ReadAsync();

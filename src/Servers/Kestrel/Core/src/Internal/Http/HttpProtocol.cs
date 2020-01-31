@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private readonly object _abortLock = new object();
-        private volatile bool _connectionAborted;
+        protected volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
@@ -381,8 +381,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isLeasedMemoryInvalid = true;
             _hasAdvanced = false;
             _canWriteResponseBody = true;
-            _keepAlive = true;
-            _connectionAborted = false;
 
             if (_scheme == null)
             {
