@@ -1640,11 +1640,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await hubConnection.StartAsync().OrTimeout();
 
-                    var features = await hubConnection.InvokeAsync<object[]>(nameof(TestHub.GetIHttpConnectionFeatureProperties)).OrTimeout();
-                    var localPort = ((JsonElement)features[0]).GetInt64();
-                    var remotePort = ((JsonElement)features[1]).GetInt64();
-                    var localIP = ((JsonElement)features[2]).GetString();
-                    var remoteIP = ((JsonElement)features[3]).GetString();
+                    var features = await hubConnection.InvokeAsync<JsonElement[]>(nameof(TestHub.GetIHttpConnectionFeatureProperties)).OrTimeout();
+                    var localPort = features[0].GetInt64();
+                    var remotePort = features[1].GetInt64();
+                    var localIP = features[2].GetString();
+                    var remoteIP = features[3].GetString();
 
                     Assert.True(localPort > 0L);
                     Assert.True(remotePort > 0L);
