@@ -376,6 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
             RequestTrailers.Clear();
+            ResponseTrailers?.Reset();
             RequestTrailersAvailable = false;
 
             _isLeasedMemoryInvalid = true;
