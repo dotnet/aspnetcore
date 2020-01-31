@@ -244,6 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     // Specified
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
                         ?? httpsOptions.ServerCertificate;
+                    httpsOptions.ClientCertificateMode = LoadClientCertificateMode(ConfigurationReader) ?? httpsOptions.ClientCertificateMode;
 
                     // Fallback
                     Options.ApplyDefaultCert(httpsOptions);
@@ -273,6 +274,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             {
                 action();
             }
+        }
+
+        private ClientCertificateMode? LoadClientCertificateMode(ConfigurationReader configReader)
+        {
+            if (Enum.TryParse<ClientCertificateMode>(configReader.ClientCertificateMode, ignoreCase: true, out var clientCertificateMode))
+            {
+                return clientCertificateMode;
+            }
+            return null;
         }
 
         private void LoadDefaultCert(ConfigurationReader configReader)
