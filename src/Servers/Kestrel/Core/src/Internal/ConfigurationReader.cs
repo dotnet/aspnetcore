@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,16 +15,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
+        private const string ClientCertificateModeKey = "ClientCertificateMode";
 
         private IConfiguration _configuration;
         private IDictionary<string, CertificateConfig> _certificates;
         private IList<EndpointConfig> _endpoints;
         private EndpointDefaults _endpointDefaults;
-
+        private string _clientCertificateMode;
         public ConfigurationReader(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
+
+
+        public string ClientCertificateMode
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_clientCertificateMode))
+                {
+                    ReadClientCertificateMode();
+                }
+                return _clientCertificateMode;
+            }
+        }
+
 
         public IDictionary<string, CertificateConfig> Certificates
         {
@@ -65,6 +80,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
+        private void ReadClientCertificateMode()
+        {
+            _clientCertificateMode = _configuration[ClientCertificateModeKey];
+        }
         private void ReadCertificates()
         {
             _certificates = new Dictionary<string, CertificateConfig>(0);
@@ -121,8 +140,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _endpoints.Add(endpoint);
             }
         }
-
-        private static HttpProtocols? ParseProtocols(string protocols)
+       
+    private static HttpProtocols? ParseProtocols(string protocols)
         {
             if (Enum.TryParse<HttpProtocols>(protocols, ignoreCase: true, out var result))
             {

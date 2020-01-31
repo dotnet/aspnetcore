@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 {
     public class ConfigurationReaderTests
     {
+        
+        [Fact]
+        public void ReadClientCertificateMode_ReturnsValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(
+                new[]
+            {
+                new KeyValuePair<string, string>("ClientCertificateMode", "AllowCertificate")
+                }
+                ).Build();
+            var reader = new ConfigurationReader(config);
+            var clientCertificateMode = reader.ClientCertificateMode;
+            Assert.NotNull(clientCertificateMode);
+        }
+        [Fact]
+        public void ReadClientCertificateModeWhenNoClientCertificateMode_ReturnsNull()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+            var reader = new ConfigurationReader(config);
+            var clientCertificateMode = reader.ClientCertificateMode;
+            Assert.Null(clientCertificateMode);
+        }
         [Fact]
         public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
         {
