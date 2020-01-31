@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -92,6 +93,24 @@ namespace Wasm.Performance.Driver
                     Value = result.Duration,
                 });
             }
+
+            // Information about the build that this was produced from
+            output.Metadata.Add(new BenchmarkMetadata
+            {
+                Source = "BlazorWasm",
+                Name = "blazorwasm/commit",
+                ShortDescription = "Commit Hash",
+            });
+
+            output.Measurements.Add(new BenchmarkMeasurement
+            {
+                Timestamp = DateTime.UtcNow,
+                Name = "blazorwasm/commit",
+                Value = typeof(Program).Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(f => f.Key == "CommitHash")
+                    ?.Value,
+            });
 
             // Statistics about publish sizes
             output.Metadata.Add(new BenchmarkMetadata
@@ -238,7 +257,7 @@ namespace Wasm.Performance.Driver
             if (!directory.Exists)
             {
                 return 0;
-    }
+            }
 
             var tasks = new List<Task<long>>();
             foreach (var item in directory.EnumerateFileSystemInfos())

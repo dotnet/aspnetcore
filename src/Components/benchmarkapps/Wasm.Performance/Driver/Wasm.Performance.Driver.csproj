@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Intentionally pinned this to .NET Core 3.1 since that's the supported version in the docker image -->
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
     <OutputType>exe</OutputType>
