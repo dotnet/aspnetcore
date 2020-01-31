@@ -43,6 +43,8 @@
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
   <ItemGroup>
     <HelixProperties Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" />
+    <HelixProperties Include="buildId" Value="$(BUILD_BUILDID)" />
+    <HelixProperties Include="azdoProject" Value="$(SYSTEM_TEAMPROJECT)" />
     <HelixProperties Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" />
     <HelixProperties Include="commitSha" Value="$(BUILD_SOURCEVERSION)" />
     <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" />
