@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, publishOutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
-        [Fact]
+        [Fact(Skip = "flaky test: https://github.com/dotnet/aspnetcore/issues/18707")]
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_WithBuildReferencesDisabled_CopiesStaticWebAssetsToDestinationFolder()
         {
