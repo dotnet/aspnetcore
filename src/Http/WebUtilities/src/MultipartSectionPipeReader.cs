@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool _isReaderComplete;
 
         // The count of data fully consumed by the caller.
-        public long ConsumedLength { get; private set; } = 0;
+        private long _consumedLength;
 
         public long? LengthLimit { get; set; }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (!_bodyBuffer.IsEmpty)
             {
                 var unconsumed = _bodyBuffer.Slice(consumed);
-                ConsumedLength += _bodyBuffer.Length - unconsumed.Length;
+                _consumedLength += _bodyBuffer.Length - unconsumed.Length;
                 _bodyBuffer = unconsumed;
             }
         }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!_bodyBuffer.IsEmpty)
                 {
-                    if (LengthLimit.HasValue && LengthLimit.Value - ConsumedLength < _bodyBuffer.Length)
+                    if (LengthLimit.HasValue && LengthLimit.Value - _consumedLength < _bodyBuffer.Length)
                     {
                         _pipeReader.AdvanceTo(_unconsumedData.End);
                         throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!_bodyBuffer.IsEmpty)
                 {
-                    if (LengthLimit.HasValue && LengthLimit.Value - ConsumedLength < _bodyBuffer.Length)
+                    if (LengthLimit.HasValue && LengthLimit.Value - _consumedLength < _bodyBuffer.Length)
                     {
                         _pipeReader.AdvanceTo(_unconsumedData.End);
                         throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var consumed = _unconsumedData.Slice(0, reachedNewLine ? sequenceReader.Position : remainderReader.Position).Length;
             _unconsumedData = _unconsumedData.Slice(consumed);
-            ConsumedLength += consumed;
+            _consumedLength += consumed;
 
             return true;
         }

@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             return Form;
         }
+
         private async Task<(FormCollection, FormFileCollection)> ParseMultipartStreamAsync(MediaTypeHeaderValue contentType, CancellationToken cancellationToken)
         {
             FormCollection formFields = null;
@@ -313,7 +314,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     // Enable buffering for the file
                     var stream = section.EnableRewind(
                         _request.HttpContext.Response.RegisterForDispose,
-                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit); // TODO: MultipartBodyLengthLimit is the limit for the whole request body, not just this section
+                        _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
 
                     // Find the end
                     await stream.Body.DrainAsync(cancellationToken);

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
 
         /// <summary>
-        /// The optional limit for the total response body length.
+        /// The optional size limit for each section body.
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 

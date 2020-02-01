@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly PipeReader _pipeReader;
         private readonly MultipartBoundary _boundary;
         private MultipartSectionPipeReader _currentSectionReader;
-        private long _totalBytesRead;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
@@ -46,15 +45,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         public int HeadersLengthLimit { get; set; } = MultipartReader.DefaultHeadersLengthLimit;
 
         /// <summary>
-        /// The optional limit for the total response body length.
+        /// The optional size limit for each section body.
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentSectionReader.DrainAsync(cancellationToken);
-
-            _totalBytesRead += _currentSectionReader.ConsumedLength;
 
             if (_currentSectionReader.FinalBoundaryFound)
             {
@@ -81,16 +78,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                     }
-                    if (BodyLengthLimit.HasValue && headersLength > BodyLengthLimit - _totalBytesRead)
-                    {
-                        throw new InvalidDataException($"Multipart body length limit {BodyLengthLimit} exceeded.");
-                    }
 
                     if (finishedParsing)
                     {
-                        _totalBytesRead += headersLength;
                         _currentSectionReader = new MultipartSectionPipeReader(_pipeReader, _boundary);
-                        _currentSectionReader.LengthLimit = !BodyLengthLimit.HasValue ? null : BodyLengthLimit - _totalBytesRead;
+                        _currentSectionReader.LengthLimit = BodyLengthLimit;
                         return new MultipartSection()
                         {
                             Headers = headersAccumulator.GetResults(),
