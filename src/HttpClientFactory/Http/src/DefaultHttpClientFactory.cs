@@ -353,7 +353,7 @@ namespace Microsoft.Extensions.Http
             private static readonly Action<ILogger, string, Exception> _cleanupItemFailed = LoggerMessage.Define<string>(
                 LogLevel.Error,
                 EventIds.CleanupItemFailed,
-                "HttpMessageHandler.Dispose() threw and unhandled exception for client: '{ClientName}'");
+                "HttpMessageHandler.Dispose() threw an unhandled exception for client: '{ClientName}'");
 
             private static readonly Action<ILogger, double, string, Exception> _handlerExpired = LoggerMessage.Define<double, string>(
                 LogLevel.Debug,
