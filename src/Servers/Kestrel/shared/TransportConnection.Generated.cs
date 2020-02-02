@@ -12,12 +12,6 @@ namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportConnection : IFeatureCollection
     {
-        private static readonly Type IConnectionIdFeatureType = typeof(IConnectionIdFeature);
-        private static readonly Type IConnectionTransportFeatureType = typeof(IConnectionTransportFeature);
-        private static readonly Type IConnectionItemsFeatureType = typeof(IConnectionItemsFeature);
-        private static readonly Type IMemoryPoolFeatureType = typeof(IMemoryPoolFeature);
-        private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
-
         private object _currentIConnectionIdFeature;
         private object _currentIConnectionTransportFeature;
         private object _currentIConnectionItemsFeature;
@@ -90,23 +84,23 @@ namespace Microsoft.AspNetCore.Connections
             get
             {
                 object feature = null;
-                if (key == IConnectionIdFeatureType)
+                if (key == typeof(IConnectionIdFeature))
                 {
                     feature = _currentIConnectionIdFeature;
                 }
-                else if (key == IConnectionTransportFeatureType)
+                else if (key == typeof(IConnectionTransportFeature))
                 {
                     feature = _currentIConnectionTransportFeature;
                 }
-                else if (key == IConnectionItemsFeatureType)
+                else if (key == typeof(IConnectionItemsFeature))
                 {
                     feature = _currentIConnectionItemsFeature;
                 }
-                else if (key == IMemoryPoolFeatureType)
+                else if (key == typeof(IMemoryPoolFeature))
                 {
                     feature = _currentIMemoryPoolFeature;
                 }
-                else if (key == IConnectionLifetimeFeatureType)
+                else if (key == typeof(IConnectionLifetimeFeature))
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
@@ -122,23 +116,23 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _featureRevision++;
 
-                if (key == IConnectionIdFeatureType)
+                if (key == typeof(IConnectionIdFeature))
                 {
                     _currentIConnectionIdFeature = value;
                 }
-                else if (key == IConnectionTransportFeatureType)
+                else if (key == typeof(IConnectionTransportFeature))
                 {
                     _currentIConnectionTransportFeature = value;
                 }
-                else if (key == IConnectionItemsFeatureType)
+                else if (key == typeof(IConnectionItemsFeature))
                 {
                     _currentIConnectionItemsFeature = value;
                 }
-                else if (key == IMemoryPoolFeatureType)
+                else if (key == typeof(IMemoryPoolFeature))
                 {
                     _currentIMemoryPoolFeature = value;
                 }
-                else if (key == IConnectionLifetimeFeatureType)
+                else if (key == typeof(IConnectionLifetimeFeature))
                 {
                     _currentIConnectionLifetimeFeature = value;
                 }
@@ -213,23 +207,23 @@ namespace Microsoft.AspNetCore.Connections
         {
             if (_currentIConnectionIdFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IConnectionIdFeatureType, _currentIConnectionIdFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionIdFeature), _currentIConnectionIdFeature);
             }
             if (_currentIConnectionTransportFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IConnectionTransportFeatureType, _currentIConnectionTransportFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionTransportFeature), _currentIConnectionTransportFeature);
             }
             if (_currentIConnectionItemsFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IConnectionItemsFeatureType, _currentIConnectionItemsFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionItemsFeature), _currentIConnectionItemsFeature);
             }
             if (_currentIMemoryPoolFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IMemoryPoolFeatureType, _currentIMemoryPoolFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IMemoryPoolFeature), _currentIMemoryPoolFeature);
             }
             if (_currentIConnectionLifetimeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IConnectionLifetimeFeatureType, _currentIConnectionLifetimeFeature);
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionLifetimeFeature), _currentIConnectionLifetimeFeature);
             }
 
             if (MaybeExtra != null)
