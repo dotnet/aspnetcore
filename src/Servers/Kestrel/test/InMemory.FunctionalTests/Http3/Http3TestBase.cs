@@ -219,7 +219,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             internal ConnectionContext ConnectionContext { get; }
 
-            public bool IsUnidirectional => false;
+            public bool CanRead => true;
+            public bool CanWrite => true;
 
             public long StreamId => 0;
 
@@ -347,7 +348,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             internal ConnectionContext ConnectionContext { get; }
 
-            public bool IsUnidirectional => true;
+            public bool CanRead => true;
+            public bool CanWrite => false;
 
             // TODO
             public long StreamId => 0;

@@ -25,7 +25,7 @@ namespace QuicSampleApp
 
         public static void Main(string[] args)
         {
-            var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
+            //var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
             var hostBuilder = new WebHostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {

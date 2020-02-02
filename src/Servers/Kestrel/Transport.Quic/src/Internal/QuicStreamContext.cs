@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class QuicStreamContext : TransportConnection, IQuicStreamFeature
     {
-        private Task _processingTask;
+        private readonly Task _processingTask;
         private QuicStream _stream;
         private QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private IQuicTrace _log;
         private string _connectionId;
         private const int MinAllocBufferSize = 4096;
-        private bool _streamClosed;
         private volatile Exception _shutdownReason;
         private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _shutdownLock = new object();
@@ -53,7 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             // TODO populate the ITlsConnectionFeature (requires client certs).
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            IsUnidirectional = !stream.CanWrite;
+            CanRead = stream.CanRead;
+            CanWrite = stream.CanWrite;
 
             Transport = pair.Transport;
             Application = pair.Application;
@@ -65,7 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
 
-        public bool IsUnidirectional { get; }
+        public bool CanRead { get; }
+        public bool CanWrite { get; }
 
         public long StreamId
         {
@@ -182,15 +183,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private void FireStreamClosed()
         {
-            // Guard against scheduling this multiple times
-
-            if (_streamClosed)
-            {
-                return;
-            }
-
-            _streamClosed = true;
-
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
                 state.CancelConnectionClosedToken();
@@ -198,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 state._waitForConnectionClosedTcs.TrySetResult(null);
             },
             this,
-            preferLocal: false);
+            preferLocal: true);
         }
 
         private void CancelConnectionClosedToken()
@@ -279,8 +271,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _stream.AbortRead(_context.Options.AbortErrorCode);
-            _stream.AbortWrite(_context.Options.AbortErrorCode);
+            // Don't call _stream.Shutdown and _stream.Abort at the same time.
+            lock (_shutdownLock)
+            {
+                _stream.AbortRead(_context.Options.AbortErrorCode);
+                _stream.AbortWrite(_context.Options.AbortErrorCode);
+            }
 
             // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
             Output.CancelPendingRead();
@@ -288,23 +284,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private async ValueTask ShutdownWrite(Exception shutdownReason)
         {
-            // TODO synchronize this with Abort
-            _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
-
-            _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
-
             try
             {
-                // Try to gracefully close the stream
-                _stream.Shutdown();
+                lock (_shutdownLock)
+                {
+                    _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
+
+                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
+                    _stream.Shutdown();
+                }
+
                 await _stream.ShutdownWriteCompleted();
             }
-            catch
+            catch (Exception ex)
             {
+                _log.LogWarning(ex, "Stream failed to gracefully shutdown.");
                 // Ignore any errors from Shutdown() since we're tearing down the stream anyway.
             }
-
-            _stream.Dispose();
         }
 
         public override async ValueTask DisposeAsync()
@@ -312,26 +308,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             Transport.Input.Complete();
             Transport.Output.Complete();
 
-            if (_processingTask != null)
-            {
-                await _processingTask;
-            }
+            await _processingTask;
+
+            _stream.Dispose();
 
             _streamClosedTokenSource.Dispose();
-        }
-    }
-
-    internal class FakeTlsConnectionFeature : ITlsConnectionFeature
-    {
-        public FakeTlsConnectionFeature()
-        {
-        }
-
-        public X509Certificate2 ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -8,15 +8,17 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class QuicConnectionContext : TransportConnection, IQuicStreamListenerFeature, IQuicCreateStreamFeature
     {
-        private bool _disposed;
         private QuicConnection _connection;
         private readonly QuicTransportContext _context;
         private readonly IQuicTrace _log;
+
+        private ValueTask _closeTask;
 
         public QuicConnectionContext(QuicConnection connection, QuicTransportContext context)
         {
@@ -44,22 +46,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override async ValueTask DisposeAsync()
         {
-            if (_disposed)
+            try
             {
-                return;
+                if (_closeTask != default)
+                {
+                    await _connection.CloseAsync(errorCode: 0);
+                }
+                else 
+                {
+                    await _closeTask;
+                }
             }
-
-            _disposed = true;
-
-            await _connection.CloseAsync(errorCode: 0);
+            catch (Exception ex)
+            {
+                _log.LogWarning(ex, "Failed to gracefully shutdown connection.");
+            }
 
             _connection.Dispose();
         }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            // TODO add Abort to QuicConnection.
-            _connection.Dispose();
+            _closeTask = _connection.CloseAsync(errorCode: _context.Options.AbortErrorCode);
         }
 
         public async ValueTask<ConnectionContext> AcceptAsync()
