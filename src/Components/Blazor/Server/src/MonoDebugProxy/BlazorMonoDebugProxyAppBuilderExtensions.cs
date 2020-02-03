@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -114,7 +113,8 @@ namespace Microsoft.AspNetCore.Builder
                         var proxiedTabInfos = availableTabs.Select(tab =>
                         {
                             var underlyingV8Endpoint = tab.WebSocketDebuggerUrl;
-                            var proxiedV8Endpoint = $"ws://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
+                            var proxiedScheme = request.IsHttps ? "wss" : "ws";
+                            var proxiedV8Endpoint = $"{proxiedScheme}://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
                             return new
                             {
                                 description = "",
