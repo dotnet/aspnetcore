@@ -8,7 +8,7 @@ using System.Text;
 using System.Collections.Generic;
 
 namespace WebAssembly.Net.Debugging {
-	public class DevToolsClient: IDisposable {
+	internal class DevToolsClient: IDisposable {
 		ClientWebSocket socket;
 		List<Task> pending_ops = new List<Task> ();
 		TaskCompletionSource<bool> side_exit = new TaskCompletionSource<bool> ();

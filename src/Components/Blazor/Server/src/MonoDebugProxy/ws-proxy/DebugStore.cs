@@ -493,7 +493,7 @@ namespace WebAssembly.Net.Debugging {
 	}
 
 	internal class DebugStore {
-        MonoProxy proxy;
+        // MonoProxy proxy;  - commenting out because never gets assigned
 		List<AssemblyInfo> assemblies = new List<AssemblyInfo> ();
 		HttpClient client = new HttpClient ();
 
@@ -534,7 +534,7 @@ namespace WebAssembly.Net.Debugging {
 							text = $"Failed to read {url} ({e.Message})"
 						}
 					});
-					proxy.SendEvent (sessionId, "Log.entryAdded", o, token);
+					// proxy.SendEvent (sessionId, "Log.entryAdded", o, token); - commenting out because `proxy` would always be null
 
 				}
 			}

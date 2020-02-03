@@ -23,7 +23,7 @@ namespace WebAssembly.Net.Debugging {
 		public const string GET_ARRAY_VALUES = "MONO.mono_wasm_get_array_values({0})";
 	}
 
-	public enum MonoErrorCodes {
+	internal enum MonoErrorCodes {
 		BpNotFound = 100000,
 	}
 
@@ -71,7 +71,7 @@ namespace WebAssembly.Net.Debugging {
 		Over
 	}
 
-	public class MonoProxy : DevToolsProxy {
+	internal class MonoProxy : DevToolsProxy {
 		DebugStore store;
 		List<Breakpoint> breakpoints = new List<Breakpoint> ();
 		List<Frame> current_callstack;

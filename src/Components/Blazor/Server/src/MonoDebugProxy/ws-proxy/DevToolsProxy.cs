@@ -10,15 +10,15 @@ using System.Text;
 using System.Collections.Generic;
 
 namespace WebAssembly.Net.Debugging {
-	public class SessionId {
+	internal class SessionId {
 		public string sessionId;
 	}
 
-	public class MessageId : SessionId {
+	internal class MessageId : SessionId {
 		public int id;
 	}
 
-	public struct Result {
+	internal struct Result {
 		public JObject Value { get; private set; }
 		public JObject Error { get; private set; }
 
@@ -105,7 +105,7 @@ namespace WebAssembly.Net.Debugging {
 		}
 	}
 
-	public class DevToolsProxy {
+	internal class DevToolsProxy {
 		TaskCompletionSource<bool> side_exception = new TaskCompletionSource<bool> ();
 		TaskCompletionSource<bool> client_initiated_close = new TaskCompletionSource<bool> ();
 		List<(MessageId, TaskCompletionSource<Result>)> pending_cmds = new List<(MessageId, TaskCompletionSource<Result>)> ();
