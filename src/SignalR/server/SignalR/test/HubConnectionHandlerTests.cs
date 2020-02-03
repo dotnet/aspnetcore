@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -1037,6 +1038,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task HubMethodCanBeRenamedWithAttribute()
         {
             using (StartVerifiableLog())
