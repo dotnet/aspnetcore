@@ -7,6 +7,7 @@ using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
 
@@ -80,7 +81,7 @@ namespace WebAssembly.Net.Debugging {
 		int ctx_id;
 		JObject aux_ctx_data;
 
-		public MonoProxy () { }
+		public MonoProxy (ILoggerFactory loggerFactory) : base(loggerFactory) { }
 
 		protected override async Task<bool> AcceptEvent (SessionId sessionId, string method, JObject args, CancellationToken token)
 		{

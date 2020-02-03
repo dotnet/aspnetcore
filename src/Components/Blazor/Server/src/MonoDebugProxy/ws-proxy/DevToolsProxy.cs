@@ -8,6 +8,7 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
 	internal class SessionId {
@@ -114,6 +115,12 @@ namespace WebAssembly.Net.Debugging {
 		int next_cmd_id;
 		List<Task> pending_ops = new List<Task> ();
 		List<DevToolsQueue> queues = new List<DevToolsQueue> ();
+        readonly ILogger logger;
+
+        public DevToolsProxy(ILoggerFactory loggerFactory)
+        {
+            logger = loggerFactory.CreateLogger<DevToolsProxy>();
+        }
 
 		protected virtual Task<bool> AcceptEvent (SessionId sessionId, string method, JObject args, CancellationToken token)
 		{
@@ -353,17 +360,23 @@ namespace WebAssembly.Net.Debugging {
 		{
 			switch (priority) {
 			case "protocol":
-				Console.WriteLine (msg);
+                logger.LogTrace (msg);
 				break;
 			case "verbose":
-				Console.WriteLine (msg);
+				logger.LogDebug (msg);
 				break;
 			case "info":
+                logger.LogInformation(msg);
+                break;
 			case "warning":
-			case "error":
+                logger.LogWarning(msg);
+                break;
+            case "error":
+                logger.LogError (msg);
+                break;
 			default:
-				Console.WriteLine (msg);
-				break;
+                logger.LogError(msg);
+                break;
 			}
 		}
 	}
