@@ -5,9 +5,9 @@ steps:
 - task: PowerShell@2
   displayName: Add Build to Channel
   inputs:
-    filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
+    filePath: $(Build.SourcesDirectory)/eng/common/post-build/add-build-to-channel.ps1
     arguments: -BuildId $(BARBuildId) 
       -ChannelId ${{ parameters.ChannelId }}
       -MaestroApiAccessToken $(MaestroApiAccessToken)
       -MaestroApiEndPoint $(MaestroApiEndPoint)
-      -MaestroApiVersion $(MaestroApiVersion)
+      -MaestroApiVersion $(MaestroApiVersion) 

@@ -9,7 +9,7 @@ Param(
     [string] $Branch=$env:BUILD_SOURCEBRANCH,
     [string] $CommitSha=$env:BUILD_SOURCEVERSION,
     [string] $BuildNumber=$env:BUILD_BUILDNUMBER,
-    [string] $RunCategories="coreclr corefx",
+    [string] $RunCategories="Libraries Runtime",
     [string] $Csproj="src\benchmarks\micro\MicroBenchmarks.csproj",
     [string] $Kind="micro",
     [switch] $Internal,
