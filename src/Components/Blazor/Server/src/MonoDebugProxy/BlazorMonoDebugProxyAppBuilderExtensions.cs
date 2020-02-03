@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,7 +11,9 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using WsProxy;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using WebAssembly.Net.Debugging;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -50,7 +51,8 @@ namespace Microsoft.AspNetCore.Builder
 
                 if (requestPath.Equals("/_framework/debug/ws-proxy", StringComparison.OrdinalIgnoreCase))
                 {
-                    return DebugWebSocketProxyRequest(context);
+                    var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                    return DebugWebSocketProxyRequest(loggerFactory, context);
                 }
 
                 if (requestPath.Equals("/_framework/debug", StringComparison.OrdinalIgnoreCase))
@@ -111,7 +113,8 @@ namespace Microsoft.AspNetCore.Builder
                         var proxiedTabInfos = availableTabs.Select(tab =>
                         {
                             var underlyingV8Endpoint = tab.WebSocketDebuggerUrl;
-                            var proxiedV8Endpoint = $"ws://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
+                            var proxiedScheme = request.IsHttps ? "wss" : "ws";
+                            var proxiedV8Endpoint = $"{proxiedScheme}://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
                             return new
                             {
                                 description = "",
@@ -142,7 +145,7 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static async Task DebugWebSocketProxyRequest(HttpContext context)
+        private static async Task DebugWebSocketProxyRequest(ILoggerFactory loggerFactory, HttpContext context)
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
@@ -152,7 +155,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var browserUri = new Uri(context.Request.Query["browser"]);
             var ideSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await new MonoProxy().Run(browserUri, ideSocket);
+            await new MonoProxy(loggerFactory).Run(browserUri, ideSocket);
         }
 
         private static async Task DebugHome(HttpContext context)
