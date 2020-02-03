@@ -26,97 +26,136 @@ stages:
 - stage: Validate
   dependsOn: ${{ parameters.validateDependsOn }}
   displayName: Validate
+  variables:
+    - template: common-variables.yml
   jobs:
-  - ${{ if eq(parameters.enableNugetValidation, 'true') }}:
-    - job:
-      displayName: NuGet Validation
-      pool:
-        vmImage: 'windows-2019'
-      steps:
-        - task: DownloadBuildArtifacts@0
-          displayName: Download Package Artifacts
-          inputs:
-            buildType: current
-            artifactName: PackageArtifacts
+  - template: setup-maestro-vars.yml
 
-        - task: PowerShell@2
-          displayName: Validate
-          inputs:
-            filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+  - job:
+    displayName: NuGet Validation
+    dependsOn: setupMaestroVars
+    condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
+    pool:
+      vmImage: 'windows-2019'
+    variables:
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Package Artifacts
+        inputs:
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          artifactName: PackageArtifacts
 
-  - ${{ if eq(parameters.enableSigningValidation, 'true') }}:
-    - job:
-      displayName: Signing Validation
-      variables:
-        - template: common-variables.yml
-      pool:
-        vmImage: 'windows-2019'
-      steps:
-        - task: DownloadBuildArtifacts@0
-          displayName: Download Package Artifacts
-          inputs:
-            buildType: current
-            artifactName: PackageArtifacts
+      - task: PowerShell@2
+        displayName: Validate
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
+          arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
+            -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
 
-        # This is necessary whenever we want to publish/restore to an AzDO private feed
-        # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
-        # otherwise it'll complain about accessing a private feed.
-        - task: NuGetAuthenticate@0
-          displayName: 'Authenticate to AzDO Feeds'
+  - job:
+    displayName: Signing Validation
+    dependsOn: setupMaestroVars
+    condition: eq( ${{ parameters.enableSigningValidation }}, 'true')
+    variables:
+      - template: common-variables.yml
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Package Artifacts
+        inputs:
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          artifactName: PackageArtifacts
 
-        - task: PowerShell@2
-          displayName: Enable cross-org publishing
-          inputs:
-            filePath: eng\common\enable-cross-org-publishing.ps1
-            arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise it'll complain about accessing a private feed.
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
 
-        - task: PowerShell@2
-          displayName: Validate
-          inputs:
-            filePath: eng\common\sdk-task.ps1
-            arguments: -task SigningValidation -restore -msbuildEngine dotnet
-              /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
-              /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-              ${{ parameters.signingValidationAdditionalParameters }}
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
 
-        - template: ../steps/publish-logs.yml
-          parameters:
-            StageLabel: 'Validation'
-            JobLabel: 'Signing'
+      - task: PowerShell@2
+        displayName: Validate
+        inputs:
+          filePath: eng\common\sdk-task.ps1
+          arguments: -task SigningValidation -restore -msbuildEngine dotnet
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+            /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
+            ${{ parameters.signingValidationAdditionalParameters }}
 
-  - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
-    - job:
-      displayName: SourceLink Validation
-      variables:
-        - template: common-variables.yml
-      pool:
-        vmImage: 'windows-2019'
-      steps:
-        - task: DownloadBuildArtifacts@0
-          displayName: Download Blob Artifacts
-          inputs:
-            buildType: current
-            artifactName: BlobArtifacts
+      - template: ../steps/publish-logs.yml
+        parameters:
+          StageLabel: 'Validation'
+          JobLabel: 'Signing'
 
-        - task: PowerShell@2
-          displayName: Validate
-          inputs:
-            filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
-            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
-              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
-              -GHRepoName $(Build.Repository.Name) 
-              -GHCommit $(Build.SourceVersion)
-              -SourcelinkCliVersion $(SourceLinkCLIVersion)
-          continueOnError: true
+  - job:
+    displayName: SourceLink Validation
+    dependsOn: setupMaestroVars
+    condition: eq( ${{ parameters.enableSourceLinkValidation }}, 'true')
+    variables:
+      - template: common-variables.yml
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Blob Artifacts
+        inputs:
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          artifactName: BlobArtifacts
 
-  - ${{ if eq(parameters.SDLValidationParameters.enable, 'true') }}:
-    - template: /eng/common/templates/job/execute-sdl.yml
-      parameters:
-        additionalParameters: ${{ parameters.SDLValidationParameters.params }}
-        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
-        artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
+      - task: PowerShell@2
+        displayName: Validate
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
+          arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
+            -ExtractPath $(Agent.BuildDirectory)/Extract/ 
+            -GHRepoName $(Build.Repository.Name) 
+            -GHCommit $(Build.SourceVersion)
+            -SourcelinkCliVersion $(SourceLinkCLIVersion)
+        continueOnError: true
+
+  - template: /eng/common/templates/job/execute-sdl.yml
+    parameters:
+      enable: ${{ parameters.SDLValidationParameters.enable }}
+      dependsOn: setupMaestroVars
+      additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+      continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
+      artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
 
 - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
   parameters:

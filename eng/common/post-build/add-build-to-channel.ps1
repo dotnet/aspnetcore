@@ -17,7 +17,7 @@ try {
     ExitWithExitCode 1
   }
 
-  # Get info about which channels the build has already been promoted to
+  # Get info about which channel(s) the build has already been promoted to
   $buildInfo = Get-MaestroBuild -BuildId $BuildId
   
   if (!$buildInfo) {

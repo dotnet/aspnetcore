@@ -175,6 +175,16 @@ function Build {
   InitializeCustomToolset
 
   if [[ ! -z "$projects" ]]; then
+    # Split project paths by semi-colon, find full-paths using readlink, 
+    # finally and splice back as a semi-colon separated list
+    IFS=';' read -r -a projs <<< "$projects"
+    len=${#projs[@]}
+    for ((i=0; i<$len; i++)); 
+    do 
+        projs[$i]=$(readlink -f "${projs[$i]}");
+    done 
+    projects=$(IFS=\; ; echo "${projs[*]}")
+    echo Updated projects: $projects
     properties="$properties /p:Projects=$projects"
   fi
 
