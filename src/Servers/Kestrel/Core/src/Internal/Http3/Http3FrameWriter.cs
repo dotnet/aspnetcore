@@ -166,6 +166,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
+        internal Task WriteGoAway(long id)
+        {
+            _outgoingFrame.PrepareGoAway();
+            var buffer = _outputWriter.GetSpan(9);
+            buffer[0] = (byte)_outgoingFrame.Type;
+
+            var length = VariableLengthIntegerHelper.WriteInteger(buffer.Slice(1), id);
+
+            _outgoingFrame.Length = length;
+
+            WriteHeaderUnsynchronized();
+
+            return _outputWriter.FlushAsync().AsTask();
+        }
+
         private void WriteHeaderUnsynchronized()
         {
             var headerLength = WriteHeader(_outgoingFrame, _outputWriter);
@@ -191,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return totalLength;
         }
 
-        public ValueTask<FlushResult> WriteResponseTrailers(int streamId, HttpResponseTrailers headers)
+        public ValueTask<FlushResult> WriteResponseTrailers(HttpResponseTrailers headers)
         {
             lock (_writeLock)
             {
@@ -205,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
                     var done = _qpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
-                    FinishWritingHeaders(streamId, payloadLength, done);
+                    FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException)
                 {
@@ -241,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers)
+        internal void WriteResponseHeaders(int statusCode, IHeaderDictionary headers)
         {
             lock (_writeLock)
             {
@@ -255,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
                     var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
-                    FinishWritingHeaders(streamId, payloadLength, done);
+                    FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException hex)
                 {
@@ -266,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
+        private void FinishWritingHeaders(int payloadLength, bool done)
         {
             var buffer = _headerEncodingBuffer.AsSpan();
             _outgoingFrame.Length = payloadLength;

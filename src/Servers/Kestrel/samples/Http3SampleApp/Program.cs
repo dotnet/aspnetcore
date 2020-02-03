@@ -16,6 +16,7 @@ namespace Http3SampleApp
         public static void Main(string[] args)
         {
             var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
+
             var hostBuilder = new HostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {
@@ -30,17 +31,27 @@ namespace Http3SampleApp
                      {
                          options.Certificate = cert;
                          options.RegistrationName = "Quic";
-                         options.Alpn = "h3-24";
+                         options.Alpn = "h3-25";
                          options.IdleTimeout = TimeSpan.FromHours(1);
                      })
                      .ConfigureKestrel((context, options) =>
                      {
-                         var basePort = 5555;
-
+                         var basePort = 443;
+                         options.EnableAltSvc = true;
                          options.Listen(IPAddress.Any, basePort, listenOptions =>
                          {
-                             listenOptions.UseHttps();
-                             listenOptions.Protocols = HttpProtocols.Http3;
+                             listenOptions.UseHttps(httpsOptions =>
+                             {
+                                 httpsOptions.ServerCertificate = cert;
+                             });
+                         });
+                         options.Listen(IPAddress.Any, basePort, listenOptions =>
+                         {
+                            listenOptions.UseHttps(httpsOptions =>
+                             {
+                                 httpsOptions.ServerCertificate = cert;
+                             });
+                            listenOptions.Protocols = HttpProtocols.Http3;
                          });
                      })
                      .UseStartup<Startup>();

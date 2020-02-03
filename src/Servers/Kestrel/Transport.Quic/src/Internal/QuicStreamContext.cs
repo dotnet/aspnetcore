@@ -95,6 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             try
             {
                 // Spawn send and receive logic
+                // Streams may or may not have reading/writing, so only start tasks accordingly
                 var receiveTask = Task.CompletedTask;
                 var sendTask = Task.CompletedTask;
 

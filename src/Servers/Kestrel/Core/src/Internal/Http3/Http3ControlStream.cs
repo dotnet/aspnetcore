@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading;
@@ -118,9 +119,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal async ValueTask SendStreamIdAsync(int id)
+        internal async ValueTask SendStreamIdAsync(long id)
         {
             await _frameWriter.WriteStreamIdAsync(id);
+        }
+
+        internal async ValueTask SendGoAway(long id)
+        {
+            await _frameWriter.WriteGoAway(id);
         }
 
         internal async ValueTask SendSettingsFrameAsync()
@@ -173,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (streamType == ControlStream)
             {
-                if (_http3Connection.SettingsStream != null)
+                if (_http3Connection.ControlStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
@@ -256,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case Http3FrameType.Settings:
                     return ProcessSettingsFrameAsync(payload);
                 case Http3FrameType.GoAway:
-                    return ProcessGoAwayFrameAsync();
+                    return ProcessGoAwayFrameAsync(payload);
                 case Http3FrameType.CancelPush:
                     return ProcessCancelPushFrameAsync();
                 case Http3FrameType.MaxPushId:
@@ -319,14 +325,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private ValueTask ProcessGoAwayFrameAsync()
+        private ValueTask ProcessGoAwayFrameAsync(ReadOnlySequence<byte> payload)
         {
             if (!_haveReceivedSettingsFrame)
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            // Get highest stream id and write that to the response.
+
+            var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examinded);
+            if (id == -1)
+            {
+                return default;
+            }
+
+            OnClientGoAway(id);
+
             return default;
+        }
+
+
+        private void OnClientGoAway(long lastProcessedStreamId)
+        {
+            // Stop sending requests to this connection.
+
+            var streamsToGoAway = new List<Http3Stream>();
+
+            lock (_http3Connection._sync)
+            {
+                if (lastProcessedStreamId > _http3Connection._lastStreamProcessed)
+                {
+                    // Client can send multiple GOAWAY frames.
+                    // Spec says a client MUST NOT increase the stream ID in subsequent GOAWAYs,
+                    // but doesn't specify what server should do if that is violated. Ignore for now.
+                    return;
+                }
+
+                _http3Connection._lastStreamProcessed = lastProcessedStreamId;
+
+                foreach (var request in _http3Connection._streams)
+                {
+                    if (request.Key > lastProcessedStreamId)
+                    {
+                        streamsToGoAway.Add(request.Value);
+                    }
+                }
+
+                // TODO shutdown connection here?
+            }
+
+            // GOAWAY each stream outside of the lock, so they can acquire the lock to remove themselves from _activeRequests.
+            // A server MUST treat receipt of a GOAWAY frame on any stream as a connection error (Section 8) of type H3_FRAME_UNEXPECTED.
+            foreach (var stream in streamsToGoAway)
+            {
+                stream.Abort(new ConnectionAbortedException("The client sent GOAWAY."), Http3ErrorCode.UnexpectedFrame);
+            }
         }
 
         private ValueTask ProcessCancelPushFrameAsync()
@@ -335,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            // This should just noop.
+
             return default;
         }
 
@@ -345,6 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
+
             return default;
         }
 
@@ -354,6 +407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
+
             return default;
         }
 
@@ -368,10 +422,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 Input.CancelPendingRead();
             }
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
         }
 
         /// <summary>

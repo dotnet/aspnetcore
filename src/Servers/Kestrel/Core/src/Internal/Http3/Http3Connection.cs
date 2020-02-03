@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -20,15 +21,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public DynamicTable DynamicTable { get; set; }
 
-        public Http3ControlStream SettingsStream { get; set; }
+        public Http3ControlStream ControlStream { get; set; }
         public Http3ControlStream EncoderStream { get; set; }
         public Http3ControlStream DecoderStream { get; set; }
 
-        private readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
+        internal readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
 
-        // To be used by GO_AWAY
-        private long _highestOpenedStreamId; // TODO lock to access
-        //private volatile bool _haveSentGoAway;
+        internal long _highestOpenedStreamId; // TODO lock to access
+        internal long _lastStreamProcessed;
+        private volatile bool _haveSentGoAway;
+        internal object _sync = new object();
 
         public Http3Connection(HttpConnectionContext context)
         {
@@ -56,24 +58,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var streamListenerFeature = Context.ConnectionFeatures.Get<IQuicStreamListenerFeature>();
 
             // Start other three unidirectional streams here.
-            var settingsStream = CreateSettingsStream(application);
-            var encoderStream = CreateEncoderStream(application);
-            var decoderStream = CreateDecoderStream(application);
+            var controlTask = CreateControlStream(application);
+            var encoderTask = CreateEncoderStream(application);
+            var decoderTask = CreateDecoderStream(application);
 
             try
             {
                 while (true)
                 {
                     var connectionContext = await streamListenerFeature.AcceptAsync();
-                    if (connectionContext == null)
+                    if (connectionContext == null || _haveSentGoAway)
                     {
                         break;
                     }
-
-                    //if (_haveSentGoAway)
-                    //{
-                    //    // error here.
-                    //}
 
                     var httpConnectionContext = new HttpConnectionContext
                     {
@@ -90,8 +87,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     };
 
                     var streamFeature = httpConnectionContext.ConnectionFeatures.Get<IQuicStreamFeature>();
+
                     var streamId = streamFeature.StreamId;
-                    HighestStreamId = streamId;
+
+                    lock (_sync)
+                    {
+                        HighestStreamId = streamId;
+                    }
 
                     if (!streamFeature.CanWrite)
                     {
@@ -107,22 +109,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}{ex.StackTrace}");
+            }
             finally
             {
-                await settingsStream;
-                await encoderStream;
-                await decoderStream;
+                await controlTask;
+                await encoderTask;
+                await decoderTask;
+
                 foreach (var stream in _streams.Values)
                 {
-                    stream.Abort(new ConnectionAbortedException(""));
+                    stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
                 }
             }
         }
 
-        private async ValueTask CreateSettingsStream<TContext>(IHttpApplication<TContext> application)
+        private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application)
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            SettingsStream = stream;
+            ControlStream = stream;
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync();
         }
@@ -146,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var connectionContext = await Context.ConnectionFeatures.Get<IQuicCreateStreamFeature>().StartUnidirectionalStreamAsync();
             var httpConnectionContext = new HttpConnectionContext
             {
-                ConnectionId = connectionContext.ConnectionId,
+                //ConnectionId = "", TODO getting stream ID from stream that isn't started throws an exception.
                 ConnectionContext = connectionContext,
                 Protocols = Context.Protocols,
                 ServiceContext = Context.ServiceContext,
@@ -183,8 +190,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex)
         {
-            // Send goaway
+            lock (_sync)
+            {
+                if (ControlStream != null)
+                {
+                    // TODO need to await this somewhere or allow this to be called elsewhere?
+                    ControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
+                }
+            }
+
+            _haveSentGoAway = true;
+
             // Abort currently active streams
+            foreach (var stream in _streams.Values)
+            {
+                stream.Abort(new ConnectionAbortedException("The Http3Connection has been aborted"), Http3ErrorCode.UnexpectedFrame);
+            }
             // TODO need to figure out if there is server initiated connection close rather than stream close?
         }
 

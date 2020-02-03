@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
     {
-        private readonly int _streamId;
         private readonly Http3FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
         private readonly IKestrelTrace _log;
@@ -36,13 +35,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private IMemoryOwner<byte> _fakeMemoryOwner;
 
         public Http3OutputProducer(
-             int streamId,
              Http3FrameWriter frameWriter,
              MemoryPool<byte> pool,
              Http3Stream stream,
              IKestrelTrace log)
         {
-            _streamId = streamId;
             _frameWriter = frameWriter;
             _memoryPool = pool;
             _stream = stream;
@@ -50,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             var pipe = CreateDataPipe(pool);
 
-            _pipeWriter = pipe.Writer;
+            _pipeWriter = pipe.Writer; 
             _pipeReader = pipe.Reader;
 
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
@@ -309,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // TODO figure out something to do here.
                 }
 
-                _frameWriter.WriteResponseHeaders(_streamId, statusCode, responseHeaders);
+                _frameWriter.WriteResponseHeaders(statusCode, responseHeaders);
             }
         }
 
@@ -351,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
-                        flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.ResponseTrailers);
+                        flushResult = await _frameWriter.WriteResponseTrailers(_stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted)
                     {
