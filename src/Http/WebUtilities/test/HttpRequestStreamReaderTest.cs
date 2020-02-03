@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class HttpResponseStreamReaderTest
+    public class HttpRequestStreamReaderTest
     {
         private static readonly char[] CharData = new char[]
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public static async Task Read_ReadInTwoChunks()
+        public static async Task ReadAsync_ReadInTwoChunks()
         {
             // Arrange
             var reader = CreateReader();
@@ -224,6 +224,44 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Act
             var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
 
             // Assert
             Assert.Equal(chars.Length, read);

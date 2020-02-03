@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return charsRead;
         }
 
-        public override async Task<int> ReadAsync(char[] buffer, int index, int count)
+        public override Task<int> ReadAsync(char[] buffer, int index, int count)
         {
             if (buffer == null)
             {
@@ -268,6 +269,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
+            var memory = new Memory<char>(buffer, index, count);
+            return ReadAsync(memory).AsTask();
+        }
+
+        public override async ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken cancellationToken = default)
+        {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
@@ -278,14 +285,16 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return 0;
             }
 
+            var count = buffer.Length;
+
             var charsRead = 0;
             while (count > 0)
             {
                 // n is the characters available in _charBuffer
-                var n = _charsRead - _charBufferIndex;
+                var charsAvailable = _charsRead - _charBufferIndex;
 
                 // charBuffer is empty, let's read from the stream
-                if (n == 0)
+                if (charsAvailable == 0)
                 {
                     _charsRead = 0;
                     _charBufferIndex = 0;
@@ -295,7 +304,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // We break out of the loop if the stream is blocked (EOF is reached).
                     do
                     {
-                        Debug.Assert(n == 0);
+                        Debug.Assert(charsAvailable == 0);
                         _bytesRead = await _stream.ReadAsync(
                             _byteBuffer,
                             0,
@@ -309,45 +318,47 @@ namespace Microsoft.AspNetCore.WebUtilities
                         // _isBlocked == whether we read fewer bytes than we asked for.
                         _isBlocked = (_bytesRead < _byteBufferSize);
 
-                        Debug.Assert(n == 0);
+                        Debug.Assert(charsAvailable == 0);
 
                         _charBufferIndex = 0;
-                        n = _decoder.GetChars(
+                        charsAvailable = _decoder.GetChars(
                             _byteBuffer,
                             0,
                             _bytesRead,
                             _charBuffer,
                             0);
 
-                        Debug.Assert(n > 0);
+                        Debug.Assert(charsAvailable > 0);
 
-                        _charsRead += n; // Number of chars in StreamReader's buffer.
+                        _charsRead += charsAvailable; // Number of chars in StreamReader's buffer.
                     }
-                    while (n == 0);
+                    while (charsAvailable == 0);
 
-                    if (n == 0)
+                    if (charsAvailable == 0)
                     {
                         break; // We're at EOF
                     }
                 }
 
                 // Got more chars in charBuffer than the user requested
-                if (n > count)
+                if (charsAvailable > count)
                 {
-                    n = count;
+                    charsAvailable = count;
                 }
 
-                Buffer.BlockCopy(
-                    _charBuffer,
-                    _charBufferIndex * 2,
-                    buffer,
-                    (index + charsRead) * 2,
-                    n * 2);
+                var source = new Memory<char>(_charBuffer, _charBufferIndex, charsAvailable);
+                source.CopyTo(buffer);
 
-                _charBufferIndex += n;
+                if (charsAvailable < count)
+                {
+                    // update the buffer to the remaining portion
+                    buffer = buffer.Slice(charsAvailable);
+                }
 
-                charsRead += n;
-                count -= n;
+                _charBufferIndex += charsAvailable;
+
+                charsRead += charsAvailable;
+                count -= charsAvailable;
 
                 // This function shouldn't block for an indefinite amount of time,
                 // or reading from a network stream won't work right.  If we got
