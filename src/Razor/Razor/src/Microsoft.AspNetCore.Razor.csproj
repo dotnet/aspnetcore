@@ -13,7 +13,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
 
     <!-- Required to implement an HtmlEncoder -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
