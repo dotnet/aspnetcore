@@ -318,16 +318,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             });
         }
 
-        [Fact]
-        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync()
+        [Theory]
+        [MemberData(nameof(HttpRequestDisposeDataAsync))]
+        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync(Func<HttpRequestStreamReader, Task> action)
         {
             var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
             httpRequestStreamReader.Dispose();
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
-            {
-                return httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
-            });
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => action(httpRequestStreamReader));
         }
 
         private static HttpRequestStreamReader CreateReader()
@@ -390,12 +388,28 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  var res = httpRequestStreamReader.Read(new char[10], 0, 1);
             })};
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                 var res = httpRequestStreamReader.Read(new Span<char>(new char[10], 0, 1));
+            })};
 
             yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
             {
                 var res = httpRequestStreamReader.Peek();
             })};
 
+        }
+
+        public static IEnumerable<object[]> HttpRequestDisposeDataAsync()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
+            })};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new Memory<char>(new char[10], 0, 1));
+            })};
         }
     }
 }

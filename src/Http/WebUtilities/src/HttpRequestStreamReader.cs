@@ -155,50 +155,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-            }
-
-            var charsRead = 0;
-            while (count > 0)
-            {
-                var charsRemaining = _charsRead - _charBufferIndex;
-                if (charsRemaining == 0)
-                {
-                    charsRemaining = ReadIntoBuffer();
-                }
-
-                if (charsRemaining == 0)
-                {
-                    break;  // We're at EOF
-                }
-
-                if (charsRemaining > count)
-                {
-                    charsRemaining = count;
-                }
-
-                Buffer.BlockCopy(
-                    _charBuffer,
-                    _charBufferIndex * 2,
-                    buffer,
-                    (index + charsRead) * 2,
-                    charsRemaining * 2);
-                _charBufferIndex += charsRemaining;
-
-                charsRead += charsRemaining;
-                count -= charsRemaining;
-
-                // If we got back fewer chars than we asked for, then it's likely the underlying stream is blocked.
-                // Send the data back to the caller so they can process it.
-                if (_isBlocked)
-                {
-                    break;
-                }
-            }
-
-            return charsRead;
+            var span = new Span<char>(buffer, index, count);
+            return Read(span);
         }
 
         public override int Read(Span<char> buffer)
@@ -206,6 +164,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (buffer == null)
             {
                 throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
             var count = buffer.Length;
