@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             var msgPackOptions = options.Value;
             SetupResolver(msgPackOptions);
+            _msgPackSerializerOptions.WithSecurity(MessagePackSecurity.UntrustedData);
         }
 
         private void SetupResolver(MessagePackHubProtocolOptions options)
@@ -64,7 +65,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 var resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)options.FormatterResolvers);
                 _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
-
                 return;
             }
 
