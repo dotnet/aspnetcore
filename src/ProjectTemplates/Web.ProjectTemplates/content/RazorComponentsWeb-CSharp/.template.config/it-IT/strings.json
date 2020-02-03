@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "App server Blazor",
-    "description": "Modello di progetto per la creazione di un'applicazione Blazor che viene eseguita lato server all'interno di un'applicazione ASP.NET Core. Questo modello può essere usato per applicazioni Web con interfacce utente dinamiche."
-  }
-}

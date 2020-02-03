@@ -147,6 +147,16 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Label="AspNetCore">
+    <LatestPackageReference Include="Ignitor" Version="$(IgnitorPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components" Version="$(MicrosoftAspNetCoreComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="$(MicrosoftAspNetCoreComponentsAuthorizationPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="$(MicrosoftAspNetCoreComponentsFormsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
+  </ItemGroup>
+
   <ItemGroup Label="MSBuild">
     <LatestPackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />

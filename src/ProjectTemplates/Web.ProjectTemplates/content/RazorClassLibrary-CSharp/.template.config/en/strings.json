@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Razor Class Library",
-    "description": "A project template for creating a Razor class library.",
-    "parameter.SupportPagesAndViews.name": "_Support pages and views"
-  }
-}

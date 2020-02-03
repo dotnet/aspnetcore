@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "gRPC 서비스",
-    "description": "gRPC ASP.NET Core 서비스를 만들기 위한 프로젝트 템플릿입니다."
-  }
-}

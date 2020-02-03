@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Service gRPC",
-    "description": "Modèle de projet pour la création d'un service gRPC ASP.NET Core."
-  }
-}

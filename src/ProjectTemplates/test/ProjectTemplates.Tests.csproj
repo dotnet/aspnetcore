@@ -28,24 +28,18 @@
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+    <Compile Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Common\RetryHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-    <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../BlazorWasm.ProjectTemplates/Microsoft.AspNetCore.Blazor.Templates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

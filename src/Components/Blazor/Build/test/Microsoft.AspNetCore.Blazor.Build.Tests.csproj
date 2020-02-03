@@ -5,6 +5,7 @@
 
     <!-- Exclude the TestFiles directory from default wildcards -->
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Sunucu Uygulaması",
-    "description": "Bir ASP.NET Core uygulaması içinde sunucu tarafında çalışan bir Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir."
-  }
-}
