@@ -169,8 +169,11 @@ namespace Microsoft.AspNetCore
             {
                 var env = hostingContext.HostingEnvironment;
 
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                var reloadOnChange = Convert.ToBoolean(
+                    Environment.GetEnvironmentVariable("ASPNETCORE_BUILDER_CONFIG_RELOAD") ?? "true");
+
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: reloadOnChange)
+                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);
 
                 if (env.IsDevelopment())
                 {
