@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using WsProxy;
+using WebAssembly.Net.Debugging;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var browserUri = new Uri(context.Request.Query["browser"]);
             var ideSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await new MonoProxy().Run(browserUri, ideSocket);
+            await new DevToolsProxy().Run(browserUri, ideSocket);
         }
 
         private static async Task DebugHome(HttpContext context)

@@ -3,14 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-using System.Net.WebSockets;
 using System.Threading;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Net;
 
-namespace WsProxy {
+namespace WebAssembly.Net.Debugging {
 
 	internal class MonoCommands {
 		public const string GET_CALL_STACK = "MONO.mono_wasm_get_call_stack()";
@@ -25,14 +23,14 @@ namespace WsProxy {
 		public const string GET_ARRAY_VALUES = "MONO.mono_wasm_get_array_values({0})";
 	}
 
-	internal enum MonoErrorCodes {
+	public enum MonoErrorCodes {
 		BpNotFound = 100000,
 	}
-
 
 	internal class MonoConstants {
 		public const string RUNTIME_IS_READY = "mono_wasm_runtime_ready";
 	}
+
 	class Frame {
 		public Frame (MethodInfo method, SourceLocation location, int id)
 		{
@@ -73,7 +71,7 @@ namespace WsProxy {
 		Over
 	}
 
-	internal class MonoProxy : WsProxy {
+	public class MonoProxy : DevToolsProxy {
 		DebugStore store;
 		List<Breakpoint> breakpoints = new List<Breakpoint> ();
 		List<Frame> current_callstack;
@@ -84,7 +82,7 @@ namespace WsProxy {
 
 		public MonoProxy () { }
 
-		protected override async Task<bool> AcceptEvent (string method, JObject args, CancellationToken token)
+		protected override async Task<bool> AcceptEvent (SessionId sessionId, string method, JObject args, CancellationToken token)
 		{
 			switch (method) {
 			case "Runtime.executionContextCreated": {
@@ -93,8 +91,8 @@ namespace WsProxy {
 					if (aux_data != null) {
 						var is_default = aux_data ["isDefault"]?.Value<bool> ();
 						if (is_default == true) {
-							var ctx_id = ctx ["id"].Value<int> ();
-							await OnDefaultContext (ctx_id, aux_data, token);
+							var id = new MessageId { id = ctx ["id"].Value<int> (), sessionId = sessionId.sessionId };
+							await OnDefaultContext (id, aux_data, token);
 						}
 					}
 					break;
@@ -103,11 +101,11 @@ namespace WsProxy {
 					//TODO figure out how to stich out more frames and, in particular what happens when real wasm is on the stack
 					var top_func = args? ["callFrames"]? [0]? ["functionName"]?.Value<string> ();
 					if (top_func == "mono_wasm_fire_bp" || top_func == "_mono_wasm_fire_bp") {
-						await OnBreakPointHit (args, token);
+						await OnBreakPointHit (sessionId, args, token);
 						return true;
 					}
 					if (top_func == MonoConstants.RUNTIME_IS_READY) {
-						await OnRuntimeReady (token);
+						await OnRuntimeReady (new SessionId { sessionId = sessionId.sessionId }, token);
 						return true;
 					}
 					break;
@@ -119,24 +117,33 @@ namespace WsProxy {
 					}
 					break;
 				}
+			case "Debugger.enabled": {
+					await LoadStore (new SessionId { sessionId = args? ["sessionId"]?.Value<string> () }, token);
+					break;
+				}
 			}
-
 			return false;
 		}
 
 
-		protected override async Task<bool> AcceptCommand (int id, string method, JObject args, CancellationToken token)
+		protected override async Task<bool> AcceptCommand (MessageId id, string method, JObject args, CancellationToken token)
 		{
 			switch (method) {
+			case "Target.attachToTarget": {
+					break;
+				}
+			case "Target.attachToBrowserTarget": {
+					break;
+				}
 			case "Debugger.getScriptSource": {
 					var script_id = args? ["scriptId"]?.Value<string> ();
 					if (script_id.StartsWith ("dotnet://", StringComparison.InvariantCultureIgnoreCase)) {
 						await OnGetScriptSource (id, script_id, token);
 						return true;
 					}
-
 					break;
 				}
+
 			case "Runtime.compileScript": {
 					var exp = args? ["expression"]?.Value<string> ();
 					if (exp.StartsWith ("//dotnet:", StringComparison.InvariantCultureIgnoreCase)) {
@@ -156,7 +163,7 @@ namespace WsProxy {
 				}
 
 			case "Debugger.setBreakpointByUrl": {
-					Info ($"BP req {args}");
+					Log ("info", $"BP req {args}");
 					var bp_req = BreakPointRequest.Parse (args, store);
 					if (bp_req != null) {
 						await SetBreakPoint (id, bp_req, token);
@@ -164,9 +171,10 @@ namespace WsProxy {
 					}
 					break;
 				}
+
 			case "Debugger.removeBreakpoint": {
-				return await RemoveBreakpoint (id, args, token);
-			}
+					return await RemoveBreakpoint (id, args, token);
+				}
 
 			case "Debugger.resume": {
 					await OnResume (token);
@@ -199,16 +207,24 @@ namespace WsProxy {
 
 			case "Runtime.getProperties": {
 					var objId = args? ["objectId"]?.Value<string> ();
-					if (objId.StartsWith ("dotnet:scope:", StringComparison.InvariantCulture)) {
-						await GetScopeProperties (id, int.Parse (objId.Substring ("dotnet:scope:".Length)), token);
-						return true;
-					}
-					if (objId.StartsWith("dotnet:", StringComparison.InvariantCulture))
-					{
-						if (objId.StartsWith("dotnet:object:", StringComparison.InvariantCulture))
-							await GetDetails(id, int.Parse(objId.Substring("dotnet:object:".Length)), token, MonoCommands.GET_OBJECT_PROPERTIES);
-						if (objId.StartsWith("dotnet:array:", StringComparison.InvariantCulture))
-							await GetDetails(id, int.Parse(objId.Substring("dotnet:array:".Length)), token, MonoCommands.GET_ARRAY_VALUES);
+					if (objId.StartsWith ("dotnet:")) {
+						var parts = objId.Split (new char [] { ':' });
+						if (parts.Length < 3)
+							return true;
+						switch (parts[1]) {
+						case "scope": {
+							await GetScopeProperties (id, int.Parse (parts[2]), token);
+							break;
+							}
+						case "object": {
+							await GetDetails (id, int.Parse (parts[2]), token, MonoCommands.GET_OBJECT_PROPERTIES);
+							break;
+							}
+						case "array": {
+							await GetDetails (id, int.Parse (parts[2]), token, MonoCommands.GET_ARRAY_VALUES);
+							break;
+							}
+						}
 						return true;
 					}
 					break;
@@ -218,15 +234,16 @@ namespace WsProxy {
 			return false;
 		}
 
-		async Task OnRuntimeReady (CancellationToken token)
+		async Task OnRuntimeReady (SessionId sessionId, CancellationToken token)
 		{
-			Info ("RUNTIME READY, PARTY TIME");
-			await RuntimeReady (token);
-			await SendCommand ("Debugger.resume", new JObject (), token);
-			SendEvent ("Mono.runtimeReady", new JObject (), token);			
+			Log ("info", "RUNTIME READY, PARTY TIME");
+			await RuntimeReady (sessionId, token);
+			await SendCommand (sessionId, "Debugger.resume", new JObject (), token);
+			SendEvent (sessionId, "Mono.runtimeReady", new JObject (), token);
 		}
 
-		async Task OnBreakPointHit (JObject args, CancellationToken token)
+		//static int frame_id=0;
+		async Task OnBreakPointHit (SessionId sessionId, JObject args, CancellationToken token)
 		{
 			//FIXME we should send release objects every now and then? Or intercept those we inject and deal in the runtime
 			var o = JObject.FromObject (new {
@@ -238,11 +255,11 @@ namespace WsProxy {
 			});
 
 			var orig_callframes = args? ["callFrames"]?.Values<JObject> ();
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var res = await SendCommand (sessionId, "Runtime.evaluate", o, token);
 
 			if (res.IsErr) {
 				//Give up and send the original call stack
-				SendEvent ("Debugger.paused", args, token);
+				SendEvent (sessionId, "Debugger.paused", args, token);
 				return;
 			}
 
@@ -250,16 +267,16 @@ namespace WsProxy {
 			var res_value = res.Value? ["result"]? ["value"];
 			if (res_value == null || res_value is JValue) {
 				//Give up and send the original call stack
-				SendEvent ("Debugger.paused", args, token);
+				SendEvent (sessionId, "Debugger.paused", args, token);
 				return;
 			}
 
-			Debug ($"call stack (err is {res.Error} value is:\n{res.Value}");
+			Log ("verbose", $"call stack (err is {res.Error} value is:\n{res.Value}");
 			var bp_id = res_value? ["breakpoint_id"]?.Value<int> ();
-			Debug ($"We just hit bp {bp_id}");
+			Log ("verbose", $"We just hit bp {bp_id}");
 			if (!bp_id.HasValue) {
 				//Give up and send the original call stack
-				SendEvent ("Debugger.paused", args, token);
+				SendEvent (sessionId, "Debugger.paused", args, token);
 				return;
 			}
 			var bp = this.breakpoints.FirstOrDefault (b => b.RemoteId == bp_id.Value);
@@ -282,14 +299,14 @@ namespace WsProxy {
 
 						var asm = store.GetAssemblyByName (assembly_name);
 						if (asm == null) {
-							Info ($"Unable to find assembly: {assembly_name}");
+							Log ("info",$"Unable to find assembly: {assembly_name}");
 							continue;
 						}
 
 						var method = asm.GetMethodByToken (method_token);
 
 						if (method == null) {
-							Info ($"Unable to find il offset: {il_pos} in method token: {method_token} assembly name: {assembly_name}");
+							Log ("info", $"Unable to find il offset: {il_pos} in method token: {method_token} assembly name: {assembly_name}");
 							continue;
 						}
 
@@ -303,8 +320,8 @@ namespace WsProxy {
 							continue;
 						}
 
-						Info ($"frame il offset: {il_pos} method token: {method_token} assembly name: {assembly_name}");
-						Info ($"\tmethod {method.Name} location: {location}");
+						Log ("info", $"frame il offset: {il_pos} method token: {method_token} assembly name: {assembly_name}");
+						Log ("info", $"\tmethod {method.Name} location: {location}");
 						frames.Add (new Frame (method, location, frame_id));
 
 						callFrames.Add (JObject.FromObject (new {
@@ -351,12 +368,12 @@ namespace WsProxy {
 				hitBreakpoints = bp_list,
 			});
 
-			SendEvent ("Debugger.paused", o, token);
+			SendEvent (sessionId, "Debugger.paused", o, token);
 		}
 
-		async Task OnDefaultContext (int ctx_id, JObject aux_data, CancellationToken token)
+		async Task OnDefaultContext (MessageId ctx_id, JObject aux_data, CancellationToken token)
 		{
-			Debug ("Default context created, clearing state and sending events");
+			Log ("verbose", "Default context created, clearing state and sending events");
 
 			//reset all bps
 			foreach (var b in this.breakpoints){
@@ -371,16 +388,16 @@ namespace WsProxy {
 				silent = false,
 				returnByValue = true
 			});
-			this.ctx_id = ctx_id;
+			this.ctx_id = ctx_id.id;
 			this.aux_ctx_data = aux_data;
 
-			Debug ("checking if the runtime is ready");
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			Log ("verbose", "checking if the runtime is ready");
+			var res = await SendCommand (ctx_id, "Runtime.evaluate", o, token);
 			var is_ready = res.Value? ["result"]? ["value"]?.Value<bool> ();
-			//Debug ($"\t{is_ready}");
+			//Log ("verbose", $"\t{is_ready}");
 			if (is_ready.HasValue && is_ready.Value == true) {
-				Debug ("RUNTIME LOOK READY. GO TIME!");
-				await OnRuntimeReady (token);
+				Log ("verbose", "RUNTIME LOOK READY. GO TIME!");
+				await OnRuntimeReady (ctx_id, token);
 			}
 		}
 
@@ -392,7 +409,7 @@ namespace WsProxy {
 			await Task.CompletedTask;
 		}
 
-		async Task Step (int msg_id, StepKind kind, CancellationToken token)
+		async Task Step (MessageId msg_id, StepKind kind, CancellationToken token)
 		{
 
 			var o = JObject.FromObject (new {
@@ -403,16 +420,16 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var res = await SendCommand (msg_id, "Runtime.evaluate", o, token);
 
 			SendResponse (msg_id, Result.Ok (new JObject ()), token);
 
 			this.current_callstack = null;
 
-			await SendCommand ("Debugger.resume", new JObject (), token);
+			await SendCommand (msg_id, "Debugger.resume", new JObject (), token);
 		}
 
-		async Task GetDetails(int msg_id, int object_id, CancellationToken token, string command)
+		async Task GetDetails(MessageId msg_id, int object_id, CancellationToken token, string command)
 		{
 			var o = JObject.FromObject(new
 			{
@@ -423,7 +440,7 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var res = await SendCommand("Runtime.evaluate", o, token);
+			var res = await SendCommand(msg_id, "Runtime.evaluate", o, token);
 
 			//if we fail we just buble that to the IDE (and let it panic over it)
 			if (res.IsErr)
@@ -461,14 +478,13 @@ namespace WsProxy {
 				{
 					result = var_list
 				});
-			} catch (Exception) {
-				Debug ($"failed to parse {res.Value}");
+			} catch (Exception e) {
+				Log ("verbose", $"failed to parse {res.Value} - {e.Message}");
 			}
 			SendResponse(msg_id, Result.Ok(o), token);
 		}
 
-
-		async Task GetScopeProperties (int msg_id, int scope_id, CancellationToken token)
+		async Task GetScopeProperties (MessageId msg_id, int scope_id, CancellationToken token)
 		{
 			var scope = this.current_callstack.FirstOrDefault (s => s.Id == scope_id);
 			var vars = scope.Method.GetLiveVarsAt (scope.Location.CliLocation.Offset);
@@ -484,7 +500,7 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var res = await SendCommand (msg_id, "Runtime.evaluate", o, token);
 
 			//if we fail we just buble that to the IDE (and let it panic over it)
 			if (res.IsErr) {
@@ -533,13 +549,13 @@ namespace WsProxy {
 					result = var_list
 				});
 				SendResponse (msg_id, Result.Ok (o), token);
-			}
-			catch (Exception) {
+			} catch (Exception exception) {
+				Log ("verbose", $"Error resolving scope properties {exception.Message}");
 				SendResponse (msg_id, res, token);
 			}
 		}
 
-		async Task<Result> EnableBreakPoint (Breakpoint bp, CancellationToken token)
+		async Task<Result> EnableBreakPoint (SessionId sessionId, Breakpoint bp, CancellationToken token)
 		{
 			var asm_name = bp.Location.CliLocation.Method.Assembly.Name;
 			var method_token = bp.Location.CliLocation.Method.Token;
@@ -553,21 +569,20 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var res = await SendCommand (sessionId, "Runtime.evaluate", o, token);
 			var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
 			if (ret_code.HasValue) {
 				bp.RemoteId = ret_code.Value;
 				bp.State = BreakPointState.Active;
-				//Debug ($"BP local id {bp.LocalId} enabled with remote id {bp.RemoteId}");
+				//Log ("verbose", $"BP local id {bp.LocalId} enabled with remote id {bp.RemoteId}");
 			}
 
 			return res;
 		}
 
-		async Task RuntimeReady (CancellationToken token)
+		async Task LoadStore (SessionId sessionId, CancellationToken token)
 		{
-
 			var o = JObject.FromObject (new {
 				expression = MonoCommands.GET_LOADED_FILES,
 				objectGroup = "mono_debugger",
@@ -575,10 +590,19 @@ namespace WsProxy {
 				silent = false,
 				returnByValue = true,
 			});
-			var loaded_pdbs = await SendCommand ("Runtime.evaluate", o, token);
+
+			var loaded_pdbs = await SendCommand (sessionId, "Runtime.evaluate", o, token);
 			var the_value = loaded_pdbs.Value? ["result"]? ["value"];
 			var the_pdbs = the_value?.ToObject<string[]> ();
-			this.store = new DebugStore (the_pdbs);
+
+			store = new DebugStore ();
+			await store.Load(sessionId, the_pdbs, token);
+		}
+
+		async Task RuntimeReady (SessionId sessionId, CancellationToken token)
+		{
+			if (store == null)
+				await LoadStore (sessionId, token);
 
 			foreach (var s in store.AllSources ()) {
 				var ok = JObject.FromObject (new {
@@ -587,13 +611,13 @@ namespace WsProxy {
 					executionContextId = this.ctx_id,
 					hash = s.DocHashCode,
 					executionContextAuxData = this.aux_ctx_data,
-					dotNetUrl = s.DotNetUrl
+					dotNetUrl = s.DotNetUrl,
 				});
-				//Debug ($"\tsending {s.Url}");
-				SendEvent ("Debugger.scriptParsed", ok, token);
+				//Log ("verbose", $"\tsending {s.Url}");
+				SendEvent (sessionId, "Debugger.scriptParsed", ok, token);
 			}
 
-			o = JObject.FromObject (new {
+			var o = JObject.FromObject (new {
 				expression = MonoCommands.CLEAR_ALL_BREAKPOINTS,
 				objectGroup = "mono_debugger",
 				includeCommandLineAPI = false,
@@ -601,9 +625,9 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var clear_result = await SendCommand ("Runtime.evaluate", o, token);
+			var clear_result = await SendCommand (sessionId, "Runtime.evaluate", o, token);
 			if (clear_result.IsErr) {
-				Debug ($"Failed to clear breakpoints due to {clear_result}");
+				Log ("verbose", $"Failed to clear breakpoints due to {clear_result}");
 			}
 
 
@@ -612,19 +636,19 @@ namespace WsProxy {
 			foreach (var bp in breakpoints) {
 				if (bp.State != BreakPointState.Pending)
 					continue;
-				var res = await EnableBreakPoint (bp, token);
+				var res = await EnableBreakPoint (sessionId, bp, token);
 				var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
 				//if we fail we just buble that to the IDE (and let it panic over it)
 				if (!ret_code.HasValue) {
 					//FIXME figure out how to inform the IDE of that.
-					Info ($"FAILED TO ENABLE BP {bp.LocalId}");
+					Log ("info", $"FAILED TO ENABLE BP {bp.LocalId}");
 					bp.State = BreakPointState.Disabled;
 				}
 			}
 		}
 
-		async Task<bool> RemoveBreakpoint(int msg_id, JObject args, CancellationToken token) {
+		async Task<bool> RemoveBreakpoint(MessageId msg_id, JObject args, CancellationToken token) {
 			var bpid = args? ["breakpointId"]?.Value<string> ();
 			if (bpid?.StartsWith ("dotnet:") != true)
 				return false;
@@ -633,19 +657,19 @@ namespace WsProxy {
 
 			var bp = breakpoints.FirstOrDefault (b => b.LocalId == the_id);
 			if (bp == null) {
-				Info ($"Could not find dotnet bp with id {the_id}");
+				Log ("info", $"Could not find dotnet bp with id {the_id}");
 				return false;
 			}
 
 			breakpoints.Remove (bp);
 			//FIXME verify result (and log?)
-			var res = await RemoveBreakPoint (bp, token);
+			var res = await RemoveBreakPoint (msg_id, bp, token);
 
 			return true;
 		}
 
 
-		async Task<Result> RemoveBreakPoint (Breakpoint bp, CancellationToken token)
+		async Task<Result> RemoveBreakPoint (SessionId sessionId, Breakpoint bp, CancellationToken token)
 		{
 			var o = JObject.FromObject (new {
 				expression = string.Format (MonoCommands.REMOVE_BREAK_POINT, bp.RemoteId),
@@ -655,7 +679,7 @@ namespace WsProxy {
 				returnByValue = true,
 			});
 
-			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var res = await SendCommand (sessionId, "Runtime.evaluate", o, token);
 			var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
 			if (ret_code.HasValue) {
@@ -666,13 +690,13 @@ namespace WsProxy {
 			return res;
 		}
 
-		async Task SetBreakPoint (int msg_id, BreakPointRequest req, CancellationToken token)
+		async Task SetBreakPoint (MessageId msg_id, BreakPointRequest req, CancellationToken token)
 		{
-			var bp_loc = store.FindBestBreakpoint (req);
-			Info ($"BP request for '{req}' runtime ready {runtime_ready} location '{bp_loc}'");
+			var bp_loc = store?.FindBestBreakpoint (req);
+			Log ("info", $"BP request for '{req}' runtime ready {runtime_ready} location '{bp_loc}'");
 			if (bp_loc == null) {
 
-				Info ($"Could not resolve breakpoint request: {req}");
+				Log ("info", $"Could not resolve breakpoint request: {req}");
 				SendResponse (msg_id, Result.Err(JObject.FromObject (new {
 					code = (int)MonoErrorCodes.BpNotFound,
 					message = $"C# Breakpoint at {req} not found."
@@ -686,7 +710,7 @@ namespace WsProxy {
 			} else {
 				bp = new Breakpoint (bp_loc, local_breakpoint_id++, BreakPointState.Disabled);
 
-				var res = await EnableBreakPoint (bp, token);
+				var res = await EnableBreakPoint (msg_id, bp, token);
 				var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
 				//if we fail we just buble that to the IDE (and let it panic over it)
@@ -714,7 +738,7 @@ namespace WsProxy {
 			SendResponse (msg_id, Result.Ok (ok), token);
 		}
 
-		bool GetPossibleBreakpoints (int msg_id, SourceLocation start, SourceLocation end, CancellationToken token)
+		bool GetPossibleBreakpoints (MessageId msg_id, SourceLocation start, SourceLocation end, CancellationToken token)
 		{
 			var bps = store.FindPossibleBreakpoints (start, end);
 			if (bps == null)
@@ -734,15 +758,14 @@ namespace WsProxy {
 			return true;
 		}
 
-		void OnCompileDotnetScript (int msg_id, CancellationToken token)
+		void OnCompileDotnetScript (MessageId msg_id, CancellationToken token)
 		{
 			var o = JObject.FromObject (new { });
 
 			SendResponse (msg_id, Result.Ok (o), token);
-
 		}
 
-		async Task OnGetScriptSource (int msg_id, string script_id, CancellationToken token)
+		async Task OnGetScriptSource (MessageId msg_id, string script_id, CancellationToken token)
 		{
 			var id = new SourceId (script_id);
 			var src_file = store.GetFileById (id);
@@ -753,6 +776,16 @@ namespace WsProxy {
 			try {
 				var uri = new Uri (src_file.Url);
 				if (uri.IsFile && File.Exists(uri.LocalPath)) {
+					using (var f = new StreamReader (File.Open (uri.LocalPath, FileMode.Open))) {
+						await res.WriteAsync (await f.ReadToEndAsync ());
+					}
+
+					var o = JObject.FromObject (new {
+						scriptSource = res.ToString ()
+					});
+
+					SendResponse (msg_id, Result.Ok (o), token);
+				} else if (src_file.SourceUri.IsFile && File.Exists(src_file.SourceUri.LocalPath)) {
 					using (var f = new StreamReader (File.Open (src_file.SourceUri.LocalPath, FileMode.Open))) {
 						await res.WriteAsync (await f.ReadToEndAsync ());
 					}
