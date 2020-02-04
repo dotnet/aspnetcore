@@ -132,10 +132,42 @@ namespace Microsoft.AspNetCore.Builder
                     }
                     else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
                     {
-                        var browserVersionJson = await GetBrowserVersionInfoAsync();
+                        // VS Code's "js-debug" nightly extension, when configured to use the "pwa-chrome"
+                        // debug type, uses the /json/version endpoint to find the websocket endpoint for
+                        // debugging the browser that listens on a user-specified port.
+                        //
+                        // To make this flow work with the Mono debug proxy, we pass the request through
+                        // to the underlying browser (to get its actual version info) but then overwrite
+                        // the "webSocketDebuggerUrl" with the URL to the proxy.
+                        //
+                        // This whole connection flow isn't very good because it doesn't have any way
+                        // to specify the debug port for the underlying browser. So, we end up assuming
+                        // the default port 9222 in all cases. This is good enough for a manual "attach"
+                        // but isn't good enough if the IDE is responsible for launching the browser,
+                        // as it will be on a random port. So,
+                        //
+                        //  - VS isn't going to use this. Instead it will use a configured "debugEndpoint"
+                        //    property from which it can construct the proxy URL directly (including adding
+                        //    a "browser" querystring value to specify the underlying endpoint), bypassing
+                        //    /json/version altogether
+                        //  - We will need to update the VS Code debug adapter to make it do the same as VS
+                        //    if there is a "debugEndpoint" property configured
+                        //
+                        // Once both VS and VS Code support the "debugEndpoint" flow, we should be able to
+                        // remove this /json/version code altogether. We should check that in-browser
+                        // debugging still works at that point.
+
+                        var browserVersionJsonStream = await GetBrowserVersionInfoAsync();
+                        var browserVersion = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(browserVersionJsonStream);
+
+                        if (browserVersion.TryGetValue("webSocketDebuggerUrl", out var browserEndpoint))
+                        {
+                            var proxyEndpoint = GetProxyEndpoint(request, ((JsonElement)browserEndpoint).GetString());
+                            browserVersion["webSocketDebuggerUrl"] = proxyEndpoint;
+                        }
 
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(browserVersionJson);
+                        await JsonSerializer.SerializeAsync(context.Response.Body, browserVersion);
                     }
                 }
                 else
@@ -238,11 +270,28 @@ namespace Microsoft.AspNetCore.Builder
             // page and redirect there
             var tabToDebug = matchingTabs.Single();
             var underlyingV8Endpoint = tabToDebug.WebSocketDebuggerUrl;
-            var proxyEndpoint = $"{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
+            var proxyEndpoint = GetProxyEndpoint(request, underlyingV8Endpoint);
             var devToolsUrlAbsolute = new Uri(debuggerHost + tabToDebug.DevtoolsFrontendUrl);
-            var wsParamName = request.IsHttps ? "wss" : "ws";
-            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{wsParamName}={proxyEndpoint}";
+            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{proxyEndpoint.Scheme}={proxyEndpoint.Authority}{proxyEndpoint.PathAndQuery}";
             context.Response.Redirect(devToolsUrlWithProxy);
+        }
+
+        private static Uri GetProxyEndpoint(HttpRequest incomingRequest, string browserEndpoint)
+        {
+            var builder = new UriBuilder(
+                schemeName: incomingRequest.IsHttps ? "wss" : "ws",
+                hostName: incomingRequest.Host.Host)
+            {
+                Path = $"{incomingRequest.PathBase}/_framework/debug/ws-proxy",
+                Query = $"browser={WebUtility.UrlEncode(browserEndpoint)}"
+            };
+
+            if (incomingRequest.Host.Port.HasValue)
+            {
+                builder.Port = incomingRequest.Host.Port.Value;
+            }
+
+            return builder.Uri;
         }
 
         private static string GetLaunchChromeInstructions(string appRootUrl)
@@ -292,11 +341,12 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static async Task<string> GetBrowserVersionInfoAsync()
+        private static async Task<Stream> GetBrowserVersionInfoAsync()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var debuggerHost = GetDebuggerHost();
-            return await httpClient.GetStringAsync($"{debuggerHost}/json/version");
+            var response = await httpClient.GetAsync($"{debuggerHost}/json/version");
+            return await response.Content.ReadAsStreamAsync();
         }
 
         private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
