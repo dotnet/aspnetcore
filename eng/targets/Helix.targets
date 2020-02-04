@@ -3,7 +3,6 @@
   <HelixContent Include="$(RepoRoot)eng\scripts\InstallJdk.ps1" />
 </ItemGroup>
   <ItemGroup Condition="'$(TestDependsOnJava)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixContent Include="$(RepoRoot)eng\scripts\InstallJdk.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
   </ItemGroup>
 
@@ -90,6 +89,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
     </PropertyGroup>
 
+    <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
