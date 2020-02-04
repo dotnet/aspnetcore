@@ -47,13 +47,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
-    <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App netcoreapp5.0 || exit /b 1" />
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App netcoreapp5.0 || exit /b 1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
-    <HelixPreCommand Include="./installappruntime.sh Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App netcoreapp5.0" />
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg" />
+    <HelixPreCommand Include="./installappruntime.sh Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App netcoreapp5.0" />
   </ItemGroup>
   
 </Project>
