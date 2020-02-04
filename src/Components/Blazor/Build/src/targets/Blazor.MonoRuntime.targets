@@ -304,7 +304,7 @@
       <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssembly" />
     </ResolveBlazorRuntimeDependencies>
 
-    <WriteLinesToFile File="$(_BlazorApplicationAssembliesCacheFile)" Lines="@(_BlazorResolvedRuntimeDependencies)" Overwrite="true" />
+    <WriteLinesToFile File="$(_BlazorApplicationAssembliesCacheFile)" Lines="@(_BlazorResolvedAssembly)" Overwrite="true" />
 
     <ItemGroup>
       <FileWrites Include="$(_BlazorApplicationAssembliesCacheFile)" />
@@ -315,7 +315,7 @@
 
   <Target
     Name="_GenerateBlazorBootJson"
-    Inputs="@(BlazorOutputWithTargetPath)"
+    Inputs="$(MSBuildAllProjects);@(BlazorOutputWithTargetPath)"
     Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
       <_BlazorRuntimeFile Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
