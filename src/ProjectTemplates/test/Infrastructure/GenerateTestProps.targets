@@ -30,7 +30,7 @@
 
     <PropertyGroup>
       <PropsProperties>
-        RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
+        RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)"));
         MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
         MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
