@@ -335,6 +335,57 @@ namespace Microsoft.AspNetCore.WebUtilities
             return charsRead;
         }
 
+        public override async Task<string> ReadLineAsync()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
+            }
+
+            StringBuilder sb = new StringBuilder();
+            while (true)
+            {
+                if (_charBufferIndex == _charsRead)
+                {
+                    if (await ReadIntoBufferAsync() == 0)
+                    {
+                        break;  // reached EOF, we need to return null if we were at EOF from the beginning
+                    }
+                }
+
+                var ch = _charBuffer[_charBufferIndex++];
+                
+                if (ch == '\r' || ch == '\n')
+                {
+                    if (ch == '\r')
+                    {
+                        if (_charBufferIndex == _charsRead)
+                        {
+                            if (await ReadIntoBufferAsync() == 0)
+                            {
+                                return sb.ToString();  // reached EOF
+                            }
+                        }
+
+                        if (_charBuffer[_charBufferIndex] == '\n')
+                        {
+                            _charBufferIndex++;  // consume the \n character
+                        }
+                    }
+
+                    return sb.ToString();
+                }
+                sb.Append(ch);
+            }
+
+            if (sb.Length > 0)
+            {
+                return sb.ToString();
+            }
+
+            return null;
+        }
+
         private int ReadIntoBuffer()
         {
             _charsRead = 0;
@@ -370,7 +421,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             do
             {
-
                 _bytesRead = await _stream.ReadAsync(
                     _byteBuffer,
                     0,

@@ -135,29 +135,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        [Fact]
-        public static void ReadLine_ReadMultipleLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadMultipleLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
             var valueString = new string(CharData);
 
             // Act & Assert
-            var data = reader.ReadLine();
+            var data = await action(reader);
             Assert.Equal(valueString.Substring(0, valueString.IndexOf('\r')), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\r') + 1, 3), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\n') + 1, 2), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal((valueString.Substring(valueString.LastIndexOf('\n') + 1)), data);
         }
 
-        [Fact]
-        public static void ReadLine_ReadWithNoNewlines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadWithNoNewlines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
@@ -166,32 +168,33 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Act
             reader.Read(temp, 0, 1);
-            var data = reader.ReadLine();
+            var data = await action(reader);
 
             // Assert
             Assert.Equal(valueString.Substring(1, valueString.IndexOf('\r') - 1), data);
         }
 
-        [Fact]
-        public static async Task ReadLineAsync_MultipleContinuousLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_MultipleContinuousLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
-            writer.Write("\n\n\r\r\n");
+            writer.Write("\n\n\r\r\n\r");
             writer.Flush();
             stream.Position = 0;
 
             var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
 
             // Act & Assert
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
             {
-                var data = await reader.ReadLineAsync();
+                var data = await action(reader);
                 Assert.Equal(string.Empty, data);
             }
 
-            var eol = await reader.ReadLineAsync();
+            var eol = await action(reader);
             Assert.Null(eol);
         }
 
@@ -280,8 +283,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var httpRequestStreamReader = new HttpRequestStreamReader(stream, encoding, 1, bytePool, charPool);
             });
         }
-
-
 
         [Theory]
         [InlineData(0)]
@@ -410,6 +411,16 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  await httpRequestStreamReader.ReadAsync(new Memory<char>(new char[10], 0, 1));
             })};
+        }
+
+        public static IEnumerable<object[]> ReadLineData()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+                 httpRequestStreamReader.ReadLineAsync()
+            )};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+                 Task.FromResult(httpRequestStreamReader.ReadLine())
+            )};
         }
     }
 }
