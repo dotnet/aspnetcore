@@ -42,6 +42,6 @@ else {
 }
 
 Write-Host "Copying managed files to $InstallDir"
-Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\lib\$Framework\*" $InstallDir
+Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
-Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\native\*" $InstallDir
+Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\native\*" $InstallDir
