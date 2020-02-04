@@ -15,5 +15,5 @@ mkdir -p $tmpDir
 unzip sharedFx.zip -d $tmpDir
 mkdir -p $output_dir
 echo "Copying to $output_dir"
-cp $tmpDir/runtimes/win-x86/lib/$framework/* $output_dir
-cp $tmpDir/runtimes/win-x86/native/* $output_dir
+cp $tmpDir/runtimes/win-x64/lib/$framework/* $output_dir
+cp $tmpDir/runtimes/win-x64/native/* $output_dir
