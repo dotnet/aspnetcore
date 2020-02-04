@@ -78,12 +78,13 @@
   <PropertyGroup>
     <!-- Pass the Java Package Version down to Gradle -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
-    <HelixCommand>gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
+    <HelixCommand>./gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
     <HelixCommand Condition="'$(IsWindowsHelixQueue)' == 'true'">call gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
   </PropertyGroup>
 
   <ItemGroup>
-    <HelixPostCommand Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\testResults.xml &amp;&amp; dir" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %25HELIX_WORKITEM_ROOT%25/test-results/TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25/testResults.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\testResults.xml" />
   </ItemGroup>
 
 </Project>
