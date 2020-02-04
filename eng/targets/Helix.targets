@@ -1,5 +1,7 @@
 <Project>
-
+<ItemGroup>
+  <HelixContent Include="$(RepoRoot)eng\scripts\InstallJdk.ps1" />
+</ItemGroup>
   <ItemGroup Condition="'$(TestDependsOnJava)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
     <HelixContent Include="$(RepoRoot)eng\scripts\InstallJdk.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
