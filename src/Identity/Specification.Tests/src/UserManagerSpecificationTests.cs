@@ -1634,7 +1634,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1766")]
+        [Fact]
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
             var manager = CreateManager();
