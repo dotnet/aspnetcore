@@ -41,6 +41,8 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPackage, ".\tmpRuntime")
 }
 
+Get-ChildItem -Path ".\tmpRuntime" -Recursive
+
 Write-Host "Copying managed files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
