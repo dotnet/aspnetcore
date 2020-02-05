@@ -84,7 +84,7 @@ namespace Templates.Test.Helpers
             string packagesDir;
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
-                packagesDir = "Templates";
+                packagesDir = ".";
             }
             else
             {
@@ -93,7 +93,7 @@ namespace Templates.Test.Helpers
                     .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value
             }
 
-            var builtPackages = Directory.EnumerateFiles(packagesDir, "*.nupkg")
+            var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
             
