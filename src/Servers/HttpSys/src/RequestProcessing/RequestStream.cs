@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "Read");
+                    Logger.LogError(LoggerEventIds.ErrorWhileRead, exception, "Read");
                     Abort();
                     throw exception;
                 }
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(0, e, "BeginRead");
+                Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, e, "BeginRead");
                 asyncResult.Dispose();
                 throw;
             }
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "BeginRead");
+                    Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, exception, "BeginRead");
                     Abort();
                     throw exception;
                 }
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 asyncResult.Dispose();
                 Abort();
-                Logger.LogError(0, e, "ReadAsync");
+                Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, e, "ReadAsync");
                 throw;
             }
 
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "ReadAsync");
+                    Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, exception, "ReadAsync");
                     Abort();
                     throw exception;
                 }

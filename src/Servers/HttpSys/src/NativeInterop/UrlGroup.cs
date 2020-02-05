@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 var exception = new HttpSysException((int)statusCode);
-                _logger.LogError(0, exception, "SetUrlGroupProperty");
+                _logger.LogError(LoggerEventIds.SetUrlPropertyError, exception, "SetUrlGroupProperty");
                 if (throwOnError)
                 {
                     throw exception;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void RegisterPrefix(string uriPrefix, int contextId)
         {
-            _logger.LogDebug("Listening on prefix: " + uriPrefix);
+            _logger.LogDebug(LoggerEventIds.RegisteringPrefix, "Listening on prefix: {0}" , uriPrefix);
             CheckDisposed();
             var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal bool UnregisterPrefix(string uriPrefix)
         {
-            _logger.LogInformation("Stop listening on prefix: " + uriPrefix);
+            _logger.LogInformation(LoggerEventIds.UnregisteringPrefix, "Stop listening on prefix: {0}" , uriPrefix);
             CheckDisposed();
 
             var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                _logger.LogError("CleanupV2Config; Result: " + statusCode);
+                _logger.LogError(LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {0}" , statusCode);
             }
             Id = 0;
         }
