@@ -362,6 +362,11 @@ try {
 
     $toolsetBuildProj = InitializeToolset
 
+    $sdkPath = [IO.Path]::Combine($env:DOTNET_INSTALL_DIR, 'sdk', '3.1.102')
+    if (!(Test-Path $sdkPath)) {
+        InstallDotNetSdk $dotnetRoot '3.1.102-servicing-014873' -skipNonVersionedFiles $true
+    }
+
     $restore = $tmpRestore
 
     if ($ci) {

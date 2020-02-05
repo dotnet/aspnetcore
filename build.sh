@@ -316,6 +316,8 @@ restore=true
 
 InitializeToolset
 
+InstallDotNetSdk "$DOTNET_INSTALL_DIR" "3.1.102-servicing-014873"
+
 restore=$_tmp_restore=
 
 if [ "$build_repo_tasks" = true ]; then
