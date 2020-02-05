@@ -81,14 +81,22 @@ namespace Templates.Test.Helpers
 
         private static async Task InstallTemplatePackages(ITestOutputHelper output)
         {
-            var builtPackages = Directory.EnumerateFiles(
-                    typeof(TemplatePackageInstaller).Assembly
+            string packagesDir;
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                packagesDir = "Templates";
+            }
+            else
+            {
+                packagesDir = typeof(TemplatePackageInstaller).Assembly
                     .GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value,
-                    "*.nupkg")
+                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value
+            }
+
+            var builtPackages = Directory.EnumerateFiles(packagesDir, "*.nupkg")
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
-
+            
             Assert.Equal(5, builtPackages.Length);
 
             /*
