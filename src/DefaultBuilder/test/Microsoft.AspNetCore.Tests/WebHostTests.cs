@@ -5,12 +5,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -86,6 +88,113 @@ namespace Microsoft.AspNetCore.Tests
             client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
             var result = await client.GetAsync("http://localhost/");
             result.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
+        public async Task WebHostConfiguration_ConfigJsonDoesNotReload()
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_BUILDER_CONFIG_RELOAD", "false");
+            Environment.CurrentDirectory = Path.GetTempPath();
+            const string testEndpoint = "/ConfigJsonDoesNotReload";
+
+            Func<string> saveRandomConfig = () =>
+            {
+                var newMessage = $"Hello ASP.NET Core: {Guid.NewGuid():N}";
+                File.WriteAllText(Path.Combine(Path.GetTempPath(), "appsettings.json"), $"{{ \"Hello\": \"{newMessage}\" }}");
+                return newMessage;
+            };
+
+            var dynamicMessage = saveRandomConfig();
+
+            IConfiguration loadedConfig = null;
+
+            using var host = WebHost.CreateDefaultBuilder()
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        Assert.NotNull(loadedConfig);
+                        endpoints.MapGet(testEndpoint, context => context.Response.WriteAsync(loadedConfig["Hello"]));
+                    });
+                })
+                .Build();
+
+            loadedConfig = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
+
+            Assert.NotNull(loadedConfig);
+            Assert.Equal(dynamicMessage, loadedConfig["Hello"]); // Assert configuration loaded.
+
+            await host.StartAsync();
+            var client = host.GetTestClient();
+
+            var firstResult = await client.GetAsync($"http://localhost{testEndpoint}");
+            var firstResponseBody = await firstResult.Content.ReadAsStringAsync();
+            Assert.Equal(dynamicMessage, firstResponseBody); // Generated config definitely loaded and returned from server.
+            firstResult.EnsureSuccessStatusCode();
+
+            saveRandomConfig(); // Overwrite old config at runtime.
+            Thread.Sleep(1000); // Wait for a poll tick or FS notification to trigger.
+
+            var secondResult = await client.GetAsync($"http://localhost{testEndpoint}");
+            var secondResponseBody = await secondResult.Content.ReadAsStringAsync();
+            Assert.Equal(secondResponseBody, firstResponseBody); // Configuration did not change.
+            firstResult.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
+        public async Task WebHostConfiguration_ConfigJsonDoesReload()
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_BUILDER_CONFIG_RELOAD", "true");
+            Environment.CurrentDirectory = Path.GetTempPath();
+            const string testEndpoint = "/ConfigJsonDoesNotReload";
+
+            Func<string> saveRandomConfig = () =>
+            {
+                var newMessage = $"Hello ASP.NET Core: {Guid.NewGuid():N}";
+                File.WriteAllText(Path.Combine(Path.GetTempPath(), "appsettings.json"), $"{{ \"Hello\": \"{newMessage}\" }}");
+                return newMessage;
+            };
+
+            var dynamicMessage = saveRandomConfig();
+
+            IConfiguration loadedConfig = null;
+
+            using var host = WebHost.CreateDefaultBuilder()
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        Assert.NotNull(loadedConfig);
+                        endpoints.MapGet(testEndpoint, context => context.Response.WriteAsync(loadedConfig["Hello"]));
+                    });
+                })
+                .Build();
+
+            loadedConfig = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
+
+            Assert.NotNull(loadedConfig);
+            Assert.Equal(dynamicMessage, loadedConfig["Hello"]);
+
+            await host.StartAsync();
+            var client = host.GetTestClient();
+
+            var firstResult = await client.GetAsync($"http://localhost{testEndpoint}");
+            var firstResponseBody = await firstResult.Content.ReadAsStringAsync();
+            Assert.Equal(dynamicMessage, firstResponseBody);
+            firstResult.EnsureSuccessStatusCode();
+
+            var newDynamicMessage = saveRandomConfig();
+            Thread.Sleep(1000);
+
+            var secondResult = await client.GetAsync($"http://localhost{testEndpoint}");
+            var secondResponseBody = await secondResult.Content.ReadAsStringAsync();
+            Assert.NotEqual(secondResponseBody, firstResponseBody); // Configuration DID reload at runtime.
+            Assert.Equal(newDynamicMessage, secondResponseBody); // New config value is what was returned on second request.
+            firstResult.EnsureSuccessStatusCode();
         }
 
         [Fact]
