@@ -2262,6 +2262,7 @@ class HubConnectionTest {
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertFalse(true);
     }
 
     @Test
