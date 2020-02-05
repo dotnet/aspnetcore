@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Tests
             var secondResult = await client.GetAsync($"http://localhost{testEndpoint}");
             var secondResponseBody = await secondResult.Content.ReadAsStringAsync();
             Assert.Equal(secondResponseBody, firstResponseBody); // Configuration did not change.
-            firstResult.EnsureSuccessStatusCode();
+            secondResult.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Tests
             var secondResponseBody = await secondResult.Content.ReadAsStringAsync();
             Assert.NotEqual(secondResponseBody, firstResponseBody); // Configuration DID reload at runtime.
             Assert.Equal(newDynamicMessage, secondResponseBody); // New config value is what was returned on second request.
-            firstResult.EnsureSuccessStatusCode();
+            secondResult.EnsureSuccessStatusCode();
         }
 
         [Fact]
