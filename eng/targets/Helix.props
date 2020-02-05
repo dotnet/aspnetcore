@@ -56,7 +56,7 @@
     <HelixPreCommand Include="./installappruntime.sh Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App netcoreapp5.0" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true'>
+  <ItemGroup Condition="'$(IsHelixJob)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*.nupkg" />
   </ItemGroup>
   
