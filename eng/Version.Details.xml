@@ -57,235 +57,249 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>7ae89d6adb7433b6ae9c37091e57a1226092ef46</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.2"  Pinned="true">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.1.0" Pinned="true">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.1.0" Pinned="true">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.1.0" Pinned="true">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.0" Pinned="true">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.KeyPerFile" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.KeyPerFile" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Http" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Localization.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Localization.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Localization" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Localization" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.1.2"  Pinned="true">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.JSInterop" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="3.1.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
-    </Dependency>
-    <Dependency Name="Mono.WebAssembly.Interop" Version="3.1.2-preview4.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Mono.WebAssembly.Interop" Version="3.1.2-preview4.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
@@ -379,7 +393,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.1.2" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>916b5cba268e1e1e803243004f4276cf40b2dda8</Sha>
+      <Sha>65f04fb6db7a5e198d05dbebd5c4ad21eb018f89</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -413,7 +427,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
@@ -429,7 +443,7 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.2-servicing.20067.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
