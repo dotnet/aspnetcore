@@ -15,10 +15,10 @@
     <!-- Targeting pack version should be the one we just built, if we're building it. Otherwise we use the baseline version -->
     <PropertyGroup>
       <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">%(_TargetingPackVersionInfo.PackageVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
-      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
+      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
 
     <!-- For blazor-wasm we want the runtime to match the baseline, as we want to target the latest released asp.net core app -->
-    <MicrosoftAspNetCoreAppRuntimePackageVersion>$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
+    <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
     </PropertyGroup>
 
     <!-- Runtime and Ref packs may have separate versions. -->
