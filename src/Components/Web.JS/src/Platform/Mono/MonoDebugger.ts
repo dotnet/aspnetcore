@@ -9,10 +9,7 @@ export function hasDebuggingEnabled() {
   return hasReferencedPdbs && currentBrowserIsChrome;
 }
 
-export function attachDebuggerHotkey(loadAssemblyUrls: string[]) {
-  hasReferencedPdbs = loadAssemblyUrls
-    .some(url => /\.pdb$/.test(getFileNameFromUrl(url)));
-
+export function attachDebuggerHotkey() {
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
   const altKeyName = navigator.platform.match(/^Mac/i) ? 'Cmd' : 'Alt';

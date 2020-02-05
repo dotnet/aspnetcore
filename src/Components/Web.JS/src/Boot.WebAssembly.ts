@@ -44,11 +44,13 @@ async function boot(options?: any): Promise<void> {
   }
 
   // Determine the URLs of the assemblies we want to load, then begin fetching them all
-  const loadAssemblyUrls = bootConfig.assemblies
+  const loadAssemblyUrls = Object.keys(bootConfig.resources.assembly)
+    .map(filename => `_framework/_bin/${filename}`);
+  const loadPdbUrls = Object.keys(bootConfig.resources.pdb || {})
     .map(filename => `_framework/_bin/${filename}`);
 
   try {
-    await platform.start(loadAssemblyUrls);
+    await platform.start(loadAssemblyUrls, loadPdbUrls);
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
@@ -64,12 +66,19 @@ async function fetchBootConfigAsync() {
   return bootConfigResponse.json() as Promise<BootJsonData>;
 }
 
-// Keep in sync with BootJsonData in Microsoft.AspNetCore.Blazor.Build
+// Keep in sync with bootJsonData in Microsoft.AspNetCore.Blazor.Build
 interface BootJsonData {
   entryAssembly: string;
-  assemblies: string[];
+  resources: ResourceGroups;
   linkerEnabled: boolean;
 }
+
+interface ResourceGroups {
+  assembly: ResourceList;
+  pdb?: ResourceList;
+}
+
+type ResourceList = { [name: string]: string };
 
 window['Blazor'].start = boot;
 if (shouldAutoStart()) {

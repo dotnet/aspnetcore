@@ -318,12 +318,18 @@
     Inputs="$(MSBuildAllProjects);@(BlazorOutputWithTargetPath)"
     Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
-      <_BlazorRuntimeFile Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
+      <_BlazorBootResource Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
+      <_BlazorBootResource BootResourceType="assembly" Condition="'%(Extension)' == '.dll'" />
+      <_BlazorBootResource BootResourceType="pdb" Condition="'%(Extension)' == '.pdb'" />
     </ItemGroup>
+
+    <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))">
+      <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHashes" />
+    </GetFileHash>
 
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      References="@(_BlazorRuntimeFile)"
+      Resources="@(_BlazorBootResourceWithHashes)"
       LinkerEnabled="$(BlazorLinkOnBuild)"
       OutputPath="$(BlazorBootJsonIntermediateOutputPath)" />
 

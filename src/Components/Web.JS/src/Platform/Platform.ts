@@ -1,5 +1,5 @@
 export interface Platform {
-  start(loadAssemblyUrls: string[]): Promise<void>;
+  start(loadAssemblyUrls: string[], loadPdbUrls: string[]): Promise<void>;
 
   callEntryPoint(assemblyName: string): void;
 

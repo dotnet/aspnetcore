@@ -9,9 +9,11 @@ const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export const monoPlatform: Platform = {
-  start: function start(loadAssemblyUrls: string[]) {
+  start: function start(loadAssemblyUrls: string[], loadPdbUrls: string[]) {
     return new Promise<void>((resolve, reject) => {
-      attachDebuggerHotkey(loadAssemblyUrls);
+      if (loadPdbUrls.length > 0) {
+        attachDebuggerHotkey();
+      }
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
@@ -22,7 +24,7 @@ export const monoPlatform: Platform = {
       // For compatibility with macOS Catalina, we have to assign a temporary value to window.Module
       // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
-        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
+        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, loadPdbUrls, resolve, reject);
         addScriptTagsToDocument();
       });
     });
@@ -140,7 +142,7 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
   document.body.appendChild(scriptElem);
 }
 
-function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
+function createEmscriptenModuleInstance(loadAssemblyUrls: string[], loadPdbUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
   const wasmBinaryFile = '_framework/wasm/dotnet.wasm';
   const suppressMessages = ['DEBUGGING ENABLED'];
@@ -174,7 +176,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
 
     MONO.loaded_files = [];
 
-    loadAssemblyUrls.forEach(url => {
+    loadAssemblyUrls.concat(loadPdbUrls).forEach(url => {
       const filename = getFileNameFromUrl(url);
       const runDependencyId = `blazor:${filename}`;
       addRunDependency(runDependencyId);

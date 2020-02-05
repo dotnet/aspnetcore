@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Json;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public string AssemblyPath { get; set; }
 
         [Required]
-        public ITaskItem[] References { get; set; }
+        public ITaskItem[] Resources { get; set; }
 
         [Required]
         public bool LinkerEnabled { get; set; }
@@ -27,60 +26,65 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
         public override bool Execute()
         {
-            var entryAssemblyName = AssemblyName.GetAssemblyName(AssemblyPath).Name;
-            var assemblies = References.Select(GetUriPath).OrderBy(c => c, StringComparer.Ordinal).ToArray();
-
-            using var fileStream = File.Create(OutputPath);
-            WriteBootJson(fileStream, entryAssemblyName, assemblies, LinkerEnabled);
-
-            return true;
-
-            static string GetUriPath(ITaskItem item)
+            // Build a two-level dictionary of the form:
+            // - BootResourceType (e.g., "assembly")
+            //   - UriPath (e.g., "System.Text.Json.dll")
+            //     - ContentHash (e.g., "4548fa2e9cf52986")
+            var resourcesByGroup = new Dictionary<string, Dictionary<string, string>>();
+            foreach (var resource in Resources)
             {
-                var outputPath = item.GetMetadata("RelativeOutputPath");
-                if (string.IsNullOrEmpty(outputPath))
+                var resourceType = resource.GetMetadata("BootResourceType");
+                if (string.IsNullOrEmpty(resourceType))
                 {
-                    outputPath = Path.GetFileName(item.ItemSpec);
+                    continue;
                 }
 
-                return outputPath.Replace('\\', '/');
-            }
-        }
+                if (!resourcesByGroup.TryGetValue(resourceType, out var group))
+                {
+                    group = new Dictionary<string, string>();
+                    resourcesByGroup.Add(resourceType, group);
+                }
 
-        internal static void WriteBootJson(Stream stream, string entryAssemblyName, string[] assemblies, bool linkerEnabled)
-        {
-            var data = new BootJsonData
+                var uriPath = GetUriPath(resource);
+                if (!group.ContainsKey(uriPath))
+                {
+                    // It's safe to truncate to a fairly short string, since the hash is not used for any
+                    // security purpose - the developer produces these files themselves, and the hash is
+                    // only used to check whether an earlier cached copy is up-to-date.
+                    // This truncation halves the size of blazor.boot.json in typical cases.
+                    group.Add(uriPath, resource.GetMetadata("FileHash").Substring(0, 16).ToLowerInvariant());
+                }
+            }
+
+            var bootJsonData = new
             {
-                entryAssembly = entryAssemblyName,
-                assemblies = assemblies,
-                linkerEnabled = linkerEnabled,
+                EntryAssembly = AssemblyName.GetAssemblyName(AssemblyPath).Name,
+                Resources = resourcesByGroup,
+                LinkerEnabled,
             };
 
-            var serializer = new DataContractJsonSerializer(typeof(BootJsonData));
-            serializer.WriteObject(stream, data);
+            using (var fileStream = File.Create(OutputPath))
+            using (var utf8Writer = new Utf8JsonWriter(fileStream, new JsonWriterOptions { Indented = true }))
+            {
+                JsonSerializer.Serialize(utf8Writer, bootJsonData, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+                utf8Writer.Flush();
+            }
+
+            return true;
         }
 
-        /// <summary>
-        /// Defines the structure of a Blazor boot JSON file
-        /// </summary>
-#pragma warning disable IDE1006 // Naming Styles
-        public class BootJsonData
+        private static string GetUriPath(ITaskItem item)
         {
-            /// <summary>
-            /// Gets the name of the assembly with the application entry point
-            /// </summary>
-            public string entryAssembly { get; set; }
+            var outputPath = item.GetMetadata("RelativeOutputPath");
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = Path.GetFileName(item.ItemSpec);
+            }
 
-            /// <summary>
-            /// Gets the closure of assemblies to be loaded by Blazor WASM. This includes the application entry assembly.
-            /// </summary>
-            public string[] assemblies { get; set; }
-
-            /// <summary>
-            /// Gets a value that determines if the linker is enabled.
-            /// </summary>
-            public bool linkerEnabled { get; set; }
+            return outputPath.Replace('\\', '/');
         }
-#pragma warning restore IDE1006 // Naming Styles
     }
 }
