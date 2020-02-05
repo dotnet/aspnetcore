@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
@@ -27,9 +28,18 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
                 linkerElement.Add(assemblyElement);
             }
 
-            using var fileStream = File.Open(OutputPath, FileMode.Create);
-            new XDocument(linkerElement).Save(fileStream);
+            var contentsToWrite = new XDocument(linkerElement).ToString();
+            if (File.Exists(OutputPath))
+            {
+                var existingContent = File.ReadAllText(OutputPath);
+                if (string.Equals(contentsToWrite, existingContent, StringComparison.Ordinal))
+                {
+                    Log.LogMessage(MessageImportance.Low, "Skipping unchanged file {0}", OutputPath);
+                    return true;
+                }
+            }
 
+            File.WriteAllText(OutputPath, contentsToWrite);
             return true;
         }
 
