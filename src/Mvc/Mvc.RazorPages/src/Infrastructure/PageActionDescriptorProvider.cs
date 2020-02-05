@@ -16,16 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public class PageActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly IPageRouteModelProvider[] _routeModelProviders;
-        private readonly MvcOptions _mvcOptions;
         private readonly IPageRouteModelConvention[] _conventions;
 
         public PageActionDescriptorProvider(
             IEnumerable<IPageRouteModelProvider> pageRouteModelProviders,
-            IOptions<MvcOptions> mvcOptionsAccessor,
             IOptions<RazorPagesOptions> pagesOptionsAccessor)
         {
             _routeModelProviders = pageRouteModelProviders.OrderBy(p => p.Order).ToArray();
-            _mvcOptions = mvcOptionsAccessor.Value;
 
             _conventions = pagesOptionsAccessor.Value.Conventions
                 .OfType<IPageRouteModelConvention>()
