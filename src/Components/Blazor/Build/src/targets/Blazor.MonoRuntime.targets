@@ -212,7 +212,7 @@
 
   <UsingTask TaskName="GenerateTypeGranularityLinkingConfig" AssemblyFile="$(BlazorTasksPath)" />
   <Target Name="_GenerateTypeGranularLinkerDescriptor"
-          Inputs="@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))"
+          Inputs="$(ProjectAssetsFile);@(_BlazorAssemblyToLink->WithMetadataValue('TypeGranularity', 'true'))"
           Outputs="$(_TypeGranularityLinkerDescriptor)">
 
     <GenerateTypeGranularityLinkingConfig
