@@ -15,6 +15,8 @@
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
+    <IsMacHelixQueue>false</IsMacHelixQueue>
+    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
