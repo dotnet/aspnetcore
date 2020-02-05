@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static partial class HttpUtilities
     {
-        public const string Http10Version = "HTTP/1.0";
-        public const string Http11Version = "HTTP/1.1";
-        public const string Http2Version = "HTTP/2";
-        public const string Http3Version = "HTTP/3";
-
         public const string HttpUriScheme = "http://";
         public const string HttpsUriScheme = "https://";
 
@@ -429,13 +424,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            return httpVersion switch
+            switch (httpVersion)
             {
-                HttpVersion.Http10 => Http10Version,
-                HttpVersion.Http11 => Http11Version,
-                _ => null,
+                case HttpVersion.Http10:
+                    return AspNetCore.Http.HttpProtocol.Http10;
+                case HttpVersion.Http11:
+                    return AspNetCore.Http.HttpProtocol.Http11;
+                case HttpVersion.Http2:
+                    return AspNetCore.Http.HttpProtocol.Http2;
+                case HttpVersion.Http3:
+                    return AspNetCore.Http.HttpProtocol.Http3;
+                default:
+                    Debug.Fail("Unexpected HttpVersion: " + httpVersion);
+                    return null;
             };
         }
+
         public static string MethodToString(HttpMethod method)
         {
             var methodIndex = (int)method;

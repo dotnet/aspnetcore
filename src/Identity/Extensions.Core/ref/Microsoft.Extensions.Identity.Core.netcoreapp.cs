@@ -576,7 +576,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual System.Threading.Tasks.Task<int> GetAccessFailedCountAsync(TUser user) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetAuthenticatorKeyAsync(TUser user) { throw null; }
-        protected static string GetChangeEmailTokenPurpose(string newEmail) { throw null; }
+        public static string GetChangeEmailTokenPurpose(string newEmail) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>> GetClaimsAsync(TUser user) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

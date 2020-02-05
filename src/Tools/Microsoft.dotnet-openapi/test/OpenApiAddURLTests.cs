@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.OpenApi.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,6 +17,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         public OpenApiAddURLTests(ITestOutputHelper output) : base(output){ }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_WithContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -23,8 +25,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -49,6 +50,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPI_Add_Url_NoContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -57,8 +59,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url});
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "nodisposition.yaml";
 
@@ -83,6 +84,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPI_Add_Url_NoExtension_AssumesJson()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -91,8 +93,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -117,6 +118,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NoSegment()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -125,8 +127,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "contoso.json";
 
@@ -151,6 +152,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -158,8 +160,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -184,6 +185,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_SameName_UniqueFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -191,8 +193,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var firstExpectedJsonName = "filename.json";
 
@@ -218,8 +219,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             app = GetApplication();
             run = app.Execute(new[] { "add", "url", NoExtensionUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var secondExpectedJsonName = "filename1.json";
 
@@ -246,6 +246,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NSwagCSharp()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -253,8 +254,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "NSwagCSharp" });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -279,6 +279,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -286,8 +287,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "NSwagTypeScript" });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = "filename.json";
 
@@ -312,6 +312,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_Url_OutputFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -319,8 +320,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", Path.Combine("outputdir", "file.yaml") });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonName = Path.Combine("outputdir", "file.yaml");
 
@@ -345,16 +345,16 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
         {
             var project = CreateBasicProject(withOpenApi: false);
 
             var app = GetApplication();
             var outputFile = Path.Combine("outputdir", "file.yaml");
-            var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", outputFile });
+            var appExitCode = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--output-file", outputFile });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(appExitCode);
 
             var expectedJsonName = Path.Combine("outputdir", "file.yaml");
 
@@ -379,8 +379,8 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
 
             // Second reference, same output
             app = GetApplication();
-            run = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
-            Assert.Equal(1, run);
+            appExitCode = app.Execute(new[] { "add", "url", DifferentUrl, "--output-file", outputFile});
+            Assert.Equal(1, appExitCode);
             Assert.True(_error.ToString().Contains("Aborting to avoid conflicts."), $"Should have aborted to avoid conflicts");
 
             // csproj contents
@@ -404,6 +404,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public void OpenApi_Add_URL_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -411,14 +412,12 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             app = GetApplication();
             run = app.Execute(new[] { "add", "url", "--output-file", "openapi.yaml", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(project.Project.Path);
@@ -432,6 +431,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenAPi_Add_URL_InvalidUrl()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -459,6 +459,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.False(File.Exists(jsonFile));
         }
 
+        [Flaky("<No longer needed, tracked in Kusto>", FlakyOn.All)]
         [Fact]
         public void OpenApi_Add_URL_ActualResponse()
         {
@@ -468,14 +469,12 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var url = ActualUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             app = GetApplication(realHttp: true);
             run = app.Execute(new[] { "add", "url", url });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             // csproj contents
             var csproj = new FileInfo(project.Project.Path);

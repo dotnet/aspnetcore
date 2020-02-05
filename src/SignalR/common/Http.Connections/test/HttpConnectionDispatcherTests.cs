@@ -1125,6 +1125,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
             using (StartVerifiableLog())
@@ -1166,6 +1167,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await request1.OrTimeout();
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+
+                count = 0;
+                // Wait until the second request has started internally
+                while (connection.TransportTask.IsCompleted && count < 50)
+                {
+                    count++;
+                    await Task.Delay(15);
+                }
+                if (count == 50)
+                {
+                    Assert.True(false, "Poll took too long to start");
+                }
                 Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
                 Assert.False(request2.IsCompleted);

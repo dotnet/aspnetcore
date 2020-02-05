@@ -1,4 +1,4 @@
-import '@dotnet/jsinterop';
+import '@microsoft/dotnet-js-interop';
 import './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';

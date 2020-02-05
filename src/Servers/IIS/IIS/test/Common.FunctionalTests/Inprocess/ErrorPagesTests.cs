@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             StopServer();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", responseString);
+            Assert.Contains("500.0", responseString);
             VerifyNoExtraTrailingBytes(responseString);
 
             await AssertLink(response);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             StopServer();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure", responseString);
+            Assert.Contains("500.0", responseString);
             VerifyNoExtraTrailingBytes(responseString);
 
             await AssertLink(response);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             StopServer();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("HTTP Error 500.30 - ANCM In-Process Start Failure", responseString);
+            Assert.Contains("500.30", responseString);
             VerifyNoExtraTrailingBytes(responseString);
 
             await AssertLink(response);

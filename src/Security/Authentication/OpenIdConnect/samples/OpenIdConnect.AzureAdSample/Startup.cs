@@ -148,7 +148,7 @@ namespace OpenIdConnect.AzureAdSample
                         }
                         catch (Exception ex)
                         {
-                            await response.WriteAsync($"AquireToken error: {ex.Message}");
+                            await response.WriteAsync($"AcquireToken error: {ex.Message}");
                         }
                     });
                 }

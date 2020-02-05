@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             examined = buffer.End;
 
             // Prepare the first span
-            var span = buffer.First.Span;
+            var span = buffer.FirstSpan;
             var lineIndex = span.IndexOf(ByteLF);
             if (lineIndex >= 0)
             {
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 TakeSingleHeader(pHeader, length, handler);
                             }
-                            // Read the header sucessfully, skip the reader forward past the header line.
+                            // Read the header successfully, skip the reader forward past the header line.
                             reader.Advance(length);
                             span = span.Slice(length);
                         }

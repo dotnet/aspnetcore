@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.AzP.macOS)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2267", FlakyOn.AzP.macOS)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);

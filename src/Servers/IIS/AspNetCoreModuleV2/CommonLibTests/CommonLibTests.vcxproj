@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigUtilityTests.cpp" />
+    <ClCompile Include="dotnet_exe_path_tests.cpp" />
     <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
@@ -70,6 +71,17 @@
     <ProjectReference Include="..\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <Project>{d57ea297-6dc2-4bc0-8c91-334863327863}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Fake\hello-dotnet.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fake\hello-dotnet.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Fake\hostfxr.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

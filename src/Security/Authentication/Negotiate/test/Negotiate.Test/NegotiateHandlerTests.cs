@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
 
             var ex = await Assert.ThrowsAsync<Exception>(() => SendAsync(server, "/404", testConnection, "Negotiate OtherError"));
-            Assert.Equal("A test other error occured", ex.Message);
+            Assert.Equal("A test other error occurred", ex.Message);
         }
 
         // Single Stage
@@ -552,15 +552,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         return "ServerKerberosBlob2";
                     case "CredentialError":
                         errorType = BlobErrorType.CredentialError;
-                        ex = new Exception("A test credential error occured");
+                        ex = new Exception("A test credential error occurred");
                         return null;
                     case "ClientError":
                         errorType = BlobErrorType.ClientError;
-                        ex = new Exception("A test client error occured");
+                        ex = new Exception("A test client error occurred");
                         return null;
                     case "OtherError":
                         errorType = BlobErrorType.Other;
-                        ex = new Exception("A test other error occured");
+                        ex = new Exception("A test other error occurred");
                         return null;
                     default:
                         errorType = BlobErrorType.Other;

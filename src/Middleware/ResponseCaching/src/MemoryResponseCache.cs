@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     Created = memoryCachedResponse.Created,
                     StatusCode = memoryCachedResponse.StatusCode,
                     Headers = memoryCachedResponse.Headers,
-                    Body = new SegmentReadStream(memoryCachedResponse.BodySegments, memoryCachedResponse.BodyLength)
+                    Body = memoryCachedResponse.Body
                 };
             }
             else
@@ -40,9 +41,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             if (entry is CachedResponse cachedResponse)
             {
-                var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
-                cachedResponse.Body.CopyTo(segmentStream);
-
                 _cache.Set(
                     key,
                     new MemoryCachedResponse
@@ -50,8 +48,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         Created = cachedResponse.Created,
                         StatusCode = cachedResponse.StatusCode,
                         Headers = cachedResponse.Headers,
-                        BodySegments = segmentStream.GetSegments(),
-                        BodyLength = segmentStream.Length
+                        Body = cachedResponse.Body
                     },
                     new MemoryCacheEntryOptions
                     {

@@ -21,7 +21,7 @@ namespace System.Buffers
         {
             if (buffer.IsSingleSegment)
             {
-                return buffer.First.Span;
+                return buffer.FirstSpan;
             }
             return buffer.ToArray();
         }

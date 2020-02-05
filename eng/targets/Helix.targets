@@ -1,14 +1,10 @@
 <Project>
 
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
-  </ItemGroup>
-
-  <ItemGroup>
+  <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
   </ItemGroup>
-
+  
 <!--
 
 This target is meant to be used when invoking helix tests on one project at a time.
@@ -35,6 +31,10 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
     </MSBuild>
   </Target>
 
+  <ItemGroup>
+    <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
+  </ItemGroup>
+
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
@@ -60,6 +60,11 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
 
+    <ItemGroup>
+      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll" />
+      <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll" />
+    </ItemGroup>
+
     <PropertyGroup>
       <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
       <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
@@ -78,8 +83,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

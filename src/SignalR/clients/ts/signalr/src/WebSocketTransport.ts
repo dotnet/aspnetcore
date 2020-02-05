@@ -35,7 +35,6 @@ export class WebSocketTransport implements ITransport {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
-
         this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting.");
 
         if (this.accessTokenFactory) {
@@ -139,13 +138,6 @@ export class WebSocketTransport implements ITransport {
 
     public stop(): Promise<void> {
         if (this.webSocket) {
-            // Clear websocket handlers because we are considering the socket closed now
-            this.webSocket.onclose = () => {};
-            this.webSocket.onmessage = () => {};
-            this.webSocket.onerror = () => {};
-            this.webSocket.close();
-            this.webSocket = undefined;
-
             // Manually invoke onclose callback inline so we know the HttpConnection was closed properly before returning
             // This also solves an issue where websocket.onclose could take 18+ seconds to trigger during network disconnects
             this.close(undefined);
@@ -156,6 +148,15 @@ export class WebSocketTransport implements ITransport {
 
     private close(event?: CloseEvent | Error): void {
         // webSocket will be null if the transport did not start successfully
+        if (this.webSocket) {
+            // Clear websocket handlers because we are considering the socket closed now
+            this.webSocket.onclose = () => {};
+            this.webSocket.onmessage = () => {};
+            this.webSocket.onerror = () => {};
+            this.webSocket.close();
+            this.webSocket = undefined;
+        }
+
         this.logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
             if (this.isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {

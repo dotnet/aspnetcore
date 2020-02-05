@@ -14,6 +14,7 @@
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
     <OutputPath />
 
@@ -52,7 +53,7 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/$(DefaultNetCoreTargetFramework)/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
