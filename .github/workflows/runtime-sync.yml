@@ -1,0 +1,29 @@
+name: AspNetCore-Runtime Code Sync
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
+    - cron:  '*/5 * * * *'
+
+jobs:
+  compare_repos:
+    name: Compare the shared code in the AspNetCore and Runtime repos and notify if they're out of sync.
+    runs-on: windows-latest
+    steps:
+    - name: Checkout aspnetcore
+      uses: actions/checkout@v2.0.0
+      with:
+        path: aspnetcore
+    - name: Checkout runtime
+      uses: actions/checkout@v2.0.0
+      with:
+        repository: 'dotnet/runtime'
+        path: runtime
+    - name: diff
+      shell: cmd
+      env:
+        RUNTIME_REPO: .\runtime
+      run: |
+        dir
+        dir %RUNTIME_REPO%\src\libraries\Common\src\System\Net\Http\Http2
+    # - name: notify
