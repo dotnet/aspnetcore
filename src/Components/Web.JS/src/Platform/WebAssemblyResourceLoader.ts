@@ -1,5 +1,6 @@
 export class WebAssemblyResourceLoader {
-  private log: { [name: string]: LoadLogEntry } = {};
+  private networkLoads: { [name: string]: LoadLogEntry } = {};
+  private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
   static async initAsync(): Promise<WebAssemblyResourceLoader> {
     const bootConfigResponse = await fetch('_framework/blazor.boot.json', {
@@ -7,10 +8,12 @@ export class WebAssemblyResourceLoader {
       credentials: 'include'
     });
 
-    return new WebAssemblyResourceLoader(await bootConfigResponse.json());
+    return new WebAssemblyResourceLoader(
+      await bootConfigResponse.json(),
+      await caches.open('blazor-resources'));
   }
 
-  constructor (public readonly bootConfig: BootJsonData)
+  constructor (public readonly bootConfig: BootJsonData, private cache: Cache)
   {
   }
 
@@ -20,52 +23,88 @@ export class WebAssemblyResourceLoader {
   }
 
   logToConsole() {
-    const totalTransferredBytes = Object.values(this.log).reduce(
-      (prev, item) => prev + (item.transferredBytes || 0), 0);
-    const totalTransferredMb = (totalTransferredBytes / (1024*1024)).toFixed(2);
+    const cacheLoadsEntries = Object.values(this.cacheLoads);
+    const networkLoadsEntries = Object.values(this.networkLoads);
+    const cacheTransferredBytes = countTotalBytes(cacheLoadsEntries);
+    const networkTransferredBytes = countTotalBytes(networkLoadsEntries);
+    const totalTransferredBytes = cacheTransferredBytes + networkTransferredBytes;
     const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
 
-    console.groupCollapsed(`%cblazor%c Loaded ${totalTransferredMb} MB resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
-    console.table(this.log);
+    console.groupCollapsed(`%cblazor%c Loaded ${toDataSizeString(totalTransferredBytes)} resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
+
+    if (cacheLoadsEntries.length) {
+      console.groupCollapsed(`Loaded ${toDataSizeString(cacheTransferredBytes)} resources from cache`);
+      console.table(this.cacheLoads);
+      console.groupEnd();
+    }
+
+    if (networkLoadsEntries.length) {
+      console.groupCollapsed(`Loaded ${toDataSizeString(networkTransferredBytes)} resources from network`);
+      console.table(this.networkLoads);
+      console.groupEnd();
+    }
+
     console.groupEnd();
   }
 
   private loadResource(name: string, url: string, contentHash: string): LoadingResource {
     const data = (async () => {
-      const response = await fetch(url, { cache: 'no-cache' });
-      const data = await response.arrayBuffer();
+      // Try to load from cache
+      const cacheKey = `${name}.${contentHash}`;
+      const cachedResponse = await this.cache.match(cacheKey);
+      let responseBuffer: ArrayBuffer;
 
-      // Now is an ideal moment to capture the performance stats for the request, since it
-      // only just completed and is most likely to still be in the buffer. However this is
-      // only done on a 'best effort' basis. Even if we do receive an entry, some of its
-      // properties may be blanked out if it was a CORS request.
-      const performanceEntry = getPerformanceEntry(response.url);
-      const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
-      this.log[name] = { transferredBytes };
+      if (cachedResponse) {
+        responseBuffer = await cachedResponse.arrayBuffer();
+        const transferredBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
+        this.cacheLoads[name] = { transferredBytes };
+      } else {
+        // It's not in the cache, so fetch from network
+        const response = await fetch(url, { cache: 'no-cache' });
+        responseBuffer = await response.arrayBuffer();
 
-      if (supportsCrypto) {
-        await assertContentHashMatchesAsync(name, data, contentHash);
+        // Now is an ideal moment to capture the performance stats for the request, since it
+        // only just completed and is most likely to still be in the buffer. However this is
+        // only done on a 'best effort' basis. Even if we do receive an entry, some of its
+        // properties may be blanked out if it was a CORS request.
+        const performanceEntry = getPerformanceEntry(response.url);
+        const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
+        this.networkLoads[name] = { transferredBytes };
 
-        // TODO: Add to cache only in this case where we've validated the hash
+        // crypto.subtle is only enabled on localhost and HTTPS origins
+        // We only write to the cache if we can validate the content hashes
+        if (typeof crypto !== 'undefined' && !!crypto.subtle) {
+          await assertContentHashMatchesAsync(name, responseBuffer, contentHash);
+
+          // Build a custom response object so we can track extra data such as transferredBytes
+          // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
+          this.cache.put(cacheKey, new Response(responseBuffer, {
+            headers: {
+              'content-length': (transferredBytes || response.headers.get('content-length') || '').toString()
+            }
+          }));
+        }
       }
 
-      return data;
+      return responseBuffer;
     })();
 
     return { name, url, data };
   }
 }
 
+function countTotalBytes(loads: LoadLogEntry[]) {
+  return loads.reduce((prev, item) => prev + (item.transferredBytes || 0), 0);
+}
+
+function toDataSizeString(byteCount: number) {
+  return `${(byteCount / (1024*1024)).toFixed(2)} MB`;
+}
+
 function getPerformanceEntry(url: string): PerformanceResourceTiming | undefined {
   if (typeof performance !== 'undefined') {
     return performance.getEntriesByName(url)[0] as PerformanceResourceTiming;
   }
-}
-
-function supportsCrypto(): boolean {
-  // crypto.subtle is only enabled on localhost and HTTPS origins, so we always
-  // must handle its absence
-  return typeof crypto !== 'undefined' && !!crypto.subtle;
 }
 
 async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, expectedHashPrefix: string) {
