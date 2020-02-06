@@ -159,33 +159,15 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.postRun = [];
   module.preloadPlugins = [];
 
+  // Override the mechanism for fetching the main wasm file so we can connect it to our cache
   module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
     (async () => {
       const dotnetWasmResourceName = 'dotnet.wasm';
       const dotnetWasmResource = await resourceLoader.loadResource(
-        dotnetWasmResourceName,
-        `_framework/wasm/${dotnetWasmResourceName}`,
-        resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
-
-      let compiledInstance: WebAssembly.Instance | null = null;
-
-      // Attempt streaming compilation
-      if (typeof WebAssembly['instantiateStreaming'] === 'function') {
-        try {
-          const streamingResult = await WebAssembly['instantiateStreaming'](dotnetWasmResource.response, imports);
-          compiledInstance = streamingResult.instance;
-        } catch (ex) {
-          console.info('Falling back to ArrayBuffer instantiation', ex);
-        }
-      }
-
-      // If that's not available or fails, fall back to ArrayBuffer instantiation
-      if (!compiledInstance) {
-        const arrayBuffer = await dotnetWasmResource.data;
-        const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
-        compiledInstance = arrayBufferResult.instance;
-      }
-
+        /* name */ dotnetWasmResourceName,
+        /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
+        /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
+      const compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       successCallback(compiledInstance);
     })();
     return []; // No exports
@@ -308,4 +290,26 @@ function attachInteropInvoker(): void {
       ) as string;
     },
   });
+}
+
+async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
+  // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
+  // it doesn't provide any method for supplying a customer response provider, and we want to integrate
+  // with our resource loader cache.
+
+  if (typeof WebAssembly['instantiateStreaming'] === 'function') {
+    try {
+      const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
+      return streamingResult.instance;
+    }
+    catch (ex) {
+      console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
+    }
+  }
+
+  // If that's not available or fails (e.g., due to incorrect content-type header),
+  // fall back to ArrayBuffer instantiation
+  const arrayBuffer = await wasmResource.data;
+  const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
+  return arrayBufferResult.instance;
 }
