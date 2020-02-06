@@ -25,6 +25,47 @@ export class WebAssemblyResourceLoader {
       .map(name => this.loadResource(name, url(name), resources[name]));
   }
 
+  loadResource(name: string, url: string, contentHash: string): LoadingResource {
+    if (!contentHash || contentHash.length === 0) {
+      throw new Error('Content hash is required');
+    }
+
+    const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
+    this.usedCacheKeys[cacheKey] = true;
+
+    const responseInfoPromise = (async () => {
+      // Try to load from cache
+      const cachedResponse = await this.cache.match(cacheKey);
+      if (cachedResponse) {
+        const transferredBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
+        this.cacheLoads[name] = { transferredBytes };
+        return { response: cachedResponse, isNetworkResponse: false };
+      }
+
+      // It's not cached, so fetch from network
+      const networkResponse = await fetch(url, { cache: 'no-cache' });
+      return { response: networkResponse, isNetworkResponse: true };
+    })();
+
+    // We add to the cache as a separate background task, without chaining it onto our return promise.
+    // This is because for WebAssembly.instantiateStreaming to make sense, we have to give it the
+    // response object before the body has been fully fetched from the network, which in turn implies
+    // we can't validate the content hash as part of this promise chain.
+    return {
+      name,
+      url,
+      response: responseInfoPromise.then(responseInfo => responseInfo.response.clone()),
+      data: responseInfoPromise.then(async responseInfo => {
+        if (responseInfo.isNetworkResponse) {
+          return this.tryValidateAndCacheAsync(name, cacheKey, contentHash, responseInfo.response);
+        } else {
+          // For cached responses, we already verified the data before caching it
+          return responseInfo.response.arrayBuffer();
+        }
+      })
+    };
+  }
+
   logToConsole() {
     const cacheLoadsEntries = Object.values(this.cacheLoads);
     const networkLoadsEntries = Object.values(this.networkLoads);
@@ -63,50 +104,33 @@ export class WebAssemblyResourceLoader {
     return Promise.all(deletionPromises);
   }
 
-  private loadResource(name: string, url: string, contentHash: string): LoadingResource {
-    const data = (async () => {
-      // Try to load from cache
-      const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
-      this.usedCacheKeys[cacheKey] = true;
-      const cachedResponse = await this.cache.match(cacheKey);
-      let responseBuffer: ArrayBuffer;
+  private async tryValidateAndCacheAsync(name: string, cacheKey: string, expectedContentHash: string, networkResponse: Response): Promise<ArrayBuffer> {
+    const responseBuffer = await networkResponse.arrayBuffer();
 
-      if (cachedResponse) {
-        responseBuffer = await cachedResponse.arrayBuffer();
-        const transferredBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
-        this.cacheLoads[name] = { transferredBytes };
-      } else {
-        // It's not in the cache, so fetch from network
-        const networkResponse = await fetch(url, { cache: 'no-cache' });
-        responseBuffer = await networkResponse.arrayBuffer();
+    // Now is an ideal moment to capture the performance stats for the request, since it
+    // only just completed and is most likely to still be in the buffer. However this is
+    // only done on a 'best effort' basis. Even if we do receive an entry, some of its
+    // properties may be blanked out if it was a CORS request.
+    const performanceEntry = getPerformanceEntry(networkResponse.url);
+    const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
+    this.networkLoads[name] = { transferredBytes };
 
-        // Now is an ideal moment to capture the performance stats for the request, since it
-        // only just completed and is most likely to still be in the buffer. However this is
-        // only done on a 'best effort' basis. Even if we do receive an entry, some of its
-        // properties may be blanked out if it was a CORS request.
-        const performanceEntry = getPerformanceEntry(networkResponse.url);
-        const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
-        this.networkLoads[name] = { transferredBytes };
+    // crypto.subtle is only enabled on localhost and HTTPS origins
+    // We only write to the cache if we can validate the content hashes
+    if (typeof crypto !== 'undefined' && !!crypto.subtle) {
+      await assertContentHashMatchesAsync(name, responseBuffer, expectedContentHash);
 
-        // crypto.subtle is only enabled on localhost and HTTPS origins
-        // We only write to the cache if we can validate the content hashes
-        if (typeof crypto !== 'undefined' && !!crypto.subtle) {
-          await assertContentHashMatchesAsync(name, responseBuffer, contentHash);
-
-          // Build a custom response object so we can track extra data such as transferredBytes
-          // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
-          await this.cache.put(cacheKey, new Response(responseBuffer, {
-            headers: {
-              'content-length': (transferredBytes || networkResponse.headers.get('content-length') || '').toString()
-            }
-          }));
+      // Build a custom response object so we can track extra data such as transferredBytes
+      // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
+      await this.cache.put(cacheKey, new Response(responseBuffer, {
+        headers: {
+          'content-type': networkResponse.headers.get('content-type') || '',
+          'content-length': (transferredBytes || networkResponse.headers.get('content-length') || '').toString()
         }
-      }
+      }));
+    }
 
-      return responseBuffer;
-    })();
-
-    return { name, url, data };
+    return responseBuffer;
   }
 }
 
@@ -146,6 +170,7 @@ interface BootJsonData {
 }
 
 interface ResourceGroups {
+  readonly wasm: ResourceList;
   readonly assembly: ResourceList;
   readonly pdb?: ResourceList;
 }
@@ -157,6 +182,7 @@ interface LoadLogEntry {
 export interface LoadingResource {
   name: string;
   url: string;
+  response: Promise<Response>;
   data: Promise<ArrayBuffer>;
 }
 

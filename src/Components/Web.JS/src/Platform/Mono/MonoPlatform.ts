@@ -145,8 +145,8 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
 }
 
 function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, onReady: () => void, onError: (reason?: any) => void) {
+  const resources = resourceLoader.bootConfig.resources;
   const module = {} as typeof Module;
-  const wasmBinaryFile = '_framework/wasm/dotnet.wasm';
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
@@ -159,11 +159,36 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.postRun = [];
   module.preloadPlugins = [];
 
-  module.locateFile = fileName => {
-    switch (fileName) {
-      case 'dotnet.wasm': return wasmBinaryFile;
-      default: return fileName;
-    }
+  module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
+    (async () => {
+      const dotnetWasmResourceName = 'dotnet.wasm';
+      const dotnetWasmResource = await resourceLoader.loadResource(
+        dotnetWasmResourceName,
+        `_framework/wasm/${dotnetWasmResourceName}`,
+        resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
+
+      let compiledInstance: WebAssembly.Instance | null = null;
+
+      // Attempt streaming compilation
+      if (typeof WebAssembly['instantiateStreaming'] === 'function') {
+        try {
+          const streamingResult = await WebAssembly['instantiateStreaming'](dotnetWasmResource.response, imports);
+          compiledInstance = streamingResult.instance;
+        } catch (ex) {
+          console.info('Falling back to ArrayBuffer instantiation', ex);
+        }
+      }
+
+      // If that's not available or fails, fall back to ArrayBuffer instantiation
+      if (!compiledInstance) {
+        const arrayBuffer = await dotnetWasmResource.data;
+        const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
+        compiledInstance = arrayBufferResult.instance;
+      }
+
+      successCallback(compiledInstance);
+    })();
+    return []; // No exports
   };
 
   module.preRun.push(() => {
@@ -174,7 +199,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     MONO.loaded_files = [];
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
-    const resources = resourceLoader.bootConfig.resources;
     resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`)
       .forEach(addResourceAsAssembly);
     if (resources.pdb) {

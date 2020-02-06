@@ -52,26 +52,6 @@
   <Target
     Name="PrepareBlazorOutputs"
     DependsOnTargets="_ResolveBlazorInputs;_ResolveBlazorOutputs;_GenerateBlazorBootJson">
-
-    <ItemGroup>
-      <MonoWasmFile Include="$(DotNetWebAssemblyRuntimePath)*" />
-      <BlazorJSFile Include="$(BlazorJSPath)" />
-      <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
-
-      <BlazorOutputWithTargetPath Include="@(MonoWasmFile)">
-        <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
-      <BlazorOutputWithTargetPath Include="@(BlazorJSFile)">
-        <TargetOutputPath>$(BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </BlazorOutputWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup Label="Static content supplied by NuGet packages">
-      <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
-        <TargetOutputPath>$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
-      </_BlazorPackageContentOutput>
-      <BlazorOutputWithTargetPath Include="@(_BlazorPackageContentOutput)" />
-    </ItemGroup>
   </Target>
 
   <Target Name="_ResolveBlazorInputs" DependsOnTargets="ResolveReferences;ResolveRuntimePackAssets">
@@ -147,6 +127,27 @@
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
       </BlazorOutputWithTargetPath>
+    </ItemGroup>
+
+    <ItemGroup>
+      <MonoWasmFile Include="$(DotNetWebAssemblyRuntimePath)*" />
+      <BlazorJSFile Include="$(BlazorJSPath)" />
+      <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
+
+      <BlazorOutputWithTargetPath Include="@(MonoWasmFile)">
+        <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+      </BlazorOutputWithTargetPath>
+      <BlazorOutputWithTargetPath Include="@(BlazorJSFile)">
+        <TargetOutputPath>$(BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+      </BlazorOutputWithTargetPath>
+    </ItemGroup>
+
+    <ItemGroup Label="Static content supplied by NuGet packages">
+      <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
+        <TargetOutputPath>$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
+      </_BlazorPackageContentOutput>
+      <BlazorOutputWithTargetPath Include="@(_BlazorPackageContentOutput)" />
     </ItemGroup>
   </Target>
 
@@ -321,6 +322,7 @@
       <_BlazorBootResource Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
       <_BlazorBootResource BootResourceType="assembly" Condition="'%(Extension)' == '.dll'" />
       <_BlazorBootResource BootResourceType="pdb" Condition="'%(Extension)' == '.pdb'" />
+      <_BlazorBootResource BootResourceType="wasm" Condition="'%(Extension)' == '.wasm'" />
     </ItemGroup>
 
     <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))">
