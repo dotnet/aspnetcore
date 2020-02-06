@@ -90,7 +90,7 @@ namespace Templates.Test.Helpers
             {
                 packagesDir = typeof(TemplatePackageInstaller).Assembly
                     .GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value
+                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value;
             }
 
             var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")
