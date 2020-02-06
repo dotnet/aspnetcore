@@ -37,12 +37,8 @@ async function boot(options?: any): Promise<void> {
     );
   });
 
-  // Fetch the boot JSON file
+  // Fetch the resources and prepare the Mono runtime
   const resourceLoader = await WebAssemblyResourceLoader.initAsync();
-  if (!resourceLoader.bootConfig.linkerEnabled) {
-    console.info('Blazor is running in dev mode without IL stripping. To make the bundle size significantly smaller, publish the application or see https://go.microsoft.com/fwlink/?linkid=870414');
-  }
-
   try {
     await platform.start(resourceLoader);
   } catch (ex) {

@@ -20,7 +20,14 @@ export class WebAssemblyResourceLoader {
   }
 
   logToConsole() {
+    const totalTransferredBytes = Object.values(this.log).reduce(
+      (prev, item) => prev + (item.transferredBytes || 0), 0);
+    const totalTransferredMb = (totalTransferredBytes / (1024*1024)).toFixed(2);
+    const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
+
+    console.groupCollapsed(`%cblazor%c Loaded ${totalTransferredMb} MB resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
     console.table(this.log);
+    console.groupEnd();
   }
 
   private loadResource(name: string, url: string, contentHash: string): LoadingResource {
@@ -34,7 +41,7 @@ export class WebAssemblyResourceLoader {
       // properties may be blanked out if it was a CORS request.
       const performanceEntry = getPerformanceEntry(response.url);
       const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
-      this.log[name] = { url, transferredBytes };
+      this.log[name] = { transferredBytes };
 
       return data;
     })();
@@ -62,7 +69,6 @@ interface ResourceGroups {
 }
 
 interface LoadLogEntry {
-  url: string;
   transferredBytes: number | undefined;
 }
 
