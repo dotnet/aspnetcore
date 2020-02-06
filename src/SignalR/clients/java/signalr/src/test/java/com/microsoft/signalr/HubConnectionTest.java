@@ -2256,7 +2256,11 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        TimeUnit.MILLISECONDS.sleep(100);
+        String message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
+        message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
+
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         String[] sentMessages = mockTransport.getSentMessages();
