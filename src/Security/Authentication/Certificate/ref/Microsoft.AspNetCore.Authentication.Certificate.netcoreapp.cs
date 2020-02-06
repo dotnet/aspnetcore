@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     {
         public CertificateAuthenticationOptions() { }
         public Microsoft.AspNetCore.Authentication.Certificate.CertificateTypes AllowedCertificateTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Security.Cryptography.X509Certificates.X509ChainTrustMode ChainTrustValidationMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Security.Cryptography.X509Certificates.X509Certificate2Collection CustomTrustStore { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public new Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationEvents Events { get { throw null; } set { } }
         public System.Security.Cryptography.X509Certificates.X509RevocationFlag RevocationFlag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Security.Cryptography.X509Certificates.X509RevocationMode RevocationMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
