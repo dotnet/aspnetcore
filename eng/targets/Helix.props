@@ -57,7 +57,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(IsHelixJob)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*.nupkg" />
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.*.nupkg" />
   </ItemGroup>
   
 </Project>
