@@ -29,7 +29,6 @@ class NegotiateResponseTest {
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
         assertEquals("connection-token-value", negotiateResponse.getConnectionToken());
         assertEquals(99, negotiateResponse.getVersion());
-        assertTrue(false);
     }
 
     @Test
