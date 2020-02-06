@@ -12,6 +12,20 @@ export class WebAssemblyResourceLoader {
   constructor (public readonly bootConfig: BootJsonData)
   {
   }
+
+  loadResources(resources: ResourceList, url: (name: string) => string): LoadingResource[] {
+    return Object.keys(resources)
+      .map(name => loadResource(name, url(name), resources[name]));
+  }
+}
+
+function loadResource(name: string, url: string, contentHash: string): LoadingResource {
+  const data = (async () => {
+    const response = await fetch(url, { cache: 'no-cache' });
+    return await response.arrayBuffer();
+  })();
+
+  return { name, url, data };
 }
 
 // Keep in sync with bootJsonData in Microsoft.AspNetCore.Blazor.Build
@@ -24,6 +38,12 @@ interface BootJsonData {
 interface ResourceGroups {
   readonly assembly: ResourceList;
   readonly pdb?: ResourceList;
+}
+
+export interface LoadingResource {
+  name: string;
+  url: string;
+  data: Promise<ArrayBuffer>;
 }
 
 type ResourceList = { [name: string]: string };

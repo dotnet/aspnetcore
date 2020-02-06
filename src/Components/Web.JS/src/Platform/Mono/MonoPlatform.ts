@@ -2,9 +2,10 @@ import { System_Object, System_String, System_Array, Pointer, Platform } from '.
 import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
-import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
+import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
+let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -167,49 +168,19 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
-    const mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, [
-      'string',
-      'number',
-      'number',
-    ]);
-
+    mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
 
     MONO.loaded_files = [];
 
-    // Determine the URLs of the assemblies we want to load, then begin fetching them all
+    // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
     const resources = resourceLoader.bootConfig.resources;
-    const loadResources = Object.keys(resources.assembly)
-      .concat(Object.keys(resources.pdb || {}))
-      .map(filename => `_framework/_bin/${filename}`);
-
-    loadResources.forEach(url => {
-      const filename = getFileNameFromUrl(url);
-      const runDependencyId = `blazor:${filename}`;
-      addRunDependency(runDependencyId);
-      asyncLoad(url).then(
-        data => {
-          const heapAddress = Module._malloc(data.length);
-          const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress, data.length);
-          heapMemory.set(data);
-          mono_wasm_add_assembly(filename, heapAddress, data.length);
-          MONO.loaded_files.push(toAbsoluteUrl(url));
-          removeRunDependency(runDependencyId);
-        },
-        errorInfo => {
-          // If it's a 404 on a .pdb, we don't want to block the app from starting up.
-          // We'll just skip that file and continue (though the 404 is logged in the console).
-          // This happens if you build a Debug build but then run in Production environment.
-          const isPdb404 = errorInfo instanceof XMLHttpRequest
-            && errorInfo.status === 404
-            && filename.match(/\.pdb$/);
-          if (!isPdb404) {
-            onError(errorInfo);
-          }
-          removeRunDependency(runDependencyId);
-        }
-      );
-    });
+    resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`)
+      .forEach(addResourceAsAssembly);
+    if (resources.pdb) {
+      resourceLoader.loadResources(resources.pdb, filename => `_framework/_bin/${filename}`)
+        .forEach(addResourceAsAssembly);
+    }
   });
 
   module.postRun.push(() => {
@@ -222,30 +193,43 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   });
 
   return module;
+
+  async function addResourceAsAssembly(dependency: LoadingResource) {
+    const runDependencyId = `blazor:${dependency.name}`;
+    Module.addRunDependency(runDependencyId);
+
+    try {
+      // Wait for the data to be loaded and verified
+      const dataBuffer = await dependency.data;
+
+      // Load it into the Mono runtime
+      const data = new Uint8Array(dataBuffer);
+      const heapAddress = Module._malloc(data.length);
+      const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress, data.length);
+      heapMemory.set(data);
+      mono_wasm_add_assembly(dependency.name, heapAddress, data.length);
+      MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
+    } catch (errorInfo) {
+      // If it's a 404 on a .pdb, we don't want to block the app from starting up.
+      // We'll just skip that file and continue (though the 404 is logged in the console).
+      // This happens if you build a Debug build but then run in Production environment.
+      const isPdb404 = errorInfo instanceof XMLHttpRequest
+        && errorInfo.status === 404
+        && dependency.name.match(/\.pdb$/);
+      if (!isPdb404) {
+        onError(errorInfo);
+        return;
+      }
+    }
+
+    Module.removeRunDependency(runDependencyId);
+  }
 }
 
 const anchorTagForAbsoluteUrlConversions = document.createElement('a');
 function toAbsoluteUrl(possiblyRelativeUrl: string) {
   anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
   return anchorTagForAbsoluteUrlConversions.href;
-}
-
-function asyncLoad(url: string) {
-  return new Promise<Uint8Array>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, /* async: */ true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function xhr_onload() {
-      if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
-        const asm = new Uint8Array(xhr.response);
-        resolve(asm);
-      } else {
-        reject(xhr);
-      }
-    };
-    xhr.onerror = reject;
-    xhr.send(undefined);
-  });
 }
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
