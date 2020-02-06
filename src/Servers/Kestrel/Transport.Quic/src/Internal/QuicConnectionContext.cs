@@ -50,7 +50,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 if (_closeTask != default)
                 {
-                    await _connection.CloseAsync(errorCode: 0);
+                    _closeTask  = _connection.CloseAsync(errorCode: 0);
+                    await _closeTask;
                 }
                 else 
                 {
