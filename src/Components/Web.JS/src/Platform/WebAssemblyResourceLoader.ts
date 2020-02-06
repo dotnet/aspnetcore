@@ -141,6 +141,7 @@ async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, ex
 interface BootJsonData {
   readonly entryAssembly: string;
   readonly resources: ResourceGroups;
+  readonly debugBuild: boolean;
   readonly linkerEnabled: boolean;
 }
 

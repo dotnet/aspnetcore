@@ -327,9 +327,14 @@
       <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHashes" />
     </GetFileHash>
 
+    <PropertyGroup>
+      <_IsDebugBuild>false</_IsDebugBuild>
+      <_IsDebugBuild Condition="'$(Configuration)' == 'Debug'">true</_IsDebugBuild>
+    </PropertyGroup>
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorBootResourceWithHashes)"
+      DebugBuild="$(_IsDebugBuild)"
       LinkerEnabled="$(BlazorLinkOnBuild)"
       OutputPath="$(BlazorBootJsonIntermediateOutputPath)" />
 

@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public ITaskItem[] Resources { get; set; }
 
         [Required]
+        public bool DebugBuild { get; set; }
+
+        [Required]
         public bool LinkerEnabled { get; set; }
 
         [Required]
@@ -60,6 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             {
                 EntryAssembly = AssemblyName.GetAssemblyName(AssemblyPath).Name,
                 Resources = resourcesByGroup,
+                DebugBuild,
                 LinkerEnabled,
             };
 
