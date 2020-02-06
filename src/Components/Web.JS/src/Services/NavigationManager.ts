@@ -110,7 +110,7 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 let testAnchor: HTMLAnchorElement;
-function toAbsoluteUri(relativeUri: string) {
+export function toAbsoluteUri(relativeUri: string) {
   testAnchor = testAnchor || document.createElement('a');
   testAnchor.href = relativeUri;
   return testAnchor.href;

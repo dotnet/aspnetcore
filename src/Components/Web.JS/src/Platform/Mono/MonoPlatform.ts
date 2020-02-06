@@ -184,8 +184,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   });
 
   module.postRun.push(() => {
-    // TODO: Only in debug builds
-    resourceLoader.logToConsole();
+    resourceLoader.logToConsole(); // TODO: Only in debug builds
+    resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);

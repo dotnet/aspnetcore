@@ -1,4 +1,7 @@
+import { toAbsoluteUri } from "../Services/NavigationManager";
+
 export class WebAssemblyResourceLoader {
+  private usedCacheKeys: { [key: string]: boolean } = {};
   private networkLoads: { [name: string]: LoadLogEntry } = {};
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
@@ -28,7 +31,7 @@ export class WebAssemblyResourceLoader {
     const cacheTransferredBytes = countTotalBytes(cacheLoadsEntries);
     const networkTransferredBytes = countTotalBytes(networkLoadsEntries);
     const totalTransferredBytes = cacheTransferredBytes + networkTransferredBytes;
-    const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
+    const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '%c' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
 
     console.groupCollapsed(`%cblazor%c Loaded ${toDataSizeString(totalTransferredBytes)} resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
 
@@ -47,10 +50,24 @@ export class WebAssemblyResourceLoader {
     console.groupEnd();
   }
 
+  async purgeUnusedCacheEntriesAsync() {
+    // We want to keep the cache small because, even though the browser will evict entries if it
+    // gets too big, we don't want to be considered problematic by the end user viewing storage stats
+    const cachedRequests = await this.cache.keys();
+    const deletionPromises = cachedRequests.map(async cachedRequest => {
+      if (!(cachedRequest.url in this.usedCacheKeys)) {
+        await this.cache.delete(cachedRequest);
+      }
+    });
+
+    return Promise.all(deletionPromises);
+  }
+
   private loadResource(name: string, url: string, contentHash: string): LoadingResource {
     const data = (async () => {
       // Try to load from cache
-      const cacheKey = `${name}.${contentHash}`;
+      const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
+      this.usedCacheKeys[cacheKey] = true;
       const cachedResponse = await this.cache.match(cacheKey);
       let responseBuffer: ArrayBuffer;
 
@@ -60,14 +77,14 @@ export class WebAssemblyResourceLoader {
         this.cacheLoads[name] = { transferredBytes };
       } else {
         // It's not in the cache, so fetch from network
-        const response = await fetch(url, { cache: 'no-cache' });
-        responseBuffer = await response.arrayBuffer();
+        const networkResponse = await fetch(url, { cache: 'no-cache' });
+        responseBuffer = await networkResponse.arrayBuffer();
 
         // Now is an ideal moment to capture the performance stats for the request, since it
         // only just completed and is most likely to still be in the buffer. However this is
         // only done on a 'best effort' basis. Even if we do receive an entry, some of its
         // properties may be blanked out if it was a CORS request.
-        const performanceEntry = getPerformanceEntry(response.url);
+        const performanceEntry = getPerformanceEntry(networkResponse.url);
         const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
         this.networkLoads[name] = { transferredBytes };
 
@@ -78,9 +95,9 @@ export class WebAssemblyResourceLoader {
 
           // Build a custom response object so we can track extra data such as transferredBytes
           // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
-          this.cache.put(cacheKey, new Response(responseBuffer, {
+          await this.cache.put(cacheKey, new Response(responseBuffer, {
             headers: {
-              'content-length': (transferredBytes || response.headers.get('content-length') || '').toString()
+              'content-length': (transferredBytes || networkResponse.headers.get('content-length') || '').toString()
             }
           }));
         }
