@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <HelixTargetQueue Condition="'$(UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
-    <HelixTargetQueue Condition="'$(UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Filename).Replace('.Open',''))" />
+    <HelixTargetQueue Condition="'$(UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Filename)'->Replace('.Open',''))" />
   </ItemGroup>
 
   <PropertyGroup>
