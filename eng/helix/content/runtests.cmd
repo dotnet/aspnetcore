@@ -28,6 +28,8 @@ if EXIST ".\Microsoft.AspNetCore.App" (
 
 set HELIX=%helixQueue%
 
+dir
+
 if (%targetFrameworkIdentifier%==.NETFramework) (
     xunit.console.exe %target% -xml testResults.xml
     exit /b %ERRORLEVEL%
