@@ -40,6 +40,7 @@
   </Target>
 
   <Target Name="Restore">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Restore" />
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
     <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
@@ -54,6 +55,7 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
     <CallTarget Targets="_Pack" Condition="'$(PackOnBuild)' == 'true'" />
   </Target>
 
@@ -118,6 +120,7 @@
   </Target>
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>

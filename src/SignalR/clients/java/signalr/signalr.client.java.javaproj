@@ -37,8 +37,9 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
-  <!-- Define Target overrides after importing Directory.Build.targets so these don't get overriden -->
+  <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" />
     <Message Importance="high" Text="java:signalr -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
@@ -46,10 +47,12 @@
   </Target>
 
   <Target Name="Build">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" />
   </Target>
 
   <Target Name="Test">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
