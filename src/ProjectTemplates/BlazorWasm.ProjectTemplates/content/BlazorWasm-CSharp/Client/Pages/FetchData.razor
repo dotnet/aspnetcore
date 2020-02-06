@@ -1,8 +1,19 @@
 ﻿@page "/fetchdata"
+@*#if  (!NoAuth && Hosted)
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject IAccessTokenProvider AuthenticationService
+@inject NavigationManager Navigation
+#endif*@
 @*#if  (Hosted)
 @using BlazorWasm_CSharp.Shared
 #endif*@
+@*#if  (!NoAuth && Hosted)
+@attribute [Authorize]
+#endif*@
+@*#if  (NoAuth || !Hosted)
 @inject HttpClient Http
+#endif*@
 
 <h1>Weather forecast</h1>
 
@@ -43,7 +54,30 @@ else
     protected override async Task OnInitializedAsync()
     {
         @*#if (Hosted)
+            @*#if (!NoAuth)
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+        var tokenResult = await AuthenticationService.GetAccessToken();
+
+        switch (tokenResult.Status)
+        {
+            case AccessTokenResultStatus.Success:
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokenResult.Token.Value}");
+                forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+                break;
+            case AccessTokenResultStatus.RequiresRedirect:
+                // Save any page state here before redirecting to the Identity Provider.
+                // You will be redirected back to this page once the authorization successfully completes.
+                Navigation.NavigateTo(tokenResult.RedirectUrl);
+                break;
+            default:
+                break;
+        }
+
+            #else
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+            #endif*@
         #else
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         #endif*@
