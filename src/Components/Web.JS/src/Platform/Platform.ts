@@ -1,5 +1,7 @@
+import { WebAssemblyResourceLoader } from "./WebAssemblyResourceLoader";
+
 export interface Platform {
-  start(loadAssemblyUrls: string[], loadPdbUrls: string[]): Promise<void>;
+  start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
 
   callEntryPoint(assemblyName: string): void;
 

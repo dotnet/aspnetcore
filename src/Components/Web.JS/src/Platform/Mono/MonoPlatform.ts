@@ -2,6 +2,7 @@ import { System_Object, System_String, System_Array, Pointer, Platform } from '.
 import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
+import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 const appBinDirName = 'appBinDir';
@@ -9,9 +10,9 @@ const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export const monoPlatform: Platform = {
-  start: function start(loadAssemblyUrls: string[], loadPdbUrls: string[]) {
+  start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
-      if (loadPdbUrls.length > 0) {
+      if (resourceLoader.bootConfig.resources.pdb) {
         attachDebuggerHotkey();
       }
 
@@ -24,7 +25,7 @@ export const monoPlatform: Platform = {
       // For compatibility with macOS Catalina, we have to assign a temporary value to window.Module
       // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
-        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, loadPdbUrls, resolve, reject);
+        window['Module'] = createEmscriptenModuleInstance(resourceLoader, resolve, reject);
         addScriptTagsToDocument();
       });
     });
@@ -142,7 +143,7 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
   document.body.appendChild(scriptElem);
 }
 
-function createEmscriptenModuleInstance(loadAssemblyUrls: string[], loadPdbUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
+function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
   const wasmBinaryFile = '_framework/wasm/dotnet.wasm';
   const suppressMessages = ['DEBUGGING ENABLED'];
@@ -176,7 +177,13 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], loadPdbUrls:
 
     MONO.loaded_files = [];
 
-    loadAssemblyUrls.concat(loadPdbUrls).forEach(url => {
+    // Determine the URLs of the assemblies we want to load, then begin fetching them all
+    const resources = resourceLoader.bootConfig.resources;
+    const loadResources = Object.keys(resources.assembly)
+      .concat(Object.keys(resources.pdb || {}))
+      .map(filename => `_framework/_bin/${filename}`);
+
+    loadResources.forEach(url => {
       const filename = getFileNameFromUrl(url);
       const runDependencyId = `blazor:${filename}`;
       addRunDependency(runDependencyId);
