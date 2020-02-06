@@ -10,6 +10,7 @@
     <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\Components\Blazor\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepoRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" ProjectPath="$(RepoRoot)src\Components\Blazor\Validation\src\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\Blazor\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj"  />
     <ProjectReferenceProvider Include="BlazorServerApp" ProjectPath="$(RepoRoot)src\Components\Samples\BlazorServerApp\BlazorServerApp.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepoRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj" RefProjectPath="$(RepoRoot)src\Components\Blazor\Blazor\ref\Microsoft.AspNetCore.Blazor.csproj" />
   </ItemGroup>

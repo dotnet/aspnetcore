@@ -206,6 +206,11 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>3.1.0</MicrosoftAspNetCoreIdentityUIPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>3.1.0</MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsAuthorizationPackageVersion>3.1.0</MicrosoftAspNetCoreComponentsAuthorizationPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
     <!-- Partner teams -->
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
@@ -273,6 +278,9 @@
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion)</MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>$(MicrosoftAspNetCoreIdentityUIPackageVersion)</MicrosoftAspNetCoreIdentityUIPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">

@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageTags>aspnetcore;components</PackageTags>
 
     <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to

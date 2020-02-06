@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             try
             {
                 assertion();
-                throw new InvalidOperationException("The assertion succeded after the timeout.");
+                throw new InvalidOperationException("The assertion succeeded after the timeout.");
             }
             catch (Exception ex)
             {
