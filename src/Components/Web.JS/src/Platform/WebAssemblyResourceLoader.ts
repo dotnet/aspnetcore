@@ -43,6 +43,12 @@ export class WebAssemblyResourceLoader {
       const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
       this.log[name] = { transferredBytes };
 
+      if (supportsCrypto) {
+        await assertContentHashMatchesAsync(name, data, contentHash);
+
+        // TODO: Add to cache only in this case where we've validated the hash
+      }
+
       return data;
     })();
 
@@ -53,6 +59,25 @@ export class WebAssemblyResourceLoader {
 function getPerformanceEntry(url: string): PerformanceResourceTiming | undefined {
   if (typeof performance !== 'undefined') {
     return performance.getEntriesByName(url)[0] as PerformanceResourceTiming;
+  }
+}
+
+function supportsCrypto(): boolean {
+  // crypto.subtle is only enabled on localhost and HTTPS origins, so we always
+  // must handle its absence
+  return typeof crypto !== 'undefined' && !!crypto.subtle;
+}
+
+async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, expectedHashPrefix: string) {
+  const actualHashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const actualHash = new Uint8Array(actualHashBuffer);
+  for (var byteIndex = 0; byteIndex*2 < expectedHashPrefix.length; byteIndex++) {
+    const expectedByte = parseInt(expectedHashPrefix.substr(byteIndex * 2, 2), 16);
+    const actualByte = actualHash[byteIndex];
+    if (actualByte !== expectedByte) {
+      const actualHashString = Array.from(actualHash).map(b => b.toString(16).padStart(2, '0')).join('');
+      throw new Error(`Resource hash mismatch for '${name}'. Expected prefix: '${expectedHashPrefix}'. Actual hash: '${actualHashString}'`);
+    }
   }
 }
 
