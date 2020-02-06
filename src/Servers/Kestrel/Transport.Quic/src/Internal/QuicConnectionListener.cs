@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     /// </summary>
     internal class QuicConnectionListener : IConnectionListener, IAsyncDisposable, IDisposable
     {
-        private IQuicTrace _log;
+        private readonly IQuicTrace _log;
         private bool _disposed;
-        private QuicTransportContext _context;
-        private QuicListener _listener;
+        private readonly QuicTransportContext _context;
+        private readonly QuicListener _listener;
 
         public QuicConnectionListener(QuicTransportOptions options, IHostApplicationLifetime lifetime, IQuicTrace log, EndPoint endpoint)
         {

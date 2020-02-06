@@ -19,11 +19,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     internal class QuicStreamContext : TransportConnection, IQuicStreamFeature
     {
         private readonly Task _processingTask;
-        private QuicStream _stream;
-        private QuicConnectionContext _connection;
+        private readonly QuicStream _stream;
+        private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
-        private IQuicTrace _log;
+        private readonly IQuicTrace _log;
         private string _connectionId;
         private const int MinAllocBufferSize = 4096;
         private volatile Exception _shutdownReason;
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 state._waitForConnectionClosedTcs.TrySetResult(null);
             },
             this,
-            preferLocal: true);
+            preferLocal: false);
         }
 
         private void CancelConnectionClosedToken()
