@@ -1,4 +1,4 @@
-import { toAbsoluteUri } from "../Services/NavigationManager";
+import { toAbsoluteUri } from '../Services/NavigationManager';
 
 export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
@@ -11,9 +11,11 @@ export class WebAssemblyResourceLoader {
       credentials: 'include'
     });
 
+    const relativeBaseHref = document.baseURI.substring(document.location.origin.length);
+    const cacheName = `blazorresources:${relativeBaseHref}`;
     return new WebAssemblyResourceLoader(
       await bootConfigResponse.json(),
-      await caches.open('blazor-resources'));
+      await caches.open(cacheName));
   }
 
   constructor (public readonly bootConfig: BootJsonData, private cache: Cache)
