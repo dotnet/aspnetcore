@@ -38,6 +38,8 @@ describe("HubConnection", () => {
                 } finally {
                     await hubConnection.stop();
                 }
+
+                throw new Error();
             });
         });
 

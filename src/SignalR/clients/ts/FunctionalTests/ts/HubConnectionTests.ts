@@ -76,6 +76,8 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
+
+                fail(new Error());
             });
 
             if (shouldRunHttpsTests) {
