@@ -233,18 +233,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (asyncResult._cancellationToken.IsCancellationRequested)
                     {
-                        logger.LogDebug($"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteCancelled,$"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
                         asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
                         var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
-                        logger.LogError(0, exception, "FlushAsync.IOCompleted");
+                        logger.LogError(LoggerEventIds.WriteError, exception, "FlushAsync.IOCompleted");
                         asyncResult.Fail(exception);
                     }
                     else
                     {
-                        logger.LogDebug($"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
+                        logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
                         asyncResult.FailSilently();
                     }
                 }
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                logger.LogError(0, e, "FlushAsync.IOCompleted");
+                logger.LogError(LoggerEventIds.WriteError, e, "FlushAsync.IOCompleted");
                 asyncResult.Fail(e);
             }
         }
