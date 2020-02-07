@@ -26,10 +26,10 @@ jobs:
       working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\Http2\
       env:
         ASPNETCORE_REPO: d:\a\aspnetcore\aspnetcore\aspnetcore\
+      # https://superuser.com/questions/280425/getting-robocopy-to-return-a-proper-exit-code
       run: |
         dir
-        CopyToAspNetCore.cmd
-        errorlevel=0
+        CopyToAspNetCore.cmd ^& IF %ERRORLEVEL% LSS 8 SET ERRORLEVEL = 0
     - name: Diff
       shell: cmd
       working-directory: .\aspnetcore\
