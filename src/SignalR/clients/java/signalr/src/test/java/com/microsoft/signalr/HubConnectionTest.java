@@ -2256,14 +2256,12 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        TimeUnit.MILLISECONDS.sleep(100);
-        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        String message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
+        message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
-        String[] sentMessages = mockTransport.getSentMessages();
-        assertTrue(sentMessages.length > 1);
-        for (int i = 1; i < sentMessages.length; i++) {
-            assertEquals("{\"type\":6}" + RECORD_SEPARATOR, sentMessages[i]);
-        }
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
     }
 
     @Test
