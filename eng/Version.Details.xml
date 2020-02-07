@@ -29,33 +29,33 @@
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
       <Sha>71c5f7e3dc03faac4c581d0f335ff589d2332b82</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="dotnet-ef" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.1.20106.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.1.20106.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>9e716d673f1b2e35b0900bec38ddd64ade309809</Sha>
+      <Sha>3d2f67b2966aa77988792759eb9a5b3b7a88feaa</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-alpha.1.20079.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
