@@ -1,9 +1,11 @@
 name: AspNetCore-Runtime Code Sync
 on:
-  schedule:
+  # While testing
+  push
+  # schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
-    - cron:  '*/5 * * * *'
+    # - cron:  '*/5 * * * *'
 
 jobs:
   compare_repos:
@@ -19,11 +21,18 @@ jobs:
       with:
         repository: 'dotnet/runtime'
         path: runtime
-    - name: diff
+    - name: Copy
       shell: cmd
+      working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\Http2\
       env:
-        RUNTIME_REPO: .\runtime
+        ASPNETCORE_REPO: d:\a\aspnetcore\aspnetcore\aspnetcore\
       run: |
         dir
-        dir %RUNTIME_REPO%\src\libraries\Common\src\System\Net\Http\Http2
+        CopyToAspNetCore.cmd
+    - name: Diff
+      shell: cmd
+      working-directory: .\aspnetcore\
+        run: |
+          git status
+          git diff
     # - name: notify
