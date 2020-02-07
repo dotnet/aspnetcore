@@ -5,27 +5,27 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static partial class WebHostBuilderMsQuicExtensions
     {
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseMsQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) { throw null; }
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseMsQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicTransportOptions> configureOptions) { throw null; }
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) { throw null; }
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions> configureOptions) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
-    public partial class MsQuicConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
+    public partial class QuicConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
     {
-        public MsQuicConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime lifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public QuicConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
-    public partial class MsQuicTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory, Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory
+    public partial class QuicTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory, Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory
     {
-        public MsQuicTransportFactory(Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicTransportOptions> options) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public QuicTransportFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions> options) { }
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
-    public partial class MsQuicTransportOptions
+    public partial class QuicTransportOptions
     {
-        public MsQuicTransportOptions() { }
+        public QuicTransportOptions() { }
+        public long AbortErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string Alpn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Security.Cryptography.X509Certificates.X509Certificate2 Certificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.TimeSpan IdleTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }

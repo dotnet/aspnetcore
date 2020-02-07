@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var streamId = streamFeature.StreamId;
                     HighestStreamId = streamId;
 
-                    if (streamFeature.IsUnidirectional)
+                    if (!streamFeature.CanWrite)
                     {
                         var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
