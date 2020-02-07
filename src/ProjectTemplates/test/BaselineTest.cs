@@ -119,6 +119,16 @@ namespace Templates.Test
                 text += "supportpagesandviewstrue";
             }
 
+            if (arguments.Contains("-ho"))
+            {
+                text += "hosted";
+            }
+
+            if (arguments.Contains("--pwa"))
+            {
+                text += "pwa";
+            }
+
             return text;
         }
 
