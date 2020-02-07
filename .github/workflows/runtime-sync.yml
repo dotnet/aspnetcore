@@ -29,7 +29,7 @@ jobs:
       run: |
         dir
         CopyToAspNetCore.cmd
-        echo Exit Code is %errorlevel%
+        errorlevel=0
     - name: Diff
       shell: cmd
       working-directory: .\aspnetcore\
