@@ -332,12 +332,14 @@
     <PropertyGroup>
       <_IsDebugBuild>false</_IsDebugBuild>
       <_IsDebugBuild Condition="'$(Configuration)' == 'Debug'">true</_IsDebugBuild>
+      <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
     </PropertyGroup>
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorBootResourceWithHashes)"
       DebugBuild="$(_IsDebugBuild)"
       LinkerEnabled="$(BlazorLinkOnBuild)"
+      CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(BlazorBootJsonIntermediateOutputPath)" />
 
     <ItemGroup>

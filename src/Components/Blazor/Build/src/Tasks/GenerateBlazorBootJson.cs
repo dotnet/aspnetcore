@@ -25,6 +25,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public bool LinkerEnabled { get; set; }
 
         [Required]
+        public bool CacheBootResources { get; set; }
+
+        [Required]
         public string OutputPath { get; set; }
 
         public override bool Execute()
@@ -65,6 +68,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 Resources = resourcesByGroup,
                 DebugBuild,
                 LinkerEnabled,
+                CacheBootResources,
             };
 
             using (var fileStream = File.Create(OutputPath))

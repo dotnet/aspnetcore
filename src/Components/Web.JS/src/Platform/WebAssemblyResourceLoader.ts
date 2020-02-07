@@ -28,6 +28,15 @@ export class WebAssemblyResourceLoader {
   }
 
   loadResource(name: string, url: string, contentHash: string): LoadingResource {
+    const networkFetchOptions: RequestInit = { cache: 'no-cache' };
+    if (!this.bootConfig.cacheBootResources) {
+      // Bypass the entire cache flow, including checking hashes, etc.
+      // This gives developers an easy opt-out if they don't like anything about the default cache mechanism
+      const response = fetch(url, networkFetchOptions);
+      const data = response.then(r => r.clone().arrayBuffer());
+      return { name, url, response, data };
+    }
+
     if (!contentHash || contentHash.length === 0) {
       throw new Error('Content hash is required');
     }
@@ -44,28 +53,22 @@ export class WebAssemblyResourceLoader {
         return { response: cachedResponse, isNetworkResponse: false };
       }
 
-      // It's not cached, so fetch from network
-      const networkResponse = await fetch(url, { cache: 'no-cache' });
+      // It's not cached (or caching is now disabled), so fetch from network
+      const networkResponse = await fetch(url, networkFetchOptions);
       return { response: networkResponse, isNetworkResponse: true };
     })();
 
-    // We add to the cache as a separate background task, without chaining it onto our return promise.
+    // We add to the cache as an independent background task, without chaining it onto the 'response' promise.
     // This is because for WebAssembly.instantiateStreaming to make sense, we have to give it the
     // response object before the body has been fully fetched from the network, which in turn implies
-    // we can't validate the content hash as part of this promise chain.
-    return {
-      name,
-      url,
-      response: responseInfoPromise.then(responseInfo => responseInfo.response.clone()),
-      data: responseInfoPromise.then(async responseInfo => {
-        if (responseInfo.isNetworkResponse) {
-          return this.tryValidateAndCacheAsync(name, cacheKey, contentHash, responseInfo.response);
-        } else {
-          // For cached responses, we already verified the data before caching it
-          return responseInfo.response.arrayBuffer();
-        }
-      })
-    };
+    // we can't validate the content hash as part of that promise chain.
+    const response = responseInfoPromise.then(responseInfo => responseInfo.response.clone());
+    const data = responseInfoPromise.then(async responseInfo =>
+      responseInfo.isNetworkResponse
+        ? this.tryValidateAndCacheAsync(name, cacheKey, contentHash, responseInfo.response)
+        : responseInfo.response.arrayBuffer() // For cached responses, we already validated before caching
+    );
+    return { name, url, response, data };
   }
 
   logToConsole() {
@@ -169,6 +172,7 @@ interface BootJsonData {
   readonly resources: ResourceGroups;
   readonly debugBuild: boolean;
   readonly linkerEnabled: boolean;
+  readonly cacheBootResources: boolean;
 }
 
 interface ResourceGroups {
