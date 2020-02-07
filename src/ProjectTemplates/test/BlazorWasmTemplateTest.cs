@@ -110,6 +110,13 @@ namespace Templates.Test
             var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
             AspNetProcess.EnsureDevelopmentCertificates();
 
+            // When publishing the PWA template, we move service-worker.published.js to overwrite
+            // service-worker.js, and append a GUID variable
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "The 'published' service worker should be renamed on publish");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "There should be a service worker in the output");
+            var serviceWorkerContents = File.ReadAllText(Path.Combine(publishDir, "service-worker.js"));
+            Assert.True(serviceWorkerContents.Contains("const serviceWorkerVersion = '"), "The published service worker should contain a version variable");
+
             Output.WriteLine("Running dotnet serve on published output...");
             using var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
 
