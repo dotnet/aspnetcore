@@ -12,7 +12,7 @@ export class WebAssemblyResourceLoader {
     });
 
     const relativeBaseHref = document.baseURI.substring(document.location.origin.length);
-    const cacheName = `blazorresources:${relativeBaseHref}`;
+    const cacheName = `blazor-resources-${relativeBaseHref}`;
     return new WebAssemblyResourceLoader(
       await bootConfigResponse.json(),
       await caches.open(cacheName));
