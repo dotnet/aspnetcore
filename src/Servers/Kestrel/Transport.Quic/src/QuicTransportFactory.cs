@@ -16,10 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
         private QuicTrace _log;
-        private IHostApplicationLifetime _applicationLifetime;
         private QuicTransportOptions _options;
 
-        public QuicTransportFactory(IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
+        public QuicTransportFactory(ILoggerFactory loggerFactory, IOptions<QuicTransportOptions> options)
         {
             if (options == null)
             {
@@ -33,13 +32,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic");
             _log = new QuicTrace(logger);
-            _applicationLifetime = applicationLifetime;
             _options = options.Value;
         }
 
         public  ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-            var transport = new QuicConnectionListener(_options, _applicationLifetime, _log, endpoint);
+            var transport = new QuicConnectionListener(_options, _log, endpoint);
             return new ValueTask<IConnectionListener>(transport);
         }
     }

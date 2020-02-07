@@ -5,8 +5,6 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Quic;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;

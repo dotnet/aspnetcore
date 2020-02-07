@@ -6,15 +6,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
@@ -28,10 +22,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IHostApplicationLifetime lifetime, IQuicTrace log, EndPoint endpoint)
+        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
         {
             _log = log;
-            _context = new QuicTransportContext(lifetime, _log, options);
+            _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
             var sslConfig = new SslServerAuthenticationOptions();
             sslConfig.ServerCertificate = options.Certificate;

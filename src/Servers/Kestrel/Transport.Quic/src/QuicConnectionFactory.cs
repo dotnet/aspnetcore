@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Quic;
-using System.Net.Quic.Implementations;
 using System.Net.Security;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     {
         private QuicTransportContext _transportContext;
 
-        public QuicConnectionFactory(IOptions<QuicTransportOptions> options, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory)
+        public QuicConnectionFactory(IOptions<QuicTransportOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -32,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Client");
             var trace = new QuicTrace(logger);
 
-            _transportContext = new QuicTransportContext(lifetime, trace, options.Value);
+            _transportContext = new QuicTransportContext(trace, options.Value);
         }
 
         public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
