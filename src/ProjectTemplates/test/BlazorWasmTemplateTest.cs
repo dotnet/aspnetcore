@@ -90,6 +90,36 @@ namespace Templates.Test
             }
         }
 
+        [Fact]
+        public async Task BlazorWasmPwaTemplate_Works()
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorpwa", Output);
+            project.TargetFramework = "netstandard2.1";
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+
+            await BuildAndRunTest(project.ProjectName, project);
+
+            var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
+            AspNetProcess.EnsureDevelopmentCertificates();
+
+            Output.WriteLine("Running dotnet serve on published output...");
+            using var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
+
+            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
+            var listeningUri = "https://localhost:8080";
+            Output.WriteLine($"Opening browser at {listeningUri}...");
+            Browser.Navigate().GoToUrl(listeningUri);
+            TestBasicNavigation(project.ProjectName);
+        }
+
         protected async Task BuildAndRunTest(string appName, Project project)
         {
             using var aspNetProcess = project.StartBuiltProjectAsync();
