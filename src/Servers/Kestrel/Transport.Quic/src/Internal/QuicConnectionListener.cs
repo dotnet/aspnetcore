@@ -47,11 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             await DisposeAsync();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
         public ValueTask DisposeAsync()
         {
             if (_disposed)
@@ -59,21 +54,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 return new ValueTask();
             }
 
-            Dispose(true);
-
-            return new ValueTask();
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
+            _disposed = true;
 
             _listener.Dispose();
 
-            _disposed = true;
+            return new ValueTask();
         }
     }
 }
