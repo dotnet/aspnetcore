@@ -74,6 +74,12 @@
           "exclude": [
             "*.sln"
           ]
+        },
+        {
+          "condition": "(!PWA)",
+          "exclude": [
+            "Client/wwwroot/service-worker*.js"
+          ]
         }
       ]
     }
@@ -147,6 +153,12 @@
         "fallbackVariableName": "HttpsPortGenerated"
       },
       "replaces": "44300"
+    },
+    "PWA": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
     }
   },
   "tags": {

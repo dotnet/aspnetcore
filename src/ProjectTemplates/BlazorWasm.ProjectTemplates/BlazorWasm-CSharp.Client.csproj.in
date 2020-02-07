@@ -11,10 +11,25 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="${MicrosoftAspNetCoreBlazorDevServerPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="${MicrosoftAspNetCoreBlazorHttpClientPackageVersion}" />
   </ItemGroup>
+
   <!--#if Hosted -->
   <ItemGroup>
     <ProjectReference Include="..\Shared\BlazorWasm-CSharp.Shared.csproj" />
   </ItemGroup>
-  <!--#endif -->
 
+  <!--#endif -->
+  <!--#if PWA -->
+  <Target Name="PublishServiceWorker" AfterTargets="CopyFilesToPublishDirectory">
+    <!-- Use the "published" version of the service worker in the output -->
+    <PropertyGroup>
+      <ServiceWorkerMoveFrom>$(PublishDir)$(BlazorPublishDistDir)service-worker.published.js</ServiceWorkerMoveFrom>
+      <ServiceWorkerMoveTo>$(PublishDir)$(BlazorPublishDistDir)service-worker.js</ServiceWorkerMoveTo>
+    </PropertyGroup>
+    <Move SourceFiles="$(ServiceWorkerMoveFrom)" DestinationFiles="$(ServiceWorkerMoveTo)" />
+
+    <!-- Append a unique version number that will trigger installation of updates -->
+    <WriteLinesToFile File="$(ServiceWorkerMoveTo)" Lines="const serviceWorkerVersion = '$([System.Guid]::NewGuid())'" />
+  </Target>
+
+  <!--#endif -->
 </Project>
