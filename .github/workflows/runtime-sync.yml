@@ -19,7 +19,8 @@ jobs:
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
       with:
-        repository: 'dotnet/runtime'
+        # repository: 'dotnet/runtime'
+        repository: 'Tratcher/runtime'
         path: runtime
     - name: Copy
       shell: cmd
@@ -29,7 +30,7 @@ jobs:
       # https://superuser.com/questions/280425/getting-robocopy-to-return-a-proper-exit-code
       run: |
         dir
-        CopyToAspNetCore.cmd ^& IF %ERRORLEVEL% LSS 8 SET ERRORLEVEL = 0
+        CopyToAspNetCore.cmd
     - name: Diff
       shell: cmd
       working-directory: .\aspnetcore\
