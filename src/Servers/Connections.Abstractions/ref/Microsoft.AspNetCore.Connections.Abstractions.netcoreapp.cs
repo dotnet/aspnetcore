@@ -198,7 +198,8 @@ namespace Microsoft.AspNetCore.Connections.Features
     }
     public partial interface IQuicStreamFeature
     {
-        bool IsUnidirectional { get; }
+        bool CanRead { get; }
+        bool CanWrite { get; }
         long StreamId { get; }
     }
     public partial interface IQuicStreamListenerFeature
