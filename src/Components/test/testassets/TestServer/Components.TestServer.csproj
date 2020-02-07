@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 

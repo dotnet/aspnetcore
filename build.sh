@@ -316,6 +316,11 @@ restore=true
 
 InitializeToolset
 
+dotnet_install_dir="$repo_root/.dotnet"
+if [[ ! -d "$dotnet_install_dir/sdk/3.1.102" ]]; then
+    InstallDotNetSdk "$dotnet_install_dir" "3.1.102-servicing-014873"
+fi
+
 restore=$_tmp_restore=
 
 if [ "$build_repo_tasks" = true ]; then

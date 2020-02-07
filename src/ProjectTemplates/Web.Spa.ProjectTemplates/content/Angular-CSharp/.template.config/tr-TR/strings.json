@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Angular",
-    "description": "Angular ile bir ASP.NET Core uygulaması oluşturmak için proje şablonu."
-  }
-}

@@ -22,7 +22,7 @@
     <OutputPath />
 
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
-
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,10 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Ignitor" />
   </ItemGroup>
 

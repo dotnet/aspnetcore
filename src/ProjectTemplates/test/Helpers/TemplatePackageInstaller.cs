@@ -87,7 +87,7 @@ namespace Templates.Test.Helpers
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-            Assert.Equal(5, builtPackages.Length);
+            Assert.Single(builtPackages);
 
             /*
              * The templates are indexed by path, for example:
@@ -123,12 +123,7 @@ namespace Templates.Test.Helpers
                 }
             }
 
-            await VerifyCannotFindTemplateAsync(output, "web");
-            await VerifyCannotFindTemplateAsync(output, "webapp");
-            await VerifyCannotFindTemplateAsync(output, "mvc");
-            await VerifyCannotFindTemplateAsync(output, "react");
-            await VerifyCannotFindTemplateAsync(output, "reactredux");
-            await VerifyCannotFindTemplateAsync(output, "angular");
+            await VerifyCannotFindTemplateAsync(output, "blazorwasm");
 
             foreach (var packagePath in builtPackages)
             {
@@ -137,9 +132,7 @@ namespace Templates.Test.Helpers
                 Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
             }
 
-            await VerifyCanFindTemplate(output, "webapp");
-            await VerifyCanFindTemplate(output, "web");
-            await VerifyCanFindTemplate(output, "react");
+            await VerifyCanFindTemplate(output, "blazorwasm");
         }
 
         private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)

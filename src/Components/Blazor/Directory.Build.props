@@ -1,10 +1,4 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
   <Import Project="Blazor.Version.props" />
-
-  <PropertyGroup>
-    <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
-         target the latest patch before a preview release. -->
-    <LatestAspNetCoreReferenceVersion>3.1.0</LatestAspNetCoreReferenceVersion>
-  </PropertyGroup>
 </Project>

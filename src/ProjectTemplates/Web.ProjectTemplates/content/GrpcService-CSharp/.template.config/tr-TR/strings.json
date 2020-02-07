@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "gRPC Uygulaması",
-    "description": "gRPC ASP.NET Core hizmeti oluşturmaya yönelik proje şablonu."
-  }
-}

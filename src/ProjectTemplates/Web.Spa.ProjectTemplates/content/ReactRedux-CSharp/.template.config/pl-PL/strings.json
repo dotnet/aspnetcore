@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "React.js i Redux",
-    "description": "Szablon projektu umożliwiający tworzenie aplikacji ASP.NET Core z użyciem biblioteki React.js i kontenera Redux."
-  }
-}

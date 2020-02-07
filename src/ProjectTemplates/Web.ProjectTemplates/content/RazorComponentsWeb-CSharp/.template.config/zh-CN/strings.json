@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Server 应用",
-    "description": "用于创建 ASP.NET Core 应用程序内运行服务器端的 Blazor 应用程序的项目模板。此模板可用于具有丰富动态用户界面(UI)的 web 应用程序。"
-  }
-}
