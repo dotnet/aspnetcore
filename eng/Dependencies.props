@@ -176,7 +176,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
-    <LatestPackageReference Include="Mono.WebAssembly.Interop" Version="$(MonoWebAssemblyInteropPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" Version="$(NSwagApiDescriptionClientPackageVersion)" />
