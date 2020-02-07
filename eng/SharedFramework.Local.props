@@ -3,7 +3,7 @@
 
   This file contains a complete list of the assemblies which are part of the shared framework.
 
-  This project is generated using the <IsAspNetCoreApp> and <IsShippingPackage> properties from each .csproj in this repository.
+  This project is generated using the <IsAspNetCoreApp> and <IsPackable> properties from each .csproj in this repository.
 -->
 <Project>
   <ItemGroup>
