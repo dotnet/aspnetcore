@@ -3,8 +3,6 @@
     <BlazorProjectsRoot>$(RepoRoot)src\Components\Blazor\</BlazorProjectsRoot>
   </PropertyGroup>
 
-  <Import Project="$(BlazorProjectsRoot)Blazor.Version.props" />
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
