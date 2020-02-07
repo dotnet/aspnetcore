@@ -1127,6 +1127,7 @@
         "Pages/FetchData.razor",
         "Pages/Index.razor",
         "Program.cs",
+        "Properties/launchSettings.json",
         "Shared/MainLayout.razor",
         "Shared/NavMenu.razor",
         "Shared/SurveyPrompt.razor",
@@ -1143,7 +1144,6 @@
         "wwwroot/css/open-iconic/README.md",
         "wwwroot/css/site.css",
         "wwwroot/index.html",
-        "wwwroot/sample-data",
         "wwwroot/sample-data/weather.json",
         "_Imports.razor"
       ]
@@ -1157,6 +1157,7 @@
         "Client/Pages/FetchData.razor",
         "Client/Pages/Index.razor",
         "Client/Program.cs",
+        "Client/Properties/launchSettings.json",
         "Client/Shared/MainLayout.razor",
         "Client/Shared/NavMenu.razor",
         "Client/Shared/SurveyPrompt.razor",
@@ -1176,19 +1177,21 @@
         "Client/_Imports.razor",
         "Server/Controllers/WeatherForecastController.cs",
         "Server/Program.cs",
+        "Server/Properties/launchSettings.json",
         "Server/Startup.cs",
         "Shared/WeatherForecast.cs"
       ]
     },
     "PWA": {
       "Template": "blazorwasm",
-      "Arguments": "new blazorwasm -pwa",
+      "Arguments": "new blazorwasm --pwa",
       "Files": [
         "App.razor",
         "Pages/Counter.razor",
         "Pages/FetchData.razor",
         "Pages/Index.razor",
         "Program.cs",
+        "Properties/launchSettings.json",
         "Shared/MainLayout.razor",
         "Shared/NavMenu.razor",
         "Shared/SurveyPrompt.razor",
@@ -1207,7 +1210,6 @@
         "wwwroot/icon-512.png",
         "wwwroot/index.html",
         "wwwroot/manifest.json",
-        "wwwroot/sample-data",
         "wwwroot/sample-data/weather.json",
         "wwwroot/service-worker.js",
         "wwwroot/service-worker.published.js",
