@@ -48,8 +48,8 @@ export class WebAssemblyResourceLoader {
       // Try to load from cache
       const cachedResponse = await this.cache.match(cacheKey);
       if (cachedResponse) {
-        const transferredBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
-        this.cacheLoads[name] = { transferredBytes };
+        const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
+        this.cacheLoads[name] = { responseBytes };
         return { response: cachedResponse, isNetworkResponse: false };
       }
 
@@ -74,21 +74,21 @@ export class WebAssemblyResourceLoader {
   logToConsole() {
     const cacheLoadsEntries = Object.values(this.cacheLoads);
     const networkLoadsEntries = Object.values(this.networkLoads);
-    const cacheTransferredBytes = countTotalBytes(cacheLoadsEntries);
-    const networkTransferredBytes = countTotalBytes(networkLoadsEntries);
-    const totalTransferredBytes = cacheTransferredBytes + networkTransferredBytes;
+    const cacheResponseBytes = countTotalBytes(cacheLoadsEntries);
+    const networkResponseBytes = countTotalBytes(networkLoadsEntries);
+    const totalResponseBytes = cacheResponseBytes + networkResponseBytes;
     const linkerDisabledWarning = this.bootConfig.linkerEnabled ? '%c' : '\n%cThis application was built with linking (tree shaking) disabled. Published applications will be significantly smaller.';
 
-    console.groupCollapsed(`%cblazor%c Loaded ${toDataSizeString(totalTransferredBytes)} resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
+    console.groupCollapsed(`%cblazor%c Loaded ${toDataSizeString(totalResponseBytes)} resources${linkerDisabledWarning}`, 'background: purple; color: white; padding: 1px 3px; border-radius: 3px;', 'font-weight: bold;', 'font-weight: normal;');
 
     if (cacheLoadsEntries.length) {
-      console.groupCollapsed(`Loaded ${toDataSizeString(cacheTransferredBytes)} resources from cache`);
+      console.groupCollapsed(`Loaded ${toDataSizeString(cacheResponseBytes)} resources from cache`);
       console.table(this.cacheLoads);
       console.groupEnd();
     }
 
     if (networkLoadsEntries.length) {
-      console.groupCollapsed(`Loaded ${toDataSizeString(networkTransferredBytes)} resources from network`);
+      console.groupCollapsed(`Loaded ${toDataSizeString(networkResponseBytes)} resources from network`);
       console.table(this.networkLoads);
       console.groupEnd();
     }
@@ -117,20 +117,20 @@ export class WebAssemblyResourceLoader {
     // only done on a 'best effort' basis. Even if we do receive an entry, some of its
     // properties may be blanked out if it was a CORS request.
     const performanceEntry = getPerformanceEntry(networkResponse.url);
-    const transferredBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
-    this.networkLoads[name] = { transferredBytes };
+    const responseBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
+    this.networkLoads[name] = { responseBytes };
 
     // crypto.subtle is only enabled on localhost and HTTPS origins
     // We only write to the cache if we can validate the content hashes
     if (typeof crypto !== 'undefined' && !!crypto.subtle) {
       await assertContentHashMatchesAsync(name, responseBuffer, expectedContentHash);
 
-      // Build a custom response object so we can track extra data such as transferredBytes
+      // Build a custom response object so we can track extra data such as responseBytes
       // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
       await this.cache.put(cacheKey, new Response(responseBuffer, {
         headers: {
           'content-type': networkResponse.headers.get('content-type') || '',
-          'content-length': (transferredBytes || networkResponse.headers.get('content-length') || '').toString()
+          'content-length': (responseBytes || networkResponse.headers.get('content-length') || '').toString()
         }
       }));
     }
@@ -140,7 +140,7 @@ export class WebAssemblyResourceLoader {
 }
 
 function countTotalBytes(loads: LoadLogEntry[]) {
-  return loads.reduce((prev, item) => prev + (item.transferredBytes || 0), 0);
+  return loads.reduce((prev, item) => prev + (item.responseBytes || 0), 0);
 }
 
 function toDataSizeString(byteCount: number) {
@@ -182,7 +182,7 @@ interface ResourceGroups {
 }
 
 interface LoadLogEntry {
-  transferredBytes: number | undefined;
+  responseBytes: number | undefined;
 }
 
 export interface LoadingResource {
