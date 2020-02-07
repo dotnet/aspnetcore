@@ -7,6 +7,8 @@
 
 const resourcesAvailableOffline = [
     'index.html',
+    'manifest.json',
+    'icon-512.png',
     '_framework/blazor.boot.json',
     '_framework/blazor.webassembly.js',
     '_framework/wasm/dotnet.js',
