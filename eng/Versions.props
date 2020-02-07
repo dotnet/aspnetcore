@@ -156,7 +156,6 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>5.0.0-preview.1.20106.1</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.1.20106.1</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>5.0.0-preview.1.20106.1</MicrosoftJSInteropPackageVersion>
-    <MonoWebAssemblyInteropPackageVersion>5.0.0-preview3.1.20079.1</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-preview.1.20104.3</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.1.20104.3</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -202,6 +201,7 @@
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
+    <MonoWebAssemblyInteropPackageVersion>5.0.0-preview3.1.20079.1</MonoWebAssemblyInteropPackageVersion>
     <!-- Partner teams -->
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
     <MicrosoftAzureStorageBlobPackageVersion>10.0.1</MicrosoftAzureStorageBlobPackageVersion>
