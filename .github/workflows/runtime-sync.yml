@@ -32,7 +32,7 @@ jobs:
     - name: Diff
       shell: cmd
       working-directory: .\aspnetcore\
-        run: |
-          git status
-          git diff
+      run: |
+        git status
+        git diff
     # - name: notify
