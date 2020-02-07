@@ -5,11 +5,11 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <_AnalyzerPath>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)../../analyzers/dotnet/cs/Microsoft.AspNetCore.Components.Analyzers.dll'))</_AnalyzerPath>
+      <_ComponentsAnalyzerPath>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)../../analyzers/dotnet/cs/Microsoft.AspNetCore.Components.Analyzers.dll'))</_ComponentsAnalyzerPath>
     </PropertyGroup>
 
     <ItemGroup Condition="'@(_AnalyzerName->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Analyzers'))' == 'true'">
-      <ResolvedAnalyzers Remove="$(_AnalyzerPath)" />
+      <ResolvedAnalyzers Remove="$(_ComponentsAnalyzerPath)" />
     </ItemGroup>
   </Target>
 </Project>
