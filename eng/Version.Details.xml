@@ -84,6 +84,7 @@
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.1.0" Pinned="true">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>1c5c7777ea9a19d54ab67ec1521665c99460efc5</Sha>
@@ -251,6 +252,7 @@
     <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.1.2"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.2-servicing.20067.6"  Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
