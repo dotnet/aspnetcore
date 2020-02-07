@@ -2262,12 +2262,6 @@ class HubConnectionTest {
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-
-        String[] sentMessages = mockTransport.getSentMessages();
-        assertTrue(sentMessages.length > 1);
-        for (int i = 1; i < sentMessages.length; i++) {
-            assertEquals("{\"type\":6}" + RECORD_SEPARATOR, sentMessages[i]);
-        }
     }
 
     @Test
