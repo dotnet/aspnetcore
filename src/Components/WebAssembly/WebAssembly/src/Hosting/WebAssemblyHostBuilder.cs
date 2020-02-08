@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     /// </summary>
     public sealed class WebAssemblyHostBuilder
     {
+        private Func<IServiceProvider> _createServiceProvider;
+
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
         /// conventions and settings.
@@ -53,6 +54,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services = new ServiceCollection();
 
             InitializeDefaultServices();
+
+            _createServiceProvider = () =>
+            {
+                return Services.BuildServiceProvider();
+            };
         }
 
         /// <summary>
@@ -72,6 +78,40 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public IServiceCollection Services { get; }
 
         /// <summary>
+        /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="factory">The <see cref="IServiceProviderFactory{TBuilder}" />.</param>
+        /// <param name="configure">
+        /// A delegate used to configure the <typeparamref T="TBuilder" />. This can be used to configure services using
+        /// APIS specific to the <see cref="IServiceProviderFactory{TBuilder}" /> implementation.
+        /// </param>
+        /// <typeparam name="TBuilder">The type of builder provided by the <see cref="IServiceProviderFactory{TBuilder}" />.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// <see cref="ConfigureContainer{TBuilder}(IServiceProviderFactory{TBuilder}, Action{TBuilder})"/> is called by <see cref="Build"/>
+        /// and so the delegate provided by <paramref name="configure"/> will run after all other services have been registered. 
+        /// </para>
+        /// <para>
+        /// Multiple calls to <see cref="ConfigureContainer{TBuilder}(IServiceProviderFactory{TBuilder}, Action{TBuilder})"/> will replace
+        /// the previously stored <paramref name="factory"/> and <paramref name="configure"/> delegate. 
+        /// </para>
+        /// </remarks>
+        public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder> configure = null)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _createServiceProvider = () =>
+            {
+                var container = factory.CreateBuilder(Services);
+                configure?.Invoke(container);
+                return factory.CreateServiceProvider(container);
+            };
+        }
+
+        /// <summary>
         /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
         /// </summary>
         /// <returns>A <see cref="WebAssemblyHost"/> object.</returns>
@@ -84,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // A Blazor application always runs in a scope. Since we want to make it possible for the user
             // to configure services inside *that scope* inside their startup code, we create *both* the
             // service provider and the scope here.
-            var services = Services.BuildServiceProvider();
+            var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
             return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());

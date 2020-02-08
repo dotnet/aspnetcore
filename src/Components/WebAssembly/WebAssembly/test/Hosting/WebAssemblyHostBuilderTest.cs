@@ -52,6 +52,76 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         [Fact]
+        public void Build_AllowsConfiguringContainer()
+        {
+            // Arrange
+            var builder = WebAssemblyHostBuilder.CreateDefault();
+
+            builder.Services.AddScoped<StringBuilder>();
+            var factory = new MyFakeServiceProviderFactory();
+            builder.ConfigureContainer(factory);
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.True(factory.CreateServiceProviderCalled);
+            Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
+        }
+
+        [Fact]
+        public void Build_AllowsConfiguringContainer_WithDelegate()
+        {
+            // Arrange
+            var builder = WebAssemblyHostBuilder.CreateDefault();
+
+            builder.Services.AddScoped<StringBuilder>();
+
+            var factory = new MyFakeServiceProviderFactory();
+            builder.ConfigureContainer(factory, builder =>
+            {
+                builder.ServiceCollection.AddScoped<List<string>>();
+            });
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.True(factory.CreateServiceProviderCalled);
+            Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
+            Assert.NotNull(host.Services.GetRequiredService<List<string>>());
+        }
+
+        private class MyFakeDIBuilderThing
+        {
+            public MyFakeDIBuilderThing(IServiceCollection serviceCollection)
+            {
+                ServiceCollection = serviceCollection;
+            }
+
+            public IServiceCollection ServiceCollection { get; }
+        }
+
+        private class MyFakeServiceProviderFactory : IServiceProviderFactory<MyFakeDIBuilderThing>
+        {
+            public bool CreateServiceProviderCalled { get; set; }
+
+            public MyFakeDIBuilderThing CreateBuilder(IServiceCollection services)
+            {
+                return new MyFakeDIBuilderThing(services);
+            }
+
+            public IServiceProvider CreateServiceProvider(MyFakeDIBuilderThing containerBuilder)
+            {
+                // This is the best way to test the factory was actually used. The Host doesn't
+                // expose the *root* service provider, only a scoped instance. So we can return
+                // a different type here, but we have no way to inspect it.
+                CreateServiceProviderCalled = true;
+                return containerBuilder.ServiceCollection.BuildServiceProvider();
+            }
+        }
+
+        [Fact]
         public void Build_AddsConfigurationToServices()
         {
             // Arrange
