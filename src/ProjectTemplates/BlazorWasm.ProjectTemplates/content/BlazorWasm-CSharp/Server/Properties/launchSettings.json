@@ -20,7 +20,7 @@
           "ASPNETCORE_ENVIRONMENT": "Development"
         }
       },
-      "BlazorWasm-CSharp": {
+      "BlazorWasm-CSharp.Server": {
         "commandName": "Project",
         "launchBrowser": true,
         //#if(RequiresHttps)
