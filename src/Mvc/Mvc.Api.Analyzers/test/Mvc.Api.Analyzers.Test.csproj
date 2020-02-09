@@ -3,14 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
-
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/dotnet/aspnetcore/issues/9431 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-    <BaseOutputPath />
-    <OutputPath />
-
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />

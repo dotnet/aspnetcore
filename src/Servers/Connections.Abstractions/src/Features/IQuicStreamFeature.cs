@@ -5,7 +5,8 @@ namespace Microsoft.AspNetCore.Connections.Features
 {
     public interface IQuicStreamFeature
     {
-        bool IsUnidirectional { get; }
+        bool CanRead { get; }
+        bool CanWrite { get; }
         long StreamId { get; }
     }
 }

@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
-            _http1Connection.Reset();
         }
 
         public void Dispose()

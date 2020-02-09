@@ -1867,6 +1867,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseTrailers_WorksAcrossMultipleStreams_Cleared()
+        {
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.True(context.Response.SupportsTrailers(), "SupportsTrailers");
+
+                var trailers = context.Features.Get<IHttpResponseTrailersFeature>().Trailers;
+                Assert.False(trailers.IsReadOnly);
+
+                context.Response.AppendTrailer("CustomName", "Custom Value");
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            var trailersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            var headersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 3);
+
+            var trailersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(trailersFrame1.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame2.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             await InitializeConnectionAsync(async context =>

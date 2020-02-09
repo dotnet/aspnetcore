@@ -82,6 +82,13 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+if [ -e /proc/self/coredump_filter ]; then
+  # Include memory in private and shared file-backed mappings in the dump.
+  # This ensures that we can see disassembly from our shared libraries when
+  # inspecting the contents of the dump. See 'man core' for details.
+  echo -n 0x3F > /proc/self/coredump_filter
+fi
+
 $DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
 if grep -q "Exception thrown" discovered.txt; then
     echo -e "${RED}Exception thrown during test discovery${RESET}".
