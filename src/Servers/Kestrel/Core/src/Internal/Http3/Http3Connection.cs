@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -88,20 +89,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     var streamFeature = httpConnectionContext.ConnectionFeatures.Get<IQuicStreamFeature>();
 
-                    var streamId = streamFeature.StreamId;
-
-                    lock (_sync)
-                    {
-                        HighestStreamId = streamId;
-                    }
-
                     if (!streamFeature.CanWrite)
                     {
+                        // Unidirectional stream
                         var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                     else
                     {
+                        // Keep track of highest stream id seen for GOAWAY
+                        var streamId = streamFeature.StreamId;
+
+                        lock (_sync)
+                        {
+                            HighestStreamId = streamId;
+                        }
+
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
                         var stream = http3Stream;
                         _streams[streamId] = http3Stream;
@@ -109,20 +112,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"{ex.Message}{ex.StackTrace}");
-            }
             finally
             {
-                await controlTask;
-                await encoderTask;
-                await decoderTask;
-
+                // Abort all streams as connection has shutdown.
                 foreach (var stream in _streams.Values)
                 {
                     stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
                 }
+
+                ControlStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                EncoderStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                DecoderStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+
+                await controlTask;
+                await encoderTask;
+                await decoderTask;
             }
         }
 

@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex)
         {
+
         }
 
         public void HandleReadDataRateTimeout()

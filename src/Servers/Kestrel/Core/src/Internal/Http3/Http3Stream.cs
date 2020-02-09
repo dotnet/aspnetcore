@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
         {
             QPackDecoder.Decode(payload, handler: this);
-        
+
             // start off a request once qpack has decoded
             // Make sure to await this task.
             if (_receivedHeaders)
