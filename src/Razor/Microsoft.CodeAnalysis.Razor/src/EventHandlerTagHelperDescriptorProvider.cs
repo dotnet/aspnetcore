@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     var attribute = attributes[j];
 
-                    if (Equals(attribute.AttributeClass, eventHandlerAttribute))
+                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, eventHandlerAttribute))
                     {
                         var enablePreventDefault = false;
                         var enableStopPropagation = false;
