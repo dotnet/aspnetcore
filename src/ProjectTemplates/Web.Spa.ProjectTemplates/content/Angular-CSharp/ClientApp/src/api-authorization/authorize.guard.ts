@@ -12,7 +12,7 @@ export class AuthorizeGuard implements CanActivate {
   constructor(private authorize: AuthorizeService, private router: Router) {
   }
   canActivate(
-    _next: ActivatedRouteSnapshot,
+    next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
       return this.authorize.isAuthenticated()
         .pipe(tap(isAuthenticated => this.handleAuthorization(isAuthenticated, state)));
