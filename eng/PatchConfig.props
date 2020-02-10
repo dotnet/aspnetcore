@@ -15,13 +15,14 @@ Directory.Build.props checks this property using the following condition:
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
     <PackagesInPatch>
-      Microsoft.AspNetCore.Blazor;
-      Microsoft.AspNetCore.Blazor.Build;
-      Microsoft.AspNetCore.Blazor.DataAnnotations.Validation;
-      Microsoft.AspNetCore.Blazor.DevServer;
-      Microsoft.AspNetCore.Blazor.HttpClient;
-      Microsoft.AspNetCore.Blazor.Server;
-      Microsoft.AspNetCore.Blazor.Templates;
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.CookiePolicy;
+      Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+      @microsoft/signalr;
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.Http.Abstractions;
+      Microsoft.AspNetCore.Http.Features;
+      Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
