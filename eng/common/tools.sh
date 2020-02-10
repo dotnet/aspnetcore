@@ -41,7 +41,7 @@ fi
 # Configures warning treatment in msbuild.
 warn_as_error=${warn_as_error:-true}
 
-# True to attempt using .NET Core already that meets requirements specified in global.json 
+# True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
 
@@ -172,7 +172,7 @@ function InstallDotNetSdk {
 function InstallDotNet {
   local root=$1
   local version=$2
- 
+
   GetDotNetInstallScript "$root"
   local install_script=$_GetDotNetInstallScript
 
@@ -218,6 +218,28 @@ function InstallDotNet {
   }
 }
 
+function with_retries {
+  local maxRetries=5
+  local retries=1
+  echo "Trying to run '$@' for maximum of $maxRetries attempts."
+  while [[ $((retries++)) -le $maxRetries ]]; do
+    "$@"
+
+    if [[ $? == 0 ]]; then
+      echo "Ran '$@' successfully."
+      return 0
+    fi
+
+    timeout=$((2**$retries-1))
+    echo "Failed to execute '$@'. Waiting $timeout seconds before next attempt ($retries out of $maxRetries)." 1>&2
+    sleep $timeout
+  done
+
+  echo "Failed to execute '$@' for $maxRetries times." 1>&2
+
+  return 1
+}
+
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
@@ -230,13 +252,13 @@ function GetDotNetInstallScript {
 
     # Use curl if available, otherwise use wget
     if command -v curl > /dev/null; then
-      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+      with_retries curl "$install_script_url" -isSLv --retry 10 --create-dirs -o "$install_script" || {
         local exit_code=$?
         Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
         ExitWithExitCode $exit_code
       }
-    else 
-      wget -q -O "$install_script" "$install_script_url" || {
+    else
+      with_retries wget -v -O "$install_script" "$install_script_url" || {
         local exit_code=$?
         Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
         ExitWithExitCode $exit_code
@@ -251,11 +273,11 @@ function InitializeBuildTool {
   if [[ -n "${_InitializeBuildTool:-}" ]]; then
     return
   fi
-  
+
   InitializeDotNetCli $restore
 
   # return values
-  _InitializeBuildTool="$_InitializeDotNetCli/dotnet"  
+  _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
   _InitializeBuildToolFramework="netcoreapp2.1"
 }
@@ -319,7 +341,7 @@ function InitializeToolset {
   if [[ "$binary_log" == true ]]; then
     bl="/bl:$log_dir/ToolsetRestore.binlog"
   fi
-  
+
   echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
   MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
 
