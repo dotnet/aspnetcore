@@ -43,7 +43,7 @@
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Components\benchmarkapps\**\*.csproj;
+                      $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
                       $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
