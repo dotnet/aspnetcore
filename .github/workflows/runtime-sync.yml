@@ -34,6 +34,12 @@ jobs:
       shell: cmd
       working-directory: .\aspnetcore\
       run: |
-        git status
-        git diff
+        git status > ..\status.txt
+        git diff > ..\diff.txt
+    - uses: actions/upload-artifact@v1
+      with:
+        name: status.txt
+    - uses: actions/upload-artifact@v1
+      with:
+        name: diff.txt
     # - name: notify
