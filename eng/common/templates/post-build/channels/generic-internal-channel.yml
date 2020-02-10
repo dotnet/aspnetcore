@@ -46,7 +46,7 @@ stages:
           buildId: $(AzDOBuildId)
           downloadType: 'specific'
           itemPattern: |
-            PDBArtifacts/**
+            PdbArtifacts/**
             BlobArtifacts/**
           downloadPath: '$(Build.ArtifactStagingDirectory)'
 
