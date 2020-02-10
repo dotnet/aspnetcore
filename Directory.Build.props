@@ -84,8 +84,8 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
+    <!-- This branch will never build the targeting pack. -->
+    <IsTargetingPackBuilding>false</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.

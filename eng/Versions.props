@@ -7,13 +7,13 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>2</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
+    <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
