@@ -39,7 +39,9 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: status.txt
+        path: .
     - uses: actions/upload-artifact@v1
       with:
         name: diff.txt
+        path: .
     # - name: notify
