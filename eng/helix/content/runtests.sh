@@ -89,6 +89,8 @@ if [ -e /proc/self/coredump_filter ]; then
   echo -n 0x3F > /proc/self/coredump_filter
 fi
 
+sync
+
 $DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
 if grep -q "Exception thrown" discovered.txt; then
     echo -e "${RED}Exception thrown during test discovery${RESET}".
