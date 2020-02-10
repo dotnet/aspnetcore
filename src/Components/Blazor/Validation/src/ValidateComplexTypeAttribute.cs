@@ -19,11 +19,10 @@ namespace System.ComponentModel.DataAnnotations
         /// <inheritdoc />
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (!ObjectGraphDataAnnotationsValidator.TryValidateRecursive(value, validationContext))
-            {
-                throw new InvalidOperationException($"{nameof(ValidateComplexTypeAttribute)} can only used with {nameof(ObjectGraphDataAnnotationsValidator)}.");
-            }
+            ObjectGraphDataAnnotationsValidator.TryValidateRecursive(value, validationContext);
 
+            // Validation of the properties on the complex type are responsible for adding their own messages.
+            // Therefore, we can always return success from here.
             return ValidationResult.Success;
         }
     }
