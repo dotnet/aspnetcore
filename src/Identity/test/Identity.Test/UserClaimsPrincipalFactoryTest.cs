@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
-        [InlineData(false, false, false, false)]
-        [InlineData(false, true, false, false)]
         [InlineData(true, false, false, false)]
         [InlineData(true, true, false, false)]
         [InlineData(true, false, true, false)]
         [InlineData(true, true, true, false)]
         [InlineData(false, false, false, true)]
         [InlineData(false, true, false, true)]
+        [InlineData(false, false, false, false)]
+        [InlineData(false, true, false, false)]
         [InlineData(true, false, false, true)]
         [InlineData(true, true, false, true)]
         [InlineData(true, false, true, true)]
