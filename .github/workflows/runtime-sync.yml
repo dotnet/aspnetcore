@@ -38,10 +38,10 @@ jobs:
         git diff > ..\diff.txt
     - uses: actions/upload-artifact@v1
       with:
-        name: status.txt
-        path: .
+        name: status
+        path: status.txt
     - uses: actions/upload-artifact@v1
       with:
-        name: diff.txt
-        path: .
+        name: diff
+        path: diff.txt
     # - name: notify
