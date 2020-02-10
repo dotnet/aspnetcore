@@ -217,6 +217,79 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             Assert.Equal("Foo", options.Text);
         }
 
+        [Fact]
+        public void ReloadConfigWhenReloadOnChangeIsTrue()
+        {
+            var testFileProvider = new TestFileProvider(
+               new TestFile("Secret1", "SecretValue1"),
+               new TestFile("Secret2", "SecretValue2"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            Assert.Equal("SecretValue1", config["Secret1"]);
+            Assert.Equal("SecretValue2", config["Secret2"]);
+
+            testFileProvider.ChangeFiles(
+                new TestFile("Secret1", "NewSecretValue1"),
+                new TestFile("Secret3", "NewSecretValue3"));
+
+            Assert.Equal("NewSecretValue1", config["Secret1"]);
+            Assert.Null(config["NewSecret2"]);
+            Assert.Equal("NewSecretValue3", config["Secret3"]);
+        }
+
+        [Fact]
+        public void SameConfigWhenReloadOnChangeIsFalse()
+        {
+            var testFileProvider = new TestFileProvider(
+               new TestFile("Secret1", "SecretValue1"),
+               new TestFile("Secret2", "SecretValue2"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = false;
+                }).Build();
+
+            Assert.Equal("SecretValue1", config["Secret1"]);
+            Assert.Equal("SecretValue2", config["Secret2"]);
+
+            testFileProvider.ChangeFiles(
+                new TestFile("Secret1", "NewSecretValue1"),
+                new TestFile("Secret3", "NewSecretValue3"));
+
+            Assert.Equal("SecretValue1", config["Secret1"]);
+            Assert.Equal("SecretValue2", config["Secret2"]);
+        }
+
+        [Fact]
+        public void NoFilesReloadWhenAddedFiles()
+        {
+            var testFileProvider = new TestFileProvider();
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            Assert.Empty(config.AsEnumerable());
+
+            testFileProvider.ChangeFiles(
+                new TestFile("Secret1", "SecretValue1"),
+                new TestFile("Secret2", "SecretValue2"));
+
+            Assert.Equal("SecretValue1", config["Secret1"]);
+            Assert.Equal("SecretValue2", config["Secret2"]);
+        }
+
         private sealed class MyOptions
         {
             public int Number { get; set; }
@@ -227,17 +300,56 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
     class TestFileProvider : IFileProvider
     {
         IDirectoryContents _contents;
-        
+        MockChangeToken _changeToken;
+
         public TestFileProvider(params IFileInfo[] files)
         {
             _contents = new TestDirectoryContents(files);
+            _changeToken = new MockChangeToken();
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath) => _contents;
 
         public IFileInfo GetFileInfo(string subpath) => new TestFile("TestDirectory");
 
-        public IChangeToken Watch(string filter) => throw new NotImplementedException();
+        public IChangeToken Watch(string filter) => _changeToken;
+
+        internal void ChangeFiles(params IFileInfo[] files)
+        {
+            _contents = new TestDirectoryContents(files);
+            _changeToken.RaiseCallback();
+        }
+    }
+
+    class MockChangeToken : IChangeToken
+    {
+        private Action _callback;
+
+        public bool ActiveChangeCallbacks => true;
+
+        public bool HasChanged => true;
+
+        public IDisposable RegisterChangeCallback(Action<object> callback, object state)
+        {
+            var disposable = new MockDisposable();
+            _callback = () => callback(state);
+            return disposable;
+        }
+
+        internal void RaiseCallback()
+        {
+            _callback?.Invoke();
+        }
+    }
+
+    class MockDisposable : IDisposable
+    {
+        public bool Disposed { get; set; }
+
+        public void Dispose()
+        {
+            Disposed = true;
+        }
     }
 
     class TestDirectoryContents : IDirectoryContents
@@ -291,7 +403,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
 
         public Stream CreateReadStream()
         {
-            if(IsDirectory)
+            if (IsDirectory)
             {
                 throw new InvalidOperationException("Cannot create stream from directory");
             }
