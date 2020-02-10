@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
         private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
+        private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
+        private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -98,11 +100,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                return string.Create(span.Length, new IntPtr(source), s_getHeaderName);
+                return string.Create(span.Length, new IntPtr(source), _getHeaderName);
             }
         }
-
-        private static readonly SpanAction<char, IntPtr> s_getHeaderName = GetHeaderName;
 
         private static unsafe void GetHeaderName(Span<char> buffer, IntPtr state)
         {
@@ -130,11 +130,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                return string.Create(span.Length, new IntPtr(source), s_getAsciiStringNonNullCharacters);
+                return string.Create(span.Length, new IntPtr(source), _getAsciiStringNonNullCharacters);
             }
         }
-
-        private static readonly SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
         private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
         {
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 var resultString = string.Create(span.Length, new IntPtr(source), s_getAsciiOrUtf8StringNonNullCharacters);
 
-                // If rersultString is marked, perform UTF-8 encoding
+                // If resultString is marked, perform UTF-8 encoding
                 if (resultString[0] == '\0')
                 {
                     // null characters are considered invalid

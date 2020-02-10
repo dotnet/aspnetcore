@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -13,7 +12,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class StringUtilities
+    internal static class StringUtilities
     {
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
@@ -22,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Debug.Assert(output != null);
 
             var end = input + count;
+
+            Debug.Assert((long)end >= Vector256<sbyte>.Count);
 
             if (Sse2.IsSupported)
             {
@@ -530,33 +531,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
+        private static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
         {
-            if (Avx2.IsSupported)
-            {
-                var mask = Avx2.CompareGreaterThan(check, zero);
+            Debug.Assert(Avx2.IsSupported);
 
-                return (uint)Avx2.MoveMask(mask) == 0xFFFF_FFFF;
-            }
-            else
-            {
-                throw new PlatformNotSupportedException("should not be here");
-            }
+            var mask = Avx2.CompareGreaterThan(check, zero);
+            return (uint)Avx2.MoveMask(mask) == 0xFFFF_FFFF;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(Vector128<sbyte> check, Vector128<sbyte> zero)
         {
-            if (Sse2.IsSupported)
-            {
-                var mask = Sse2.CompareGreaterThan(check, zero);
+            Debug.Assert(Sse2.IsSupported);
 
-                return Sse2.MoveMask(mask) == 0xFFFF;
-            }
-            else
-            {
-                throw new PlatformNotSupportedException("should not be here");
-            }
+            var mask = Sse2.CompareGreaterThan(check, zero);
+            return Sse2.MoveMask(mask) == 0xFFFF;
         }
 
         // Validate: bytes != 0 && bytes <= 127
