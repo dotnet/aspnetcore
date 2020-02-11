@@ -133,13 +133,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #else
                     if (Sse2.X64.IsSupported)
                     {
-                        Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32((int)value).AsSByte();
+                        Vector128<sbyte> vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
                         Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-                        Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
-
-                        vecNarrow = Sse2.ConvertScalarToVector128Int32((int)(value >> 32)).AsSByte();
-                        vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
-                        Unsafe.WriteUnaligned(output + sizeof(int), Sse2.X64.ConvertToUInt64(vecWide));
+                        Sse2.Store((ulong*)output, vecWide);
                     }
 #endif
                     else
