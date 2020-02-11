@@ -5,10 +5,14 @@ set -e
 
 pushd .
 
-if type -P "java" &>/dev/null; then
-    echo "java is in \$PATH"
+if [ "$JAVA_HOME" != "" ]; then
+    echo "JAVA_HOME is set"
     exit
 fi
+# if type -P "java" &>/dev/null; then
+#     echo "java is in \$PATH"
+#     exit
+# fi
 
 java_version=$1
 arch=$2
