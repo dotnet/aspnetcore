@@ -24,22 +24,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             Debug.Assert((long)end >= Vector256<sbyte>.Count);
 
+            // PERF: so the JIT can reuse the zero from a register
+            Vector128<sbyte> zero = Vector128<sbyte>.Zero;
+
             if (Sse2.IsSupported)
             {
                 if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
                 {
-                    Vector256<sbyte> zero = Vector256<sbyte>.Zero;
+                    Vector256<sbyte> avxZero = Vector256<sbyte>.Zero;
 
                     do
                     {
                         var vector = Avx.LoadVector256(input).AsSByte();
-                        if (!CheckBytesInAsciiRange(vector, zero))
+                        if (!CheckBytesInAsciiRange(vector, avxZero))
                         {
                             return false;
                         }
 
-                        var tmp0 = Avx2.UnpackLow(vector, zero);
-                        var tmp1 = Avx2.UnpackHigh(vector, zero);
+                        var tmp0 = Avx2.UnpackLow(vector, avxZero);
+                        var tmp1 = Avx2.UnpackHigh(vector, avxZero);
 
                         // Bring into the right order
                         var out0 = Avx2.Permute2x128(tmp0, tmp1, 0x20);
@@ -60,8 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                 if (input <= end - Vector128<sbyte>.Count)
                 {
-                    Vector128<sbyte> zero = Vector128<sbyte>.Zero;
-
                     do
                     {
                         var vector = Sse2.LoadVector128(input).AsSByte();
@@ -132,13 +133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #else
                     if (Sse2.X64.IsSupported)
                     {
-                        Vector128<byte> zero = Vector128<byte>.Zero;
-
-                        Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128Int32((int)value).AsByte();
+                        Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32((int)value).AsSByte();
                         Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                         Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
 
-                        vecNarrow = Sse2.ConvertScalarToVector128Int32((int)(value >> 32)).AsByte();
+                        vecNarrow = Sse2.ConvertScalarToVector128Int32((int)(value >> 32)).AsSByte();
                         vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                         Unsafe.WriteUnaligned(output + sizeof(int), Sse2.X64.ConvertToUInt64(vecWide));
                     }
@@ -152,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         output[4] = (char)input[4];
                         output[5] = (char)input[5];
                         output[6] = (char)input[6];
-                        output[7] = (char)input[7]; 
+                        output[7] = (char)input[7];
                     }
 
                     input += sizeof(long);
@@ -167,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -184,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -370,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value)
+        private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
         {
 #if USE_BMI2
             if (Bmi2.IsSupported)
@@ -382,8 +381,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #else
             if (Sse2.X64.IsSupported)
             {
-                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsByte();
-                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                 Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
             }
 #endif
