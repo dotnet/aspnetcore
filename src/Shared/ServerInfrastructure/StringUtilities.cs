@@ -132,13 +132,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 #else
                     if (Sse2.X64.IsSupported)
                     {
+                        Vector128<byte> zero = Vector128<byte>.Zero;
+
                         Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128Int32((int)value).AsByte();
-                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
                         Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
 
                         vecNarrow = Sse2.ConvertScalarToVector128Int32((int)(value >> 32)).AsByte();
-                        vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
-                        Unsafe.WriteUnaligned(output+sizeof(int), Sse2.X64.ConvertToUInt64(vecWide));
+                        vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                        Unsafe.WriteUnaligned(output + sizeof(int), Sse2.X64.ConvertToUInt64(vecWide));
                     }
 #endif
                     else
@@ -150,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         output[4] = (char)input[4];
                         output[5] = (char)input[5];
                         output[6] = (char)input[6];
-                        output[7] = (char)input[7];
+                        output[7] = (char)input[7]; 
                     }
 
                     input += sizeof(long);
@@ -596,12 +598,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return (((check - 0x0101010101010101L) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(int check)
         {
             const int HighBits = unchecked((int)0x80808080);
             return (((check - 0x01010101) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(short check)
         {
             const short HighBits = unchecked((short)0x8080);
