@@ -25,12 +25,12 @@ namespace Templates.Test.Helpers
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
         public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? Path.Combine("artifacts", "log");
+            ? Path.Combine("artifacts", "log")
             : GetAssemblyMetadata("ArtifactsLogDir");
         
         // FIGURE OUT EF PATH
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll");
+            ? Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll")
             : typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value;
