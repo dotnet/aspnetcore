@@ -26,12 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public Http3ControlStream EncoderStream { get; set; }
         public Http3ControlStream DecoderStream { get; set; }
 
-        internal readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
+        private readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
 
-        internal long _highestOpenedStreamId; // TODO lock to access
-        internal long _lastStreamProcessed;
+        private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
-        internal object _sync = new object();
+        private object _sync = new object();
 
         public Http3Connection(HttpConnectionContext context)
         {
@@ -100,10 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         // Keep track of highest stream id seen for GOAWAY
                         var streamId = streamFeature.StreamId;
 
-                        lock (_sync)
-                        {
-                            HighestStreamId = streamId;
-                        }
+                        HighestStreamId = streamId;
 
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
                         var stream = http3Stream;

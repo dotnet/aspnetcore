@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application)
         {
             await InitializeConnectionAsync(application);
- 
+
             var controlStream1 = await CreateControlStream(0);
             var controlStream2 = await CreateControlStream(2);
             var controlStream3 = await CreateControlStream(3);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async ValueTask<Http3ControlStream> CreateControlStream(int id)
         {
             var stream = new Http3ControlStream(this, _connection);
-             _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
+            _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
         }
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
-            private QPackDecoder _qpackDecoder = new QPackDecoder(10000);
+            private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             private long _bytesReceived;
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                    
+
                 ConnectionContext = new DefaultConnectionContext();
                 ConnectionContext.Transport = _pair.Transport;
                 ConnectionContext.Features.Set<IQuicStreamFeature>(this);
@@ -320,6 +320,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         _pair.Application.Input.AdvanceTo(consumed, examined);
                     }
                 }
+            }
+
+            internal async Task ExpectReceiveEndOfStream()
+            {
+                var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+                Assert.True(result.IsCompleted);
             }
 
             public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)

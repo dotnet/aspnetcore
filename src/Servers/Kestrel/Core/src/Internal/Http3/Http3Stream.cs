@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -126,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application)
         {
+            Exception error = null;
+
             try
             {
 
@@ -152,23 +155,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-                    catch (Http3StreamErrorException)
-                    {
-                        // TODO
-                    }
+
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO
+                error = ex;
+                Log.LogWarning(0, ex, "Stream threw an exception.");
             }
             finally
             {
-                await RequestBodyPipe.Writer.CompleteAsync();
+                var streamError = error as ConnectionAbortedException
+                    ?? new ConnectionAbortedException("The stream has completed.", error);
+                try
+                {
+                    _frameWriter.Complete();
+                }
+                catch
+                {
+                    _frameWriter.Abort(streamError);
+                    throw;
+                }
+                finally
+                {
+                    Input.Complete();
+                    _context.Transport.Input.CancelPendingRead();
+                    await RequestBodyPipe.Writer.CompleteAsync();
+                }
             }
         }
 

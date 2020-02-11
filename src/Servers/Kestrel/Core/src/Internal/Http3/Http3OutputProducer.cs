@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             var pipe = CreateDataPipe(pool);
 
-            _pipeWriter = pipe.Writer; 
+            _pipeWriter = pipe.Writer;
             _pipeReader = pipe.Reader;
 
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
