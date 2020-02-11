@@ -122,12 +122,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
+#if USE_BMI2
                     if (Bmi2.X64.IsSupported)
                     {
                         // BMI2 will work regardless of the processor's endianness.
                         ((ulong*)output)[0] = Bmi2.X64.ParallelBitDeposit((ulong)value, 0x00FF00FF_00FF00FFul);
                         ((ulong*)output)[1] = Bmi2.X64.ParallelBitDeposit((ulong)(value >> 32), 0x00FF00FF_00FF00FFul);
                     }
+#else
+                    if (Sse2.X64.IsSupported)
+                    {
+                        Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128Int32((int)value).AsByte();
+                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                        Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
+
+                        vecNarrow = Sse2.ConvertScalarToVector128Int32((int)(value >> 32)).AsByte();
+                        vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                        Unsafe.WriteUnaligned(output+sizeof(int), Sse2.X64.ConvertToUInt64(vecWide));
+                    }
+#endif
                     else
                     {
                         output[0] = (char)input[0];
@@ -152,19 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    if (Bmi2.IsSupported)
-                    {
-                        // BMI2 will work regardless of the processor's endianness.
-                        ((uint*)output)[0] = Bmi2.ParallelBitDeposit((uint)value, 0x00FF00FFu);
-                        ((uint*)output)[1] = Bmi2.ParallelBitDeposit((uint)(value >> 16), 0x00FF00FFu);
-                    }
-                    else
-                    {
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                    }
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -181,19 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    if (Bmi2.IsSupported)
-                    {
-                        // BMI2 will work regardless of the processor's endianness.
-                        ((uint*)output)[0] = Bmi2.ParallelBitDeposit((uint)value, 0x00FF00FFu);
-                        ((uint*)output)[1] = Bmi2.ParallelBitDeposit((uint)(value >> 16), 0x00FF00FFu);
-                    }
-                    else
-                    {
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                    }
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -378,6 +367,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value)
+        {
+#if USE_BMI2
+            if (Bmi2.IsSupported)
+            {
+                // BMI2 will work regardless of the processor's endianness.
+                ((uint*)output)[0] = Bmi2.ParallelBitDeposit((uint)value, 0x00FF00FFu);
+                ((uint*)output)[1] = Bmi2.ParallelBitDeposit((uint)(value >> 16), 0x00FF00FFu);
+            }
+#else
+            if (Sse2.X64.IsSupported)
+            {
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
+            }
+#endif
+            else
+            {
+                output[0] = (char)input[0];
+                output[1] = (char)input[1];
+                output[2] = (char)input[2];
+                output[3] = (char)input[3];
+            }
+        }
+
         /// <summary>
         /// Given a DWORD which represents a buffer of 4 bytes, widens the buffer into 4 WORDs and
         /// compares them to the WORD buffer with machine endianness.
@@ -390,12 +406,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
+#if USE_BMI2
             if (Bmi2.X64.IsSupported)
             {
                 // BMI2 will work regardless of the processor's endianness.
                 return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
                     Bmi2.X64.ParallelBitDeposit(value, 0x00FF00FF_00FF00FFul);
             }
+#else
+            if (Sse2.X64.IsSupported)
+            {
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
+                return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
+                    Sse2.X64.ConvertToUInt64(vecWide);
+            }
+#endif
             else
             {
                 if (BitConverter.IsLittleEndian)
@@ -427,12 +453,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
+#if USE_BMI2
             if (Bmi2.IsSupported)
             {
                 // BMI2 will work regardless of the processor's endianness.
                 return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
                     Bmi2.ParallelBitDeposit(value, 0x00FF00FFu);
             }
+#else
+            if (Sse2.IsSupported)
+            {
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<uint> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
+                return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
+                    Sse2.ConvertToUInt32(vecWide);
+            }
+#endif
             else
             {
                 if (BitConverter.IsLittleEndian)
