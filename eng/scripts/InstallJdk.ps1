@@ -48,7 +48,10 @@ mkdir $installDir -ea Ignore | out-null
 Write-Host "Starting download of JDK ${JdkVersion}"
 Invoke-WebRequest -UseBasicParsing -Uri "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" -OutFile "$tempDir/jdk.zip"
 Write-Host "Done downloading JDK ${JdkVersion}"
-Expand-Archive "$tempDir/jdk.zip" -d "$tempDir/jdk/"
+
+Add-Type -assembly "System.IO.Compression.FileSystem"
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$tempDir/jdk.zip", "$tempDir/jdk/")
+
 Write-Host "Expanded JDK to $tempDir"
 Write-Host "Installing JDK to $installDir"
 Move-Item "$tempDir/jdk/jdk-${JdkVersion}/*" $installDir
