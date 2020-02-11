@@ -350,7 +350,7 @@
       <_BlazorBootResource BootResourceType="wasm" Condition="'%(Extension)' == '.wasm'" />
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))">
+    <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHashes" />
     </GetFileHash>
 

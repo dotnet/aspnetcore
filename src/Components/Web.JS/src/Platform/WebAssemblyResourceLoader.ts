@@ -160,17 +160,31 @@ function getPerformanceEntry(url: string): PerformanceResourceTiming | undefined
   }
 }
 
-async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, expectedHashPrefix: string) {
+async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, expectedHashBase64: string) {
+  const expectedHashDataUri = `data:text/plain;base64,${expectedHashBase64}`;
+  const expectedHashResponse = await fetch(expectedHashDataUri);
+  const expectedHashBuffer = await expectedHashResponse.arrayBuffer();
   const actualHashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const actualHash = new Uint8Array(actualHashBuffer);
-  for (var byteIndex = 0; byteIndex*2 < expectedHashPrefix.length; byteIndex++) {
-    const expectedByte = parseInt(expectedHashPrefix.substr(byteIndex * 2, 2), 16);
-    const actualByte = actualHash[byteIndex];
-    if (actualByte !== expectedByte) {
-      const actualHashString = Array.from(actualHash).map(b => b.toString(16).padStart(2, '0')).join('');
-      throw new Error(`Resource hash mismatch for '${name}'. Expected prefix: '${expectedHashPrefix}'. Actual hash: '${actualHashString}'. If a deployment was in progress, try reloading the page.`);
+  if (!arrayBuffersAreEqual(expectedHashBuffer, actualHashBuffer)) {
+    var actualHashBase64 = btoa(String.fromCharCode(...new Uint8Array(actualHashBuffer)));
+    throw new Error(`Resource hash mismatch for '${name}'. Expected hash: '${expectedHashBase64}'. Actual hash: '${actualHashBase64}'. If a deployment was in progress, try reloading the page.`);
+  }
+}
+
+function arrayBuffersAreEqual(a: ArrayBuffer, b: ArrayBuffer) {
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
+
+  const arrayA = new Uint8Array(a);
+  const arrayB = new Uint8Array(b);
+  for (let i = 0; i < arrayA.byteLength; i++) {
+    if (arrayA[i] !== arrayB[i]) {
+      return false;
     }
   }
+
+  return true;
 }
 
 // Keep in sync with bootJsonData in Microsoft.AspNetCore.Blazor.Build

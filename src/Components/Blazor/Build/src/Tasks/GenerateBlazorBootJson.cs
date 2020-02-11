@@ -76,11 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                     var resourceFileRelativePath = GetResourceFileRelativePath(resource);
                     if (!resourceList.ContainsKey(resourceFileRelativePath))
                     {
-                        // It's safe to truncate to a fairly short string, since the hash is not used for any
-                        // security purpose - the developer produces these files themselves, and the hash is
-                        // only used to check whether an earlier cached copy is up-to-date.
-                        // This truncation halves the size of blazor.boot.json in typical cases.
-                        resourceList.Add(resourceFileRelativePath, resource.GetMetadata("FileHash").Substring(0, 16).ToLowerInvariant());
+                        resourceList.Add(resourceFileRelativePath, resource.GetMetadata("FileHash"));
                     }
                 }
             }
