@@ -41,4 +41,11 @@ jobs:
       with:
         name: results
         path: artifacts
-    # - name: notify
+    - name: Check
+      shell: cmd
+      # Returns 0 if found, 1 otherwise
+      run: findstr /c:"nothing to commit, working tree clean" status.txt
+    - name: Notify
+      if: failure()
+      shell: cmd
+      run: echo "The Check task failed, sending notification."
