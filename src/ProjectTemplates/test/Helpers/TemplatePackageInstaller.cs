@@ -42,10 +42,12 @@ namespace Templates.Test.Helpers
             "Microsoft.AspNetCore.Blazor.Templates",
         };
 
-        public static string CustomHivePath { get; } = typeof(TemplatePackageInstaller)
-            .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(s => s.Key == "CustomTemplateHivePath").Value;
-
+        public static string CustomHivePath { get; } = (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+                    ? typeof(TemplatePackageInstaller)
+                        .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .Single(s => s.Key == "CustomTemplateHivePath").Value
+                    : Path.Combine("Hives", ".templateEngine");
+                                        
         public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
         {
             await InstallerLock.WaitAsync();
