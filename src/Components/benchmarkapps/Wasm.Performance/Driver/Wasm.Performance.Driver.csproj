@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-
     <OutputType>exe</OutputType>
+
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
