@@ -24,7 +24,16 @@ namespace Templates.Test.Helpers
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
-        public static string ArtifactsLogDir => GetAssemblyMetadata("ArtifactsLogDir");
+        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+            ? Path.Combine("artifacts", "log");
+            : GetAssemblyMetadata("ArtifactsLogDir");
+        
+        // FIGURE OUT EF PATH
+        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+            ? Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll");
+            : typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -32,7 +41,9 @@ namespace Templates.Test.Helpers
         public string ProjectArguments { get; set; }
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
-        public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
+        public string TargetFramework { get; set; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+            ? "netcoreapp5.0"
+            : GetAssemblyMetadata("Test.DefaultTargetFramework");
 
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
@@ -295,15 +306,11 @@ namespace Templates.Test.Helpers
             }
         }
 
+        
+        
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            var assembly = typeof(ProjectFactoryFixture).Assembly;
-
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
+            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -322,13 +329,7 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
         {
-            var assembly = typeof(ProjectFactoryFixture).Assembly;
-
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
