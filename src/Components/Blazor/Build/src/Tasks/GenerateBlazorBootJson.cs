@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -32,67 +34,132 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
         public override bool Execute()
         {
-            // Build a two-level dictionary of the form:
-            // - BootResourceType (e.g., "assembly")
-            //   - UriPath (e.g., "System.Text.Json.dll")
-            //     - ContentHash (e.g., "4548fa2e9cf52986")
-            var resourcesByGroup = new Dictionary<string, Dictionary<string, string>>();
-            foreach (var resource in Resources)
-            {
-                var resourceType = resource.GetMetadata("BootResourceType");
-                if (string.IsNullOrEmpty(resourceType))
-                {
-                    continue;
-                }
-
-                if (!resourcesByGroup.TryGetValue(resourceType, out var group))
-                {
-                    group = new Dictionary<string, string>();
-                    resourcesByGroup.Add(resourceType, group);
-                }
-
-                var uriPath = GetUriPath(resource);
-                if (!group.ContainsKey(uriPath))
-                {
-                    // It's safe to truncate to a fairly short string, since the hash is not used for any
-                    // security purpose - the developer produces these files themselves, and the hash is
-                    // only used to check whether an earlier cached copy is up-to-date.
-                    // This truncation halves the size of blazor.boot.json in typical cases.
-                    group.Add(uriPath, resource.GetMetadata("FileHash").Substring(0, 16).ToLowerInvariant());
-                }
-            }
-
-            var bootJsonData = new
-            {
-                EntryAssembly = AssemblyName.GetAssemblyName(AssemblyPath).Name,
-                Resources = resourcesByGroup,
-                DebugBuild,
-                LinkerEnabled,
-                CacheBootResources,
-            };
-
-            using (var fileStream = File.Create(OutputPath))
-            using (var utf8Writer = new Utf8JsonWriter(fileStream, new JsonWriterOptions { Indented = true }))
-            {
-                JsonSerializer.Serialize(utf8Writer, bootJsonData, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-                utf8Writer.Flush();
-            }
+            using var fileStream = File.Create(OutputPath);
+            var entryAssemblyName = AssemblyName.GetAssemblyName(AssemblyPath).Name;
+            WriteBootJson(fileStream, entryAssemblyName);
 
             return true;
         }
 
-        private static string GetUriPath(ITaskItem item)
+        // Internal for tests
+        internal void WriteBootJson(Stream output, string entryAssemblyName)
         {
+            var result = new BootJsonData
+            {
+                entryAssembly = entryAssemblyName,
+                cacheBootResources = CacheBootResources,
+                debugBuild = DebugBuild,
+                linkerEnabled = LinkerEnabled,
+                resources = new Dictionary<ResourceType, ResourceList>()
+            };
+
+            // Build a two-level dictionary of the form:
+            // - BootResourceType (e.g., "assembly")
+            //   - UriPath (e.g., "System.Text.Json.dll")
+            //     - ContentHash (e.g., "4548fa2e9cf52986")
+            if (Resources != null)
+            {
+                foreach (var resource in Resources)
+                {
+                    var resourceTypeMetadata = resource.GetMetadata("BootResourceType");
+                    if (!Enum.TryParse<ResourceType>(resourceTypeMetadata, out var resourceType))
+                    {
+                        throw new NotSupportedException($"Unsupported BootResourceType metadata value: {resourceTypeMetadata}");
+                    }
+
+                    if (!result.resources.TryGetValue(resourceType, out var resourceList))
+                    {
+                        resourceList = new ResourceList();
+                        result.resources.Add(resourceType, resourceList);
+                    }
+
+                    var resourceFileRelativePath = GetResourceFileRelativePath(resource);
+                    if (!resourceList.ContainsKey(resourceFileRelativePath))
+                    {
+                        // It's safe to truncate to a fairly short string, since the hash is not used for any
+                        // security purpose - the developer produces these files themselves, and the hash is
+                        // only used to check whether an earlier cached copy is up-to-date.
+                        // This truncation halves the size of blazor.boot.json in typical cases.
+                        resourceList.Add(resourceFileRelativePath, resource.GetMetadata("FileHash").Substring(0, 16).ToLowerInvariant());
+                    }
+                }
+            }
+
+            var serializer = new DataContractJsonSerializer(typeof(BootJsonData), new DataContractJsonSerializerSettings
+            {
+                UseSimpleDictionaryFormat = true
+            });
+
+            using var writer = JsonReaderWriterFactory.CreateJsonWriter(output, Encoding.UTF8, ownsStream: false, indent: true);
+            serializer.WriteObject(writer, result);
+        }
+
+        private static string GetResourceFileRelativePath(ITaskItem item)
+        {
+            // The build targets use RelativeOutputPath in the case of satellite assemblies, which
+            // will have relative paths like "fr\\SomeAssembly.resources.dll". If RelativeOutputPath
+            // is specified, we want to use all of it.
             var outputPath = item.GetMetadata("RelativeOutputPath");
+
             if (string.IsNullOrEmpty(outputPath))
             {
+                // If RelativeOutputPath was not specified, we assume the item will be placed at the
+                // root of whatever directory is used for its resource type (e.g., assemblies go in _bin)
                 outputPath = Path.GetFileName(item.ItemSpec);
             }
 
             return outputPath.Replace('\\', '/');
         }
+
+#pragma warning disable IDE1006 // Naming Styles
+        /// <summary>
+        /// Defines the structure of a Blazor boot JSON file
+        /// </summary>
+        public class BootJsonData
+        {
+            /// <summary>
+            /// Gets the name of the assembly with the application entry point
+            /// </summary>
+            public string entryAssembly { get; set; }
+
+            /// <summary>
+            /// Gets the set of resources needed to boot the application. This includes the transitive
+            /// closure of .NET assemblies (including the entrypoint assembly), the dotnet.wasm file,
+            /// and any PDBs to be loaded.
+            /// </summary>
+            public Dictionary<ResourceType, ResourceList> resources { get; set; }
+
+            /// <summary>
+            /// Gets a value that determines whether to enable caching of the <see cref="resources"/>
+            /// inside a CacheStorage instance within the browser.
+            /// </summary>
+            public bool cacheBootResources { get; set; }
+
+            /// <summary>
+            /// Gets a value that determines if this is a debug build.
+            /// </summary>
+            public bool debugBuild { get; set; }
+
+            /// <summary>
+            /// Gets a value that determines if the linker is enabled.
+            /// </summary>
+            public bool linkerEnabled { get; set; }
+        }
+
+        public enum ResourceType
+        {
+            assembly,
+            pdb,
+            wasm
+        }
+
+        /// <summary>
+        /// Represents a set of resources used when booting a Blazor WebAssembly application.
+        /// The dictionary keys are the resource names; values are SHA-256 hashes of the corresponding files.
+        /// </summary>
+        public class ResourceList : Dictionary<string, string>
+        {
+        }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

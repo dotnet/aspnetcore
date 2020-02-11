@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net461</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
     <TargetName>Microsoft.AspNetCore.Blazor.Build.Tasks</TargetName>
     <AssemblyName>Microsoft.AspNetCore.Blazor.Build</AssemblyName>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
@@ -39,8 +39,7 @@
 
     <Reference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <Reference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="Runtime" />
-    <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net461'" />
-    <Reference Include="System.Text.Json" />
+    <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
   </ItemGroup>
 
   <Target Name="CopyBuildTask" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(IsInnerBuild)' != 'true'">
@@ -57,12 +56,12 @@
 
     <ItemGroup>
       <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\*" TargetPath="netcoreapp\" />
-      <_DesktopFilesToCopy Include="$(OutputPath)net461\*" TargetPath="netfx\" />
+      <_DesktopFilesToCopy Include="$(OutputPath)net46\*" TargetPath="netfx\" />
       <_AllFilesToCopy Include="@(_NetCoreFilesToCopy);@(_DesktopFilesToCopy)" />
     </ItemGroup>
 
     <Error Text="No files found in $(OutputPath)$(DefaultNetCoreTargetFramework)" Condition="@(_NetCoreFilesToCopy->Count()) == 0" />
-    <Error Text="No files found in $(OutputPath)net461" Condition="@(_DesktopFilesToCopy->Count()) == 0" />
+    <Error Text="No files found in $(OutputPath)net46" Condition="@(_DesktopFilesToCopy->Count()) == 0" />
 
     <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
