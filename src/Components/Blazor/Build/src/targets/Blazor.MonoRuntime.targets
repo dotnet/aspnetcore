@@ -108,6 +108,11 @@
       Message="Unrecongnized value for BlazorLinkOnBuild: '$(BlazorLinkOnBuild)'. Valid values are 'true' or 'false'."
       Condition="'$(BlazorLinkOnBuild)' != 'true' AND '$(BlazorLinkOnBuild)' != 'false'" />
 
+    <!--
+      These are the items calculated as the closure of the runtime assemblies, either by calling the linker
+      or by calling our custom ResolveBlazorRuntimeDependencies task if the linker was disabled. Other than
+      satellite assemblies, this should include all assemblies needed to run the application.
+    -->
     <ItemGroup>
       <!--
         ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
@@ -126,6 +131,26 @@
         <BlazorRuntimeFile>true</BlazorRuntimeFile>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
+      </BlazorOutputWithTargetPath>
+    </ItemGroup>
+
+    <!--
+      The following itemgroup attempts to extend the set to include satellite assemblies.
+      The mechanism behind this (or whether it's correct) is a bit unclear so
+      https://github.com/dotnet/aspnetcore/issues/18951 tracks the need for follow-up.
+    -->
+    <ItemGroup>
+      <!--
+          ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
+          Remove assemblies that are inputs to calculating the assembly closure. Instead use the resolved outputs, since it is the minimal set.
+         -->
+      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+      <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" Condition="'%(Extension)' == '.dll'" />
+
+      <BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
+        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+        <RelativeOutputPath>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</RelativeOutputPath>
       </BlazorOutputWithTargetPath>
     </ItemGroup>
 
