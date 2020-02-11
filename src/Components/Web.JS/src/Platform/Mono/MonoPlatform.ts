@@ -286,7 +286,7 @@ function attachInteropInvoker(): void {
 
 async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
   // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
-  // it doesn't provide any method for supplying a customer response provider, and we want to integrate
+  // it doesn't provide any method for supplying a custom response provider, and we want to integrate
   // with our resource loader cache.
 
   if (typeof WebAssembly['instantiateStreaming'] === 'function') {
