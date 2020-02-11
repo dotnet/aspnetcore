@@ -120,7 +120,7 @@ export class WebAssemblyResourceLoader {
     const responseBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
     this.networkLoads[name] = { responseBytes };
 
-    // crypto.subtle is only enabled on localhost and HTTPS origins
+    // crypto.subtle is only enabled on localhost or HTTPS origins
     // We only write to the cache if we can validate the content hashes
     if (typeof crypto !== 'undefined' && !!crypto.subtle) {
       await assertContentHashMatchesAsync(name, responseBuffer, expectedContentHash);
