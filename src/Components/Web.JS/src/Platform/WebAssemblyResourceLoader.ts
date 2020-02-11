@@ -161,7 +161,7 @@ async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, ex
     const actualByte = actualHash[byteIndex];
     if (actualByte !== expectedByte) {
       const actualHashString = Array.from(actualHash).map(b => b.toString(16).padStart(2, '0')).join('');
-      throw new Error(`Resource hash mismatch for '${name}'. Expected prefix: '${expectedHashPrefix}'. Actual hash: '${actualHashString}'`);
+      throw new Error(`Resource hash mismatch for '${name}'. Expected prefix: '${expectedHashPrefix}'. Actual hash: '${actualHashString}'. If a deployment was in progress, try reloading the page.`);
     }
   }
 }

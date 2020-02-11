@@ -221,16 +221,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       mono_wasm_add_assembly(dependency.name, heapAddress, data.length);
       MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
     } catch (errorInfo) {
-      // If it's a 404 on a .pdb, we don't want to block the app from starting up.
-      // We'll just skip that file and continue (though the 404 is logged in the console).
-      // This happens if you build a Debug build but then run in Production environment.
-      const isPdb404 = errorInfo instanceof XMLHttpRequest
-        && errorInfo.status === 404
-        && dependency.name.match(/\.pdb$/);
-      if (!isPdb404) {
         onError(errorInfo);
         return;
-      }
     }
 
     Module.removeRunDependency(runDependencyId);
