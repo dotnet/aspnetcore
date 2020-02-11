@@ -62,22 +62,22 @@ namespace Microsoft.AspNetCore.Blazor.Build
                     var resources = parsedContent.resources[resourceListKey];
                     Assert.Equal(ResourceType.assembly, resourceListKey);
                     Assert.Equal(2, resources.Count);
-                    Assert.Equal("abcdefghikjlmnop", resources["My.Assembly1.ext"]); // Hashes are truncated to 16 chars
-                    Assert.Equal("0123456789012345", resources["dir/My.Assembly2.ext2"]); // For relative paths, we preserve the whole relative path, but use URL-style separators
+                    Assert.Equal("abcdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.ext"]);
+                    Assert.Equal("012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // For relative paths, we preserve the whole relative path, but use URL-style separators
                 },
                 resourceListKey =>
                 {
                     var resources = parsedContent.resources[resourceListKey];
                     Assert.Equal(ResourceType.pdb, resourceListKey);
                     Assert.Single(resources);
-                    Assert.Equal("pdbhashpdbhashpd", resources["SomePdb.pdb"]);
+                    Assert.Equal("pdbhashpdbhashpdbhash", resources["SomePdb.pdb"]);
                 },
                 resourceListKey =>
                 {
                     var resources = parsedContent.resources[resourceListKey];
                     Assert.Equal(ResourceType.wasm, resourceListKey);
                     Assert.Single(resources);
-                    Assert.Equal("wasmhashwasmhash", resources["some-wasm-file"]);
+                    Assert.Equal("wasmhashwasmhashwasmhash", resources["some-wasm-file"]);
                 });
         }
 
