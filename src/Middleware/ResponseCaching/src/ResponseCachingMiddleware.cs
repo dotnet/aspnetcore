@@ -14,6 +14,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
+    /// <summary>
+    /// Enable HTTP response caching.
+    /// </summary>
     public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
@@ -29,6 +32,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly IResponseCache _cache;
         private readonly IResponseCachingKeyProvider _keyProvider;
 
+        /// <summary>
+        /// Creates a new <see cref="ResponseCachingMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="options">The <see cref="ResponseCachingOptions"/> representing the options for this middleware.
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/>.</param>
         public ResponseCachingMiddleware(
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
@@ -88,6 +98,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _keyProvider = keyProvider;
         }
 
+        /// <summary>
+        /// Invokes the logic of the middleware.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
             var context = new ResponseCachingContext(httpContext, _logger);
