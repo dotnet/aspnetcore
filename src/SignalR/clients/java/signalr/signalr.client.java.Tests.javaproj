@@ -78,8 +78,8 @@
   <PropertyGroup>
     <!-- Pass the Java Package Version down to Gradle -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
-    <HelixCommand>chmod +x ./gradlew &amp;&amp; ./gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
-    <HelixCommand Condition="'$(IsWindowsHelixQueue)' == 'true'">call gradlew $(GradleOptions) -Dorg.gradle.daemon=false test</HelixCommand>
+    <HelixCommand>chmod +x ./gradlew &amp;&amp; ./gradlew $(GradleOptions) test</HelixCommand>
+    <HelixCommand Condition="'$(IsWindowsHelixQueue)' == 'true'">call gradlew $(GradleOptions) test</HelixCommand>
   </PropertyGroup>
 
   <ItemGroup>
