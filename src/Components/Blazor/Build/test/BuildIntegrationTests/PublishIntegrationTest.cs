@@ -183,6 +183,66 @@ namespace Microsoft.AspNetCore.Blazor.Build
         }
 
         [Fact]
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18752
+        public async Task Publish_HostedApp_WithLinkOnBuildFalse_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
+            project.TargetFramework = "netcoreapp3.1";
+
+            AddSiblingProjectFileContent(@"
+<PropertyGroup>
+    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+</PropertyGroup>");
+
+            // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
+
+            Assert.BuildPassed(result);
+
+            // Publish
+            result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:BuildDependencies=false");
+
+            var publishDirectory = project.PublishOutputDirectory;
+            // Make sure the main project exists
+            Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "standalone");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "wasm", "dotnet.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+
+            var blazorConfig = Path.Combine(result.Project.DirectoryPath, publishDirectory, "standalone.blazor.config");
+            var blazorConfigLines = File.ReadAllLines(blazorConfig);
+            Assert.Equal(".", blazorConfigLines[0]);
+            Assert.Equal("standalone/", blazorConfigLines[1]);
+
+            void AddSiblingProjectFileContent(string content)
+            {
+                var path = Path.Combine(project.SolutionPath, "standalone", "standalone.csproj");
+                var existing = File.ReadAllText(path);
+                var updated = existing.Replace("<!-- Test Placeholder -->", content);
+                File.WriteAllText(path, updated);
+            }
+        }
+
+        [Fact]
         public async Task Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
