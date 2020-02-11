@@ -239,6 +239,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         void OnHeader(System.ReadOnlySpan<byte> name, System.ReadOnlySpan<byte> value);
         void OnHeadersComplete(bool endStream);
+        void OnStaticIndexedHeader(int index);
+        void OnStaticIndexedHeader(int index, System.ReadOnlySpan<byte> value);
     }
     public partial interface IHttpRequestLineHandler
     {
