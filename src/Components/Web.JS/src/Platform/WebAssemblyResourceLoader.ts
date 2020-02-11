@@ -8,7 +8,8 @@ export class WebAssemblyResourceLoader {
   static async initAsync(): Promise<WebAssemblyResourceLoader> {
     const bootConfigResponse = await fetch('_framework/blazor.boot.json', {
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      cache: 'no-cache'
     });
 
     // Define a separate cache for each base href, so we're isolated from any other
