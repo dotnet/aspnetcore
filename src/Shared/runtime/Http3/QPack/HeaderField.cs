@@ -8,8 +8,8 @@ namespace System.Net.Http.QPack
     {
         public HeaderField(byte[] name, byte[] value)
         {
-            Name = new byte[name.Length];
-            Value = new byte[value.Length];
+            Name = name;
+            Value = value;
         }
 
         public byte[] Name { get; }
