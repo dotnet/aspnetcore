@@ -14,13 +14,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
-        private readonly bool _reuseHeaderValues;
         private long _previousBits = 0;
 
         public HttpRequestHeaders(bool reuseHeaderValues = true)
         {
-            _reuseHeaderValues = reuseHeaderValues;
+            ReuseHeaderValues = reuseHeaderValues;
         }
+
+        public bool ReuseHeaderValues { get; set; }
 
         public void OnHeadersComplete()
         {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void ClearFast()
         {
-            if (!_reuseHeaderValues)
+            if (!ReuseHeaderValues)
             {
                 // If we aren't reusing headers clear them all
                 Clear(_bits);

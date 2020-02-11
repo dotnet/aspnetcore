@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     public class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
     {

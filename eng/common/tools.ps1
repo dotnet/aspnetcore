@@ -155,12 +155,12 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # The following code block is protecting against concurrent access so that this function can
   # be called in parallel.
   if ($createSdkLocationFile) {
-    do { 
+    do {
       $sdkCacheFileTemp = Join-Path $ToolsetDir $([System.IO.Path]::GetRandomFileName())
-    } 
+    }
     until (!(Test-Path $sdkCacheFileTemp))
     Set-Content -Path $sdkCacheFileTemp -Value $dotnetRoot
-  
+
     try {
       Rename-Item -Force -Path $sdkCacheFileTemp 'sdk.txt'
     } catch {
@@ -188,7 +188,33 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   if (!(Test-Path $installScript)) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    Invoke-WebRequest "https://dot.net/$dotnetInstallScriptVersion/dotnet-install.ps1" -OutFile $installScript
+
+    $maxRetries = 5
+    $retries = 1
+
+    $uri = "https://dot.net/$dotnetInstallScriptVersion/dotnet-install.ps1"
+
+    while($true) {
+      try {
+        Write-Host "GET $uri"
+        Invoke-WebRequest $uri -OutFile $installScript
+        break
+      }
+      catch {
+        Write-Host "Failed to download '$uri'"
+        Write-Error $_.Exception.Message -ErrorAction Continue
+      }
+
+      if (++$retries -le $maxRetries) {
+        $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
+        Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
+        Start-Sleep -Seconds $delayInSeconds
+      }
+      else {
+        throw "Unable to download file in $maxRetries attempts."
+      }
+
+    }
   }
 
   return $installScript
@@ -198,12 +224,12 @@ function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $arc
   InstallDotNet $dotnetRoot $version $architecture
 }
 
-function InstallDotNet([string] $dotnetRoot, 
-  [string] $version, 
-  [string] $architecture = '', 
-  [string] $runtime = '', 
-  [bool] $skipNonVersionedFiles = $false, 
-  [string] $runtimeSourceFeed = '', 
+function InstallDotNet([string] $dotnetRoot,
+  [string] $version,
+  [string] $architecture = '',
+  [string] $runtime = '',
+  [bool] $skipNonVersionedFiles = $false,
+  [string] $runtimeSourceFeed = '',
   [string] $runtimeSourceFeedKey = '') {
 
   $installScript = GetDotNetInstallScript $dotnetRoot
@@ -298,7 +324,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       $vsMajorVersion = $vsMinVersion.Major
       $xcopyMSBuildVersion = "$vsMajorVersion.$($vsMinVersion.Minor).0-alpha"
     }
-    
+
     $vsInstallDir = $null
     if ($xcopyMSBuildVersion.Trim() -ine "none") {
         $vsInstallDir = InitializeXCopyMSBuild $xcopyMSBuildVersion $install

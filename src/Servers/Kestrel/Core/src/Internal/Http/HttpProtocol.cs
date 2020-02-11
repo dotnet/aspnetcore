@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private readonly object _abortLock = new object();
-        private volatile bool _connectionAborted;
+        protected volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _responseBytesWritten;
 
-        private readonly HttpConnectionContext _context;
+        private HttpConnectionContext _context;
         private RouteValueDictionary _routeValues;
         private Endpoint _endpoint;
 
@@ -75,12 +75,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
-        public HttpProtocol(HttpConnectionContext context)
+        public void Initialize(HttpConnectionContext context)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
-            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
+
+            Reset();
+
+            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
+
             HttpResponseControl = this;
         }
 
@@ -97,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        protected KestrelServerOptions ServerOptions { get; }
+        protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
@@ -306,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; }
+        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -361,7 +365,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var remoteEndPoint = RemoteEndPoint;
             RemoteIpAddress = remoteEndPoint?.Address;
             RemotePort = remoteEndPoint?.Port ?? 0;
-
             var localEndPoint = LocalEndPoint;
             LocalIpAddress = localEndPoint?.Address;
             LocalPort = localEndPoint?.Port ?? 0;
@@ -373,6 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
             RequestTrailers.Clear();
+            ResponseTrailers?.Reset();
             RequestTrailersAvailable = false;
 
             _isLeasedMemoryInvalid = true;

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace QuicSampleApp
@@ -26,7 +25,7 @@ namespace QuicSampleApp
 
         public static void Main(string[] args)
         {
-            var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
+            //var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
             var hostBuilder = new WebHostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {
@@ -34,9 +33,9 @@ namespace QuicSampleApp
                      factory.AddConsole();
                  })
                  .UseKestrel()
-                 .UseMsQuic(options =>
+                 .UseQuic(options =>
                  {
-                     options.Certificate = cert;
+                     options.Certificate = null;
                      options.RegistrationName = "AspNetCore-MsQuic";
                      options.Alpn = "QuicTest";
                      options.IdleTimeout = TimeSpan.FromHours(1);

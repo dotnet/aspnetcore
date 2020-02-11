@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -25,6 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
         private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
+        private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
+        private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -81,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
@@ -88,25 +93,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            {
+                return string.Create(span.Length, new IntPtr(source), _getHeaderName);
+            }
+        }
 
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+        private static unsafe void GetHeaderName(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
                 // This version if AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
                     BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }
             }
-
-            return asciiString;
         }
 
         public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
             => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
@@ -114,19 +123,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            {
+                return string.Create(span.Length, new IntPtr(source), _getAsciiStringNonNullCharacters);
+            }
+        }
 
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
                 // This version if AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
                     throw new InvalidOperationException();
                 }
             }
-            return asciiString;
         }
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
@@ -139,14 +152,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                var resultString = string.Create(span.Length, new IntPtr(source), s_getAsciiOrUtf8StringNonNullCharacters);
+
+                // If resultString is marked, perform UTF-8 encoding
+                if (resultString[0] == '\0')
                 {
                     // null characters are considered invalid
                     if (span.IndexOf((byte)0) != -1)
@@ -156,15 +167,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                     try
                     {
-                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                        resultString = HeaderValueEncoding.GetString(span);
                     }
                     catch (DecoderFallbackException)
                     {
                         throw new InvalidOperationException();
                     }
                 }
+
+                return resultString;
             }
-            return resultString;
+        }
+
+        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiOrUTF8StringNonNullCharacters;
+
+        private static unsafe void GetAsciiOrUTF8StringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                {
+                    // Mark resultString for UTF-8 encoding
+                    output[0] = '\0';
+                }
+            }
         }
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
@@ -283,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Head;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Post;
                 }
@@ -294,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Trace;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Patch;
                 }
