@@ -5,7 +5,6 @@
 
     <!-- Exclude the TestFiles directory from default wildcards -->
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
-    <BuildHelixPayload>false</BuildHelixPayload>
     <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
