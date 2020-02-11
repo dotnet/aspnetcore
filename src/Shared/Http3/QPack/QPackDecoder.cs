@@ -1,21 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Net.Http.HPack;
+using System.Numerics;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
+namespace System.Net.Http.QPack
 {
-    internal class QPackDecoder
+    internal class QPackDecoder : IDisposable
     {
         private enum State
         {
-            Ready,
             RequiredInsertCount,
-            RequiredInsertCountDone,
+            RequiredInsertCountContinue,
             Base,
+            BaseContinue,
             CompressedHeaders,
             HeaderFieldIndex,
             HeaderNameIndex,
@@ -48,8 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         //+---+---+---+---+---+---+---+---+
         //| 1 | S |      Index(6+)       |
         //+---+---+-----------------------+
-        private const byte IndexedHeaderFieldMask = 0x80;
-        private const byte IndexedHeaderFieldRepresentation = 0x80;
         private const byte IndexedHeaderStaticMask = 0x40;
         private const byte IndexedHeaderStaticRepresentation = 0x40;
         private const byte IndexedHeaderFieldPrefixMask = 0x3F;
@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         //| 0 | 0 | 0 | 1 |  Index(4+)   |
         //+---+---+---+---+---------------+
         private const byte PostBaseIndexMask = 0xF0;
-        private const byte PostBaseIndexRepresentation = 0x10;
         private const int PostBaseIndexPrefix = 4;
 
         //0   1   2   3   4   5   6   7
@@ -71,9 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         //+---+---------------------------+
         //|  Value String(Length bytes)  |
         //+-------------------------------+
-        private const byte LiteralHeaderFieldMask = 0xC0;
-        private const byte LiteralHeaderFieldRepresentation = 0x40;
-        private const byte LiteralHeaderFieldNMask = 0x20;
         private const byte LiteralHeaderFieldStaticMask = 0x10;
         private const byte LiteralHeaderFieldPrefixMask = 0x0F;
         private const int LiteralHeaderFieldPrefix = 4;
@@ -86,9 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         //+---+---------------------------+
         //|  Value String(Length bytes)  |
         //+-------------------------------+
-        private const byte LiteralHeaderFieldPostBaseMask = 0xF0;
-        private const byte LiteralHeaderFieldPostBaseRepresentation = 0x00;
-        private const byte LiteralHeaderFieldPostBaseNMask = 0x08;
         private const byte LiteralHeaderFieldPostBasePrefixMask = 0x07;
         private const int LiteralHeaderFieldPostBasePrefix = 3;
 
@@ -102,9 +95,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         //+---+---------------------------+
         //|  Value String(Length bytes)  |
         //+-------------------------------+
-        private const byte LiteralHeaderFieldWithoutNameReferenceMask = 0xE0;
-        private const byte LiteralHeaderFieldWithoutNameReferenceRepresentation = 0x20;
-        private const byte LiteralHeaderFieldWithoutNameReferenceNMask = 0x10;
         private const byte LiteralHeaderFieldWithoutNameReferenceHuffmanMask = 0x08;
         private const byte LiteralHeaderFieldWithoutNameReferencePrefixMask = 0x07;
         private const int LiteralHeaderFieldWithoutNameReferencePrefix = 3;
@@ -112,24 +102,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private const int StringLengthPrefix = 7;
         private const byte HuffmanMask = 0x80;
 
-        private State _state = State.Ready;
-        // TODO break out dynamic table entirely.
-        private long _maxDynamicTableSize;
-        private DynamicTable _dynamicTable;
+        private const int DefaultStringBufferSize = 64;
 
-        // TODO idk what these are for.
+        private readonly int _maxHeadersLength;
+        private State _state = State.RequiredInsertCount;
+
         private byte[] _stringOctets;
         private byte[] _headerNameOctets;
         private byte[] _headerValueOctets;
-        private int _requiredInsertCount;
-        //private int _insertCount;
-        private int _base;
 
         // s is used for whatever s is in each field. This has multiple definition
-        private bool _s;
-        private bool _n;
         private bool _huffman;
-        private bool _index;
+        private int? _index;
 
         private byte[] _headerName;
         private int _headerNameLength;
@@ -138,37 +122,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private int _stringIndex;
         private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
 
-        // Decoders are on the http3stream now, each time we see a header block
-        public QPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize)
-            : this(maxDynamicTableSize, maxRequestHeaderFieldSize, new DynamicTable(maxDynamicTableSize)) { }
+        private static ArrayPool<byte> Pool => ArrayPool<byte>.Shared;
 
-
-        // For testing.
-        internal QPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize, DynamicTable dynamicTable)
+        private static void ReturnAndGetNewPooledArray(ref byte[] buffer, int newSize)
         {
-            _maxDynamicTableSize = maxDynamicTableSize;
-            _dynamicTable = dynamicTable;
+            byte[] old = buffer;
+            buffer = null;
 
-            _stringOctets = new byte[maxRequestHeaderFieldSize];
-            _headerNameOctets = new byte[maxRequestHeaderFieldSize];
-            _headerValueOctets = new byte[maxRequestHeaderFieldSize];
+            Pool.Return(old, clearArray: true);
+            buffer = Pool.Rent(newSize);
         }
 
-        // sequence will probably be a header block instead.
+        public QPackDecoder(int maxHeadersLength)
+        {
+            _maxHeadersLength = maxHeadersLength;
+
+            // TODO: make allocation lazy? with static entries it's possible no buffers will be needed.
+            _stringOctets = Pool.Rent(DefaultStringBufferSize);
+            _headerNameOctets = Pool.Rent(DefaultStringBufferSize);
+            _headerValueOctets = Pool.Rent(DefaultStringBufferSize);
+        }
+
+        public void Dispose()
+        {
+            if (_stringOctets != null)
+            {
+                Pool.Return(_stringOctets, true);
+                _stringOctets = null;
+            }
+
+            if (_headerNameOctets != null)
+            {
+                Pool.Return(_headerNameOctets, true);
+                _headerNameOctets = null;
+            }
+
+            if (_headerValueOctets != null)
+            {
+                Pool.Return(_headerValueOctets, true);
+                _headerValueOctets = null;
+            }
+        }
+
         public void Decode(in ReadOnlySequence<byte> headerBlock, IHttpHeadersHandler handler)
         {
-            // TODO I need to get the RequiredInsertCount and DeltaBase
-            // These are always present in the header block
-            // TODO need to figure out if I have read an entire header block.
-
-            // (I think this can be done based on length outside of this)
-            foreach (var segment in headerBlock)
+            foreach (ReadOnlyMemory<byte> segment in headerBlock)
             {
-                var span = segment.Span;
-                for (var i = 0; i < span.Length; i++)
-                {
-                    OnByte(span[i], handler);
-                }
+                Decode(segment.Span, handler);
+            }
+        }
+
+        public void Decode(ReadOnlySpan<byte> headerBlock, IHttpHeadersHandler handler)
+        {
+            foreach (byte b in headerBlock)
+            {
+                OnByte(b, handler);
             }
         }
 
@@ -178,26 +186,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             int prefixInt;
             switch (_state)
             {
-                case State.Ready:
+                case State.RequiredInsertCount:
                     if (_integerDecoder.BeginTryDecode(b, RequiredInsertCountPrefix, out intResult))
                     {
                         OnRequiredInsertCount(intResult);
                     }
                     else
                     {
-                        _state = State.RequiredInsertCount;
+                        _state = State.RequiredInsertCountContinue;
                     }
                     break;
-                case State.RequiredInsertCount:
+                case State.RequiredInsertCountContinue:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
                         OnRequiredInsertCount(intResult);
                     }
                     break;
-                case State.RequiredInsertCountDone:
+                case State.Base:
                     prefixInt = ~BaseMask & b;
-
-                    _s = (b & BaseMask) == BaseMask;
 
                     if (_integerDecoder.BeginTryDecode(b, BasePrefix, out intResult))
                     {
@@ -205,93 +211,93 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
                     }
                     else
                     {
-                        _state = State.Base;
+                        _state = State.BaseContinue;
                     }
                     break;
-                case State.Base:
+                case State.BaseContinue:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
                         OnBase(intResult);
                     }
                     break;
                 case State.CompressedHeaders:
-                    if ((b & IndexedHeaderFieldMask) == IndexedHeaderFieldRepresentation)
+                    switch (BitOperations.LeadingZeroCount(b))
                     {
-                        prefixInt = IndexedHeaderFieldPrefixMask & b;
-                        _s = (b & IndexedHeaderStaticMask) == IndexedHeaderStaticRepresentation;
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, IndexedHeaderFieldPrefix, out intResult))
-                        {
-                            OnIndexedHeaderField(intResult, handler);
-                        }
-                        else
-                        {
-                            _state = State.HeaderFieldIndex;
-                        }
-                    }
-                    else if ((b & PostBaseIndexMask) == PostBaseIndexRepresentation)
-                    {
-                        prefixInt = ~PostBaseIndexMask & b;
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
-                        {
-                            OnPostBaseIndex(intResult, handler);
-                        }
-                        else
-                        {
-                            _state = State.PostBaseIndex;
-                        }
-                    }
-                    else if ((b & LiteralHeaderFieldMask) == LiteralHeaderFieldRepresentation)
-                    {
-                        _index = true;
-                        // Represents whether an intermediary is permitted to add this header to the dynamic header table on
-                        // subsequent hops.
-                        // if n is set, the encoded header must always be encoded with a literal representation
+                        case 24: // Indexed Header Field
+                            prefixInt = IndexedHeaderFieldPrefixMask & b;
 
-                        _n = (LiteralHeaderFieldNMask & b) == LiteralHeaderFieldNMask;
-                        _s = (LiteralHeaderFieldStaticMask & b) == LiteralHeaderFieldStaticMask;
-                        prefixInt = b & LiteralHeaderFieldPrefixMask;
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPrefix, out intResult))
-                        {
-                            OnIndexedHeaderName(intResult);
-                        }
-                        else
-                        {
-                            _state = State.HeaderNameIndex;
-                        }
-                    }
-                    else if ((b & LiteralHeaderFieldPostBaseMask) == LiteralHeaderFieldPostBaseRepresentation)
-                    {
-                        _index = true;
-                        _n = (LiteralHeaderFieldPostBaseNMask & b) == LiteralHeaderFieldPostBaseNMask;
-                        prefixInt = b & LiteralHeaderFieldPostBasePrefixMask;
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPostBasePrefix, out intResult))
-                        {
-                            OnIndexedHeaderNamePostBase(intResult);
-                        }
-                        else
-                        {
-                            _state = State.HeaderNameIndexPostBase;
-                        }
-                    }
-                    else if ((b & LiteralHeaderFieldWithoutNameReferenceMask) == LiteralHeaderFieldWithoutNameReferenceRepresentation)
-                    {
-                        _index = false;
-                        _n = (LiteralHeaderFieldWithoutNameReferenceNMask & b) == LiteralHeaderFieldWithoutNameReferenceNMask;
-                        _huffman = (b & LiteralHeaderFieldWithoutNameReferenceHuffmanMask) != 0;
-                        prefixInt = b & LiteralHeaderFieldWithoutNameReferencePrefixMask;
+                            bool useStaticTable = (b & IndexedHeaderStaticMask) == IndexedHeaderStaticRepresentation;
 
-                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
-                        {
-                            OnStringLength(intResult, State.HeaderName);
-                        }
-                        else
-                        {
-                            _state = State.HeaderNameLength;
-                        }
+                            if (!useStaticTable)
+                            {
+                                ThrowDynamicTableNotSupported();
+                            }
+
+                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, IndexedHeaderFieldPrefix, out intResult))
+                            {
+                                OnIndexedHeaderField(intResult, handler);
+                            }
+                            else
+                            {
+                                _state = State.HeaderFieldIndex;
+                            }
+                            break;
+                        case 25: // Literal Header Field With Name Reference
+                            useStaticTable = (LiteralHeaderFieldStaticMask & b) == LiteralHeaderFieldStaticMask;
+
+                            if (!useStaticTable)
+                            {
+                                ThrowDynamicTableNotSupported();
+                            }
+
+                            prefixInt = b & LiteralHeaderFieldPrefixMask;
+                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPrefix, out intResult))
+                            {
+                                OnIndexedHeaderName(intResult);
+                            }
+                            else
+                            {
+                                _state = State.HeaderNameIndex;
+                            }
+                            break;
+                        case 26: // Literal Header Field Without Name Reference
+                            _huffman = (b & LiteralHeaderFieldWithoutNameReferenceHuffmanMask) != 0;
+                            prefixInt = b & LiteralHeaderFieldWithoutNameReferencePrefixMask;
+
+                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
+                            {
+                                OnStringLength(intResult, State.HeaderName);
+                            }
+                            else
+                            {
+                                _state = State.HeaderNameLength;
+                            }
+                            break;
+                        case 27: // Indexed Header Field With Post-Base Index
+                            prefixInt = ~PostBaseIndexMask & b;
+                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
+                            {
+                                OnPostBaseIndex(intResult, handler);
+                            }
+                            else
+                            {
+                                _state = State.PostBaseIndex;
+                            }
+                            break;
+                        default: // Literal Header Field With Post-Base Name Reference (at least 4 zeroes, maybe more)
+                            prefixInt = b & LiteralHeaderFieldPostBasePrefixMask;
+                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPostBasePrefix, out intResult))
+                            {
+                                OnIndexedHeaderNamePostBase(intResult);
+                            }
+                            else
+                            {
+                                _state = State.HeaderNameIndexPostBase;
+                            }
+                            break;
                     }
                     break;
                 case State.HeaderNameLength:
-                    // huffman has already been processed.
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
                         OnStringLength(intResult, nextState: State.HeaderName);
@@ -373,7 +379,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         {
             if (length > _stringOctets.Length)
             {
-                throw new QPackDecodingException("TODO sync with corefx" /*CoreStrings.FormatQPackStringLengthTooLarge(length, _stringOctets.Length)*/);
+                if (length > _maxHeadersLength)
+                {
+                    throw new QPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
+                }
+
+                ReturnAndGetNewPooledArray(ref _stringOctets, length);
             }
 
             _stringLength = length;
@@ -385,20 +396,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         {
             OnString(nextState: State.CompressedHeaders);
 
-            var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
-            var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
+            Span<byte> headerNameSpan;
+            Span<byte> headerValueSpan = _headerValueOctets.AsSpan(0, _headerValueLength);
+
+            if (_index is int index)
+            {
+                Debug.Assert(index >= 0 && index <= H3StaticTable.Instance.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
+                handler.OnStaticIndexedHeader(index, headerValueSpan);
+                _index = null;
+
+                return;
+            }
+            else
+            {
+                headerNameSpan = _headerNameOctets.AsSpan(0, _headerNameLength);
+            }
 
             handler.OnHeader(headerNameSpan, headerValueSpan);
-
-            if (_index)
-            {
-                _dynamicTable.Insert(headerNameSpan, headerValueSpan);
-            }
         }
 
         private void OnString(State nextState)
         {
-            int Decode(byte[] dst)
+            int Decode(ref byte[] dst)
             {
                 if (_huffman)
                 {
@@ -406,6 +425,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
                 }
                 else
                 {
+                    if (dst.Length < _stringLength)
+                    {
+                        ReturnAndGetNewPooledArray(ref dst, _stringLength);
+                    }
+
                     Buffer.BlockCopy(_stringOctets, 0, dst, 0, _stringLength);
                     return _stringLength;
                 }
@@ -415,17 +439,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             {
                 if (_state == State.HeaderName)
                 {
+                    _headerNameLength = Decode(ref _headerNameOctets);
                     _headerName = _headerNameOctets;
-                    _headerNameLength = Decode(_headerNameOctets);
                 }
                 else
                 {
-                    _headerValueLength = Decode(_headerValueOctets);
+                    _headerValueLength = Decode(ref _headerValueOctets);
                 }
             }
             catch (HuffmanDecodingException ex)
             {
-                throw new QPackDecodingException("TODO sync with corefx" /*CoreStrings.QPackHuffmanError, */, ex);
+                throw new QPackDecodingException(SR.net_http_hpack_huffman_decode_failed, ex);
             }
 
             _state = nextState;
@@ -434,80 +458,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 
         private void OnIndexedHeaderName(int index)
         {
-            var header = GetHeader(index);
-            _headerName = header.Name;
-            _headerNameLength = header.Name.Length;
+            _index = index;
             _state = State.HeaderValueLength;
         }
 
         private void OnIndexedHeaderNamePostBase(int index)
         {
+            ThrowDynamicTableNotSupported();
             // TODO update with postbase index
-            var header = GetHeader(index);
-            _headerName = header.Name;
-            _headerNameLength = header.Name.Length;
-            _state = State.HeaderValueLength;
+            // _index = index;
+            // _state = State.HeaderValueLength;
         }
 
         private void OnPostBaseIndex(int intResult, IHttpHeadersHandler handler)
         {
+            ThrowDynamicTableNotSupported();
             // TODO
-            _state = State.CompressedHeaders;
+            // _state = State.CompressedHeaders;
         }
 
         private void OnBase(int deltaBase)
         {
+            if (deltaBase != 0)
+            {
+                ThrowDynamicTableNotSupported();
+            }
             _state = State.CompressedHeaders;
-            if (_s)
-            {
-                _base = _requiredInsertCount - deltaBase - 1;
-            }
-            else
-            {
-                _base = _requiredInsertCount + deltaBase;
-            }
         }
 
-        // TODO 
         private void OnRequiredInsertCount(int requiredInsertCount)
         {
-            _requiredInsertCount = requiredInsertCount;
-            _state = State.RequiredInsertCountDone;
-            // This is just going to noop for now. I don't get this algorithm at all.
-            //    var encoderInsertCount = 0;
-            //    var maxEntries = _maxDynamicTableSize / HeaderField.RfcOverhead;
-
-            //    if (requiredInsertCount != 0)
-            //    {
-            //        encoderInsertCount = (requiredInsertCount % ( 2 * maxEntries)) + 1;
-            //    }
-
-            //    // Dude I don't get this algorithm...
-            //    var fullRange = 2 * maxEntries;
-            //    if (encoderInsertCount == 0)
-            //    {
-
-            //    }
+            if (requiredInsertCount != 0)
+            {
+                ThrowDynamicTableNotSupported();
+            }
+            _state = State.Base;
         }
 
         private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
         {
-            // Indexes start at 0 in QPack
-            var header = GetHeader(index);
-            handler.OnHeader(new Span<byte>(header.Name), new Span<byte>(header.Value));
+            handler.OnStaticIndexedHeader(index);
             _state = State.CompressedHeaders;
         }
 
-        private HeaderField GetHeader(int index)
+        private static void ThrowDynamicTableNotSupported()
         {
-            try
-            {
-                return _s ? StaticTable.Instance[index] : _dynamicTable[index];
-            }
-            catch (IndexOutOfRangeException ex)
-            {
-                throw new QPackDecodingException("TODO sync with corefx" /*CoreStrings.FormatQPackErrorIndexOutOfRange(index),  */, ex);
-            }
+            throw new QPackDecodingException("No dynamic table support");
         }
     }
 }

@@ -1192,6 +1192,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            // TODO allow customization of this.
+            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3) 
+            {
+                foreach (var option in ServerOptions.ListenOptions)
+                {
+                    if (option.Protocols == HttpProtocols.Http3)
+                    {
+                        responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint.Port}\"; ma=84600";
+                        break;
+                    }
+                }
+            }
+
             if (ServerOptions.AddServerHeader && !responseHeaders.HasServer)
             {
                 responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);

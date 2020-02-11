@@ -7,7 +7,7 @@ using System.Text;
 
 namespace System.Net.Http.HPack
 {
-    internal static class StaticTable
+    internal static class H2StaticTable
     {
         // Index of status code into s_staticDecoderTable
         private static readonly Dictionary<int, int> s_statusIndex = new Dictionary<int, int>

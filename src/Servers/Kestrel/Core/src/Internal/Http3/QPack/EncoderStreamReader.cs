@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
@@ -317,11 +318,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             _state = State.Ready;
         }
 
-        private HeaderField GetHeader(int index)
+        private System.Net.Http.QPack.HeaderField GetHeader(int index)
         {
             try
             {
-                return _s ? StaticTable.Instance[index] : _dynamicTable[index];
+                return _s ? H3StaticTable.Instance[index] : _dynamicTable[index];
             }
             catch (IndexOutOfRangeException ex)
             {

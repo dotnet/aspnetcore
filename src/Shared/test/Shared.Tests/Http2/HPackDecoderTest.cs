@@ -106,6 +106,18 @@ namespace System.Net.Http.Unit.Tests.HPack
             _decodedHeaders[headerName] = headerValue;
         }
 
+        void IHttpHeadersHandler.OnStaticIndexedHeader(int index)
+        {
+            // Not yet implemented for HPACK.
+            throw new NotImplementedException();
+        }
+
+        void IHttpHeadersHandler.OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            // Not yet implemented for HPACK.
+            throw new NotImplementedException();
+        }
+
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         [Fact]

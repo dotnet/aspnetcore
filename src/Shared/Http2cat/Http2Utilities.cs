@@ -1017,6 +1017,16 @@ namespace Microsoft.AspNetCore.Http2Cat
             Assert.Equal(expectedErrorCode, frame.RstStreamErrorCode);
         }
 
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal class Http2FrameWithPayload : Http2Frame
         {
             public Http2FrameWithPayload() : base()

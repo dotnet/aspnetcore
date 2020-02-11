@@ -6,13 +6,14 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.QPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _isClosed;
         private int _gracefulCloseInitiator;
         private readonly HttpConnectionContext _context;
-        private readonly Http3Frame _incomingFrame = new Http3Frame();
+        private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
@@ -53,16 +54,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Reset();
 
             _http3Output = new Http3OutputProducer(
-                0, // TODO streamid
                 _frameWriter,
                 context.MemoryPool,
                 this,
                 context.ServiceContext.Log);
             RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
             Output = _http3Output;
+            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
         }
 
-        public QPackDecoder QPackDecoder { get; set; } = new QPackDecoder(10000, 10000);
+        public QPackDecoder QPackDecoder { get; }
 
         public PipeReader Input => _context.Transport.Input;
 
@@ -76,11 +77,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
+            // TODO something with request aborted?
         }
 
         public void OnHeadersComplete(bool endStream)
         {
             OnHeadersComplete();
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            var knownHeader = H3StaticTable.Instance[index];
+            OnHeader(knownHeader.Name, knownHeader.Value);
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            var knownHeader = H3StaticTable.Instance[index];
+            OnHeader(knownHeader.Name, value);
         }
 
         public void HandleReadDataRateTimeout()
@@ -114,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application)
         {
+            Exception error = null;
+
             try
             {
                 while (_isClosed == 0)
@@ -139,23 +155,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-                    catch (Http3StreamErrorException)
-                    {
-                        // TODO
-                    }
+
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO
+                error = ex;
+                Log.LogWarning(0, ex, "Stream threw an exception.");
             }
             finally
             {
-                await RequestBodyPipe.Writer.CompleteAsync();
+                var streamError = error as ConnectionAbortedException
+                    ?? new ConnectionAbortedException("The stream has completed.", error);
+                try
+                {
+                    _frameWriter.Complete();
+                }
+                catch
+                {
+                    _frameWriter.Abort(streamError);
+                    throw;
+                }
+                finally
+                {
+                    Input.Complete();
+                    _context.Transport.Input.CancelPendingRead();
+                    await RequestBodyPipe.Writer.CompleteAsync();
+                }
             }
         }
 
@@ -277,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
                 {
-                    //ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http2ErrorCode.PROTOCOL_ERROR);
+                    Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                     return false;
                 }
 
@@ -296,8 +326,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // - We'll need to find some concrete scenarios to warrant unblocking this.
             if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                //ResetAndAbort(new ConnectionAbortedException(
-                //    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                Abort(new ConnectionAbortedException(
+                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -325,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var requestLineLength = _methodText.Length + Scheme.Length + hostText.Length + path.Length;
             if (requestLineLength > ServerOptions.Limits.MaxRequestLineSize)
             {
-                //ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http2ErrorCode.PROTOCOL_ERROR);
+                Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -346,8 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (Method == Http.HttpMethod.None)
             {
-                // TODO
-                //ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http2ErrorCode.PROTOCOL_ERROR);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -355,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (HttpCharacters.IndexOfInvalidTokenChar(_methodText) >= 0)
                 {
-                    //ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http2ErrorCode.PROTOCOL_ERROR);
+                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                     return false;
                 }
             }
@@ -395,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             if (host.Count > 1 || !HttpUtilities.IsHostHeaderValid(hostText))
             {
                 // RST replaces 400
-                //ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(hostText)), Http2ErrorCode.PROTOCOL_ERROR);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(hostText)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -407,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Must start with a leading slash
             if (pathSegment.Length == 0 || pathSegment[0] != '/')
             {
-                //ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -437,7 +466,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (InvalidOperationException)
             {
-                //ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+                // TODO change HTTP/2 specific messages to include HTTP/3
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
         }
