@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" LinkBase="Shared\Http2\" />
+    <Compile Include="$(SharedSourceRoot)runtime\http2\**\*.cs" LinkBase="Shared\http2" />
+    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
@@ -25,7 +27,7 @@
       <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
       <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>

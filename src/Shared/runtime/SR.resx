@@ -150,6 +150,9 @@
   <data name="net_http_invalid_header_name" xml:space="preserve">
     <value>Received an invalid header name: '{0}'.</value>
   </data>
+  <data name="net_http_qpack_no_dynamic_table" xml:space="preserve">
+    <value>No dynamic table support</value>
+  </data>
   <data name="net_http_request_invalid_char_encoding" xml:space="preserve">
     <value>Request headers must contain only ASCII characters.</value>
   </data>

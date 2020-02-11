@@ -15,5 +15,5 @@ cd "$(dirname "$0")" || exit 1
 
 echo "RUNTIME_REPO: $remote_repo"
 
-rsync -av --delete ./ "$remote_repo"/src/libraries/Common/src/System/Net/Http/Http3
-rsync -av --delete ./../test/Shared.Tests/Http3/ "$remote_repo"/src/libraries/Common/tests/Tests/System/Net/Http3
+rsync -av --delete ./ "$remote_repo"/src/libraries/Common/src/System/Net/Http/aspnetcore
+rsync -av --delete ./../test/Shared.Tests/runtime/ "$remote_repo"/src/libraries/Common/tests/Tests/System/Net/aspnetcore
