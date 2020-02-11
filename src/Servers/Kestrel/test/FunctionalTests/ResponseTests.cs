@@ -640,6 +640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        [Flaky("<no longer needed; tracked in Kusto>")]
         public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure()
         {
             const int bufferSize = 65536;

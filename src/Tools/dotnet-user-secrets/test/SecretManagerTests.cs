@@ -183,6 +183,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [Flaky("<no longer needed; tracked in Kusto>")]
         public void Remove_Non_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
