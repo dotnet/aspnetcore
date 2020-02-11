@@ -43,6 +43,7 @@ jobs:
         path: artifacts
     - name: Check
       shell: cmd
+      continue-on-error: true
       # Returns 0 if found, 1 otherwise
       run: findstr /c:"nothing to commit, working tree clean" status.txt
     - name: Notify
