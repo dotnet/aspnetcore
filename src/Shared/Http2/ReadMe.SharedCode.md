@@ -14,7 +14,7 @@ aspnet/AspNetCore code paths:
 
 ## Building dotnet/runtime code:
 - https://github.com/dotnet/runtime/tree/master/docs/workflow
-- Run libraries.cmd from the root once: `PS D:\github\runtime> .\libraries.cmd`
+- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -subsetCategory libraries`
 - Build the individual projects:
 - `PS D:\github\dotnet\src\libraries\Common\tests> dotnet msbuild /t:rebuild`
 - `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet msbuild /t:rebuild`
