@@ -96,7 +96,7 @@ namespace Templates.Test.Helpers
             var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
-            
+
             Assert.Equal(5, builtPackages.Length);
 
             /*
