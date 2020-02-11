@@ -6,7 +6,10 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Net.Http.HPack;
 using System.Numerics;
+
+#if KESTREL
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+#endif
 
 namespace System.Net.Http.QPack
 {
@@ -221,9 +224,9 @@ namespace System.Net.Http.QPack
                     }
                     break;
                 case State.CompressedHeaders:
-                    switch (BitOperations.LeadingZeroCount(b))
+                    switch (BitOperations.LeadingZeroCount(b) - 24)
                     {
-                        case 24: // Indexed Header Field
+                        case 0: // Indexed Header Field
                             prefixInt = IndexedHeaderFieldPrefixMask & b;
 
                             bool useStaticTable = (b & IndexedHeaderStaticMask) == IndexedHeaderStaticRepresentation;
@@ -242,7 +245,7 @@ namespace System.Net.Http.QPack
                                 _state = State.HeaderFieldIndex;
                             }
                             break;
-                        case 25: // Literal Header Field With Name Reference
+                        case 1: // Literal Header Field With Name Reference
                             useStaticTable = (LiteralHeaderFieldStaticMask & b) == LiteralHeaderFieldStaticMask;
 
                             if (!useStaticTable)
@@ -260,7 +263,7 @@ namespace System.Net.Http.QPack
                                 _state = State.HeaderNameIndex;
                             }
                             break;
-                        case 26: // Literal Header Field Without Name Reference
+                        case 2: // Literal Header Field Without Name Reference
                             _huffman = (b & LiteralHeaderFieldWithoutNameReferenceHuffmanMask) != 0;
                             prefixInt = b & LiteralHeaderFieldWithoutNameReferencePrefixMask;
 
@@ -273,7 +276,7 @@ namespace System.Net.Http.QPack
                                 _state = State.HeaderNameLength;
                             }
                             break;
-                        case 27: // Indexed Header Field With Post-Base Index
+                        case 3: // Indexed Header Field With Post-Base Index
                             prefixInt = ~PostBaseIndexMask & b;
                             if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
                             {
