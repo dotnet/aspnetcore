@@ -36,6 +36,8 @@ export class WebAssemblyResourceLoader {
     if (!this.bootConfig.cacheBootResources) {
       // Bypass the entire cache flow, including checking hashes, etc.
       // This gives developers an easy opt-out if they don't like anything about the default cache mechanism
+      // Cloning represents the response as two separate streams so we can process it twice independently
+      // (once for hash checking, once for streaming compilation). Without this, there would be a read error.
       const response = fetch(url, networkFetchOptions);
       const data = response.then(r => r.clone().arrayBuffer());
       return { name, url, response, data };
