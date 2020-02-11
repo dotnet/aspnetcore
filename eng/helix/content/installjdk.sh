@@ -7,10 +7,6 @@ pushd .
 
 if type -P "java" &>/dev/null; then
     echo "java is in \$PATH"
-    if [ "$JAVA_HOME" = "" ]; then
-        export JAVA_HOME=$(dirname "$(which java)")
-    fi
-    echo "JAVA_HOME set to $JAVA_HOME"
     exit
 fi
 
@@ -46,6 +42,5 @@ echo "Installing java from $(basename $url) $url"
 mkdir $output_dir
 echo "Unpacking to $output_dir"
 tar --strip-components 1 -xzf "jdk-${java_version}_${platformarch}_bin.tar.gz" --no-same-owner --directory "$output_dir"
-export JAVA_HOME=$output_dir
 
 popd
