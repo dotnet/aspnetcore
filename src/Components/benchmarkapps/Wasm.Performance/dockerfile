@@ -21,7 +21,8 @@ RUN git init \
     && git reset --hard FETCH_HEAD \
     && git submodule update --init
 
-RUN dotnet publish -c Release -r linux-x64 -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN ./restore.sh
+RUN .dotnet/dotnet publish -c Release -r linux-x64 -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
