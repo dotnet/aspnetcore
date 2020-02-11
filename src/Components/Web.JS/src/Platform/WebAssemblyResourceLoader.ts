@@ -11,6 +11,10 @@ export class WebAssemblyResourceLoader {
       credentials: 'include'
     });
 
+    // Define a separate cache for each base href, so we're isolated from any other
+    // Blazor application running on the same origin. We need this so that we're free
+    // to purge from the cache anything we're not using and don't let it keep growing,
+    // since we don't want to be worst offenders for space usage.
     const relativeBaseHref = document.baseURI.substring(document.location.origin.length);
     const cacheName = `blazor-resources-${relativeBaseHref}`;
     return new WebAssemblyResourceLoader(
