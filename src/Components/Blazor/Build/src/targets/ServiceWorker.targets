@@ -1,18 +1,29 @@
 <Project>
+  
   <PropertyGroup>
     <_BlazorCopyFilesToOutputDirectoryDependsOn>
-      _GenerateBlazorAssetsManifest;
-      $(_BlazorCopyFilesToOutputDirectoryDependsOn)
+      $(_BlazorCopyFilesToOutputDirectoryDependsOn);
+      _PrepareBlazorAssetsManifestInputs;
+      _PrepareBlazorAssetsManifestOutputs;
     </_BlazorCopyFilesToOutputDirectoryDependsOn>
   </PropertyGroup>
-  
-  <Target Name="_GenerateBlazorAssetsManifest"
-          DependsOnTargets="PrepareBlazorOutputs"
-          Condition="'$(BlazorAssetsManifest)' != ''">
+
+  <Target Name="_PrepareBlazorAssetsManifestInputs"
+          DependsOnTargets="PrepareBlazorOutputs">
+
+    <PropertyGroup>
+      <_BlazorAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)assetsmanifest.json</_BlazorAssetsManifestIntermediateOutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
+      <!-- Include _framework/* content -->
+      <_BlazorAssetsManifestItem Include="@(BlazorOutputWithTargetPath)">
+        <AssetUrl>$([System.String]::Copy('%(TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
+      </_BlazorAssetsManifestItem>
+
       <!-- Include content from wwwroot -->
-      <_BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
-        <AssetUrl>$([System.String]::Copy('%(TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
+      <_BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
+        <AssetUrl>$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
       </_BlazorAssetsManifestItem>
 
       <!-- Include SWA from references -->
@@ -21,9 +32,12 @@
       </_BlazorAssetsManifestItem>
     </ItemGroup>
 
-    <PropertyGroup>
-      <_BlazorAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)Blazorassetsmanifest.json</_BlazorAssetsManifestIntermediateOutputPath>
-    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PrepareBlazorAssetsManifestOutputs"
+          Condition="'$(BlazorAssetsManifest)' != ''"
+          Inputs="@(_BlazorAssetsManifestItem)"
+          Outputs="$(_BlazorAssetsManifestIntermediateOutputPath)">
 
     <GetFileHash Files="@(_BlazorAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
@@ -38,5 +52,6 @@
       <BlazorOutputWithTargetPath Include="$(_BlazorAssetsManifestIntermediateOutputPath)" TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifest)" />
       <FileWrites Include="$(_BlazorAssetsManifestIntermediateOutputPath)" />
     </ItemGroup>
+
   </Target>
 </Project>
