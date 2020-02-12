@@ -22,7 +22,6 @@
     <IsExternal>true</IsExternal>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
-    <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
