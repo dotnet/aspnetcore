@@ -74,8 +74,16 @@
       <_VersionToken>%(ServiceWorker.VersionToken)</_VersionToken>
       <_Version>%(ServiceWorker.Version)</_Version>
       <_Version Condition="'$(_Version)' == ''">$([System.Guid]::NewGuid())</_Version>
-      <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\%(ServiceWorker.Identity)</_IntermediatePath>
+      <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\$([System.IO.Path]::GetRandomFileName())</_IntermediatePath>
     </PropertyGroup>
+
+    <FindInList List="@(ContentWithTargetPath)" ItemSpecToFind="$(_DevelopmentSource)">
+      <Output TaskParameter="ItemFound" ItemName="_OriginalDevelopmentFile" />
+    </FindInList>
+    <Error Condition="'@(_OriginalDevelopmentFile)' == ''"
+           Text="ServiceWorker: no content item found matching item spec '$(_DevelopmentSource)'" />
+    <Error Condition="!Exists('$(_PublishedSource)')"
+           Text="ServiceWorker: no file found at '$(_PublishedSource)'" />
 
     <!-- Copy from input to intermediate location, performing string replacement if token name is specified -->
     <ReadLinesFromFile File="$(_PublishedSource)">
@@ -94,12 +102,11 @@
 
     <ItemGroup>
       <!-- Don't publish the input files directly -->
-      <OriginalDevelopmentFile Include="@(ContentWithTargetPath)" Condition="'%(ContentWithTargetPath.Identity)' == '$(_DevelopmentSource)'" />
       <ContentWithTargetPath Remove="$(_DevelopmentSource); $(_PublishedSource)" />
 
       <!-- Do publish the intermediate file we just wrote -->
       <ContentWithTargetPath Include="$(_IntermediatePath)">
-        <TargetPath>@(OriginalDevelopmentFile->'%(TargetPath)')</TargetPath>
+        <TargetPath>@(_OriginalDevelopmentFile->'%(TargetPath)')</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ContentWithTargetPath>
     </ItemGroup>
