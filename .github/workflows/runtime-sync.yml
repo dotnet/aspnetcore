@@ -48,7 +48,7 @@ jobs:
       run: |
         # Check the code is in sync
         $changed = (select-string "nothing to commit" ..\artifacts\status.txt).count -eq 0
-        if ($changed -ne True) { exit }
+        if (-not $changed) { exit }
         # Check if issue #18943 is open/closed
         $Base64Token = [System.Convert]::ToBase64String([char]]$ENV:GITHUB_TOKEN);
         $Headers = @{ Authorization = 'Basic {0}' -f $Base64Token; };
