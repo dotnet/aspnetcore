@@ -63,33 +63,23 @@
   <Target Name="_PrepareServiceWorkerOutputs"
           BeforeTargets="GetCopyToPublishDirectoryItems"
           DependsOnTargets="BlazorGetCopyToPublishDirectoryItems">
-    <CallTarget Targets="_ProcessServiceWorkerToPublish" />
+    <CallTarget Targets="_ProcessServiceWorker" />
   </Target>
 
-  <Target Name="_ProcessServiceWorkerToPublish" Inputs="@(ServiceWorkerToPublish)" Outputs="%(Identity).Fake">
+  <Target Name="_ProcessServiceWorker" Inputs="@(ServiceWorker)" Outputs="%(Identity).Fake">
 
     <PropertyGroup>
-      <_TargetPathPublish>$(BlazorPublishDistDir)%(ServiceWorkerToPublish.OutputPath)</_TargetPathPublish>
-      <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\%(ServiceWorkerToPublish.OutputPath)</_IntermediatePath>
-      <_VersionToken>%(ServiceWorkerToPublish.VersionToken)</_VersionToken>
-      <_Version>%(ServiceWorkerToPublish.Version)</_Version>
+      <_DevelopmentSource>%(ServiceWorker.Identity)</_DevelopmentSource>
+      <_PublishedSource>%(ServiceWorker.PublishedContent)</_PublishedSource>
+      <_VersionToken>%(ServiceWorker.VersionToken)</_VersionToken>
+      <_Version>%(ServiceWorker.Version)</_Version>
       <_Version Condition="'$(_Version)' == ''">$([System.Guid]::NewGuid())</_Version>
+      <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\%(ServiceWorker.Identity)</_IntermediatePath>
     </PropertyGroup>
 
-    <ItemGroup>
-      <!-- Don't output files that would be overwritten by this process -->
-      <_ContentWithTargetPathToRemove
-        Include="@(ContentWithTargetPath)"
-        Condition="'%(ContentWithTargetPath.TargetPath)' == '$(_TargetPathPublish)'" />
-      <ContentWithTargetPath Remove="@(_ContentWithTargetPathToRemove)" />
-
-      <!-- Likewise, don't publish the original unmodified service worker -->
-      <ContentWithTargetPath Remove="@(ServiceWorkerToPublish)" />
-    </ItemGroup>
-
     <!-- Copy from input to intermediate location, performing string replacement if token name is specified -->
-    <ReadLinesFromFile File="%(ServiceWorkerToPublish.Identity)">
-      <Output TaskParameter="Lines" ItemName="_ServiceWorkerLine"/>
+    <ReadLinesFromFile File="$(_PublishedSource)">
+      <Output TaskParameter="Lines" ItemName="_ServiceWorkerLine" />
     </ReadLinesFromFile>
     <WriteLinesToFile
       Condition="'$(_VersionToken)' != ''"
@@ -102,10 +92,14 @@
       Lines="@(_ServiceWorkerLine)"
       Overwrite="true" />
 
-    <!-- Include the intermediate file as output content -->
     <ItemGroup>
+      <!-- Don't publish the input files directly -->
+      <OriginalDevelopmentFile Include="@(ContentWithTargetPath)" Condition="'%(ContentWithTargetPath.Identity)' == '$(_DevelopmentSource)'" />
+      <ContentWithTargetPath Remove="$(_DevelopmentSource); $(_PublishedSource)" />
+
+      <!-- Do publish the intermediate file we just wrote -->
       <ContentWithTargetPath Include="$(_IntermediatePath)">
-        <TargetPath>$(_TargetPathPublish)</TargetPath>
+        <TargetPath>@(OriginalDevelopmentFile->'%(TargetPath)')</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ContentWithTargetPath>
     </ItemGroup>
