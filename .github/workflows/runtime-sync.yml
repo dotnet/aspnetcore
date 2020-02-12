@@ -48,4 +48,4 @@ jobs:
     - name: Notify
       if: failure()
       shell: cmd
-      run: echo "The Check task failed, sending notification."
+      run: echo "The Check task failed, sending a notification."
