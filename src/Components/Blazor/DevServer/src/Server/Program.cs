@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 {
@@ -27,7 +25,8 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
         /// </summary>
         public static IHost BuildWebHost(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureHostConfiguration(cb => {
+                .ConfigureHostConfiguration(cb =>
+                {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).FirstOrDefault();
                     var name = Path.ChangeExtension(applicationPath,".StaticWebAssets.xml");
 
@@ -38,6 +37,11 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
                             [WebHostDefaults.StaticWebAssetsKey] = name
                         });
                     }
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Warning);
+                    logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Information);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
