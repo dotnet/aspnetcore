@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.ResponseCaching;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for the ResponseCachingMiddleware middleware.
+    /// Extension methods for adding the <see cref="ResponseCachingMiddleware"/> to an application.
     /// </summary>
     public static class ResponseCachingExtensions
     {
