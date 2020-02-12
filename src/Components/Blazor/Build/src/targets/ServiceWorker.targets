@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <Target Name="_PrepareBlazorAssetsManifestInputs"
+          Condition="'$(BlazorAssetsManifestPath)' != ''"
           DependsOnTargets="PrepareBlazorOutputs">
 
     <PropertyGroup>
@@ -35,7 +36,6 @@
   </Target>
 
   <Target Name="_PrepareBlazorAssetsManifestOutputs"
-          Condition="'$(BlazorAssetsManifest)' != ''"
           Inputs="@(_BlazorAssetsManifestItem)"
           Outputs="$(_BlazorAssetsManifestIntermediateOutputPath)">
 
@@ -49,7 +49,7 @@
       Overwrite="true" />
 
     <ItemGroup>
-      <BlazorOutputWithTargetPath Include="$(_BlazorAssetsManifestIntermediateOutputPath)" TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifest)" />
+      <BlazorOutputWithTargetPath Include="$(_BlazorAssetsManifestIntermediateOutputPath)" TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifestPath)" />
       <FileWrites Include="$(_BlazorAssetsManifestIntermediateOutputPath)" />
     </ItemGroup>
 
