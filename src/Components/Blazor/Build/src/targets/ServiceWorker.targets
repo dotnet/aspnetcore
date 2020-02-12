@@ -1,0 +1,42 @@
+<Project>
+  <PropertyGroup>
+    <_BlazorCopyFilesToOutputDirectoryDependsOn>
+      _GenerateBlazorAssetsManifest;
+      $(_BlazorCopyFilesToOutputDirectoryDependsOn)
+    </_BlazorCopyFilesToOutputDirectoryDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="_GenerateBlazorAssetsManifest"
+          DependsOnTargets="PrepareBlazorOutputs"
+          Condition="'$(BlazorAssetsManifest)' != ''">
+    <ItemGroup>
+      <!-- Include content from wwwroot -->
+      <_BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
+        <AssetUrl>$([System.String]::Copy('%(TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
+      </_BlazorAssetsManifestItem>
+
+      <!-- Include SWA from references -->
+      <_BlazorAssetsManifestItem Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceType)' != ''">
+        <AssetUrl>%(StaticWebAsset.BasePath)/%(StaticWebAsset.RelativePath)</AssetUrl>
+      </_BlazorAssetsManifestItem>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_BlazorAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)Blazorassetsmanifest.json</_BlazorAssetsManifestIntermediateOutputPath>
+    </PropertyGroup>
+
+    <GetFileHash Files="@(_BlazorAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
+    </GetFileHash>
+
+    <WriteLinesToFile
+      File="$(_BlazorAssetsManifestIntermediateOutputPath)"
+      Lines="@(_BlazorAssetWithHash->'%(FileHash) %(AssetUrl)')"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <BlazorOutputWithTargetPath Include="$(_BlazorAssetsManifestIntermediateOutputPath)" TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifest)" />
+      <FileWrites Include="$(_BlazorAssetsManifestIntermediateOutputPath)" />
+    </ItemGroup>
+  </Target>
+</Project>

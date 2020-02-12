@@ -21,7 +21,7 @@
 
   <Target
     Name="_BlazorCopyFilesToOutputDirectory"
-    DependsOnTargets="PrepareBlazorOutputs"
+    DependsOnTargets="PrepareBlazorOutputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
 
