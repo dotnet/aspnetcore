@@ -44,7 +44,7 @@ jobs:
     - name: Check
       shell: cmd
       # Returns 0 if found, 1 otherwise
-      run: findstr /c:"nothing to commit, working tree clean" status.txt
+      run: findstr /c:"nothing to commit, working tree clean" artifacts\status.txt
     - name: Notify
       if: failure()
       shell: cmd
