@@ -35,6 +35,8 @@
 
   </Target>
 
+  <UsingTask TaskName="WriteAssetsManifestFile" AssemblyFile="$(BlazorTasksPath)" />
+
   <Target Name="_PrepareBlazorAssetsManifestOutputs"
           Inputs="@(_BlazorAssetsManifestItem)"
           Outputs="$(_BlazorAssetsManifestIntermediateOutputPath)">
@@ -43,13 +45,15 @@
       <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
     </GetFileHash>
 
-    <WriteLinesToFile
-      File="$(_BlazorAssetsManifestIntermediateOutputPath)"
-      Lines="@(_BlazorAssetWithHash->'%(FileHash) %(AssetUrl)')"
-      Overwrite="true" />
+    <WriteAssetsManifestFile
+      AssetsWithHashes="@(_BlazorAssetWithHash)"
+      OutputPath="$(_BlazorAssetsManifestIntermediateOutputPath)" />
 
     <ItemGroup>
-      <BlazorOutputWithTargetPath Include="$(_BlazorAssetsManifestIntermediateOutputPath)" TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifestPath)" />
+      <BlazorOutputWithTargetPath
+        Include="$(_BlazorAssetsManifestIntermediateOutputPath)"
+        TargetOutputPath="$(BaseBlazorDistPath)$(BlazorAssetsManifestPath)" />
+      
       <FileWrites Include="$(_BlazorAssetsManifestIntermediateOutputPath)" />
     </ItemGroup>
 
