@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [Flaky("<no longer needed; tracked in Kusto>")]
+        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
         [InlineData(HttpProtocols.Http1)]
         [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure Http/1.1 doesn't regress with Http/2 enabled.
         public async Task CertificatePassedToHttpContext(HttpProtocols httpProtocols)
