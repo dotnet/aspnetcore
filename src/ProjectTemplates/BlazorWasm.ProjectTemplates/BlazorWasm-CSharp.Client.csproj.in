@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <BlazorAssetsManifestPath>assets.json</BlazorAssetsManifestPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,17 +20,10 @@
 
   <!--#endif -->
   <!--#if PWA -->
-  <Target Name="PublishServiceWorker" AfterTargets="CopyFilesToPublishDirectory">
-    <!-- Use the "published" version of the service worker in the output -->
-    <PropertyGroup>
-      <ServiceWorkerMoveFrom>$(PublishDir)$(BlazorPublishDistDir)service-worker.published.js</ServiceWorkerMoveFrom>
-      <ServiceWorkerMoveTo>$(PublishDir)$(BlazorPublishDistDir)service-worker.js</ServiceWorkerMoveTo>
-    </PropertyGroup>
-    <Move SourceFiles="$(ServiceWorkerMoveFrom)" DestinationFiles="$(ServiceWorkerMoveTo)" />
-
-    <!-- Append a unique version number that will trigger installation of updates -->
-    <WriteLinesToFile File="$(ServiceWorkerMoveTo)" Lines="const serviceWorkerVersion = '$([System.Guid]::NewGuid())'" />
-  </Target>
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js"
+                   ReplaceOnPublishContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
 
   <!--#endif -->
 </Project>
