@@ -60,4 +60,5 @@ jobs:
         }
         # Add a comment
         $body = "{ `"body`": `"Test message: The code is out of sync.`" }"
+        $issue = $issue + '/comments'
         $result = Invoke-RestMethod -Method POST -Headers $Headers -Uri $issue -Body $body
