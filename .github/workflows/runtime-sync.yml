@@ -41,11 +41,22 @@ jobs:
       with:
         name: results
         path: artifacts
-    - name: Check
-      shell: cmd
-      # Returns 0 if found, 1 otherwise
-      run: findstr /c:"nothing to commit, working tree clean" artifacts\status.txt
-    - name: Notify
-      if: failure()
-      shell: cmd
-      run: echo "The Check task failed, sending a notification."
+    - name: Check and Notify
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Check the code is in sync
+        $changed = (select-string "nothing to commit" ..\artifacts\status.txt).count -eq 0
+        if ($changed -ne True) { exit }
+        # Check if issue #18943 is open/closed
+        $Base64Token = [System.Convert]::ToBase64String([char]]$ENV:GITHUB_TOKEN);
+        $Headers = @{ Authorization = 'Basic {0}' -f $Base64Token; };
+        $result = Invoke-RestMethod -Uri https://api.github.com/repos/dotnet/aspnetcore/issues/18943
+        if ($result.state -eq "closed") { 
+         $body = "{ `"state`": `"open`" }"
+         $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri https://api.github.com/repos/dotnet/aspnetcore/issues/18943 -Body $body
+        }
+        # Add a comment
+        $body = "{ `"body`": `"Test message: The code is out of sync.`" }"
+        $result = Invoke-RestMethod -Method POST -Headers $Headers -Uri https://api.github.com/repos/dotnet/aspnetcore/issues/18943 -Body $body
