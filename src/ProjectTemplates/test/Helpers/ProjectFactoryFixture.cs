@@ -62,10 +62,10 @@ namespace Templates.Test.Helpers
 
         private static string GetTemplateFolderBasePath(Assembly assembly) =>
             (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? Path.Combine("Templates", "BaseFolder")
-            : assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            ? assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "TestTemplateCreationFolder")
-                .Value;
+                .Value
+            : Path.Combine("Templates", "BaseFolder");
 
         public void Dispose()
         {
