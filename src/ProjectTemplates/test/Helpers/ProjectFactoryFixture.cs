@@ -61,7 +61,9 @@ namespace Templates.Test.Helpers
         }
 
         private static string GetTemplateFolderBasePath(Assembly assembly) =>
-            assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+            ? Path.Combine("Templates", "BaseFolder")
+            : assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "TestTemplateCreationFolder")
                 .Value;
 
