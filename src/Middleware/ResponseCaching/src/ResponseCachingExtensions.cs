@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds the <see cref="ResponseCachingMiddleware"/> for caching HTTP Responses.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         public static IApplicationBuilder UseResponseCaching(this IApplicationBuilder app)
         {
             if (app == null)
