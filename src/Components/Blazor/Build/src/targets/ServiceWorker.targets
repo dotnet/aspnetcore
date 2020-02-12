@@ -70,9 +70,9 @@
 
     <PropertyGroup>
       <_DevelopmentSource>%(ServiceWorker.Identity)</_DevelopmentSource>
-      <_PublishedSource>%(ServiceWorker.PublishedContent)</_PublishedSource>
-      <_VersionToken>%(ServiceWorker.VersionToken)</_VersionToken>
-      <_Version>%(ServiceWorker.Version)</_Version>
+      <_PublishedSource>%(ServiceWorker.ReplaceOnPublishContent)</_PublishedSource>
+      <_VersionToken>%(ServiceWorker.ReplaceOnPublishVersionToken)</_VersionToken>
+      <_Version>%(ServiceWorker.ReplaceOnPublishVersion)</_Version>
       <_Version Condition="'$(_Version)' == ''">$([System.Guid]::NewGuid())</_Version>
       <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\$([System.IO.Path]::GetRandomFileName())</_IntermediatePath>
     </PropertyGroup>
