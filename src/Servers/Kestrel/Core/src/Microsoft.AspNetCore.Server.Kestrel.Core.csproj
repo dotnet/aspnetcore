@@ -16,8 +16,7 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" LinkBase="Shared\Http2\" />
-    <Compile Include="$(SharedSourceRoot)Http3\**\*.cs" LinkBase="Shared\Http3\" />
+    <Compile Include="$(SharedSourceRoot)runtime\**\*.cs" LinkBase="Shared\runtime\" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>
@@ -42,7 +41,7 @@
       <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
       <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>

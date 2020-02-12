@@ -10,5 +10,5 @@ IF [%remote_repo%] == [] (
 
 echo RUNTIME_REPO: %remote_repo%
 
-robocopy . %remote_repo%\src\libraries\Common\src\System\Net\Http\Http2 /MIR
-robocopy .\..\test\Shared.Tests\Http2 %remote_repo%\src\libraries\Common\tests\Tests\System\Net\Http2 /MIR
+robocopy . %remote_repo%\src\libraries\Common\src\System\Net\Http\aspnetcore /MIR
+robocopy .\..\test\Shared.Tests\runtime %remote_repo%\src\libraries\Common\tests\Tests\System\Net\aspnetcore /MIR

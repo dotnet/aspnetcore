@@ -10,7 +10,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" Link="Shared\ClosedGenericMatcher\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" Link="Shared\CopyOnWriteDictionary\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" Link="Shared\Http2\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)runtime\**\*.cs" Link="Shared\runtime\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" Link="Shared\HttpSys\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" Link="Shared\ObjectMethodExecutor\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" Link="Shared\PropertyActivator\%(Filename)%(Extension)"/>
@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\ThrowingLibrary\ThrowingLibrary.csproj" />
-    <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
       <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>

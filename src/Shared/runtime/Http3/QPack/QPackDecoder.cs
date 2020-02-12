@@ -506,7 +506,7 @@ namespace System.Net.Http.QPack
 
         private static void ThrowDynamicTableNotSupported()
         {
-            throw new QPackDecodingException("No dynamic table support");
+            throw new QPackDecodingException(SR.net_http_qpack_no_dynamic_table);
         }
     }
 }
