@@ -54,7 +54,7 @@
     <Exec Command="./gradlew $(GradleOptions) compileJava" />
   </Target>
 
-  <Target Name="Test">
+  <Target Name="Test" Condition="'$(SkipTests)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
