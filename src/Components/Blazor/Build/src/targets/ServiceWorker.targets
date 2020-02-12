@@ -59,13 +59,21 @@
 
   </Target>
 
+  <Target Name="_ExcludeServiceWorkersFromAssetsManifest"
+          AfterTargets="ComputeBlazorAssetsManifestItems">
+    <ItemGroup>
+      <BlazorAssetsManifestItem Remove="@(ServiceWorker)" />
+      <BlazorAssetsManifestItem Remove="@(ServiceWorker->'%(ReplaceOnPublishContent)')" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_PrepareServiceWorkerPublishOutputs"
           BeforeTargets="GetCopyToPublishDirectoryItems"
           DependsOnTargets="BlazorGetCopyToPublishDirectoryItems">
     <CallTarget Targets="_PrepareSingleServiceWorkerPublishOutputs" />
   </Target>
 
-  <Target Name="_PrepareSingleServiceWorkerPublishOutputs" Inputs="@(ServiceWorker)" Outputs="%(Identity).Fake">
+  <Target Name="_PrepareSingleServiceWorkerPublishOutputs" Inputs="@(ServiceWorker)" Outputs="%(Identity).DoNotMatchAnything">
 
     <PropertyGroup>
       <_DevelopmentSource>%(ServiceWorker.Identity)</_DevelopmentSource>
@@ -77,6 +85,7 @@
       <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\$([System.IO.Path]::GetRandomFileName())</_IntermediatePath>
     </PropertyGroup>
 
+    <!-- Validate that the parameters match known files -->
     <FindInList List="@(ContentWithTargetPath)" ItemSpecToFind="$(_DevelopmentSource)">
       <Output TaskParameter="ItemFound" ItemName="_OriginalDevelopmentFile" />
     </FindInList>
@@ -85,7 +94,7 @@
     <Error Condition="!Exists('$(_PublishedSource)')"
            Text="ServiceWorker: no file found at '$(_PublishedSource)'" />
 
-    <!-- Copy from input to intermediate location, performing string replacement if token name is specified -->
+    <!-- Copy from input to intermediate location, performing string replacement -->
     <ReadLinesFromFile File="$(_PublishedSource)">
       <Output TaskParameter="Lines" ItemName="_ServiceWorkerLine" />
     </ReadLinesFromFile>
@@ -93,11 +102,6 @@
       Condition="'$(_VersionToken)' != ''"
       File="$(_IntermediatePath)"
       Lines="@(_ServiceWorkerLine->'$([System.String]::Copy('%(_ServiceWorkerLine.Identity)').Replace('$(_VersionToken)', '$(_Version)'))')"
-      Overwrite="true" />
-    <WriteLinesToFile
-      Condition="'$(_VersionToken)' == ''"
-      File="$(_IntermediatePath)"
-      Lines="@(_ServiceWorkerLine)"
       Overwrite="true" />
 
     <ItemGroup>
