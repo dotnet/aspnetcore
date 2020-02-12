@@ -42,7 +42,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
 
     <ItemGroup>
       <_HelixAvailableTargetQueue Condition="'$(UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
-      <_HelixAvailableTargetQueue Condition="'$(UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Filename)'->Replace('.Open',''))" />      
+      <_HelixAvailableTargetQueue Condition="'$(UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />      
       
       <!-- Include default queues based on platform -->
       <_HelixProjectTargetQueue Include="%(_HelixAvailableTargetQueue.Identity)" Condition="'%(_HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true'" />
