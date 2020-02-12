@@ -25,23 +25,21 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
         /// </summary>
         public static IHost BuildWebHost(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureHostConfiguration(cb =>
+                .ConfigureHostConfiguration(config =>
                 {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).FirstOrDefault();
-                    var name = Path.ChangeExtension(applicationPath,".StaticWebAssets.xml");
+                    var applicationDirectory = Path.GetDirectoryName(applicationPath);
+                    var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
 
-                    if (name != null)
+                    var inMemoryConfiguration = new Dictionary<string, string>
                     {
-                        cb.AddInMemoryCollection(new Dictionary<string, string>
-                        {
-                            [WebHostDefaults.StaticWebAssetsKey] = name
-                        });
-                    }
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.SetMinimumLevel(LogLevel.Warning);
-                    logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Information);
+                        ["Logging:LogLevel:Microsoft"] = "Warning",
+                        ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
+                        [WebHostDefaults.StaticWebAssetsKey] = name,
+                    };
+
+                    config.AddInMemoryCollection(inMemoryConfiguration);
+                    config.AddJsonFile(Path.Combine(applicationDirectory, "blazor-devserversettings.json"), optional: true, reloadOnChange: true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
