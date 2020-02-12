@@ -3,13 +3,12 @@
   <PropertyGroup>
     <_BlazorCopyFilesToOutputDirectoryDependsOn>
       $(_BlazorCopyFilesToOutputDirectoryDependsOn);
-      _PrepareBlazorAssetsManifestInputs;
-      _PrepareBlazorAssetsManifestOutputs;
-      _PrepareServiceWorkerOutputs;
+      ComputeBlazorAssetsManifestItems;
+      _WriteBlazorAssetsManifest;
     </_BlazorCopyFilesToOutputDirectoryDependsOn>
   </PropertyGroup>
 
-  <Target Name="_PrepareBlazorAssetsManifestInputs"
+  <Target Name="ComputeBlazorAssetsManifestItems"
           Condition="'$(BlazorAssetsManifestPath)' != ''"
           DependsOnTargets="PrepareBlazorOutputs">
 
@@ -19,30 +18,30 @@
 
     <ItemGroup>
       <!-- Include _framework/* content -->
-      <_BlazorAssetsManifestItem Include="@(BlazorOutputWithTargetPath)">
+      <BlazorAssetsManifestItem Include="@(BlazorOutputWithTargetPath)">
         <AssetUrl>$([System.String]::Copy('%(TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
-      </_BlazorAssetsManifestItem>
+      </BlazorAssetsManifestItem>
 
       <!-- Include content from wwwroot -->
-      <_BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
+      <BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
         <AssetUrl>$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
-      </_BlazorAssetsManifestItem>
+      </BlazorAssetsManifestItem>
 
       <!-- Include SWA from references -->
-      <_BlazorAssetsManifestItem Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceType)' != ''">
+      <BlazorAssetsManifestItem Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceType)' != ''">
         <AssetUrl>%(StaticWebAsset.BasePath)/%(StaticWebAsset.RelativePath)</AssetUrl>
-      </_BlazorAssetsManifestItem>
+      </BlazorAssetsManifestItem>
     </ItemGroup>
 
   </Target>
 
   <UsingTask TaskName="WriteAssetsManifestFile" AssemblyFile="$(BlazorTasksPath)" />
 
-  <Target Name="_PrepareBlazorAssetsManifestOutputs"
-          Inputs="@(_BlazorAssetsManifestItem)"
+  <Target Name="_WriteBlazorAssetsManifest"
+          Inputs="@(BlazorAssetsManifestItem)"
           Outputs="$(_BlazorAssetsManifestIntermediateOutputPath)">
 
-    <GetFileHash Files="@(_BlazorAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
+    <GetFileHash Files="@(BlazorAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
     </GetFileHash>
 
@@ -60,18 +59,19 @@
 
   </Target>
 
-  <Target Name="_PrepareServiceWorkerOutputs"
+  <Target Name="_PrepareServiceWorkerPublishOutputs"
           BeforeTargets="GetCopyToPublishDirectoryItems"
           DependsOnTargets="BlazorGetCopyToPublishDirectoryItems">
-    <CallTarget Targets="_ProcessServiceWorker" />
+    <CallTarget Targets="_PrepareSingleServiceWorkerPublishOutputs" />
   </Target>
 
-  <Target Name="_ProcessServiceWorker" Inputs="@(ServiceWorker)" Outputs="%(Identity).Fake">
+  <Target Name="_PrepareSingleServiceWorkerPublishOutputs" Inputs="@(ServiceWorker)" Outputs="%(Identity).Fake">
 
     <PropertyGroup>
       <_DevelopmentSource>%(ServiceWorker.Identity)</_DevelopmentSource>
       <_PublishedSource>%(ServiceWorker.ReplaceOnPublishContent)</_PublishedSource>
       <_VersionToken>%(ServiceWorker.ReplaceOnPublishVersionToken)</_VersionToken>
+      <_VersionToken Condition="'$(_VersionToken)' == ''">{version}</_VersionToken>
       <_Version>%(ServiceWorker.ReplaceOnPublishVersion)</_Version>
       <_Version Condition="'$(_Version)' == ''">$([System.Guid]::NewGuid())</_Version>
       <_IntermediatePath>$(BlazorIntermediateOutputPath)serviceworker\$([System.IO.Path]::GetRandomFileName())</_IntermediatePath>
