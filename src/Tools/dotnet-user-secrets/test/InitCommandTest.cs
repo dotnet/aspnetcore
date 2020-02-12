@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Microsoft.Extensions.Tools.Internal;
@@ -61,6 +62,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
         public void AddsEscapedSpecificSecretIdToProject()
         {
             const string SecretId = @"<lots of XML invalid values>&";
