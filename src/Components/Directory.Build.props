@@ -14,7 +14,7 @@
 
     <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
          target the latest patch before a preview release. -->
-    <LatestAspNetCoreReferenceVersion>3.1.2</LatestAspNetCoreReferenceVersion>
+    <LatestAspNetCoreReferenceVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</LatestAspNetCoreReferenceVersion>
 
     <ComponentsSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ComponentsSharedSourceRoot>
 
