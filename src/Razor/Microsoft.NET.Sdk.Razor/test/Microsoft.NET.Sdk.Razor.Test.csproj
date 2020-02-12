@@ -125,6 +125,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
+
+    <!-- This target restores SimpleMvc11 and SimpleMvc11NetFx separately because otherwise the TFMs in SimpleMvc11.csproj and SimpleMvc11NetFx.csproj are not respected. -->
+    <PropertyGroup>
+      <TargetFramework11>netcoreapp1.1</TargetFramework11>
+      <TargetFrameworkNetFx>net461</TargetFrameworkNetFx>
+    </PropertyGroup>
+    <MSBuild Projects="..\testapps\SimpleMvc11\SimpleMvc11.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);TargetFramework=$(TargetFramework11)" />
+    <MSBuild Projects="..\testapps\SimpleMvc11NetFx\SimpleMvc11NetFx.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);TargetFramework=$(TargetFrameworkNetFx)" />
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">
