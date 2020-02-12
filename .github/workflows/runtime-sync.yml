@@ -47,7 +47,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Check the code is in sync
-        $changed = (select-string "nothing to commit" ..\artifacts\status.txt).count -eq 0
+        $changed = (select-string "nothing to commit" artifacts\status.txt).count -eq 0
         if (-not $changed) { exit }
         # Check if issue #18943 is open/closed
         $Base64Token = [System.Convert]::ToBase64String([char]$ENV:GITHUB_TOKEN);
