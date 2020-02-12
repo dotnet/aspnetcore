@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         /// Creates a new <see cref="ResponseCachingMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-        /// <param name="options">The options for this middleware.
+        /// <param name="options">The options for this middleware.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/> instances.</param>
         public ResponseCachingMiddleware(
