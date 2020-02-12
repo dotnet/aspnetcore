@@ -25,8 +25,8 @@ namespace Templates.Test.Helpers
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
         public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? Path.Combine("artifacts", "log")
-            : GetAssemblyMetadata("ArtifactsLogDir");
+            ? GetAssemblyMetadata("ArtifactsLogDir")
+            : Path.Combine("artifacts", "log");
         
         // FIGURE OUT EF PATH
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
@@ -41,9 +41,7 @@ namespace Templates.Test.Helpers
         public string ProjectArguments { get; set; }
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
-        public string TargetFramework { get; set; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? "netcoreapp5.0"
-            : GetAssemblyMetadata("Test.DefaultTargetFramework");
+        public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
 
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
