@@ -24,8 +24,8 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        repository: 'Tratcher/runtime'
-        # repository: 'dotnet/runtime'
+        # repository: 'Tratcher/runtime'
+        repository: 'dotnet/runtime'
         path: runtime
     - name: Copy
       shell: cmd
@@ -55,8 +55,8 @@ jobs:
         $changed = (select-string "nothing to commit" artifacts\status.txt).count -eq 0
         if (-not $changed) { exit }
         # Test this script using an issue in the local forked repo
-        $issue = 'https://api.github.com/repos/Tratcher/aspnetcore/issues/1'
-        # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
+        # $issue = 'https://api.github.com/repos/Tratcher/aspnetcore/issues/1'
+        $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         # Check if tracking issue is open/closed
         $Headers = @{ Authorization = 'token {0}' -f $ENV:GITHUB_TOKEN; };
         $result = Invoke-RestMethod -Uri $issue
