@@ -23,7 +23,7 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 set HELIX=%helixQueue%
 
-if (%targetFrameworkIdentifier%==.NETFramework) (
+if %targetFrameworkIdentifier%==.NETFramework (
     xunit.console.exe %target% -xml testResults.xml
     exit /b %ERRORLEVEL%
 )
@@ -41,8 +41,8 @@ set exit_code=0
 
 set NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
 set QUARANTINE_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
-if (%quarantined%==true) (
-    echo Running all tests.
+if %quarantined%==true (
+    echo Running quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%QUARANTINE_FILTER%
     if errorlevel 1 (
         echo Failure in flaky test 1>&2
