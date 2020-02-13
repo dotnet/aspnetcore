@@ -60,7 +60,7 @@ jobs:
         }
         # Add a comment
         $status = [IO.File]::ReadAllText("artifacts\status.txt")
-        $diff = [IO.File]::ReadAllText("..\artifacts\diff.txt")
+        $diff = [IO.File]::ReadAllText("artifacts\diff.txt")
         $body = "<details>
           <summary>The Diff</summary>
         ``````
