@@ -40,8 +40,15 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 }).ToArray()
             };
 
-            using var writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, ownsStream: false, indent: true);
-            new DataContractJsonSerializer(typeof(AssetsManifestFile)).WriteObject(writer, data);
+            using var streamWriter = new StreamWriter(stream, Encoding.UTF8, bufferSize: 50, leaveOpen: true);
+            streamWriter.Write("self.assetsManifest = ");
+            streamWriter.Flush();
+
+            using var jsonWriter = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, ownsStream: false, indent: true);
+            new DataContractJsonSerializer(typeof(AssetsManifestFile)).WriteObject(jsonWriter, data);
+            jsonWriter.Flush();
+
+            streamWriter.WriteLine(";");
         }
 
 #pragma warning disable IDE1006 // Naming Styles
