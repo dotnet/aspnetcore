@@ -18,8 +18,10 @@
 
     <ItemGroup>
       <!-- Include _framework/* content -->
-      <ServiceWorkerAssetsManifestItem Include="@(BlazorOutputWithTargetPath)">
-        <AssetUrl>$([System.String]::Copy('%(TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
+      <ServiceWorkerAssetsManifestItem
+        Include="@(BlazorOutputWithTargetPath)"
+        Condition="$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').StartsWith('dist/'))">
+        <AssetUrl>$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
       </ServiceWorkerAssetsManifestItem>
 
       <!-- Include content from wwwroot -->
@@ -32,7 +34,9 @@
       </ServiceWorkerAssetsManifestItem>
 
       <!-- Include SWA from references -->
-      <ServiceWorkerAssetsManifestItem Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceType)' != ''">
+      <ServiceWorkerAssetsManifestItem
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.SourceType)' != ''">
         <AssetUrl>%(StaticWebAsset.BasePath)/%(StaticWebAsset.RelativePath)</AssetUrl>
       </ServiceWorkerAssetsManifestItem>
     </ItemGroup>
