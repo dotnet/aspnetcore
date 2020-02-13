@@ -5,6 +5,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -14,34 +15,33 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddBlazorStaticFilesConfiguration(this IServiceCollection services)
         {
-            services.Configure<StaticFileOptions>(options =>
-            {
-            });
-
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<StaticFileOptions>, ClientSideBlazorStaticFilesConfiguration>());
-
             return services;
-
         }
 
         private class ClientSideBlazorStaticFilesConfiguration : IConfigureOptions<StaticFileOptions>
         {
-            public ClientSideBlazorStaticFilesConfiguration(IWebHostEnvironment webHostEnvironment)
-            {
-                WebHostEnvironment = webHostEnvironment;
-            }
+            private readonly IConfiguration _configuration;
+            private readonly IWebHostEnvironment _webHostEnvironment;
 
-            public IWebHostEnvironment WebHostEnvironment { get; }
+            public ClientSideBlazorStaticFilesConfiguration(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+            {
+                _configuration = configuration;
+                _webHostEnvironment = webHostEnvironment;
+                _webHostEnvironment = webHostEnvironment;
+            }
 
             public void Configure(StaticFileOptions options)
             {
-                options.FileProvider = WebHostEnvironment.WebRootFileProvider;
+                options.FileProvider = _webHostEnvironment.WebRootFileProvider;
                 var contentTypeProvider = new FileExtensionContentTypeProvider();
                 AddMapping(contentTypeProvider, ".dll", MediaTypeNames.Application.Octet);
-                // For right now unconditionally enable debugging
-                AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
+                if (_configuration.GetValue<bool>("useWebAssemblyDebugging"))
+                {
+                    AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
+                }
+
                 options.ContentTypeProvider = contentTypeProvider;
-                options.OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders;
             }
 
             private static void AddMapping(FileExtensionContentTypeProvider provider, string name, string mimeType)
