@@ -23,7 +23,11 @@
       </BlazorAssetsManifestItem>
 
       <!-- Include content from wwwroot -->
-      <BlazorAssetsManifestItem Include="@(ContentWithTargetPath)" Condition="$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
+      <BlazorAssetsManifestItem
+        Include="@(ContentWithTargetPath)"
+        Condition="
+          ('%(ContentWithTargetPath.CopyToPublishDirectory)' == 'Always' OR '%(ContentWithTargetPath.CopyToPublishDirectory)' == 'PreserveNewest')
+          AND $([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
         <AssetUrl>$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
       </BlazorAssetsManifestItem>
 
