@@ -32,6 +32,10 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 # Used by SkipOnHelix attribute
 export helix="$helix_queue_name"
 
+export NUGET_RESTORE="$DIR/nugetRestore"
+echo "Creating nugetRestore directory: $NUGET_RESTORE"
+mkdir $NUGET_RESTORE
+
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
