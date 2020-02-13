@@ -122,12 +122,21 @@ namespace Templates.Test
             Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
             Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
 
-            Output.WriteLine("Running dotnet serve on published output...");
-            using var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
-
             // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
             var listeningUri = "https://localhost:8080";
-            Output.WriteLine($"Opening browser at {listeningUri}...");
+
+            Output.WriteLine("Running dotnet serve on published output...");
+            using (var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S"))
+            {
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                Browser.Navigate().GoToUrl(listeningUri);
+                TestBasicNavigation(project.ProjectName);
+            }
+
+            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+            // so we can continue working even without the server.
+            Browser.Navigate().GoToUrl("about:blank"); // Be sure we're really reloading
+            Output.WriteLine($"Opening browser without corresponding server at {listeningUri}...");
             Browser.Navigate().GoToUrl(listeningUri);
             TestBasicNavigation(project.ProjectName);
         }
