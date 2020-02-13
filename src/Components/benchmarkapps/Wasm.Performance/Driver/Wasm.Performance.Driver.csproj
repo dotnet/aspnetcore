@@ -14,7 +14,7 @@
   <ItemGroup>
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
-    <ProjectReference Include="..\..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
+    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
 
     <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" />

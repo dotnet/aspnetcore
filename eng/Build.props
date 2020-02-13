@@ -34,8 +34,8 @@
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Blazor\Build\testassets\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\BlazorWasm.ProjectTemplates\content\**\*.csproj;
+                      $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\ComponentsWebAssembly.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;

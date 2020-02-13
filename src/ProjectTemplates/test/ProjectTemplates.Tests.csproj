@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../BlazorWasm.ProjectTemplates/Microsoft.AspNetCore.Blazor.Templates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../ComponentsWebAssembly.ProjectTemplates/Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

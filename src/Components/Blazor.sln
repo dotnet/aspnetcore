@@ -11,65 +11,65 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Performance.Driver", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Performance.TestApp", "benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj", "{10E5AD2E-25A9-4B8B-BD33-207B12D5BAE4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{B29FB58D-FAE5-405E-9695-BCF93582BE9A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly", "WebAssembly", "{B29FB58D-FAE5-405E-9695-BCF93582BE9A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{E363191C-6C15-4C40-8698-B0AD5AA09700}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly", "WebAssembly", "{E363191C-6C15-4C40-8698-B0AD5AA09700}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor", "Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj", "{8A585A38-917D-4A7E-8AFD-E860C76878FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly", "WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj", "{8A585A38-917D-4A7E-8AFD-E860C76878FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Tests", "Blazor\Blazor\test\Microsoft.AspNetCore.Blazor.Tests.csproj", "{75DA4341-5B7F-419C-8EED-3492013D8EB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Tests", "WebAssembly\WebAssembly\test\Microsoft.AspNetCore.Components.WebAssembly.Tests.csproj", "{75DA4341-5B7F-419C-8EED-3492013D8EB5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{A82B9830-447D-4E26-BEB7-C724A3956C0D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build", "Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj", "{201D53B3-2D33-40AD-813F-347A0C1998ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Build", "WebAssembly\Build\src\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj", "{201D53B3-2D33-40AD-813F-347A0C1998ED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build.Tests", "Blazor\Build\test\Microsoft.AspNetCore.Blazor.Build.Tests.csproj", "{AB13059F-8F21-48F6-B9F3-EAF260D9CB81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Build.Tests", "WebAssembly\Build\test\Microsoft.AspNetCore.Components.WebAssembly.Build.Tests.csproj", "{AB13059F-8F21-48F6-B9F3-EAF260D9CB81}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{B4ACD900-27B6-482B-B434-2C1E86E9D8BC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blazorhosted", "Blazor\Build\testassets\blazorhosted\blazorhosted.csproj", "{5F44DC59-3B4E-4E87-973F-C9FB4BBFD03D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blazorhosted", "WebAssembly\Build\testassets\blazorhosted\blazorhosted.csproj", "{5F44DC59-3B4E-4E87-973F-C9FB4BBFD03D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "classlibrarywithsatelliteassemblies", "Blazor\Build\testassets\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj", "{4BD2D530-83C7-4A86-AF8E-FE1FECBF64C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "classlibrarywithsatelliteassemblies", "WebAssembly\Build\testassets\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj", "{4BD2D530-83C7-4A86-AF8E-FE1FECBF64C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorClassLibrary", "Blazor\Build\testassets\razorclasslibrary\RazorClassLibrary.csproj", "{779749F3-8D4F-42BD-9219-37502AD68F0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorClassLibrary", "WebAssembly\Build\testassets\razorclasslibrary\RazorClassLibrary.csproj", "{779749F3-8D4F-42BD-9219-37502AD68F0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "standalone", "Blazor\Build\testassets\standalone\standalone.csproj", "{9C41BA92-FBC8-4E11-9A71-0B07906A2D6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "standalone", "WebAssembly\Build\testassets\standalone\standalone.csproj", "{9C41BA92-FBC8-4E11-9A71-0B07906A2D6C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevServer", "DevServer", "{A44FB7D1-78AB-41C4-B1C7-94399396EA6C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.DevServer", "Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj", "{0ED336B7-6FAB-4872-8D75-1CDD5A5DDBB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DevServer", "WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj", "{0ED336B7-6FAB-4872-8D75-1CDD5A5DDBB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{F4995C96-8D4E-4B26-8FB8-614B020156C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.HttpClient", "Blazor\Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj", "{FAFE3FF2-D36D-47DA-833D-C382A902705E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.HttpClient", "WebAssembly\Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj", "{FAFE3FF2-D36D-47DA-833D-C382A902705E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.HttpClient.Tests", "Blazor\Http\test\Microsoft.AspNetCore.Blazor.HttpClient.Tests.csproj", "{2C10DF3B-D138-414A-BB36-02E45A7B6025}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.HttpClient.Tests", "WebAssembly\Http\test\Microsoft.AspNetCore.Blazor.HttpClient.Tests.csproj", "{2C10DF3B-D138-414A-BB36-02E45A7B6025}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mono.WebAssembly.Interop", "Mono.WebAssembly.Interop", "{37FA056D-A7B3-4F72-A8B9-8D3C175E831E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.WebAssembly.Interop", "Blazor\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.WebAssembly.Interop", "WebAssembly\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{7920B09F-8016-49CF-A229-E72D0CECDD17}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Server", "Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj", "{BDBEDE12-74C1-466E-B8AE-49EC40F83866}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Server", "WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj", "{BDBEDE12-74C1-466E-B8AE-49EC40F83866}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{CBD2BB24-3EC3-4950-ABE4-8C521D258DCD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj", "{8276993E-3F54-4D2F-8DDA-E86F2C6BEF1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj", "{8276993E-3F54-4D2F-8DDA-E86F2C6BEF1E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{CFA20A59-F52B-47A2-BD5D-B600D9576BDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{CFA20A59-F52B-47A2-BD5D-B600D9576BDA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "Blazor\testassets\MonoSanity\MonoSanity.csproj", "{C97721BB-8D89-4167-9E59-839C237BA270}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "WebAssembly\testassets\MonoSanity\MonoSanity.csproj", "{C97721BB-8D89-4167-9E59-839C237BA270}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj", "{7F357E7B-BF33-4055-9A21-37B3507BFF90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "WebAssembly\testassets\MonoSanityClient\MonoSanityClient.csproj", "{7F357E7B-BF33-4055-9A21-37B3507BFF90}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "Blazor\testassets\StandaloneApp\StandaloneApp.csproj", "{236FC110-FBE0-476D-ADC5-D98E23BAA1EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj", "{236FC110-FBE0-476D-ADC5-D98E23BAA1EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Validation", "Validation", "{09758C93-6707-46E3-9211-470449280C2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.DataAnnotations.Validation", "Blazor\Validation\src\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj", "{52F0CF32-9506-4D9C-B715-52900B219BDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.DataAnnotations.Validation", "WebAssembly\Validation\src\Microsoft.AspNetCore.Components.DataAnnotations.Validation.csproj", "{52F0CF32-9506-4D9C-B715-52900B219BDF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.Tests", "Blazor\Validation\test\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.Tests.csproj", "{C1CC2480-7925-4391-86F5-60653D864E87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.DataAnnotations.Validation.Tests", "WebAssembly\Validation\test\Microsoft.AspNetCore.Components.DataAnnotations.Validation.Tests.csproj", "{C1CC2480-7925-4391-86F5-60653D864E87}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{194596E0-E6F5-4728-8A7A-A82EA0893111}"
 EndProject
