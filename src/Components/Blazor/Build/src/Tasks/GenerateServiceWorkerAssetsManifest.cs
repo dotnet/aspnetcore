@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
     public class GenerateServiceWorkerAssetsManifest : Task
     {
         [Required]
+        public string Version { get; set; }
+
+        [Required]
         public ITaskItem[] AssetsWithHashes { get; set; }
 
         [Required]
@@ -29,6 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             var data = new AssetsManifestFile
             {
+                version = Version,
                 assets = AssetsWithHashes.Select(item => new AssetsManifestFileEntry
                 {
                     url = item.GetMetadata("AssetUrl"),
@@ -43,6 +47,11 @@ namespace Microsoft.AspNetCore.Blazor.Build
 #pragma warning disable IDE1006 // Naming Styles
         public class AssetsManifestFile
         {
+            /// <summary>
+            /// Gets or sets a version string.
+            /// </summary>
+            public string version { get; set; }
+
             /// <summary>
             /// Gets or sets the assets. Keys are URLs; values are base-64-formatted SHA256 content hashes.
             /// </summary>

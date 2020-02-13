@@ -43,14 +43,12 @@
 
   <Target Name="_WriteServiceWorkerAssetsManifest"
           Inputs="@(ServiceWorkerAssetsManifestItem)"
-          Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)">
-
-    <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
-    </GetFileHash>
+          Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
+          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion">
 
     <GenerateServiceWorkerAssetsManifest
-      AssetsWithHashes="@(_BlazorAssetWithHash)"
+      Version="$(ServiceWorkerAssetsManifestVersion)"
+      AssetsWithHashes="@(_ServiceWorkerAssetsManifestItemWithHash)"
       OutputPath="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
 
     <ItemGroup>
@@ -61,6 +59,36 @@
       <FileWrites Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes">
+    <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_ServiceWorkerAssetsManifestItemWithHash" />
+    </GetFileHash>
+  </Target>
+
+  <!--
+    If no ServiceWorkerAssetsManifestVersion was specified, we compute a default value by combining all the asset hashes.
+    This is useful because then clients will only have to repopulate caches if the contents have changed.
+  -->
+  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
+          Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''">
+    <PropertyGroup>
+      <_CombinedHashIntermediatePath>$(BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(_CombinedHashIntermediatePath)"
+      Lines="@(_ServiceWorkerAssetsManifestItemWithHash->'%(FileHash)')"
+      Overwrite="true" />
+
+    <GetFileHash Files="$(_CombinedHashIntermediatePath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_ServiceWorkerAssetsManifestCombinedHash" />
+    </GetFileHash>
+
+    <PropertyGroup>
+      <ServiceWorkerAssetsManifestVersion>$([System.String]::Copy('%(_ServiceWorkerAssetsManifestCombinedHash.FileHash)').Substring(0, 8))</ServiceWorkerAssetsManifestVersion>
+    </PropertyGroup>
   </Target>
   
 </Project>
