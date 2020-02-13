@@ -189,11 +189,12 @@ namespace Templates.Test.Helpers
             }
         }
 
-        private static string GetNugetPackagesRestorePath() =>
-            typeof(ProcessEx).Assembly
+        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+            ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "TestPackageRestorePath")
-                .Value;
+                .Value
+            : Path.Combine("nugetRestore", "packages");
 
         public void Dispose()
         {
