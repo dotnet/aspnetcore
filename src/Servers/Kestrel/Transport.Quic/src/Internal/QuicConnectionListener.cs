@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
     /// <summary>
     /// Listens for new Quic Connections.
     /// </summary>
-    internal class QuicConnectionListener : IConnectionListener, IAsyncDisposable
+    internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
         private readonly IQuicTrace _log;
         private bool _disposed;
@@ -36,21 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public EndPoint EndPoint { get; set; }
 
-        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
             var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
-            try
-            {
-                // Because the stream is wrapped with a quic connection provider,
-                // we need to check a property to check if this is null
-                // Will be removed once the provider abstraction is removed.
-                _ = quicConnection.LocalEndPoint;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
             return new QuicConnectionContext(quicConnection, _context);
         }
 

@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Http3OutputProducer _http3Output;
         private int _isClosed;
         private int _gracefulCloseInitiator;
-        private readonly HttpConnectionContext _context;
+        private readonly Http3StreamContext _context;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, HttpConnectionContext context) 
+        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
         {
             Initialize(context);
             // First, determine how we know if an Http3stream is unidirectional or bidirectional

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportConnection, IQuicStreamFeature
+    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature
     {
         private readonly Task _processingTask;
         private readonly QuicStream _stream;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
-            Features.Set<IQuicStreamFeature>(this);
+            Features.Set<IStreamDirectionFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs).
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public bool CanRead { get; }
         public bool CanWrite { get; }
 
-        public long StreamId
+        public override long StreamId
         {
             get
             {
@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 _connectionId = value;
             }
         }
+
 
         private async Task StartAsync()
         {

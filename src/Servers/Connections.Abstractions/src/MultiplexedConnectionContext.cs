@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Connections
         }
 
         public abstract ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default);
-        public abstract ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, bool unidirectional = false, CancellationToken cancellationToken = default);
+
+        public abstract ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default);
     }
 }

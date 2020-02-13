@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };
 
-            var connection = new Http3ConnectionTemp(http3ConnectionContext);
+            var connection = new Http3Connection(http3ConnectionContext);
 
             return connection.ProcessRequestsAsync(_application);
         }

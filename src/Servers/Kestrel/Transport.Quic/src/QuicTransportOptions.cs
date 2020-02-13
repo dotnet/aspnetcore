@@ -25,11 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         public string Alpn { get; set; }
 
         /// <summary>
-        /// The registration name to use in Quic.
-        /// </summary>
-        public string RegistrationName { get; set; }
-
-        /// <summary>
         /// The certificate that MsQuic will use.
         /// </summary>
         public X509Certificate2 Certificate { get; set; }

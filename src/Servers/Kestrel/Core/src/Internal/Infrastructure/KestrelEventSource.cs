@@ -38,6 +38,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        [NonEvent]
+        public void ConnectionStart(MultiplexedConnectionContext connection)
+        {
+            // avoid allocating strings unless this event source is enabled
+            if (IsEnabled())
+            {
+                ConnectionStart(
+                    connection.ConnectionId,
+                    connection.LocalEndPoint?.ToString(),
+                    connection.RemoteEndPoint?.ToString());
+            }
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(1, Level = EventLevel.Verbose)]
         private void ConnectionStart(string connectionId,
@@ -54,6 +67,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         [NonEvent]
         public void ConnectionStop(ConnectionContext connection)
+        {
+            if (IsEnabled())
+            {
+                ConnectionStop(connection.ConnectionId);
+            }
+        }
+
+        [NonEvent]
+        public void ConnectionStop(MultiplexedConnectionContext connection)
         {
             if (IsEnabled())
             {

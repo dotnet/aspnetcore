@@ -1,13 +1,11 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Logging;
 
 namespace QuicSampleApp
@@ -53,24 +51,18 @@ namespace QuicSampleApp
                              while (true)
                              {
                                  var stream = await connection.AcceptAsync();
-                                 try
+                                 while (true)
                                  {
-                                     while (true)
+                                     var result = await stream.Transport.Input.ReadAsync();
+
+                                     if (result.IsCompleted)
                                      {
-                                         var result = await stream.Transport.Input.ReadAsync();
-
-                                         if (result.IsCompleted)
-                                         {
-                                             break;
-                                         }
-
-                                         await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
-
-                                         stream.Transport.Input.AdvanceTo(result.Buffer.End);
+                                         break;
                                      }
-                                 }
-                                 catch (OperationCanceledException)
-                                 {
+
+                                     await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
+
+                                     stream.Transport.Input.AdvanceTo(result.Buffer.End);
                                  }
                              }
                          }

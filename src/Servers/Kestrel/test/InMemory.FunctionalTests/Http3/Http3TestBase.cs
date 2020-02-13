@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -106,8 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _connection = new Http3Connection(httpConnectionContext);
-            var httpConnection = new Http3ConnectionTemp(httpConnectionContext);
-            httpConnection.Initialize(_connection);
+            var httpConnection = new Http3Connection(httpConnectionContext);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
         }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal async ValueTask<Http3ControlStream> CreateControlStream(int id)
         {
-            var stream = new Http3ControlStream(this, _connection);
+            var stream = new Http3ControlStream(this);
             _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
                     
-                StreamContext = new TestStreamContext(Direction.BidirectionalInbound);
+                StreamContext = new TestStreamContext(canRead: true, canWrite: true);
                 StreamContext.Transport = _pair.Transport;
             }
 
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
-                StreamContext = new TestStreamContext(Direction.UnidirectionalInbound);
+                StreamContext = new TestStreamContext(canRead: false, canWrite: true);
 
                 StreamContext.Transport = _pair.Transport;
             }
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return null;
             }
 
-            public override ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, bool unidirectional = false, CancellationToken cancellationToken = default)
+            public override ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
             {
                 var stream = new Http3ControlStream(_testBase);
                 // TODO put these somewhere to be read.
@@ -416,14 +416,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestStreamContext : StreamContext
         {
-            public TestStreamContext(Direction direction)
+            public TestStreamContext(bool canRead, bool canWrite)
             {
-                Direction = direction;
+                Features = new FeatureCollection();
+                Features.Set<IStreamDirectionFeature>(new TestStreamDirectionFeature(canRead, canWrite));
             }
 
-            public override long StreamId { get; set; }
-
-            public override Direction Direction { get; }
+            public override long StreamId { get; }
 
             public override string ConnectionId { get; set; }
 
@@ -432,6 +431,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override IDictionary<object, object> Items { get; set; }
 
             public override IDuplexPipe Transport { get; set; }
+
+            private class TestStreamDirectionFeature : IStreamDirectionFeature
+            {
+                public TestStreamDirectionFeature(bool canRead, bool canWrite)
+                {
+                    CanRead = canRead;
+                    CanWrite = canWrite;
+                }
+
+                public bool CanRead { get; }
+
+                public bool CanWrite { get; }
+            }
         }
     }
 }

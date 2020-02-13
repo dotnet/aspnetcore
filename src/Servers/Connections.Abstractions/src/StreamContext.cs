@@ -1,33 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Connections
 {
     public abstract class StreamContext : ConnectionContext
     {
         /// <summary>
-        /// Triggered when the client stream is closed.
+        /// Gets the id assigned to the stream.
         /// </summary>
-        public virtual CancellationToken StreamClosed { get; set; }
-
-        /// <summary>
-        /// Gets or sets a unique identifier to represent this stream in trace logs.
-        /// </summary>
-        public abstract long StreamId { get; set; }
-
-        /// <summary>
-        /// Represents the direction
-        /// </summary>
-        public abstract Direction Direction { get; }
-    }
-
-    public enum Direction
-    {
-        BidirectionalInbound,
-        BidirectionalOutbound,
-        UnidirectionalInbound,
-        UnidirectionalOutbound
+        public abstract long StreamId { get; }
     }
 }
