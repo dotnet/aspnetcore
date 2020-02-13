@@ -21,7 +21,7 @@
   <Import Project="Blazor.MonoRuntime.targets" />
   <Import Project="Publish.targets" />
   <Import Project="StaticWebAssets.targets" />
-  <Import Project="ServiceWorker.targets" />
+  <Import Project="ServiceWorkerAssetsManifest.targets" />
 
   <Target Name="GenerateBlazorMetadataFile"
     BeforeTargets="GetCopyToOutputDirectoryItems">

@@ -10,7 +10,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
-    public class WriteAssetsManifestFile : Task
+    public class GenerateServiceWorkerAssetsManifest : Task
     {
         [Required]
         public ITaskItem[] AssetsWithHashes { get; set; }

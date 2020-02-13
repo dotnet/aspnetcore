@@ -1,0 +1,66 @@
+<Project>
+  
+  <PropertyGroup>
+    <_BlazorCopyFilesToOutputDirectoryDependsOn>
+      $(_BlazorCopyFilesToOutputDirectoryDependsOn);
+      _ComputeServiceWorkerAssetsManifestInputs;
+      _WriteServiceWorkerAssetsManifest;
+    </_BlazorCopyFilesToOutputDirectoryDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_ComputeServiceWorkerAssetsManifestInputs"
+          Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+          DependsOnTargets="PrepareBlazorOutputs">
+
+    <PropertyGroup>
+      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)serviceworkerassets.js</_ServiceWorkerAssetsManifestIntermediateOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Include _framework/* content -->
+      <ServiceWorkerAssetsManifestItem Include="@(BlazorOutputWithTargetPath)">
+        <AssetUrl>$([System.String]::Copy('%(TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
+      </ServiceWorkerAssetsManifestItem>
+
+      <!-- Include content from wwwroot -->
+      <ServiceWorkerAssetsManifestItem
+        Include="@(ContentWithTargetPath)"
+        Condition="
+          ('%(ContentWithTargetPath.CopyToPublishDirectory)' == 'Always' OR '%(ContentWithTargetPath.CopyToPublishDirectory)' == 'PreserveNewest')
+          AND $([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
+        <AssetUrl>$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
+      </ServiceWorkerAssetsManifestItem>
+
+      <!-- Include SWA from references -->
+      <ServiceWorkerAssetsManifestItem Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceType)' != ''">
+        <AssetUrl>%(StaticWebAsset.BasePath)/%(StaticWebAsset.RelativePath)</AssetUrl>
+      </ServiceWorkerAssetsManifestItem>
+    </ItemGroup>
+
+  </Target>
+
+  <UsingTask TaskName="GenerateServiceWorkerAssetsManifest" AssemblyFile="$(BlazorTasksPath)" />
+
+  <Target Name="_WriteServiceWorkerAssetsManifest"
+          Inputs="@(ServiceWorkerAssetsManifestItem)"
+          Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)">
+
+    <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorAssetWithHash" />  
+    </GetFileHash>
+
+    <GenerateServiceWorkerAssetsManifest
+      AssetsWithHashes="@(_BlazorAssetWithHash)"
+      OutputPath="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
+
+    <ItemGroup>
+      <BlazorOutputWithTargetPath
+        Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
+        TargetOutputPath="$(BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
+      
+      <FileWrites Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
+    </ItemGroup>
+
+  </Target>
+  
+</Project>
