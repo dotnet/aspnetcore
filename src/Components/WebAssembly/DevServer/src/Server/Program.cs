@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
 {
@@ -27,17 +25,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         /// </summary>
         public static IHost BuildWebHost(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureHostConfiguration(cb => {
+                .ConfigureHostConfiguration(config =>
+                {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).FirstOrDefault();
-                    var name = Path.ChangeExtension(applicationPath,".StaticWebAssets.xml");
+                    var applicationDirectory = Path.GetDirectoryName(applicationPath);
+                    var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
 
-                    if (name != null)
+                    var inMemoryConfiguration = new Dictionary<string, string>
                     {
-                        cb.AddInMemoryCollection(new Dictionary<string, string>
-                        {
-                            [WebHostDefaults.StaticWebAssetsKey] = name
-                        });
-                    }
+                        ["Logging:LogLevel:Microsoft"] = "Warning",
+                        ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
+                        [WebHostDefaults.StaticWebAssetsKey] = name,
+                    };
+
+                    config.AddInMemoryCollection(inMemoryConfiguration);
+                    config.AddJsonFile(Path.Combine(applicationDirectory, "blazor-devserversettings.json"), optional: true, reloadOnChange: true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
