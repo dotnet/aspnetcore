@@ -21,8 +21,12 @@
   <!--#endif -->
   <!--#if PWA -->
   <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js"
-                   ReplaceOnPublishContent="wwwroot\service-worker.published.js" />
+    <!-- When publishing, swap service-worker.published.js in place of service-worker.js -->
+    <Content Update="wwwroot\service-worker*.js" CopyToPublishDirectory="false" />
+    <ContentWithTargetPath Include="wwwroot\service-worker.published.js">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>wwwroot\service-worker.js</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
 
   <!--#endif -->
