@@ -12,7 +12,8 @@
   <Import Project="..\Build.props" />
 
   <ItemGroup>
-    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />
   </ItemGroup>
 
   <PropertyGroup>
