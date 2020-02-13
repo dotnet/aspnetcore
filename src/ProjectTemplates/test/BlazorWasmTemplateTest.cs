@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -23,6 +24,11 @@ namespace Templates.Test
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
+
+        public override Task InitializeAsync()
+        {
+            return InitializeAsync(isolationContext: Guid.NewGuid().ToString());
+        }
 
         [Fact]
         public async Task BlazorWasmStandaloneTemplate_Works()
@@ -110,12 +116,11 @@ namespace Templates.Test
             var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
             AspNetProcess.EnsureDevelopmentCertificates();
 
-            // When publishing the PWA template, we move service-worker.published.js to overwrite
-            // service-worker.js, and append a GUID variable
-            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "The 'published' service worker should be renamed on publish");
-            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "There should be a service worker in the output");
-            var serviceWorkerContents = File.ReadAllText(Path.Combine(publishDir, "service-worker.js"));
-            Assert.True(serviceWorkerContents.Contains("const serviceWorkerVersion = '"), "The published service worker should contain a version variable");
+            // When publishing the PWA template, we generate an assets manifest
+            // and move service-worker.published.js to overwrite service-worker.js
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
 
             Output.WriteLine("Running dotnet serve on published output...");
             using var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
