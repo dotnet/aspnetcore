@@ -46,7 +46,9 @@
       <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT'" />
 
-      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)" />
+      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
+        <PublishFlatContainer>true</PublishFlatContainer>
+      </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
         <IsShipping>true</IsShipping>

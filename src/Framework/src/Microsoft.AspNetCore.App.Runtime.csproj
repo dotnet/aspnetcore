@@ -154,7 +154,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <GenerateChecksumItems Include="$(RedistArchiveOutputPath)">
       <DestinationPath>$(RedistArchiveOutputPath).SHA512</DestinationPath>
     </GenerateChecksumItems>
