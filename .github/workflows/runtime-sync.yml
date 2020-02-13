@@ -61,13 +61,16 @@ jobs:
         # Add a comment
         $status = [IO.File]::ReadAllText("artifacts\status.txt")
         $diff = [IO.File]::ReadAllText("artifacts\diff.txt")
-        $body = "<details>
+        $body = @"
+        The shared code is out of sync.
+        <details>
           <summary>The Diff</summary>
         ``````
         $status
         $diff
         ``````
-        </details>"
+        </details>
+        "@
         $json = ConvertTo-Json -InputObject @{ 'body' = $body }
         $issue = $issue + '/comments'
         $result = Invoke-RestMethod -Method POST -Headers $Headers -Uri $issue -Body $json
