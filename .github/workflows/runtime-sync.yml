@@ -5,7 +5,7 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
-    # Once per day at midnight UTC
+    # Once per day at midnight PST (8 UTC)
     - cron: '0 8 * * *'
 
 jobs:
