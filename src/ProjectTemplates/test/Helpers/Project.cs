@@ -30,10 +30,10 @@ namespace Templates.Test.Helpers
         
         // FIGURE OUT EF PATH
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-            ? Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll")
-            : typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
+                .Value
+            : Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
