@@ -65,10 +65,12 @@ jobs:
         The shared code is out of sync.
         <details>
           <summary>The Diff</summary>
+          
         ``````
         $status
         $diff
         ``````
+        
         </details>
         "@
         $json = ConvertTo-Json -InputObject @{ 'body' = $body }
