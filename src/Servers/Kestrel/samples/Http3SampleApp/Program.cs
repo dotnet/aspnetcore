@@ -14,7 +14,7 @@ namespace Http3SampleApp
     {
         public static void Main(string[] args)
         {
-            var cert = CertificateLoader.LoadFromStoreCert("JUSTIN-LAPTOP", StoreName.My.ToString(), StoreLocation.LocalMachine, true);
+            var cert = CertificateLoader.LoadFromStoreCert("JUSTIN-LAPTOP", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
 
             var hostBuilder = new HostBuilder()
                 .ConfigureLogging((_, factory) =>
@@ -33,7 +33,7 @@ namespace Http3SampleApp
                     })
                     .ConfigureKestrel((context, options) =>
                     {
-                        var basePort = 4444;
+                        var basePort = 5557;
                         options.EnableAltSvc = true;
                         options.Listen(IPAddress.Any, basePort, listenOptions =>
                         {

@@ -285,9 +285,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
                 }
 
-                ControlStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                EncoderStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                DecoderStream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                ControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                EncoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                DecoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
 
                 await controlTask;
                 await encoderTask;

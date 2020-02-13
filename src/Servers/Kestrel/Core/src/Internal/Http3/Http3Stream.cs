@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
+        private Task _appTask = Task.CompletedTask;
+
         public Pipe RequestBodyPipe { get; }
 
         public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
@@ -171,9 +173,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
+
+                //await _appTask;
                 try
                 {
-                    _frameWriter.Complete();
+                    //_frameWriter.Complete();
                 }
                 catch
                 {
@@ -232,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _receivedHeaders = true;
 
-            Task.Run(() => base.ProcessRequestsAsync(application));
+            _appTask = Task.Run(() => base.ProcessRequestsAsync(application));
             return Task.CompletedTask;
         }
 
