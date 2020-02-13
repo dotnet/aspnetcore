@@ -4,6 +4,8 @@ We maintain several on-going releases at once and produce patches for them. An e
 
 See the [.NET Core release lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#lifecycle) for more details on the currently-supported .NET releases.
 
+The status of current servicing fixes can be found on the [Servicing Status](https://github.com/dotnet/aspnetcore/projects/11) GitHub project.
+
 ## Servicing Bar
 
 The servicing bar is defined as any fixes the .NET "Shiproom" (see below) approves. We use certain criteria to evaluate fixes (described below) but still reserve the right to accept/reject bugs despite this criteria in certain circumstances.
