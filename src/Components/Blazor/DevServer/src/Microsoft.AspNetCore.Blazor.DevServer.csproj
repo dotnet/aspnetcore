@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="componentsrootdir=..\..\..\" />
   </ItemGroup>
 
 </Project>
