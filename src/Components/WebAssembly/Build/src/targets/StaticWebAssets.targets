@@ -26,6 +26,14 @@
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
       </_ExternalStaticWebAsset>
+
+      <!-- These items we are adding for forward-compatibility with newer SDK versions -->
+      <StaticWebAssetsManifestPath Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')">
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>$([System.String]::Copy('%(TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
+      </StaticWebAssetsManifestPath>
     </ItemGroup>
 
   </Target>
