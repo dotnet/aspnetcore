@@ -23,11 +23,6 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 set HELIX=%helixQueue%
 
-if (%targetFrameworkIdentifier%==.NETFramework) (
-    xunit.console.exe %target% -xml testResults.xml
-    exit /b %ERRORLEVEL%
-)
-
 %DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt
 REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
@@ -41,8 +36,8 @@ set exit_code=0
 
 set NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
 set QUARANTINE_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
-if (%quarantined%==true) (
-    echo Running all tests.
+if %quarantined%==true (
+    echo Running quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %target% --logger:xunit --TestCaseFilter:%QUARANTINE_FILTER%
     if errorlevel 1 (
         echo Failure in flaky test 1>&2
