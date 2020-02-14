@@ -77,7 +77,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
-            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
+
+            HttpRequestHeaders = new HttpRequestHeaders(
+                reuseHeaderValues: !ServerOptions.DisableStringReuse,
+                useLatin1: ServerOptions.Latin1RequestHeaders);
+
             HttpResponseControl = this;
         }
 
@@ -513,7 +517,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
             RequestTrailers.Append(key, valueStr);
         }
 

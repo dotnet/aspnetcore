@@ -456,6 +456,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran3);
         }
 
+        [Fact]
+        public void Latin1RequestHeadersReadFromConfig()
+        {
+            var options = CreateServerOptions();
+            var config =  new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+            Assert.False(options.Latin1RequestHeaders);
+            options.Configure(config).Load();
+            Assert.False(options.Latin1RequestHeaders);
+
+            options = CreateServerOptions();
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Latin1RequestHeaders", "true"),
+            }).Build();
+
+            Assert.False(options.Latin1RequestHeaders);
+            options.Configure(config).Load();
+            Assert.True(options.Latin1RequestHeaders);
+        }
+
         private static string GetCertificatePath()
         {
             var appData = Environment.GetEnvironmentVariable("APPDATA");
