@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.js");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "standalone.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\");
         }
 
         [Fact]
@@ -42,6 +45,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var path = Path.GetFullPath(Path.Combine(project.SolutionPath, "standalone", "bin", project.Configuration, "netstandard2.1", "standalone.dll"));
             Assert.FileDoesNotExist(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorhosted.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\");
+            Assert.FileContains(result, staticWebAssets, @"razorclasslibrary\wwwroot\");
+            Assert.FileContains(result, staticWebAssets, @"standalone\wwwroot\");
         }
 
         [Fact]
