@@ -1,6 +1,8 @@
 <Project>
   <Import Project="Blazor.MonoRuntime.props" />
 
+  <Import Project="StaticWebAssets.props" />
+
   <PropertyGroup>
 
     <!-- Assets for a Blazor app are exposed on the root folder by default. -->

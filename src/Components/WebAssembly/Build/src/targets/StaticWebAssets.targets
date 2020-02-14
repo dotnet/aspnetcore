@@ -1,12 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <ResolveCurrentProjectStaticWebAssetsDependsOn>
-      _ResolveBlazorGeneratedAssets;
-      $(ResolveCurrentProjectStaticWebAssetsDependsOn);
-    </ResolveCurrentProjectStaticWebAssetsDependsOn>
-  </PropertyGroup>
-
   <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="PrepareBlazorOutputs">
     <ItemGroup>
       <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" RemoveMetadata="TargetOutputPath">
