@@ -293,7 +293,7 @@
     <ItemGroup>
       <ReferencePath>
         <ReferenceAssembly
-            Condition=" '%(ReferencePath.ReferenceAssembly)' == '' AND Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') ">$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll</ReferenceAssembly>
+            Condition=" '%(ReferencePath.ReferenceAssembly)' == '' AND Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') AND '%(FileName)' != 'Microsoft.AspNetCore.Testing' ">$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll</ReferenceAssembly>
       </ReferencePath>
     </ItemGroup>
   </Target>
@@ -333,7 +333,7 @@
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
-        <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
+        <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
         <ReferenceAssemblyProjectFileRelativePath
             Condition=" $(HasReferenceAssembly) ">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
