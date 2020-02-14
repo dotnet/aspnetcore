@@ -5,7 +5,7 @@
       <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" RemoveMetadata="TargetOutputPath">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <RelativePath>$([System.String]::Copy('%(TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
       </StaticWebAsset>
@@ -16,7 +16,7 @@
         <SourceId>$(PackageId)</SourceId>
         <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
         <SourceType>Generated</SourceType>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
       </_ExternalStaticWebAsset>
 
