@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [ConditionalFact(Skip = "Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627")]
+        [ConditionalFact]
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsUserAgent()
         {
@@ -86,7 +86,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client/" + assemblyVersion.InformationalVersion, userAgent);
+                Assert.StartsWith("Microsoft SignalR/", userAgent);
+
+                var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
+                var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
+
+                Assert.Contains($"{majorVersion}.{minorVersion}", userAgent);
+
+                Assert.Contains(assemblyVersion.InformationalVersion, userAgent);
             }
         }
 
