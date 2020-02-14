@@ -48,7 +48,7 @@
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>Dotnet/$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
