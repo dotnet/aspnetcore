@@ -106,6 +106,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
+                    ["DOTNET_ROOT"] = Directory.GetParent(dotnetPath).FullName,
                 },
             };
 
