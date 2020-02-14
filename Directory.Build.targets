@@ -21,7 +21,7 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
-    <SiteExtensionSuffix>$(VersionPrefix)</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion>$(VersionPrefix)</SiteExtensionPackageVersion>
     <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
 
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>

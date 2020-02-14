@@ -140,6 +140,7 @@
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
                           $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
