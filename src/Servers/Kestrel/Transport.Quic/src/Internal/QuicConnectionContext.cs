@@ -72,6 +72,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
             var stream = await _connection.AcceptStreamAsync(cancellationToken);
+            try
+            {
+                _ = stream.CanRead;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             return new QuicStreamContext(stream, this, _context);
         }
 

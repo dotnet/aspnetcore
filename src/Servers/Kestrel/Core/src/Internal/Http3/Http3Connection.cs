@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -180,7 +181,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-
         public void Tick()
         {
             if (_aborted)
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 while (true)
                 {
                     var streamContext = await _multiplexedContext.AcceptAsync();
-                    if (_multiplexedContext == null || _haveSentGoAway)
+                    if (streamContext == null || _haveSentGoAway)
                     {
                         break;
                     }
@@ -319,7 +319,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application)
         {
-            var streamContext = await _multiplexedContext.ConnectAsync();
+            var features = new FeatureCollection();
+            features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
+            var streamContext = await _multiplexedContext.ConnectAsync(features);
             var httpConnectionContext = new Http3StreamContext
             {
                 //ConnectionId = "", TODO getting stream ID from stream that isn't started throws an exception.
