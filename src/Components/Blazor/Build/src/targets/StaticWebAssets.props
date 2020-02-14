@@ -2,12 +2,12 @@
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>
       $(ResolveStaticWebAssetsInputsDependsOn);
-      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
+      _ResolveBlazorGeneratedAssets;
     </ResolveStaticWebAssetsInputsDependsOn>
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
       $(GetCurrentProjectStaticWebAssetsDependsOn);
-      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
+      _ResolveBlazorGeneratedAssets;
     </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
 </Project>

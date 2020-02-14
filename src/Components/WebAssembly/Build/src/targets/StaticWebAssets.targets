@@ -7,7 +7,7 @@
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
+        <RelativePath>$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
       </StaticWebAsset>
 
       <!-- We are dependingo on a "private" property for static web assets, but this is something we can clean-up in a later release.
