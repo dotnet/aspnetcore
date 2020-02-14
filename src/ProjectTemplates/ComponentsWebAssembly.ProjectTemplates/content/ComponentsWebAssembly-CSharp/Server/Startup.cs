@@ -71,6 +71,8 @@ namespace ComponentsWebAssembly_CSharp.Server
             services.AddRazorPages();
 #endif
 
+            services.AddBlazorStaticFilesConfiguration();
+
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -105,7 +107,6 @@ namespace ComponentsWebAssembly_CSharp.Server
 
 #endif
             app.UseStaticFiles();
-            app.UseClientSideBlazorFiles<Client.Program>();
 
             app.UseRouting();
 
@@ -126,7 +127,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #endif
                 endpoints.MapControllers();
 
-                endpoints.MapFallbackToClientSideBlazor<Client.Program>("index.html");
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }
