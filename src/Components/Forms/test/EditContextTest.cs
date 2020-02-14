@@ -236,5 +236,35 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.False(isValid);
             Assert.Equal(new[] { "Some message" }, editContext.GetValidationMessages());
         }
+
+        [Fact]
+        public void LookingUpModel_ThatOverridesGetHashCodeAndEquals_Works()
+        {
+            // Test for https://github.com/aspnet/AspNetCore/issues/18069
+            // Arrange
+            var model = new EquatableModel();
+            var editContext = new EditContext(model);
+
+            editContext.NotifyFieldChanged(editContext.Field(nameof(EquatableModel.Property)));
+
+            model.Property = "new value";
+
+            Assert.True(editContext.IsModified(editContext.Field(nameof(EquatableModel.Property))));
+        }
+
+        class EquatableModel : IEquatable<EquatableModel>
+        {
+            public string Property { get; set; } = "";
+
+            public bool Equals(EquatableModel other)
+            {
+                return string.Equals(Property, other?.Property, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode()
+            {
+                return StringComparer.Ordinal.GetHashCode(Property);
+            }
+        }
     }
 }
