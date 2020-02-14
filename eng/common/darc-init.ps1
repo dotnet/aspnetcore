@@ -27,7 +27,7 @@ function InstallDarcCli ($darcVersion) {
 
   Write-Host "Installing Darc CLI version $darcVersion..."
   Write-Host "You may need to restart your command window if this is the first dotnet tool you have installed."
-  & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g
+  & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g --framework netcoreapp2.1
 }
 
 InstallDarcCli $darcVersion
