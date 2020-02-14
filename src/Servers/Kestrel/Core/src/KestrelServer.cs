@@ -93,9 +93,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 trace);
 
             var heartbeatManager = new HeartbeatManager(connectionManager);
+            var multiplexedHeartbeat = new MultiplexedHeartbeatManager(multiplexedConnectionManager);
             var dateHeaderValueManager = new DateHeaderValueManager();
+
             var heartbeat = new Heartbeat(
-                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
+                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager, multiplexedHeartbeat },
                 new SystemClock(),
                 DebuggerWrapper.Singleton,
                 trace);

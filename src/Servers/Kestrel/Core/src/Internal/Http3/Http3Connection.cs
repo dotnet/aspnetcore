@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private volatile bool _haveSentGoAway;
         private object _sync = new object();
         private MultiplexedConnectionContext _multiplexedContext;
-        //private volatile bool _haveSentGoAway;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
@@ -222,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        internal async Task InnerProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
             // Start other three unidirectional streams here.
             var controlTask = CreateControlStream(application);
@@ -247,6 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         ConnectionId = streamContext.StreamId.ToString(),
                         StreamContext = streamContext,
+                        // TODO connection context is null here. Should we set it to anything?
                         ServiceContext = _context.ServiceContext,
                         ConnectionFeatures = streamContext.Features,
                         MemoryPool = _context.MemoryPool,

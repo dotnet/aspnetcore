@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
@@ -29,6 +30,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+        }
+
+        [Fact]
+        public async Task EmptyMethod_Reset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, ""),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3ErrorMethodInvalid(""));
         }
 
         [Fact]

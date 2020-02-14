@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
-                context.ConnectionContext,
+                context.StreamContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
@@ -79,7 +79,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
-            // TODO something with request aborted?
+            _frameWriter.Abort(ex);
+            // TODO figure out how to get error code in the right spot.
         }
 
         public void OnHeadersComplete(bool endStream)
@@ -311,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
                 {
-                    Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
+                    Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                     return false;
                 }
 
@@ -331,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 Abort(new ConnectionAbortedException(
-                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http3ErrorCode.ProtocolError);
+                    CoreStrings.FormatHttp3StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -380,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (Method == Http.HttpMethod.None)
             {
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -388,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (HttpCharacters.IndexOfInvalidTokenChar(_methodText) >= 0)
                 {
-                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
+                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
                     return false;
                 }
             }
@@ -440,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Must start with a leading slash
             if (pathSegment.Length == 0 || pathSegment[0] != '/')
             {
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
 
@@ -470,8 +471,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (InvalidOperationException)
             {
-                // TODO change HTTP/2 specific messages to include HTTP/3
-                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
                 return false;
             }
         }

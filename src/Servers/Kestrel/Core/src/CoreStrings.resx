@@ -527,6 +527,18 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorMaxStreams" xml:space="preserve">
     <value>A new stream was refused because this connection has reached its stream limit.</value>
   </data>
+  <data name="Http3ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http3StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
+  <data name="Http3ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http3StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
   <data name="GreaterThanZeroRequired" xml:space="preserve">
     <value>A value greater than zero is required.</value>
   </data>

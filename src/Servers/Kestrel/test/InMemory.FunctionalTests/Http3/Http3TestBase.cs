@@ -19,9 +19,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
+using static System.IO.Pipelines.DuplexPipe;
 using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task _connectionTask;
         protected readonly RequestDelegate _echoApplication;
         private TestMultiplexedConnectionContext _multiplexedContext;
+        private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
         public Http3TestBase()
         {
@@ -73,7 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 CreateConnection();
             }
 
-            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
+            // Skip all heartbeat and lifetime notification feature registrations.
+            _connectionTask = _connection.InnerProcessRequestsAsync(new DummyApplication(application));
 
             await Task.CompletedTask;
         }
@@ -107,9 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _connection = new Http3Connection(httpConnectionContext);
-            var httpConnection = new Http3Connection(httpConnectionContext);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
-                           .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
+                           .Callback<TimeoutReason>(r => _connection.OnTimeout(r));
         }
 
         private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
@@ -212,8 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
                     
-                StreamContext = new TestStreamContext(canRead: true, canWrite: true);
-                StreamContext.Transport = _pair.Transport;
+                StreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair);
             }
 
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
@@ -318,6 +320,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
             }
+
+            internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string errorMessage)
+            {
+                var readResult = await _pair.Application.Input.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+            }
         }
 
         internal class Http3FrameWithPayload : Http3RawFrame
@@ -347,12 +355,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _testBase = testBase;
                 var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
-                StreamContext = new TestStreamContext(canRead: false, canWrite: true);
-
-                StreamContext.Transport = _pair.Transport;
+                StreamContext = new TestStreamContext(canRead: false, canWrite: true, _pair);
             }
 
             public async Task WriteStreamIdAsync(int id)
@@ -416,10 +420,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestStreamContext : StreamContext
         {
-            public TestStreamContext(bool canRead, bool canWrite)
+            private DuplexPipePair _pair;
+            public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair)
             {
+                _pair = pair;
                 Features = new FeatureCollection();
-                Features.Set<IStreamDirectionFeature>(new TestStreamDirectionFeature(canRead, canWrite));
+                Features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead, canWrite));
             }
 
             public override long StreamId { get; }
@@ -430,19 +436,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override IDictionary<object, object> Items { get; set; }
 
-            public override IDuplexPipe Transport { get; set; }
-
-            private class TestStreamDirectionFeature : IStreamDirectionFeature
+            public override IDuplexPipe Transport
             {
-                public TestStreamDirectionFeature(bool canRead, bool canWrite)
+                get
                 {
-                    CanRead = canRead;
-                    CanWrite = canWrite;
+                    return _pair.Transport;
                 }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
 
-                public bool CanRead { get; }
-
-                public bool CanWrite { get; }
+            public override void Abort(ConnectionAbortedException abortReason)
+            {
+                _pair.Application.Output.Complete(abortReason);
             }
         }
     }

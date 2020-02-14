@@ -44,6 +44,30 @@ namespace Microsoft.AspNetCore.Connections
         public virtual EndPoint RemoteEndPoint { get; set; }
 
         /// <summary>
+        /// Releases resources for the underlying connection.
+        /// </summary>
+        /// <returns>A <see cref="ValueTask"/> that completes when resources have been released.</returns>
+        public virtual ValueTask DisposeAsync()
+        {
+            return default;
+        }
+
+        /// <summary>
+        /// Asynchronously accept an incoming stream on the connection.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public abstract ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates an outbound connection 
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public abstract ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Aborts the underlying connection.
         /// </summary>
         /// <param name="abortReason">An optional <see cref="ConnectionAbortedException"/> describing the reason the connection is being terminated.</param>
@@ -58,19 +82,6 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Aborts the underlying connection.
         /// </summary>
-        public virtual void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via ConnectionContext.Abort()."));
-
-        /// <summary>
-        /// Releases resources for the underlying connection.
-        /// </summary>
-        /// <returns>A <see cref="ValueTask"/> that completes when resources have been released.</returns>
-        public virtual ValueTask DisposeAsync()
-        {
-            return default;
-        }
-
-        public abstract ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default);
-
-        public abstract ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default);
+        public virtual void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via MultiplexedConnectionContext.Abort()."));
     }
 }
