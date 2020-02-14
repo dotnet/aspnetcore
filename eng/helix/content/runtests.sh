@@ -31,6 +31,7 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Used by SkipOnHelix attribute
 export helix="$helix_queue_name"
+export HELIX_DIR="$DIR"
 
 export NUGET_RESTORE="$DIR/nugetRestore"
 echo "Creating nugetRestore directory: $NUGET_RESTORE"
