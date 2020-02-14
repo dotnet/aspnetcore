@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = new SocketsTrace(logger);
         }
 
-        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, IFeatureCollection collection = null, CancellationToken cancellationToken = default)
+        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             var ipEndPoint = endpoint as IPEndPoint;
 

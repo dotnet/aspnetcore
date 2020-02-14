@@ -41,8 +41,8 @@ namespace Http3SampleApp
                             {
                                 httpsOptions.ServerCertificate = cert;
                             });
-                            listenOptions.Protocols = HttpProtocols.Http3;
-                            //listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                            //listenOptions.Protocols = HttpProtocols.Http3;
+                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                         });
                     })
                     .UseStartup<Startup>();

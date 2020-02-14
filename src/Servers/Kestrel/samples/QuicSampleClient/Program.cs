@@ -1,10 +1,8 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Connections;
@@ -31,7 +29,6 @@ namespace QuicSampleClient
                    services.Configure<QuicTransportOptions>((options) =>
                    {
                        options.Alpn = "QuicTest";
-                       options.RegistrationName = "Quic-AspNetCore-client";
                        options.Certificate = null;
                        options.IdleTimeout = TimeSpan.FromHours(1);
                    });
