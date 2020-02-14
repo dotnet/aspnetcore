@@ -8,7 +8,7 @@
     <_UploadPathRoot>aspnetcore</_UploadPathRoot>
   </PropertyGroup>
 
-  <!-- $(InstallersOutputPath) and $(SymbolsOutputPath) are not defined. Root Directory.Build.props is not imported. -->
+  <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)\symbols\**\*.pdb" />
@@ -27,7 +27,7 @@
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.zip" UploadPathSegment="Runtime" />
-    <_ChecksumsToPublish Include="$(ArtifactsDir)\**\*$(ChecksumExtension)" />
+    <_ChecksumsToPublish Include="$(ArtifactsDir)\**\*.sha512" />
   </ItemGroup>
 
   <Target Name="_PublishInstallersAndChecksums">
