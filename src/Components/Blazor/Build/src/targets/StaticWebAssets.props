@@ -1,8 +1,13 @@
 <Project>
   <PropertyGroup>
-    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
-    _ResolveBlazorGeneratedAssets;
-    $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
-    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
+    </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
 </Project>
