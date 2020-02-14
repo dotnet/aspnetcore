@@ -224,7 +224,7 @@ namespace System.Net.Http.QPack
                     }
                     break;
                 case State.CompressedHeaders:
-                    switch (BitOperations.LeadingZeroCount(b) - 24)
+                    switch (BitOperations.LeadingZeroCount(b) - 24) // byte 'b' is extended to uint, so will have 24 extra 0s.
                     {
                         case 0: // Indexed Header Field
                             prefixInt = IndexedHeaderFieldPrefixMask & b;
