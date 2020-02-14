@@ -27,7 +27,7 @@ if EXIST ".\Microsoft.AspNetCore.App" (
 )
 
 set HELIX=%helixQueue%
-
+set HELIX_DIR=%cd%
 set NUGET_RESTORE=%cd%\nugetRestore
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
