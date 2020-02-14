@@ -11,7 +11,9 @@
       </StaticWebAsset>
 
       <!-- We are dependingo on a "private" property for static web assets, but this is something we can clean-up in a later release.
-           These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail. -->
+           These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail.
+           We only need to do this for the standalone case, for hosted scenarios this works just fine as the assets are considered
+           external. -->
       <_ExternalStaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')">
         <SourceId>$(PackageId)</SourceId>
         <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
@@ -20,12 +22,11 @@
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
       </_ExternalStaticWebAsset>
 
-      <!-- These items we are adding for forward-compatibility with newer SDK versions -->
-      <StaticWebAssetsManifestPath Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')">
+      <!-- These items we are adding for forward-compatibility with newer SDK versions. The paths listed here will be added unconditionally
+           to the generated static web assets manifest. This is only needed for forward compatibility in Blazor standalone scenarios. -->
+      <StaticWebAssetsManifestPath Include="$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))">
         <SourceId>$(PackageId)</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)\dist\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
       </StaticWebAssetsManifestPath>
     </ItemGroup>
 
