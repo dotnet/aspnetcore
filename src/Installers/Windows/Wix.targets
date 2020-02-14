@@ -74,7 +74,7 @@
 
   <ItemGroup Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' ">
     <GenerateChecksumItems Include="$(InstallersOutputPath)$(PackageFileName)">
-      <DestinationPath>$(InstallersOutputPath)$(PackageFileName).SHA512</DestinationPath>
+      <DestinationPath>$(InstallersOutputPath)$(PackageFileName)$(ChecksumExtension)</DestinationPath>
     </GenerateChecksumItems>
   </ItemGroup>
 

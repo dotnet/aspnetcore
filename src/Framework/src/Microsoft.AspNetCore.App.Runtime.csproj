@@ -156,7 +156,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <GenerateChecksumItems Include="$(RedistArchiveOutputPath)">
-      <DestinationPath>$(RedistArchiveOutputPath).SHA512</DestinationPath>
+      <DestinationPath>$(RedistArchiveOutputPath)$(ChecksumExtension)</DestinationPath>
     </GenerateChecksumItems>
   </ItemGroup>
 
