@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
             var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "standalone.StaticWebAssets.xml");
-            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\");
+            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\".Replace('\\', Path.DirectorySeparatorChar));
         }
 
         [Fact]
@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileDoesNotExist(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
 
             var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorhosted.StaticWebAssets.xml");
-            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\");
-            Assert.FileContains(result, staticWebAssets, @"razorclasslibrary\wwwroot\");
-            Assert.FileContains(result, staticWebAssets, @"standalone\wwwroot\");
+            Assert.FileContains(result, staticWebAssets, @"netstandard2.1\dist\".Replace('\\', Path.DirectorySeparatorChar));
+            Assert.FileContains(result, staticWebAssets, @"razorclasslibrary\wwwroot\".Replace('\\', Path.DirectorySeparatorChar));
+            Assert.FileContains(result, staticWebAssets, @"standalone\wwwroot\".Replace('\\', Path.DirectorySeparatorChar));
         }
 
         [Fact]
