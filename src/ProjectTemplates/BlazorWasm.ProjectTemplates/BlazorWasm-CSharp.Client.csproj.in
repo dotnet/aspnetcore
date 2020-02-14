@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +12,22 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="${MicrosoftAspNetCoreBlazorDevServerPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="${MicrosoftAspNetCoreBlazorHttpClientPackageVersion}" />
   </ItemGroup>
+
   <!--#if Hosted -->
   <ItemGroup>
     <ProjectReference Include="..\Shared\BlazorWasm-CSharp.Shared.csproj" />
   </ItemGroup>
-  <!--#endif -->
 
+  <!--#endif -->
+  <!--#if PWA -->
+  <ItemGroup>
+    <!-- When publishing, swap service-worker.published.js in place of service-worker.js -->
+    <Content Update="wwwroot\service-worker*.js" CopyToPublishDirectory="false" />
+    <ContentWithTargetPath Include="wwwroot\service-worker.published.js">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>wwwroot\service-worker.js</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+  <!--#endif -->
 </Project>

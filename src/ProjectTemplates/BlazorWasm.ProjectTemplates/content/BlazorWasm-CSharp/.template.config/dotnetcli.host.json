@@ -5,9 +5,12 @@
       "longName": "no-restore",
       "shortName": ""
     },
-      "Hosted": {
-        "longName": "hosted"
-      },
+    "Hosted": {
+      "longName": "hosted"
+    },
+    "PWA": {
+      "longName": "pwa"
+    },
     "Framework": {
       "longName": "framework"
     }

@@ -21,7 +21,7 @@
 
   <Target
     Name="_BlazorCopyFilesToOutputDirectory"
-    DependsOnTargets="PrepareBlazorOutputs"
+    DependsOnTargets="PrepareBlazorOutputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
 
@@ -133,7 +133,7 @@
         ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
         Remove assemblies that are inputs to calculating the assembly closure. Instead use the resolved outputs, since it is the minimal set.
        -->
-      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" />
+      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
       <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" />
 
       <BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">

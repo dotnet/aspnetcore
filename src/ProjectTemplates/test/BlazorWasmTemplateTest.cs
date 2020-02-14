@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -23,6 +24,11 @@ namespace Templates.Test
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
+
+        public override Task InitializeAsync()
+        {
+            return InitializeAsync(isolationContext: Guid.NewGuid().ToString());
+        }
 
         [Fact]
         public async Task BlazorWasmStandaloneTemplate_Works()
@@ -88,6 +94,51 @@ namespace Templates.Test
             {
                 BrowserFixture.EnforceSupportedConfigurations();
             }
+        }
+
+        [Fact]
+        public async Task BlazorWasmPwaTemplate_Works()
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorpwa", Output);
+            project.TargetFramework = "netstandard2.1";
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+
+            await BuildAndRunTest(project.ProjectName, project);
+
+            var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
+            AspNetProcess.EnsureDevelopmentCertificates();
+
+            // When publishing the PWA template, we generate an assets manifest
+            // and move service-worker.published.js to overwrite service-worker.js
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
+
+            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
+            var listeningUri = "https://localhost:8080";
+
+            Output.WriteLine("Running dotnet serve on published output...");
+            using (var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S"))
+            {
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                Browser.Navigate().GoToUrl(listeningUri);
+                TestBasicNavigation(project.ProjectName);
+            }
+
+            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+            // so we can continue working even without the server.
+            Browser.Navigate().GoToUrl("about:blank"); // Be sure we're really reloading
+            Output.WriteLine($"Opening browser without corresponding server at {listeningUri}...");
+            Browser.Navigate().GoToUrl(listeningUri);
+            TestBasicNavigation(project.ProjectName);
         }
 
         protected async Task BuildAndRunTest(string appName, Project project)
