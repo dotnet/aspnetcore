@@ -175,10 +175,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
 
-                //await _appTask;
+                // Input has completed.
+                Input.Complete();
+                _context.Transport.Input.CancelPendingRead();
+                await RequestBodyPipe.Writer.CompleteAsync();
+
+                // Make sure application func is completed before completing writer.
+                await _appTask;
+
                 try
                 {
-                    //_frameWriter.Complete();
+                    _frameWriter.Complete();
                 }
                 catch
                 {
@@ -187,9 +194,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
-                    Input.Complete();
-                    _context.Transport.Input.CancelPendingRead();
-                    await RequestBodyPipe.Writer.CompleteAsync();
                 }
             }
         }

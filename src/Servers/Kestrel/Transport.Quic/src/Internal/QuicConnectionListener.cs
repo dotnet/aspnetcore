@@ -39,6 +39,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public async ValueTask<MultiplexedConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
             var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
+            try
+            {
+                _ = quicConnection.LocalEndPoint;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
             return new QuicConnectionContext(quicConnection, _context);
         }
 
@@ -56,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             _disposed = true;
 
+            _listener.Close();
             _listener.Dispose();
 
             return new ValueTask();

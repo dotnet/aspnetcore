@@ -1196,7 +1196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 foreach (var option in ServerOptions.ListenOptions)
                 {
-                    if (option.Protocols == HttpProtocols.Http3)
+                    if ((option.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint.Port}\"; ma=84600";
                         break;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -148,29 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions options)
                 {
-                    // Add the HTTP middleware as the terminal connection middleware
-                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
-                        || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2)
-                    {
-                        options.UseHttpServer(ServiceContext, application, options.Protocols);
-                        var connectionDelegate = options.Build();
-
-                        // Add the connection limit middleware
-                        if (Options.Limits.MaxConcurrentConnections.HasValue)
-                        {
-                            connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
-                        }
-
-                        var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                        var factory = _transportFactories.Last();
-                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
-
-                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
-
-                        _transports.Add((transport, acceptLoopTask));
-                        options.EndPoint = transport.EndPoint;
-                    }
-
+                    // INVESTIGATE: For some reason, Quic needs to bind to 
                     if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         if (_multiplexedTransportFactories == null)
@@ -189,6 +168,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         _multiplexedTransports.Add((multiplexedTransport, acceptLoopTask));
 
                         options.EndPoint = multiplexedTransport.EndPoint;
+                    }
+
+                    // Add the HTTP middleware as the terminal connection middleware
+                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
+                        || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2
+                        || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
+                                                                    // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
+                    {
+                        options.UseHttpServer(ServiceContext, application, options.Protocols);
+                        var connectionDelegate = options.Build();
+
+                        // Add the connection limit middleware
+                        if (Options.Limits.MaxConcurrentConnections.HasValue)
+                        {
+                            connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                        }
+
+                        var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
+                        var factory = _transportFactories.Last();
+                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
+
+                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
+
+                        _transports.Add((transport, acceptLoopTask));
+                        options.EndPoint = transport.EndPoint;
                     }
                 }
 
@@ -213,10 +217,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var tasks = new Task[_transports.Count];
-                for (int i = 0; i < _transports.Count; i++)
+                var transportCount = _transports.Count;
+                var totalTransportCount = _transports.Count + _multiplexedTransports.Count;
+                var tasks = new Task[totalTransportCount];
+
+                for (int i = 0; i < transportCount; i++)
                 {
                     (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
+                }
+
+                for (int i = transportCount; i < totalTransportCount; i++)
+                {
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - transportCount];
                     tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
                 }
 
@@ -235,6 +248,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 for (int i = 0; i < _transports.Count; i++)
                 {
                     (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = listener.DisposeAsync().AsTask();
+                }
+
+                for (int i = _transports.Count; i < totalTransportCount; i++)
+                {
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - transportCount];
                     tasks[i] = listener.DisposeAsync().AsTask();
                 }
 

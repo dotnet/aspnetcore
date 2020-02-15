@@ -35,15 +35,25 @@ namespace Http3SampleApp
                     {
                         var basePort = 5557;
                         options.EnableAltSvc = true;
+
                         options.Listen(IPAddress.Any, basePort, listenOptions =>
                         {
                             listenOptions.UseHttps(httpsOptions =>
                             {
                                 httpsOptions.ServerCertificate = cert;
                             });
-                            //listenOptions.Protocols = HttpProtocols.Http3;
                             listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                         });
+                        //options.Listen(IPAddress.Any, basePort, listenOptions =>
+                        //{
+                        //    listenOptions.UseHttps(httpsOptions =>
+                        //    {
+                        //        httpsOptions.ServerCertificate = cert;
+                        //    });
+                        //    listenOptions.Protocols = HttpProtocols.Http3;
+                        //    //listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                        //});
+
                     })
                     .UseStartup<Startup>();
                 });
