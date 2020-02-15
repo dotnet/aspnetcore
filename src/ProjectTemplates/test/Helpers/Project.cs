@@ -24,9 +24,9 @@ namespace Templates.Test.Helpers
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
-        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR"))) 
             ? GetAssemblyMetadata("ArtifactsLogDir")
-            : Path.Combine("artifacts", "log");
+            : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "logs");
         
         // FIGURE OUT EF PATH
         public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
