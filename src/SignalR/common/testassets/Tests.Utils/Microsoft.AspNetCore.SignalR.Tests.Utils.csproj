@@ -20,7 +20,8 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing
         // Entire test pending removal - see https://github.com/dotnet/extensions/issues/1697
 #pragma warning disable 0618
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/extensions/issues/1697")]
         public void GetSolutionRootDirectory_ResolvesSolutionRoot()
         {
             // Directory.GetCurrentDirectory() gives:

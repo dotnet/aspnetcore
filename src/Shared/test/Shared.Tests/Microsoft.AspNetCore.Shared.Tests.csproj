@@ -18,6 +18,7 @@
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" Link="Shared\HttpSys\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" Link="Shared\NonCapturingTimer\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" Link="Shared\ObjectMethodExecutor\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" Link="Shared\ParameterDefaultValue\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" Link="Shared\PropertyActivator\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" Link="Shared\PropertyHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" Link="Shared\SecurityHelper\%(Filename)%(Extension)"/>
@@ -25,6 +26,7 @@
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\StackFrame\**\*.cs" Link="Shared\TypeNameHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +38,6 @@
     <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

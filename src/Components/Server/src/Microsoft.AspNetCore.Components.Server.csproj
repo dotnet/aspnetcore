@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
@@ -10,6 +9,7 @@
     <NoWarn>CS0436;$(NoWarn)</NoWarn>
     <DefineConstants>$(DefineConstants);ENABLE_UNSAFE_MSGPACK;SPAN_BUILTIN;MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>
     <IsShippingPackage>false</IsShippingPackage>
+    <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +22,8 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
@@ -38,6 +39,15 @@
   <PropertyGroup>
     <MessagePackRoot>$(RepoRoot)src\submodules\MessagePack-CSharp\src\MessagePack.UnityClient\Assets\Scripts\MessagePack\</MessagePackRoot>
   </PropertyGroup>
+
+  <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
+  <PropertyGroup>
+    <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask
+    AssemblyFile="$(_FileProviderTaskAssembly)"
+    TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
@@ -84,5 +94,4 @@
     <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
   </ItemGroup>
-
 </Project>

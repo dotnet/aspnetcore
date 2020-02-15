@@ -29,13 +29,13 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="Microsoft.CodeAnalysis.Razor" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

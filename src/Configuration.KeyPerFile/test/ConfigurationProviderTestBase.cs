@@ -239,7 +239,7 @@ Section3:
             var section3 = config.GetSection("Section3");
             Assert.Equal("Section3", section3.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section3.Value);
-            
+
             var section4 = config.GetSection("Section3:Section4");
             Assert.Equal(value344, section4["Key4"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section3:Section4", section4.Path, StringComparer.InvariantCultureIgnoreCase);

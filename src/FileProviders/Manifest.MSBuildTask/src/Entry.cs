@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Internal
+namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used

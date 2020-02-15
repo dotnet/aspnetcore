@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(RepoRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
-
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
@@ -21,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\test\SingleThreadedSynchronizationContext.cs" Link="Shared\SingleThreadedSynchronizationContext.cs"/>
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\SingleThreadedSynchronizationContext.cs" Link="Shared\SingleThreadedSynchronizationContext.cs"/>
   </ItemGroup>
 
 </Project>

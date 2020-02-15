@@ -16,7 +16,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
@@ -34,12 +35,16 @@
   <Target Name="_GetNuspecDependencyPackageVersions">
     <MSBuild Targets="_GetPackageVersionInfo"
         BuildInParallel="$(BuildInParallel)"
-        Projects="../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
+        Projects="
+          ../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;
+          ../../../JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj;
+          ../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectPathWithVersion" />
     </MSBuild>
     <ItemGroup>
       <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Components.Analyzers')->'componentAnalyzerPackageVersion=%(PackageVersion)')" />
       <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Authorization')->'authorizationPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.JSInterop')->'jsInteropPackageVersion=%(PackageVersion)')" />
     </ItemGroup>
   </Target>
 
@@ -51,7 +56,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
     <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />

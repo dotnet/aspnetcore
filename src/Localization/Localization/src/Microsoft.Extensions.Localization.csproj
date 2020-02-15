@@ -10,6 +10,7 @@
     <PackageTags>localization</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@
     <IsShippingAssembly>true</IsShippingAssembly>
     <IsPackable>false</IsPackable>
     <IsImplementationProject>false</IsImplementationProject>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

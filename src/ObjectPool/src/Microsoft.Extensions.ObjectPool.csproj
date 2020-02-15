@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <Description>A simple object pool implementation.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>pooling</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>

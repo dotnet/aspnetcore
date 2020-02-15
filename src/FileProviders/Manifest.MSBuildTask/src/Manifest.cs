@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Internal;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
 {

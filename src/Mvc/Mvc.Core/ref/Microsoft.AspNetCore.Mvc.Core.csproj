@@ -18,8 +18,5 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources"  />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources"  />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources"  />
   </ItemGroup>
 </Project>

@@ -13,6 +13,7 @@ Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <PackageTags>localization</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
 </Project>

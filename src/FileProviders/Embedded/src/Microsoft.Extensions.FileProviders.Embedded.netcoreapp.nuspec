@@ -3,8 +3,8 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NETCoreApp3.1">
-        <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
+      <group targetFramework=".NETCoreApp5.0">
+        <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$AbstractionsPackageVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>

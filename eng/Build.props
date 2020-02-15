@@ -109,6 +109,7 @@
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
+                          $(RepoRoot)src\JSInterop\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
@@ -151,6 +152,14 @@
                           $(RepoRoot)src\SignalR\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
+                          $(RepoRoot)src\Localization\**\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\*.csproj;
+                          $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "

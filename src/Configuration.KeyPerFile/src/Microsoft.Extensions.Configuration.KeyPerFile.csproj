@@ -6,6 +6,10 @@
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>configuration</PackageTags>
+    <NoWarn>$(NoWarn);PKG0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

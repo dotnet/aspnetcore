@@ -10,7 +10,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task

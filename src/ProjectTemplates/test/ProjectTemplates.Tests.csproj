@@ -33,7 +33,8 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

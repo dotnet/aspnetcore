@@ -13,6 +13,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +21,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
