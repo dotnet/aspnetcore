@@ -15,5 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         void StreamPause(string streamId);
         void StreamResume(string streamId);
         void StreamShutdownWrite(string streamId, Exception ex);
+        void StreamAbort(string streamId, Exception ex);
     }
 }

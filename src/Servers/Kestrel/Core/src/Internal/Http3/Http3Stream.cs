@@ -10,6 +10,7 @@ using System.Net.Http.QPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _isClosed;
         private int _gracefulCloseInitiator;
         private readonly Http3StreamContext _context;
+        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
 
         private readonly Http3Connection _http3Connection;
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var http3Limits = httpLimits.Http3;
             _http3Connection = http3Connection;
             _context = context;
+
+            _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>();
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -79,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
+            _errorCodeFeature.Error = (long)errorCode;
             _frameWriter.Abort(ex);
             // TODO figure out how to get error code in the right spot.
         }
@@ -115,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void OnInputOrOutputCompleted()
         {
             TryClose();
-            _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
         }
 
         private bool TryClose()
@@ -189,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch
                 {
-                    _frameWriter.Abort(streamError);
+                    Abort(streamError, Http3ErrorCode.ProtocolError);
                     throw;
                 }
                 finally

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
 
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
@@ -46,6 +46,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3ErrorMethodInvalid(""));
+        }
+
+        [Fact]
+        public async Task InvalidCustomMethod_Reset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Hello,World"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3ErrorMethodInvalid("Hello,World"));
+        }
+
+        [Fact]
+        public async Task CustomMethod_Accepted()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoMethod);
+            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal(4, responseHeaders.Count);
+            Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+            Assert.Equal("Custom", responseHeaders["Method"]);
+            Assert.Equal("0", responseHeaders["content-length"]);
         }
 
         [Fact]

@@ -149,7 +149,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions options)
                 {
-                    // INVESTIGATE: For some reason, Quic needs to bind to 
+                    // INVESTIGATE: For some reason, MsQuic needs to bind before
+                    // sockets for it to successfully listen. It also seems racy.
                     if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         if (_multiplexedTransportFactories == null)

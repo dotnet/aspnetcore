@@ -44,11 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        /// <summary>
-        /// The error code to abort with
-        /// </summary>
-        public long AbortErrorCode { get; set; } = 0;
-
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 
     }

@@ -16,10 +16,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,15 +36,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
         internal readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
         protected Task _connectionTask;
-        protected readonly RequestDelegate _echoApplication;
         private TestMultiplexedConnectionContext _multiplexedContext;
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
+
+        protected readonly RequestDelegate _noopApplication;
+        protected readonly RequestDelegate _echoApplication;
+        protected readonly RequestDelegate _echoMethod;
 
         public Http3TestBase()
         {
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
             _timeoutControl.Debugger = Mock.Of<IDebugger>();
+
+            _noopApplication = context => Task.CompletedTask;
+
             _echoApplication = async context =>
             {
                 var buffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
@@ -56,6 +60,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     await context.Response.Body.WriteAsync(buffer, 0, received);
                 }
+            };
+
+            _echoMethod = context =>
+            {
+                context.Response.Headers["Method"] = context.Request.Method;
+
+                return Task.CompletedTask;
             };
         }
 
@@ -191,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
+        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IProtocolErrorCodeFeature
         {
             internal StreamContext StreamContext { get; }
 
@@ -199,6 +210,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool CanWrite => true;
 
             public long StreamId => 0;
+
+            public long Error { get; set; }
 
             private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
@@ -214,11 +227,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                    
-                StreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair);
+                
+                StreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair, this);
             }
 
-            public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
+            public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
                 var outputWriter = _pair.Application.Output;
                 var frame = new Http3RawFrame();
@@ -229,10 +242,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
                 await SendAsync(buffer.Span.Slice(0, length));
+
+                if (endStream)
+                {
+                    await _pair.Application.Output.CompleteAsync();
+                }
+
                 return done;
             }
 
-            internal async Task SendDataAsync(Memory<byte> data)
+            internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)
             {
                 var outputWriter = _pair.Application.Output;
                 var frame = new Http3RawFrame();
@@ -240,9 +259,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 frame.Length = data.Length;
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
                 await SendAsync(data.Span);
+
+                if (endStream)
+                {
+                    await _pair.Application.Output.CompleteAsync();
+                }
             }
 
-            internal async Task<IEnumerable<KeyValuePair<string, string>>> ExpectHeadersAsync()
+            internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
             {
                 var http3WithPayload = await ReceiveFrameAsync();
                 _qpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
@@ -325,6 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var readResult = await _pair.Application.Input.ReadAsync();
                 Assert.True(readResult.IsCompleted);
+                Assert.Equal((long)protocolError, Error);
             }
         }
 
@@ -341,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
 
-        internal class Http3ControlStream : Http3StreamBase
+        internal class Http3ControlStream : Http3StreamBase, IProtocolErrorCodeFeature
         {
             internal StreamContext StreamContext { get; }
 
@@ -350,13 +375,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public long StreamId => 0;
 
+            public long Error { get; set; }
+
             public Http3ControlStream(Http3TestBase testBase)
             {
                 _testBase = testBase;
                 var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                StreamContext = new TestStreamContext(canRead: false, canWrite: true, _pair);
+                StreamContext = new TestStreamContext(canRead: false, canWrite: true, _pair, this);
             }
 
             public async Task WriteStreamIdAsync(int id)
@@ -421,11 +448,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private class TestStreamContext : StreamContext
         {
             private DuplexPipePair _pair;
-            public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair)
+            public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair, IProtocolErrorCodeFeature feature)
             {
                 _pair = pair;
                 Features = new FeatureCollection();
                 Features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead, canWrite));
+                Features.Set<IProtocolErrorCodeFeature>(feature);
             }
 
             public override long StreamId { get; }

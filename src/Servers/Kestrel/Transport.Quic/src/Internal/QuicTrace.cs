@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private static readonly Action<ILogger, string, Exception> _streamResume =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamResume)), @"Stream id ""{ConnectionId}"" resumed.");
         private static readonly Action<ILogger, string, string, Exception> _streamShutdownWrite =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Connection id ""{ConnectionId}"" shutting down writes, exception: ""{Reason}"".");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes, exception: ""{Reason}"".");
+        private static readonly Action<ILogger, string, string, Exception> _streamAborted =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" aborted by application, exception: ""{Reason}"".");
 
         private ILogger _logger;
 
@@ -69,6 +71,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public void StreamShutdownWrite(string streamId, Exception ex)
         {
             _streamShutdownWrite(_logger, streamId, ex.Message, ex);
+        }
+
+        public void StreamAbort(string streamId, Exception ex)
+        {
+            _streamAborted(_logger, streamId, ex.Message, ex);
         }
     }
 }

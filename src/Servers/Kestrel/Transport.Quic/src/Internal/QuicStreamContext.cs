@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature
+    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature, IProtocolErrorCodeFeature
     {
         private readonly Task _processingTask;
         private readonly QuicStream _stream;
@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             Features.Set<IStreamDirectionFeature>(this);
+            Features.Set<IProtocolErrorCodeFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs).
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             }
         }
 
+        public long Error { get; set; }
 
         private async Task StartAsync()
         {
@@ -282,10 +284,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             // Don't call _stream.Shutdown and _stream.Abort at the same time.
+            _log.StreamAbort(ConnectionId, abortReason);
+
             lock (_shutdownLock)
             {
-                _stream.AbortRead(_context.Options.AbortErrorCode);
-                _stream.AbortWrite(_context.Options.AbortErrorCode);
+                _stream.AbortRead(Error);
+                _stream.AbortWrite(Error);
             }
 
             // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
