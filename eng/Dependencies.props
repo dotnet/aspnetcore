@@ -154,6 +154,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="$(MicrosoftAspNetCoreComponentsFormsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="$(MicrosoftAspNetCoreIdentityUIPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
   </ItemGroup>
 
