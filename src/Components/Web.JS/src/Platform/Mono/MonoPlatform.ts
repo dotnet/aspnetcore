@@ -162,12 +162,18 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
   module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
     (async () => {
-      const dotnetWasmResourceName = 'dotnet.wasm';
-      const dotnetWasmResource = await resourceLoader.loadResource(
-        /* name */ dotnetWasmResourceName,
-        /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-        /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
-      const compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
+      let compiledInstance: WebAssembly.Instance;
+      try {
+        const dotnetWasmResourceName = 'dotnet.wasm';
+        const dotnetWasmResource = await resourceLoader.loadResource(
+          /* name */ dotnetWasmResourceName,
+          /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
+          /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
+        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);  
+      } catch (ex) {
+        module.printErr(ex);
+        throw ex;
+      }
       successCallback(compiledInstance);
     })();
     return []; // No exports
