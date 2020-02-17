@@ -91,39 +91,41 @@ export class WebAssemblyResourceLoader {
     const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
     this.usedCacheKeys[cacheKey] = true;
 
-    // If it's already cached, return the cached data. We're done.
     const cachedResponse = await this.cache.match(cacheKey);
     if (cachedResponse) {
+      // It's in the cache.
       const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
       this.cacheLoads[name] = { responseBytes };
       return cachedResponse;
+    } else {
+      // It's not in the cache. Fetch from network.
+      const networkResponse = await fetch(url, { cache: networkFetchCacheMode, integrity: contentHash });
+      this.addToCacheAsync(name, cacheKey, networkResponse); // Don't await - add to cache in background
+      return networkResponse;
     }
+  }
 
-    // It's not in the cache. Fetch from network.
-    // Note: we have to clone in order to put this in the cache *and* return the original response.
-    const networkResponse = await fetch(url, { cache: networkFetchCacheMode, integrity: contentHash });
-    const networkResponseData = await networkResponse.clone().arrayBuffer();
+  private async addToCacheAsync(name: string, cacheKey: string, response: Response) {
+    // We have to clone in order to put this in the cache *and* not prevent other code from
+    // reading the original response stream.
+    const responseData = await response.clone().arrayBuffer();
 
     // Now is an ideal moment to capture the performance stats for the request, since it
     // only just completed and is most likely to still be in the buffer. However this is
     // only done on a 'best effort' basis. Even if we do receive an entry, some of its
     // properties may be blanked out if it was a CORS request.
-    const performanceEntry = getPerformanceEntry(networkResponse.url);
+    const performanceEntry = getPerformanceEntry(response.url);
     const responseBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
     this.networkLoads[name] = { responseBytes };
 
     // Add to cache as a custom response object so we can track extra data such as responseBytes
     // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
-    await this.cache.put(cacheKey, new Response(networkResponseData, {
+    await this.cache.put(cacheKey, new Response(responseData, {
       headers: {
-        'content-type': networkResponse.headers.get('content-type') || '',
-        'content-length': (responseBytes || networkResponse.headers.get('content-length') || '').toString()
+        'content-type': response.headers.get('content-type') || '',
+        'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
       }
     }));
-
-    // We hope it was added to the cache, but can't guarantee that it was. We return the original
-    // response to ensure the current page load works regardless.
-    return networkResponse;
   }
 }
 
