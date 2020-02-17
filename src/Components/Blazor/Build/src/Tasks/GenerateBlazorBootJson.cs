@@ -36,7 +36,16 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             using var fileStream = File.Create(OutputPath);
             var entryAssemblyName = AssemblyName.GetAssemblyName(AssemblyPath).Name;
-            WriteBootJson(fileStream, entryAssemblyName);
+            try
+            {
+                 WriteBootJson(fileStream, entryAssemblyName);
+            }
+            catch (Exception ex)
+            {
+               Logger.LogErrorFromException (ex);
+            }
+            
+            return !Log.HasLoggedErrors;
 
             return true;
         }
