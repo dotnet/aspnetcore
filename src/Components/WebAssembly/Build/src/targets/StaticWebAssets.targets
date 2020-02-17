@@ -38,13 +38,13 @@
 
       <_ContentLinkedIntoWwwroot
         Include="@(_ContentWithWwrootLinkAttribute)"
-        Condition="'%(CopyToPublishDirectory)' != 'false'">
+        Condition="@(_ContentWithWwrootLinkAttribute) != '' and '%(CopyToPublishDirectory)' != 'false'">
         <!-- This gets rid of wwwroot\ -->
         <RelativePath>$([System.String]::Copy('%(Link)').Substring(8))</RelativePath>
       </_ContentLinkedIntoWwwroot>
 
-      <_OutsideContentLinkedIntoWwwroot Include="@(_ContentLinkedIntoWwwroot->'%(FullPath)')" Condition="!$([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))" />
-      <_WwwrootLinkedContent Include="@(_ContentLinkedIntoWwwroot->'%(FullPath)')" Condition="$([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))" KeepMetadata="RelativePath" />
+      <_OutsideContentLinkedIntoWwwroot Include="@(_ContentLinkedIntoWwwroot->'%(FullPath)')" Condition="@(_ContentLinkedIntoWwwroot) != '' and !$([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))" />
+      <_WwwrootLinkedContent Include="@(_ContentLinkedIntoWwwroot->'%(FullPath)')" Condition="@(_ContentLinkedIntoWwwroot) != '' and $([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))" KeepMetadata="RelativePath" />
 
       <!-- For content items with the Link attribute on them, we update the relative path. This enables support at publish time for these assets but forgoes any
            dev-time support. (If you want to have dev-time support, you need to add an appropriate file into the wwwroot folder with CopyToPublishDirectory="false")
@@ -70,7 +70,7 @@
           * We do guarantee that we will copy them into the actual wwwroot folder at publish time.
           * If you want this type of dev-time support, the recomendation is to add the list of assets to the item group manually indicating a suitable content root.
       -->
-      <StaticWebAsset Include="@(_OutsideContentLinkedIntoWwwroot)">
+      <StaticWebAsset Include="@(_OutsideContentLinkedIntoWwwroot)" Condition="@(_OutsideContentLinkedIntoWwwroot) != ''">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
         <!-- We don't try to come up with a separate content root to make the inner loop work.
