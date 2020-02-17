@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 cacheBootResources = CacheBootResources,
                 debugBuild = DebugBuild,
                 linkerEnabled = LinkerEnabled,
-                resources = new Dictionary<ResourceType, ResourceList>()
+                resources = new Dictionary<ResourceType, ResourceHashesByNameDictionary>()
             };
 
             // Build a two-level dictionary of the form:
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
                     if (!result.resources.TryGetValue(resourceType, out var resourceList))
                     {
-                        resourceList = new ResourceList();
+                        resourceList = new ResourceHashesByNameDictionary();
                         result.resources.Add(resourceType, resourceList);
                     }
 
@@ -130,8 +131,12 @@ namespace Microsoft.AspNetCore.Blazor.Build
             /// Gets the set of resources needed to boot the application. This includes the transitive
             /// closure of .NET assemblies (including the entrypoint assembly), the dotnet.wasm file,
             /// and any PDBs to be loaded.
+            ///
+            /// Within <see cref="ResourceHashesByNameDictionary"/>, dictionary keys are resource names,
+            /// and values are SHA-256 hashes formatted in prefixed base-64 style (e.g., 'sha256-abcdefg...')
+            /// as used for subresource integrity checking.
             /// </summary>
-            public Dictionary<ResourceType, ResourceList> resources { get; set; }
+            public Dictionary<ResourceType, ResourceHashesByNameDictionary> resources { get; set; }
 
             /// <summary>
             /// Gets a value that determines whether to enable caching of the <see cref="resources"/>
@@ -155,14 +160,6 @@ namespace Microsoft.AspNetCore.Blazor.Build
             assembly,
             pdb,
             wasm
-        }
-
-        /// <summary>
-        /// Represents a set of resources used when booting a Blazor WebAssembly application.
-        /// The dictionary keys are the resource names; values are SHA-256 hashes of the corresponding files.
-        /// </summary>
-        public class ResourceList : Dictionary<string, string>
-        {
         }
 #pragma warning restore IDE1006 // Naming Styles
     }
