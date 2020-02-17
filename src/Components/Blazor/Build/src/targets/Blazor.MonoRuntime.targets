@@ -131,7 +131,16 @@
         <BlazorRuntimeFile>true</BlazorRuntimeFile>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
-      </BlazorOutputWithTargetPath>
+      </BlazorOutputWithTargetPath>      
+    </ItemGroup>
+
+    <!--
+      We need to know at build time (not publish time) whether or not to include pdbs in the
+      blazor.boot.json file, so this is controlled by the BlazorEnableDebugging flag, whose
+      default value is determined by the build configuration.
+    -->
+    <ItemGroup Condition="'$(BlazorEnableDebugging)' != 'true'">
+      <BlazorOutputWithTargetPath Remove="@(BlazorOutputWithTargetPath)" Condition="'%(Extension)' == '.pdb'" />
     </ItemGroup>
 
     <!--
@@ -286,7 +295,7 @@
 
     <ItemGroup>
       <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
-      <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" Condition="'$(BlazorEnableDebugging)' == 'true'" />
+      <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
