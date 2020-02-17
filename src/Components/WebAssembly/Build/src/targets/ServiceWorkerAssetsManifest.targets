@@ -1,44 +1,26 @@
 <Project>
-  
+
   <PropertyGroup>
     <_BlazorCopyFilesToOutputDirectoryDependsOn>
       $(_BlazorCopyFilesToOutputDirectoryDependsOn);
-      _ComputeServiceWorkerAssetsManifestInputs;
       _WriteServiceWorkerAssetsManifest;
+      ResolveStaticWebAssetsInputs;
     </_BlazorCopyFilesToOutputDirectoryDependsOn>
   </PropertyGroup>
 
+
   <Target Name="_ComputeServiceWorkerAssetsManifestInputs"
           Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-          DependsOnTargets="PrepareBlazorOutputs">
+          BeforeTargets="_ResolveBlazorOutputs">
 
     <PropertyGroup>
       <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)serviceworkerassets.js</_ServiceWorkerAssetsManifestIntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <!-- Include _framework/* content -->
-      <ServiceWorkerAssetsManifestItem
-        Include="@(BlazorOutputWithTargetPath)"
-        Condition="$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').StartsWith('dist/'))">
-        <AssetUrl>$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').Substring(5))</AssetUrl>
-      </ServiceWorkerAssetsManifestItem>
-
-      <!-- Include content from wwwroot -->
-      <ServiceWorkerAssetsManifestItem
-        Include="@(ContentWithTargetPath)"
-        Condition="
-          ('%(ContentWithTargetPath.CopyToPublishDirectory)' == 'Always' OR '%(ContentWithTargetPath.CopyToPublishDirectory)' == 'PreserveNewest')
-          AND $([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').StartsWith('wwwroot/'))">
-        <AssetUrl>$([System.String]::Copy('%(ContentWithTargetPath.TargetPath)').Replace('\','/').Substring(8))</AssetUrl>
-      </ServiceWorkerAssetsManifestItem>
-
-      <!-- Include SWA from references -->
-      <ServiceWorkerAssetsManifestItem
-        Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.SourceType)' != ''">
-        <AssetUrl>%(StaticWebAsset.BasePath)/%(StaticWebAsset.RelativePath)</AssetUrl>
-      </ServiceWorkerAssetsManifestItem>
+      <BlazorOutputWithTargetPath Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+        Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
+        TargetOutputPath="$(BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
     </ItemGroup>
 
   </Target>
@@ -56,16 +38,19 @@
       OutputPath="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
 
     <ItemGroup>
-      <BlazorOutputWithTargetPath
-        Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
-        TargetOutputPath="$(BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
-      
       <FileWrites Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
     </ItemGroup>
 
   </Target>
 
   <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes">
+
+    <ItemGroup>
+      <ServiceWorkerAssetsManifestItem Include="%(StaticWebAsset.Identity)" Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)'">
+        <AssetUrl>$([System.String]::Copy('$([System.String]::Copy('%(StaticWebAsset.BasePath)').TrimEnd('/'))/%(StaticWebAsset.RelativePath)').Replace('\','/').TrimStart('/'))</AssetUrl>
+      </ServiceWorkerAssetsManifestItem>
+    </ItemGroup>
+
     <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_ServiceWorkerAssetsManifestItemWithHash" />
     </GetFileHash>
@@ -94,5 +79,5 @@
       <ServiceWorkerAssetsManifestVersion>$([System.String]::Copy('%(_ServiceWorkerAssetsManifestCombinedHash.FileHash)').Substring(0, 8))</ServiceWorkerAssetsManifestVersion>
     </PropertyGroup>
   </Target>
-  
+
 </Project>

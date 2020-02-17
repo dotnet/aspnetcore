@@ -21,14 +21,10 @@
 
   <!--#endif -->
   <!--#if PWA -->
-  <ItemGroup>
-    <!-- When publishing, swap service-worker.published.js in place of service-worker.js -->
-    <Content Update="wwwroot\service-worker*.js" CopyToPublishDirectory="false" />
-    <ContentWithTargetPath Include="wwwroot\service-worker.published.js">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <TargetPath>wwwroot\service-worker.js</TargetPath>
-    </ContentWithTargetPath>
+  <!-- When publishing, swap service-worker.published.js in place of service-worker.js -->
+  <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <Content Remove="wwwroot\service-worker.js" />
+    <Content Update="wwwroot\service-worker.published.js" Link="wwwroot\service-worker.js" />
   </ItemGroup>
-
   <!--#endif -->
 </Project>

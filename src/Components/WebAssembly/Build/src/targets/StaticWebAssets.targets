@@ -2,7 +2,7 @@
 
   <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="PrepareBlazorOutputs">
     <ItemGroup>
-      <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" RemoveMetadata="TargetOutputPath">
+      <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'%(FullPath)')" RemoveMetadata="TargetOutputPath">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
@@ -14,7 +14,7 @@
            These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail.
            We only need to do this for the standalone case, for hosted scenarios this works just fine as the assets are considered
            external. -->
-      <_ExternalStaticWebAsset Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')">
+      <_ExternalStaticWebAsset Include="@(BlazorOutputWithTargetPath->'%(FullPath)')">
         <SourceId>$(PackageId)</SourceId>
         <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
         <SourceType>Generated</SourceType>
@@ -100,7 +100,7 @@
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
       </_StandaloneExternalPublishStaticWebAsset>
 
-      <_CurrentProjectWwwrootStaticWebAsset Include="@(StaticWebAsset)" Exclude="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" Condition="'%(StaticWebAsset.SourceType)' == ''" />
+      <_CurrentProjectWwwrootStaticWebAsset Include="@(StaticWebAsset)" Exclude="@(BlazorOutputWithTargetPath->'%(FullPath)')" Condition="'%(StaticWebAsset.SourceType)' == ''" />
 
       <_StandaloneWwwrootCurrentProjectPublishStaticWebAsset Include="%(_CurrentProjectWwwrootStaticWebAsset.Identity)">
         <RelativePath>$(BlazorPublishDistDir)%(RelativePath)</RelativePath>
