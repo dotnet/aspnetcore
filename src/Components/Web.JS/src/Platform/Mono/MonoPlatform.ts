@@ -211,7 +211,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     try {
       // Wait for the data to be loaded and verified
-      const dataBuffer = await dependency.data;
+      const dataBuffer = await dependency.response.then(r => r.arrayBuffer());
 
       // Load it into the Mono runtime
       const data = new Uint8Array(dataBuffer);
@@ -301,7 +301,7 @@ async function compileWasmModule(wasmResource: LoadingResource, imports: any): P
 
   // If that's not available or fails (e.g., due to incorrect content-type header),
   // fall back to ArrayBuffer instantiation
-  const arrayBuffer = await wasmResource.data;
+  const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
   const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
   return arrayBufferResult.instance;
 }

@@ -1,4 +1,5 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
+const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
@@ -9,7 +10,7 @@ export class WebAssemblyResourceLoader {
     const bootConfigResponse = await fetch('_framework/blazor.boot.json', {
       method: 'GET',
       credentials: 'include',
-      cache: 'no-cache'
+      cache: networkFetchCacheMode
     });
 
     // Define a separate cache for each base href, so we're isolated from any other
@@ -33,49 +34,12 @@ export class WebAssemblyResourceLoader {
   }
 
   loadResource(name: string, url: string, contentHash: string): LoadingResource {
-    const networkFetchOptions: RequestInit = { cache: 'no-cache' };
-    if (!this.bootConfig.cacheBootResources) {
-      // Bypass the entire cache flow, including checking hashes, etc.
-      // This gives developers an easy opt-out if they don't like anything about the default cache mechanism
-      // Cloning represents the response as two separate streams so we can process it twice independently
-      // (once for hash checking, once for streaming compilation). Without this, there would be a read error.
-      const response = fetch(url, networkFetchOptions);
-      const data = response.then(r => r.clone().arrayBuffer());
-      return { name, url, response, data };
-    }
-
-    if (!contentHash || contentHash.length === 0) {
-      throw new Error('Content hash is required');
-    }
-
-    const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
-    this.usedCacheKeys[cacheKey] = true;
-
-    const responseInfoPromise = (async () => {
-      // Try to load from cache
-      const cachedResponse = await this.cache.match(cacheKey);
-      if (cachedResponse) {
-        const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
-        this.cacheLoads[name] = { responseBytes };
-        return { response: cachedResponse, isNetworkResponse: false };
-      }
-
-      // It's not cached (or caching is now disabled), so fetch from network
-      const networkResponse = await fetch(url, networkFetchOptions);
-      return { response: networkResponse, isNetworkResponse: true };
-    })();
-
-    // We add to the cache as an independent background task, without chaining it onto the 'response' promise.
-    // This is because for WebAssembly.instantiateStreaming to make sense, we have to give it the
-    // response object before the body has been fully fetched from the network, which in turn implies
-    // we can't validate the content hash as part of that promise chain.
-    const response = responseInfoPromise.then(responseInfo => responseInfo.response.clone());
-    const data = responseInfoPromise.then(async responseInfo =>
-      responseInfo.isNetworkResponse
-        ? this.tryValidateAndCacheAsync(name, cacheKey, contentHash, responseInfo.response)
-        : responseInfo.response.arrayBuffer() // For cached responses, we already validated before caching
-    );
-    return { name, url, response, data };
+    // Setting 'cacheBootResources' to false bypasses the entire cache flow, including integrity checking.
+    // This gives developers an easy opt-out if they don't like anything about the default cache mechanism
+    const response = this.bootConfig.cacheBootResources
+      ? this.loadResourceWithCaching(name, url, contentHash)
+      : fetch(url, { cache: networkFetchCacheMode });
+    return { name, url, response };
   }
 
   logToConsole() {
@@ -116,8 +80,28 @@ export class WebAssemblyResourceLoader {
     return Promise.all(deletionPromises);
   }
 
-  private async tryValidateAndCacheAsync(name: string, cacheKey: string, expectedContentHash: string, networkResponse: Response): Promise<ArrayBuffer> {
-    const responseBuffer = await networkResponse.arrayBuffer();
+  private async loadResourceWithCaching(name: string, url: string, contentHash: string) {
+    // Since we are going to cache the response, we require there to be a content hash for integrity
+    // checking. We don't want to cache bad responses. There should always be a hash, because the build
+    // process generates this data.
+    if (!contentHash || contentHash.length === 0) {
+      throw new Error('Content hash is required');
+    }
+
+    const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
+    this.usedCacheKeys[cacheKey] = true;
+
+    // Try to load from cache
+    const cachedResponse = await this.cache.match(cacheKey);
+    if (cachedResponse) {
+      const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
+      this.cacheLoads[name] = { responseBytes };
+      return cachedResponse;
+    }
+
+    // It's not in the cache. Fetch from network.
+    const networkResponse = await fetch(url, { cache: networkFetchCacheMode, integrity: contentHash });
+    const networkResponseData = await networkResponse.clone().arrayBuffer();
 
     // Now is an ideal moment to capture the performance stats for the request, since it
     // only just completed and is most likely to still be in the buffer. However this is
@@ -127,22 +111,15 @@ export class WebAssemblyResourceLoader {
     const responseBytes = (performanceEntry && performanceEntry.encodedBodySize) || undefined;
     this.networkLoads[name] = { responseBytes };
 
-    // crypto.subtle is only enabled on localhost or HTTPS origins
-    // We only write to the cache if we can validate the content hashes
-    if (typeof crypto !== 'undefined' && !!crypto.subtle) {
-      await assertContentHashMatchesAsync(name, responseBuffer, expectedContentHash);
-
-      // Build a custom response object so we can track extra data such as responseBytes
-      // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
-      await this.cache.put(cacheKey, new Response(responseBuffer, {
-        headers: {
-          'content-type': networkResponse.headers.get('content-type') || '',
-          'content-length': (responseBytes || networkResponse.headers.get('content-length') || '').toString()
-        }
-      }));
-    }
-
-    return responseBuffer;
+    // Add to cache as a custom response object so we can track extra data such as responseBytes
+    // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
+    await this.cache.put(cacheKey, new Response(networkResponseData, {
+      headers: {
+        'content-type': networkResponse.headers.get('content-type') || '',
+        'content-length': (responseBytes || networkResponse.headers.get('content-length') || '').toString()
+      }
+    }));
+    return networkResponse;
   }
 }
 
@@ -158,33 +135,6 @@ function getPerformanceEntry(url: string): PerformanceResourceTiming | undefined
   if (typeof performance !== 'undefined') {
     return performance.getEntriesByName(url)[0] as PerformanceResourceTiming;
   }
-}
-
-async function assertContentHashMatchesAsync(name: string, data: ArrayBuffer, expectedHashBase64: string) {
-  const expectedHashDataUri = `data:text/plain;base64,${expectedHashBase64}`;
-  const expectedHashResponse = await fetch(expectedHashDataUri);
-  const expectedHashBuffer = await expectedHashResponse.arrayBuffer();
-  const actualHashBuffer = await crypto.subtle.digest('SHA-256', data);
-  if (!arrayBuffersAreEqual(expectedHashBuffer, actualHashBuffer)) {
-    var actualHashBase64 = btoa(String.fromCharCode(...new Uint8Array(actualHashBuffer)));
-    throw new Error(`Resource hash mismatch for '${name}'. Expected hash: '${expectedHashBase64}'. Actual hash: '${actualHashBase64}'. If a deployment was in progress, try reloading the page.`);
-  }
-}
-
-function arrayBuffersAreEqual(a: ArrayBuffer, b: ArrayBuffer) {
-  if (a.byteLength !== b.byteLength) {
-    return false;
-  }
-
-  const arrayA = new Uint8Array(a);
-  const arrayB = new Uint8Array(b);
-  for (let i = 0; i < arrayA.byteLength; i++) {
-    if (arrayA[i] !== arrayB[i]) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 // Keep in sync with bootJsonData in Microsoft.AspNetCore.Blazor.Build
@@ -210,7 +160,6 @@ export interface LoadingResource {
   name: string;
   url: string;
   response: Promise<Response>;
-  data: Promise<ArrayBuffer>;
 }
 
 type ResourceList = { [name: string]: string };

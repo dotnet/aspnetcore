@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                     var resourceFileRelativePath = GetResourceFileRelativePath(resource);
                     if (!resourceList.ContainsKey(resourceFileRelativePath))
                     {
-                        resourceList.Add(resourceFileRelativePath, resource.GetMetadata("FileHash"));
+                        resourceList.Add(resourceFileRelativePath, $"sha256-{resource.GetMetadata("FileHash")}");
                     }
                 }
             }
