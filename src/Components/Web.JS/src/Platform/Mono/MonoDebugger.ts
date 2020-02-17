@@ -1,4 +1,4 @@
-import { getAssemblyNameFromUrl, getFileNameFromUrl } from '../Url';
+import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
 const currentBrowserIsChrome = (window as any).chrome
   && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
@@ -9,13 +9,15 @@ export function hasDebuggingEnabled() {
   return hasReferencedPdbs && currentBrowserIsChrome;
 }
 
-export function attachDebuggerHotkey() {
+export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
   const altKeyName = navigator.platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
   if (hasDebuggingEnabled()) {
     console.info(`Debugging hotkey: Shift+${altKeyName}+D (when application has focus)`);
   }
+
+  hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
 
   // Even if debugging isn't enabled, we register the hotkey so we can report why it's not enabled
   document.addEventListener('keydown', evt => {

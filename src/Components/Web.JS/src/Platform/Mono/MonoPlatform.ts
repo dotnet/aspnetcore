@@ -1,5 +1,4 @@
 import { System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
-import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
@@ -13,9 +12,7 @@ const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from 
 export const monoPlatform: Platform = {
   start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
-      if (resourceLoader.bootConfig.resources.pdb) {
-        attachDebuggerHotkey();
-      }
+      attachDebuggerHotkey(resourceLoader);
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
