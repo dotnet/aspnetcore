@@ -37,12 +37,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return base.InitializeAsync(Guid.NewGuid().ToString());
         }
 
-        protected override void InitializeAsyncCore()
-        {
-            Navigate("/");
-            WaitUntilLoaded();
-        }
-
         [Fact]
         public void CachesResourcesAfterFirstLoad()
         {
