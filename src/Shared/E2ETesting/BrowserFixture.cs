@@ -70,12 +70,38 @@ namespace Microsoft.AspNetCore.E2ETesting
                 browser.Dispose();
             }
 
+            await DeleteBrowserUserProfileDirectoriesAsync();
+        }
+
+        private async Task DeleteBrowserUserProfileDirectoriesAsync()
+        {
             foreach (var context in _browsers.Keys)
             {
                 var userProfileDirectory = UserProfileDirectory(context);
                 if (!string.IsNullOrEmpty(userProfileDirectory) && Directory.Exists(userProfileDirectory))
                 {
-                    Directory.Delete(userProfileDirectory, recursive: true);
+                    var attemptCount = 0;
+                    while (true)
+                    {
+                        try
+                        {
+                            Directory.Delete(userProfileDirectory, recursive: true);
+                            break;
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            attemptCount++;
+                            if (attemptCount < 5)
+                            {
+                                Console.WriteLine($"Failed to delete browser profile directory '{userProfileDirectory}': '{ex}'. Will retry.");
+                                await Task.Delay(2000);
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                    }
                 }
             }
         }

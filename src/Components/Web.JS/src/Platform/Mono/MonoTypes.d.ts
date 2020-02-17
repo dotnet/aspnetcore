@@ -13,10 +13,6 @@ declare namespace Module {
   function mono_bind_static_method(fqn: string): BoundStaticMethod;
 }
 
-// Emscripten declares these globals
-declare const addRunDependency: any;
-declare const removeRunDependency: any;
-
 declare namespace Mono {
   interface Utf8Ptr { Utf8Ptr__DO_NOT_IMPLEMENT: any }
   interface StackSaveHandle { StackSaveHandle__DO_NOT_IMPLEMENT: any }
