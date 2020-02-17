@@ -38,7 +38,7 @@
 
       <_ContentLinkedIntoWwwroot
         Include="@(_ContentWithWwrootLinkAttribute)"
-        Condition="@(_ContentWithWwrootLinkAttribute) != '' and '%(CopyToPublishDirectory)' != 'false'">
+        Condition="@(_ContentWithWwrootLinkAttribute) != '' and '%(_ContentWithWwrootLinkAttribute.CopyToPublishDirectory)' != 'false'">
         <!-- This gets rid of wwwroot\ -->
         <RelativePath>$([System.String]::Copy('%(Link)').Substring(8))</RelativePath>
       </_ContentLinkedIntoWwwroot>

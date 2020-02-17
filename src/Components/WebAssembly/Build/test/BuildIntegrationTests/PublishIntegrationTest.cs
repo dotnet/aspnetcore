@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Publish_WithDefaultSettings_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary" });
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary", "LinkBaseToWebRoot" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
@@ -34,6 +34,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
+            // Verify link item assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "js", "LinkedScript.js");
+            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "dist", "css", "site.css");
+            Assert.FileContains(result, cssFile, ".publish");
+            Assert.FileDoesNotExist(result, "dist", "Fake-License.txt");
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
