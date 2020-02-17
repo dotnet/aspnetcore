@@ -35,7 +35,7 @@ export class WebAssemblyResourceLoader {
 
   loadResource(name: string, url: string, contentHash: string): LoadingResource {
     // Setting 'cacheBootResources' to false bypasses the entire cache flow, including integrity checking.
-    // This gives developers an easy opt-out if they don't like anything about the default cache mechanism
+    // This gives developers an easy opt-out if they don't like anything about the default cache mechanism.
     const response = this.bootConfig.cacheBootResources
       ? this.loadResourceWithCaching(name, url, contentHash)
       : fetch(url, { cache: networkFetchCacheMode });
@@ -91,7 +91,7 @@ export class WebAssemblyResourceLoader {
     const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
     this.usedCacheKeys[cacheKey] = true;
 
-    // Try to load from cache
+    // If it's already cached, return the cached data. We're done.
     const cachedResponse = await this.cache.match(cacheKey);
     if (cachedResponse) {
       const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
@@ -100,6 +100,7 @@ export class WebAssemblyResourceLoader {
     }
 
     // It's not in the cache. Fetch from network.
+    // Note: we have to clone in order to put this in the cache *and* return the original response.
     const networkResponse = await fetch(url, { cache: networkFetchCacheMode, integrity: contentHash });
     const networkResponseData = await networkResponse.clone().arrayBuffer();
 
@@ -119,6 +120,9 @@ export class WebAssemblyResourceLoader {
         'content-length': (responseBytes || networkResponse.headers.get('content-length') || '').toString()
       }
     }));
+
+    // We hope it was added to the cache, but can't guarantee that it was. We return the original
+    // response to ensure the current page load works regardless.
     return networkResponse;
   }
 }
