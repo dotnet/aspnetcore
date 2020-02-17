@@ -194,8 +194,63 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal(string.Empty, data);
             }
 
-            var eol = await action(reader);
-            Assert.Null(eol);
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_CarriageReturnAndLineFeedAcrossBufferBundaries(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("123456789\r\nfoo");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8, 10);
+
+            // Act & Assert
+            var data = await action(reader);
+            Assert.Equal("123456789", data);
+
+            data = await action(reader);
+            Assert.Equal("foo", data);
+
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_EOF(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_NewLineOnly(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("\r\n");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var empty = await action(reader);
+            Assert.Equal(string.Empty, empty);
         }
 
         [Fact]
@@ -416,10 +471,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static IEnumerable<object[]> ReadLineData()
         {
             yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
-                 httpRequestStreamReader.ReadLineAsync()
+                 Task.FromResult(httpRequestStreamReader.ReadLine())
             )};
             yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
-                 Task.FromResult(httpRequestStreamReader.ReadLine())
+                 httpRequestStreamReader.ReadLineAsync()
             )};
         }
     }
