@@ -353,7 +353,7 @@
     </ItemGroup>
 
     <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHashes" />
+      <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHash" />
     </GetFileHash>
 
     <PropertyGroup>
@@ -363,7 +363,7 @@
     </PropertyGroup>
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      Resources="@(_BlazorBootResourceWithHashes)"
+      Resources="@(_BlazorBootResourceWithHash)"
       DebugBuild="$(_IsDebugBuild)"
       LinkerEnabled="$(BlazorLinkOnBuild)"
       CacheBootResources="$(BlazorCacheBootResources)"
