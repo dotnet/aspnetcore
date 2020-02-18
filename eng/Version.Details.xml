@@ -289,11 +289,6 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>29d49b4c7434ca4b01f3b5e297fc3fa1e38d7a07</Sha>
     </Dependency>
-    <!-- This package was dead-ended, pinning it until we decide whether or not to replace it with something else -->
-    <Dependency Name="Microsoft.CSharp" Version="5.0.0-alpha.1.20103.10" Pinned="true">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>a7f8cdc0de945561ae3fcaa72440c0ec56d69060</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.1.20112.12" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3158b52d4ef4d0d339084fcf667e03a37224fb8f</Sha>
@@ -397,6 +392,11 @@
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.1.20112.12" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>3158b52d4ef4d0d339084fcf667e03a37224fb8f</Sha>
+    </Dependency>
+    <!-- This package was dead-ended, pinning it until we decide whether or not to replace it with something else -->
+    <Dependency Name="Microsoft.CSharp" Version="4.7.0" Pinned="true">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

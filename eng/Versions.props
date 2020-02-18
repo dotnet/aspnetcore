@@ -70,7 +70,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.1.20112.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview.1.20112.12</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftCSharpPackageVersion>5.0.0-alpha.1.20103.10</MicrosoftCSharpPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.7.0</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.1.20112.12</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-preview.1.20112.12</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.1.20112.12</SystemComponentModelAnnotationsPackageVersion>
