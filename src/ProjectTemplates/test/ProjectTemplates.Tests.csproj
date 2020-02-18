@@ -27,6 +27,7 @@
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
