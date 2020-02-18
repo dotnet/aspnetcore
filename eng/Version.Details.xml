@@ -289,10 +289,6 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>396aff55e0b4628a7a44375e4b72e5d19a6e37ab</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CSharp" Version="5.0.0-alpha.1.19563.6" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>5cee7c97d602f294e27c582d4dab81ec388f1d7b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.1.20113.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f3f8e1930c28b67f29990126bc2e8527e959a2e</Sha>
