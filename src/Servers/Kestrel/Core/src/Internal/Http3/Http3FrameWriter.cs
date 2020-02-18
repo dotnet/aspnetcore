@@ -308,6 +308,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return;
                 }
 
+                _log.ConnectionStop("TEST123 " + Environment.StackTrace);
+
                 _completed = true;
                 _outputWriter.Complete();
             }

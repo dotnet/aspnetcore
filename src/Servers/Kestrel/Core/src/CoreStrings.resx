@@ -539,6 +539,12 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3StreamErrorPathInvalid" xml:space="preserve">
     <value>The request :path is invalid: '{path}'</value>
   </data>
+  <data name="Http3StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http3StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
   <data name="GreaterThanZeroRequired" xml:space="preserve">
     <value>A value greater than zero is required.</value>
   </data>

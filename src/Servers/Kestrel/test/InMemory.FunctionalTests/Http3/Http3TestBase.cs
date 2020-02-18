@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _noopApplication;
         protected readonly RequestDelegate _echoApplication;
         protected readonly RequestDelegate _echoMethod;
+        protected readonly RequestDelegate _echoPath;
+        protected readonly RequestDelegate _echoHost;
 
         public Http3TestBase()
         {
@@ -65,6 +69,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _echoMethod = context =>
             {
                 context.Response.Headers["Method"] = context.Request.Method;
+
+                return Task.CompletedTask;
+            };
+
+            _echoPath = context =>
+            {
+                context.Response.Headers["path"] = context.Request.Path.ToString();
+                context.Response.Headers["rawtarget"] = context.Features.Get<IHttpRequestFeature>().RawTarget;
+
+                return Task.CompletedTask;
+            };
+
+            _echoHost = context =>
+            {
+                context.Response.Headers[HeaderNames.Host] = context.Request.Headers[HeaderNames.Host];
 
                 return Task.CompletedTask;
             };
@@ -345,11 +364,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
             }
 
-            internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string errorMessage)
+            internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string expectedErrorMessage)
             {
                 var readResult = await _pair.Application.Input.ReadAsync();
+                _testBase.Logger.LogTrace("Input is completed");
+
                 Assert.True(readResult.IsCompleted);
                 Assert.Equal((long)protocolError, Error);
+
+                if (expectedErrorMessage != null)
+                {
+                    Assert.Contains(_testBase.TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                }
             }
         }
 
