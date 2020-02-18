@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; set; } = new HttpRequestHeaders();
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -1192,7 +1192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // TODO allow customization of this.
-            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3) 
+            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
             {
                 foreach (var option in ServerOptions.ListenOptions)
                 {

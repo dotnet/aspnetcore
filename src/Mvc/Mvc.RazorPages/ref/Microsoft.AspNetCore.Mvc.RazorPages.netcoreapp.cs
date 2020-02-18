@@ -637,7 +637,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public partial class RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>, System.Collections.IEnumerable
     {
         public RazorPagesOptions() { }
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageConventionCollection Conventions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string RootDirectory { get { throw null; } set { } }
         System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }

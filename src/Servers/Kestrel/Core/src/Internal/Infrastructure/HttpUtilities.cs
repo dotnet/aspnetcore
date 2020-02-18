@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        private static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return resultString;
         }
 
-        public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
+        public static string GetRequestHeaderStringNonNullCharacters(this ReadOnlySpan<byte> span, bool useLatin1) =>
             useLatin1 ? GetLatin1StringNonNullCharacters(span) : GetAsciiOrUTF8StringNonNullCharacters(span);
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)

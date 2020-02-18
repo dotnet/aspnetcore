@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Components
         public ElementReference(string id) { throw null; }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-        private readonly int _dummyPrimitive;
     public sealed partial class EventCallbackFactory
     {
         public EventCallbackFactory() { }
@@ -187,7 +186,6 @@ namespace Microsoft.AspNetCore.Components
         public EventCallbackWorkItem(System.MulticastDelegate @delegate) { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
-        private readonly int _dummyPrimitive;
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class EventHandlerAttribute : System.Attribute
     {

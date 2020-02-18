@@ -1635,7 +1635,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1766", FlakyOn.All)]
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
             var manager = CreateManager();

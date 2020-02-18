@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR
             return SendToAllConnections(methodName, args, include: null, cancellationToken);
         }
 
-        private Task SendToAllConnections(string methodName, object[] args, Func<HubConnectionContext, object, bool> include, object state = null, CancellationToken cancellationToken)
+        private Task SendToAllConnections(string methodName, object[] args, Func<HubConnectionContext, object, bool> include, object state = null, CancellationToken cancellationToken = default)
         {
             List<Task> tasks = null;
             SerializedHubMessage message = null;
