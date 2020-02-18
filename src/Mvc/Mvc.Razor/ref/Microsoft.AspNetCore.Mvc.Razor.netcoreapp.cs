@@ -297,6 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
     public sealed partial class TagHelperMemoryCacheProvider
     {
         public TagHelperMemoryCacheProvider() { }
+        public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal

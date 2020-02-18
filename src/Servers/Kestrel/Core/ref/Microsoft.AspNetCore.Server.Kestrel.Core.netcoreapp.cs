@@ -155,6 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public System.IServiceProvider ApplicationServices { get { throw null; } }
         public ulong FileHandle { get { throw null; } }
         public System.Net.IPEndPoint IPEndPoint { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions KestrelServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols Protocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string SocketPath { get { throw null; } }
         public Microsoft.AspNetCore.Connections.ConnectionDelegate Build() { throw null; }
