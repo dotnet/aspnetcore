@@ -3,11 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+#if (!NoAuth)
+using Microsoft.AspNetCore.Authorization;
+#endif
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace BlazorWasm_CSharp.Server.Controllers
 {
+#if (!NoAuth)
+    [Authorize]
+#endif
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase

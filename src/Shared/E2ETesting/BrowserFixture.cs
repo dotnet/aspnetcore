@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -68,6 +69,41 @@ namespace Microsoft.AspNetCore.E2ETesting
             {
                 browser.Dispose();
             }
+
+            await DeleteBrowserUserProfileDirectoriesAsync();
+        }
+
+        private async Task DeleteBrowserUserProfileDirectoriesAsync()
+        {
+            foreach (var context in _browsers.Keys)
+            {
+                var userProfileDirectory = UserProfileDirectory(context);
+                if (!string.IsNullOrEmpty(userProfileDirectory) && Directory.Exists(userProfileDirectory))
+                {
+                    var attemptCount = 0;
+                    while (true)
+                    {
+                        try
+                        {
+                            Directory.Delete(userProfileDirectory, recursive: true);
+                            break;
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            attemptCount++;
+                            if (attemptCount < 5)
+                            {
+                                Console.WriteLine($"Failed to delete browser profile directory '{userProfileDirectory}': '{ex}'. Will retry.");
+                                await Task.Delay(2000);
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
@@ -116,6 +152,13 @@ namespace Microsoft.AspNetCore.E2ETesting
                 output.WriteLine($"Set {nameof(ChromeOptions)}.{nameof(opts.BinaryLocation)} to {binaryLocation}");
             }
 
+            var userProfileDirectory = UserProfileDirectory(context);
+            if (!string.IsNullOrEmpty(userProfileDirectory))
+            {
+                Directory.CreateDirectory(userProfileDirectory);
+                opts.AddArgument($"--user-data-dir={userProfileDirectory}");
+            }
+
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
 
             var attempt = 0;
@@ -153,6 +196,16 @@ namespace Microsoft.AspNetCore.E2ETesting
             } while (attempt < maxAttempts);
 
             throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+        }
+
+        private string UserProfileDirectory(string context)
+        {
+            if (string.IsNullOrEmpty(context))
+            {
+                return null;
+            }
+
+            return Path.Combine(Path.GetTempPath(), "BrowserFixtureUserProfiles", context);
         }
 
         private async Task<(IWebDriver browser, ILogs log)> CreateSauceBrowserAsync(string context, ITestOutputHelper output)

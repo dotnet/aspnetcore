@@ -62,7 +62,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.20077.3</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.20113.5</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.1-beta4-19614-01</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
@@ -98,7 +98,7 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.1.0</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Blazor -->
-    <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
+    <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20113.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.1.2-servicing.20067.6</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.2-servicing.20067.6</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
@@ -206,6 +206,13 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>3.1.0</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>3.1.0</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>3.1.0</MicrosoftAspNetCoreIdentityUIPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>3.1.0</MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsAuthorizationPackageVersion>3.1.0</MicrosoftAspNetCoreComponentsAuthorizationPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
     <!-- Partner teams -->
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
@@ -273,6 +280,11 @@
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreComponentsWebPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>$(MicrosoftAspNetCoreComponentsPackageVersion)</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion)</MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>$(MicrosoftAspNetCoreIdentityUIPackageVersion)</MicrosoftAspNetCoreIdentityUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion)</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion)</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">

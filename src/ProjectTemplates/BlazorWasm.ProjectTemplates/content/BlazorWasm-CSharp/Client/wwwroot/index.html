@@ -8,6 +8,9 @@
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
+    <!--#if PWA -->
+    <link href="manifest.json" rel="manifest" />
+    <!--#endif -->
 </head>
 
 <body>
@@ -18,7 +21,16 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+<!--#if (IndividualLocalAuth)  -->
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+<!--#endif  -->
+<!--#if (IndividualB2CAuth || OrganizationalAuth)  -->
+    <script src="_content/Blazor.Msal/AuthenticationService.js"></script>
+<!--#endif  -->
     <script src="_framework/blazor.webassembly.js"></script>
+    <!--#if PWA -->
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <!--#endif -->
 </body>
 
 </html>

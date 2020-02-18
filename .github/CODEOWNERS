@@ -14,7 +14,7 @@
 /src/Hosting/                   @tratcher @anurse
 /src/Http/                      @tratcher @jkotalik @anurse
 /src/Middleware/                @tratcher @anurse
-/src/ProjectTemplates/          @ryanbrandenburg
+# ProjectTemplates is owned by @ryanbrandenburg, but is not included here to reduce email notifications.
 /src/Security/                  @tratcher @anurse
 /src/Servers/                   @tratcher @jkotalik @anurse @halter73
 /src/Middleware/Rewrite         @jkotalik @anurse

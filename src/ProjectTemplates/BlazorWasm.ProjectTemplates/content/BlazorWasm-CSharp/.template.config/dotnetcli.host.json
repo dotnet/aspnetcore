@@ -5,11 +5,86 @@
       "longName": "no-restore",
       "shortName": ""
     },
-      "Hosted": {
-        "longName": "hosted"
-      },
+    "Hosted": {
+      "longName": "hosted"
+    },
+    "PWA": {
+      "longName": "pwa"
+    },
     "Framework": {
       "longName": "framework"
+    },
+    "UseLocalDB": {
+      "longName": "use-local-db"
+    },
+    "AADInstance": {
+      "longName": "aad-instance",
+      "shortName": ""
+    },
+    "AAdB2CInstance": {
+      "longName": "aad-b2c-instance",
+      "shortName": "",
+      "isHidden": true
+    },
+    "SignUpSignInPolicyId": {
+      "longName": "susi-policy-id",
+      "shortName": "ssp",
+      "isHidden": true
+    },
+    "OrgReadAccess": {
+      "longName": "org-read-access",
+      "shortName": "r",
+      "isHidden": true
+    },
+    "ClientId": {
+      "longName": "client-id",
+      "shortName": ""
+    },
+    "AppIDUri": {
+      "longName": "app-id-uri",
+      "shortName": "",
+      "isHidden": true
+    },
+    "APIClientId": {
+      "longName": "api-client-id",
+      "shortName": "",
+      "isHidden": true
+    },
+    "Domain": {
+      "longName": "domain",
+      "shortName": "",
+      "isHidden": true
+    },
+    "TenantId": {
+      "longName": "tenant-id",
+      "shortName": "",
+      "isHidden": true
+    },
+    "DefaultScope": {
+      "longName": "default-scope",
+      "shortName": "s",
+      "isHidden": true
+    },
+    "Authority": {
+      "longName": "authority",
+      "shortName": ""
+    },
+    "HttpPort": {
+      "isHidden": true
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
+    "UserSecretsId": {
+      "isHidden": true
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
     }
   }
 }

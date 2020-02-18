@@ -1,17 +1,18 @@
 import { System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
-import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
+import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
+let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export const monoPlatform: Platform = {
-  start: function start(loadAssemblyUrls: string[]) {
+  start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
-      attachDebuggerHotkey(loadAssemblyUrls);
+      attachDebuggerHotkey(resourceLoader);
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
@@ -22,7 +23,7 @@ export const monoPlatform: Platform = {
       // For compatibility with macOS Catalina, we have to assign a temporary value to window.Module
       // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
-        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
+        window['Module'] = createEmscriptenModuleInstance(resourceLoader, resolve, reject);
         addScriptTagsToDocument();
       });
     });
@@ -140,9 +141,9 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
   document.body.appendChild(scriptElem);
 }
 
-function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
+function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, onReady: () => void, onError: (reason?: any) => void) {
+  const resources = resourceLoader.bootConfig.resources;
   const module = {} as typeof Module;
-  const wasmBinaryFile = '_framework/wasm/dotnet.wasm';
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
@@ -155,55 +156,48 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   module.postRun = [];
   module.preloadPlugins = [];
 
-  module.locateFile = fileName => {
-    switch (fileName) {
-      case 'dotnet.wasm': return wasmBinaryFile;
-      default: return fileName;
-    }
+  // Override the mechanism for fetching the main wasm file so we can connect it to our cache
+  module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
+    (async () => {
+      let compiledInstance: WebAssembly.Instance;
+      try {
+        const dotnetWasmResourceName = 'dotnet.wasm';
+        const dotnetWasmResource = await resourceLoader.loadResource(
+          /* name */ dotnetWasmResourceName,
+          /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
+          /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
+        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);  
+      } catch (ex) {
+        module.printErr(ex);
+        throw ex;
+      }
+      successCallback(compiledInstance);
+    })();
+    return []; // No exports
   };
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
-    const mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, [
-      'string',
-      'number',
-      'number',
-    ]);
-
+    mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
 
     MONO.loaded_files = [];
 
-    loadAssemblyUrls.forEach(url => {
-      const filename = getFileNameFromUrl(url);
-      const runDependencyId = `blazor:${filename}`;
-      addRunDependency(runDependencyId);
-      asyncLoad(url).then(
-        data => {
-          const heapAddress = Module._malloc(data.length);
-          const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress, data.length);
-          heapMemory.set(data);
-          mono_wasm_add_assembly(filename, heapAddress, data.length);
-          MONO.loaded_files.push(toAbsoluteUrl(url));
-          removeRunDependency(runDependencyId);
-        },
-        errorInfo => {
-          // If it's a 404 on a .pdb, we don't want to block the app from starting up.
-          // We'll just skip that file and continue (though the 404 is logged in the console).
-          // This happens if you build a Debug build but then run in Production environment.
-          const isPdb404 = errorInfo instanceof XMLHttpRequest
-            && errorInfo.status === 404
-            && filename.match(/\.pdb$/);
-          if (!isPdb404) {
-            onError(errorInfo);
-          }
-          removeRunDependency(runDependencyId);
-        }
-      );
-    });
+    // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
+    resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`)
+      .forEach(addResourceAsAssembly);
+    if (resources.pdb) {
+      resourceLoader.loadResources(resources.pdb, filename => `_framework/_bin/${filename}`)
+        .forEach(addResourceAsAssembly);
+    }
   });
 
   module.postRun.push(() => {
+    if (resourceLoader.bootConfig.debugBuild && resourceLoader.bootConfig.cacheBootResources) {
+      resourceLoader.logToConsole();
+    }
+    resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
+
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     load_runtime(appBinDirName, hasDebuggingEnabled() ? 1 : 0);
@@ -213,30 +207,35 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   });
 
   return module;
+
+  async function addResourceAsAssembly(dependency: LoadingResource) {
+    const runDependencyId = `blazor:${dependency.name}`;
+    Module.addRunDependency(runDependencyId);
+
+    try {
+      // Wait for the data to be loaded and verified
+      const dataBuffer = await dependency.response.then(r => r.arrayBuffer());
+
+      // Load it into the Mono runtime
+      const data = new Uint8Array(dataBuffer);
+      const heapAddress = Module._malloc(data.length);
+      const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress, data.length);
+      heapMemory.set(data);
+      mono_wasm_add_assembly(dependency.name, heapAddress, data.length);
+      MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
+    } catch (errorInfo) {
+        onError(errorInfo);
+        return;
+    }
+
+    Module.removeRunDependency(runDependencyId);
+  }
 }
 
 const anchorTagForAbsoluteUrlConversions = document.createElement('a');
 function toAbsoluteUrl(possiblyRelativeUrl: string) {
   anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
   return anchorTagForAbsoluteUrlConversions.href;
-}
-
-function asyncLoad(url: string) {
-  return new Promise<Uint8Array>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, /* async: */ true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function xhr_onload() {
-      if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
-        const asm = new Uint8Array(xhr.response);
-        resolve(asm);
-      } else {
-        reject(xhr);
-      }
-    };
-    xhr.onerror = reject;
-    xhr.send(undefined);
-  });
 }
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
@@ -286,4 +285,26 @@ function attachInteropInvoker(): void {
       ) as string;
     },
   });
+}
+
+async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
+  // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
+  // it doesn't provide any method for supplying a custom response provider, and we want to integrate
+  // with our resource loader cache.
+
+  if (typeof WebAssembly['instantiateStreaming'] === 'function') {
+    try {
+      const streamingResult = await WebAssembly['instantiateStreaming'](wasmResource.response, imports);
+      return streamingResult.instance;
+    }
+    catch (ex) {
+      console.info('Streaming compilation failed. Falling back to ArrayBuffer instantiation. ', ex);
+    }
+  }
+
+  // If that's not available or fails (e.g., due to incorrect content-type header),
+  // fall back to ArrayBuffer instantiation
+  const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
+  const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
+  return arrayBufferResult.instance;
 }

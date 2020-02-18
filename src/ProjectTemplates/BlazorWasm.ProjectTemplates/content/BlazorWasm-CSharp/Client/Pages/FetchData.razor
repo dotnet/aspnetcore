@@ -1,8 +1,19 @@
 ﻿@page "/fetchdata"
+@*#if  (!NoAuth && Hosted)
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject IAccessTokenProvider AuthenticationService
+@inject NavigationManager Navigation
+#endif*@
 @*#if  (Hosted)
 @using BlazorWasm_CSharp.Shared
 #endif*@
+@*#if  (!NoAuth && Hosted)
+@attribute [Authorize]
+#endif*@
+@*#if  (NoAuth || !Hosted)
 @inject HttpClient Http
+#endif*@
 
 <h1>Weather forecast</h1>
 
@@ -43,7 +54,25 @@ else
     protected override async Task OnInitializedAsync()
     {
         @*#if (Hosted)
+            @*#if (!NoAuth)
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+
+        var tokenResult = await AuthenticationService.RequestAccessToken();
+
+        if (tokenResult.TryGetToken(out var token))
+        {
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
+            forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+        }
+        else
+        {
+            Navigation.NavigateTo(tokenResult.RedirectUrl);
+        }
+
+            #else
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+            #endif*@
         #else
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         #endif*@

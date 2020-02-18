@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.2.0-preview1.20067.1">
-      <Uri>https://github.com/aspnet/Blazor</Uri>
-      <Sha>7868699de745fd30a654c798a99dc541b77b95c0</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.2.0-preview1.20113.1">
+      <Uri>https://github.com/dotnet/blazor</Uri>
+      <Sha>63c3aa1e27e3a34cb78e8bce381af6d24198c104</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.1.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
@@ -433,17 +433,17 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>1286a6ff55e300352dabeb6d778c9fcdd258bd08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20077.3">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20113.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>69a67461460d99125742d5c2dd94dad83add84a3</Sha>
+      <Sha>15f00efd583eab4372b2e9ca25bd80ace5b119ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20077.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20113.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>69a67461460d99125742d5c2dd94dad83add84a3</Sha>
+      <Sha>15f00efd583eab4372b2e9ca25bd80ace5b119ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20077.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20113.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>69a67461460d99125742d5c2dd94dad83add84a3</Sha>
+      <Sha>15f00efd583eab4372b2e9ca25bd80ace5b119ad</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.2-servicing.20067.6" Pinned="true">
       <Uri>https://github.com/dotnet/extensions</Uri>

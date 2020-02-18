@@ -12,8 +12,8 @@
       <KnownFrameworkReference Include="Microsoft.AspNetCore.App">
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <RuntimeFrameworkName>Microsoft.AspNetCore.App</RuntimeFrameworkName>
-        <DefaultRuntimeFrameworkVersion>$(LatestAspNetCoreReferenceVersion)</DefaultRuntimeFrameworkVersion>
-        <LatestRuntimeFrameworkVersion>$(LatestAspNetCoreReferenceVersion)</LatestRuntimeFrameworkVersion>
+        <DefaultRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppVersion)</DefaultRuntimeFrameworkVersion>
+        <LatestRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppVersion)</LatestRuntimeFrameworkVersion>
         <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
         <TargetingPackVersion>$(LatestAspNetCoreReferenceVersion)</TargetingPackVersion>
         <RuntimePackNamePatterns>Microsoft.AspNetCore.App.Runtime.**RID**</RuntimePackNamePatterns>

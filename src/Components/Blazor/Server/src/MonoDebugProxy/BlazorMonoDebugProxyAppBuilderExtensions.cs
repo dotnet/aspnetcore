@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Builder
             }
             else
             {
-                throw new InvalidOperationException("Unknown OS platform");
+                return $@"<p>Edge is not current supported on your platform</p>";
             }
         }
 
