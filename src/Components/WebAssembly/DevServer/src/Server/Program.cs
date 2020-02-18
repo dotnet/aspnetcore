@@ -35,8 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                     {
                         cb.AddInMemoryCollection(new Dictionary<string, string>
                         {
-                            [WebHostDefaults.StaticWebAssetsKey] = name,
-                            ["useWebAssemblyDebugging"] = "true",
+                            [WebHostDefaults.StaticWebAssetsKey] = name
                         });
                     }
                 })
