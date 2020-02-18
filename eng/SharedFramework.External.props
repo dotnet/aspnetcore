@@ -7,6 +7,8 @@
 <Project>
 
   <!-- For the targeting pack, always use packages with PatchVersion=0 -->
+  <!-- !!! Need to get ref/ assemblies for these packages some other way in order to feed correct information into Roslyn. !!! -->
+  <!-- !!! For example, might update target paths to contain latest implementation assemblies after building /everything/ against the original package content. !!! -->
   <PropertyGroup Condition="'$(IsServicingBuild)' == 'true' AND ('$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR '$(IsReferenceAssemblyProject)' == 'true')">
     <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>

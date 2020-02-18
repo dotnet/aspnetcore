@@ -10,8 +10,6 @@
   <ItemGroup>
     <!-- Required to exist in the NuGet package cache to enable code-signing. -->
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
-
-    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">

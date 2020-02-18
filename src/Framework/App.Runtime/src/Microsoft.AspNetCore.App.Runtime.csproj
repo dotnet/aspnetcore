@@ -80,7 +80,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Workaround for the way Microsoft.AspNetCore.Server.IIS.csproj references ANCM native deps. Do not copy content from ProjectReference's CopyToOutput items.  -->
     <_GetChildProjectCopyToOutputDirectoryItems>false</_GetChildProjectCopyToOutputDirectoryItems>
 
-    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <!-- Properties related to crossgen -->
