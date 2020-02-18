@@ -37,7 +37,7 @@ namespace Wasm.Authentication.Server
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
 
             services.AddMvc();
             services.AddResponseCompression(opts =>

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         {
             services.AddRouting();
 
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
 
             services.AddResponseCompression(options =>
             {

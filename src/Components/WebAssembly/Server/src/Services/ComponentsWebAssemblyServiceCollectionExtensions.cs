@@ -5,15 +5,14 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class BlazorHostingServiceCollectionExtensions
+    public static class ComponentsWebAssemblyServiceCollectionExtensions
     {
-        public static IServiceCollection AddBlazorStaticFilesConfiguration(this IServiceCollection services)
+        public static IServiceCollection AddWebAssemblyStaticFilesConfiguration(this IServiceCollection services)
         {
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<StaticFileOptions>, ClientSideBlazorStaticFilesConfiguration>());
             return services;

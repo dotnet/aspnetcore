@@ -21,7 +21,7 @@ namespace TestServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

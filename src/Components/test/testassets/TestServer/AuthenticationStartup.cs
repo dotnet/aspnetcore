@@ -28,7 +28,7 @@ namespace TestServer
 
             services.AddServerSideBlazor();
 
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddAuthorization(options =>

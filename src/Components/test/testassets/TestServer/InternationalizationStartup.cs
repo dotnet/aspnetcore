@@ -23,7 +23,7 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

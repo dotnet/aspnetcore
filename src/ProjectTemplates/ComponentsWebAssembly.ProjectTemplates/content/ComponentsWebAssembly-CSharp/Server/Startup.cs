@@ -71,7 +71,7 @@ namespace ComponentsWebAssembly_CSharp.Server
             services.AddRazorPages();
 #endif
 
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
 
             services.AddResponseCompression(opts =>
             {

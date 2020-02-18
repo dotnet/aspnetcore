@@ -19,7 +19,7 @@ namespace TestServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddBlazorStaticFilesConfiguration();
+            services.AddWebAssemblyStaticFilesConfiguration();
             services.AddCors(options =>
             {
                 // It's not enough just to return "Access-Control-Allow-Origin: *", because
