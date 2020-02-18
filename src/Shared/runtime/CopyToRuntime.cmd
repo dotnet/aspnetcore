@@ -10,5 +10,6 @@ IF [%remote_repo%] == [] (
 
 echo RUNTIME_REPO: %remote_repo%
 
-robocopy . %remote_repo%\src\libraries\Common\src\System\Net\Http\aspnetcore /MIR
-robocopy .\..\test\Shared.Tests\runtime %remote_repo%\src\libraries\Common\tests\Tests\System\Net\aspnetcore /MIR
+REM https://superuser.com/questions/280425/getting-robocopy-to-return-a-proper-exit-code
+(robocopy . %remote_repo%\src\libraries\Common\src\System\Net\Http\aspnetcore /MIR) ^& IF %ERRORLEVEL% LSS 8 SET ERRORLEVEL = 0
+(robocopy .\..\test\Shared.Tests\runtime %remote_repo%\src\libraries\Common\tests\Tests\System\Net\aspnetcore /MIR) ^& IF %ERRORLEVEL% LSS 8 SET ERRORLEVEL = 0
