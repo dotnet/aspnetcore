@@ -21,13 +21,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private class ClientSideBlazorStaticFilesConfiguration : IConfigureOptions<StaticFileOptions>
         {
-            private readonly IConfiguration _configuration;
             private readonly IWebHostEnvironment _webHostEnvironment;
 
-            public ClientSideBlazorStaticFilesConfiguration(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+            public ClientSideBlazorStaticFilesConfiguration(IWebHostEnvironment webHostEnvironment)
             {
-                _configuration = configuration;
-                _webHostEnvironment = webHostEnvironment;
                 _webHostEnvironment = webHostEnvironment;
             }
 
@@ -36,10 +33,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.FileProvider = _webHostEnvironment.WebRootFileProvider;
                 var contentTypeProvider = new FileExtensionContentTypeProvider();
                 AddMapping(contentTypeProvider, ".dll", MediaTypeNames.Application.Octet);
-                if (_configuration.GetValue<bool>("useWebAssemblyDebugging"))
-                {
-                    AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
-                }
+                // We unconditionally map dlls as there will be no dlls in the output folder for
+                // release builds unless BlazorEnableDebugging is explicitly set to true.
+                AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
 
                 options.ContentTypeProvider = contentTypeProvider;
             }
