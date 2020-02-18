@@ -21,7 +21,7 @@
   <ItemGroup>
     <NuspecProperty Include="configuration=$(Configuration)" />
     <NuspecProperty Include="taskskDir=$(OutputPath)tools" />
-    <NuspecProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyRuntime=$(MicrosoftAspNetCoreComponentsWebAssemblyRuntime)" />
+    <NuspecProperty Include="MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion=$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
