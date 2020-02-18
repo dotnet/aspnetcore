@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     public class CorsMiddleware
     {
         // Property key is used by other systems, e.g. MVC, to check if CORS middleware has run
-        private const string CorsMiddlewareInvokedKey = "__CorsMiddlewareInvoked";
-        private static readonly object CorsMiddlewareInvokedValue = new object();
+        private const string CorsMiddlewareWithEndpointInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
+        private static readonly object CorsMiddlewareWithEndpointInvokedValue = new object();
 
         private readonly Func<object, Task> OnResponseStartingDelegate = OnResponseStarting;
         private readonly RequestDelegate _next;
@@ -116,14 +116,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <inheritdoc />
         public Task Invoke(HttpContext context, ICorsPolicyProvider corsPolicyProvider)
         {
-            // Flag to indicate to other systems, that CORS middleware was run for this request
-            context.Items[CorsMiddlewareInvokedKey] = CorsMiddlewareInvokedValue;
-
-            if (!context.Request.Headers.ContainsKey(CorsConstants.Origin))
-            {
-                return _next(context);
-            }
-
             // CORS policy resolution rules:
             //
             // 1. If there is an endpoint with IDisableCorsAttribute then CORS is not run
@@ -131,8 +123,19 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             //    there is an endpoint with IEnableCorsAttribute that has a policy name then
             //    fetch policy by name, prioritizing it above policy on middleware
             // 3. If there is no policy on middleware then use name on middleware
-
             var endpoint = context.GetEndpoint();
+
+            if (endpoint != null)
+            {
+                // EndpointRoutingMiddleware uses this flag to check if the CORS middleware processed CORS metadata on the endpoint.
+                // The CORS middleware can only make this claim if it observes an actual endpoint.
+                context.Items[CorsMiddlewareWithEndpointInvokedKey] = CorsMiddlewareWithEndpointInvokedValue;
+            }
+
+            if (!context.Request.Headers.ContainsKey(CorsConstants.Origin))
+            {
+                return _next(context);
+            }
 
             // Get the most significant CORS metadata for the endpoint
             // For backwards compatibility reasons this is then downcast to Enable/Disable metadata
@@ -140,10 +143,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (corsMetadata is IDisableCorsAttribute)
             {
-                var isOptionsRequest = string.Equals(
-                    context.Request.Method,
-                    CorsConstants.PreflightHttpMethod,
-                    StringComparison.OrdinalIgnoreCase);
+                var isOptionsRequest = HttpMethods.IsOptions(context.Request.Method);
 
                 var isCorsPreflightRequest = isOptionsRequest && context.Request.Headers.ContainsKey(CorsConstants.AccessControlRequestMethod);
 
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     return InvokeCoreAwaited(context, policyTask);
                 }
 
-                corsPolicy = policyTask.GetAwaiter().GetResult();
+                corsPolicy = policyTask.Result;
             }
 
             return EvaluateAndApplyPolicy(context, corsPolicy);

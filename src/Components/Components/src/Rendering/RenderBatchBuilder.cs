@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     internal class RenderBatchBuilder : IDisposable
     {
+        // A value that, if changed, causes expiry of all ParameterView instances issued
+        // for this RenderBatchBuilder. This is to prevent invalid reads from arrays that
+        // may have been returned to the shared pool.
+        private int _parameterViewValidityStamp;
+
         // Primary result data
         public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
         public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
@@ -30,6 +35,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         // Scratch data structure for understanding attribute diffs.
         public Dictionary<string, int> AttributeDiffSet { get; } = new Dictionary<string, int>();
+
+        public int ParameterViewValidityStamp => _parameterViewValidityStamp;
 
         internal StackObjectPool<Dictionary<object, KeyedItemInfo>> KeyedItemInfoDictionaryPool { get; }
             = new StackObjectPool<Dictionary<object, KeyedItemInfo>>(maxPreservedItems: 10, () => new Dictionary<object, KeyedItemInfo>());
@@ -57,6 +64,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ReferenceFramesBuffer.ToRange(),
                 DisposedComponentIds.ToRange(),
                 DisposedEventHandlerIds.ToRange());
+
+        public void InvalidateParameterViews()
+        {
+            // Wrapping is fine because all that matters is whether a snapshotted value matches
+            // the current one. There's no plausible case where it wraps around and happens to
+            // increment all the way back to a previously-snapshotted value on the exact same
+            // call that's checking the value.
+            if (_parameterViewValidityStamp == int.MaxValue)
+            {
+                _parameterViewValidityStamp = int.MinValue;
+            }
+            else
+            {
+                _parameterViewValidityStamp++;
+            }
+        }
 
         public void Dispose()
         {

@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 Path = options.Path,
                 Domain = options.Domain,
-                Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Expires = DateTimeOffset.UnixEpoch,
                 Secure = options.Secure,
                 HttpOnly = options.HttpOnly,
                 SameSite = options.SameSite

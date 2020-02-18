@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -67,8 +66,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return services.Configure(configure)
-                .AddSignalR();
+            var signalrBuilder = services.AddSignalR();
+            // Setup users settings after we've setup ours
+            services.Configure(configure);
+            return signalrBuilder;
         }
     }
 }

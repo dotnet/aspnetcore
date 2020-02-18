@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
@@ -30,7 +29,7 @@
     <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <EnableXUnitReporter>true</EnableXUnitReporter>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
@@ -39,6 +38,19 @@
     <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
     <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
   </PropertyGroup>
+
+  <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
+  <ItemGroup>
+    <HelixProperties Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" Condition="'$(BUILD_BUILDNUMBER)' != ''" />
+    <HelixProperties Include="buildId" Value="$(BUILD_BUILDID)" Condition="'$(BUILD_BUILDID)' != ''" />
+    <HelixProperties Include="azdoProject" Value="$(SYSTEM_TEAMPROJECT)" Condition="'$(SYSTEM_TEAMPROJECT)' != ''" />
+    <HelixProperties Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" Condition="'$(BUILD_DEFINITIONNAME)' != ''" />
+    <HelixProperties Include="commitSha" Value="$(BUILD_SOURCEVERSION)" Condition="'$(BUILD_SOURCEVERSION)' != ''" />
+    <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" Condition="'$(BUILD_SOURCEBRANCH)' != ''" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
+  </ItemGroup>
 
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"

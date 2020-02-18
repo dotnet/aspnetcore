@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 else
                 {
-                    throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
+                    throw new JsonException($"Unexpected JSON Token {reader.TokenType}.");
                 }
             }
 

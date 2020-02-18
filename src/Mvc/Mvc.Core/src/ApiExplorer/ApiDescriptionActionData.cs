@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents data used to build an <c>ApiDescription</c>, stored as part of the
     /// <see cref="Abstractions.ActionDescriptor.Properties"/>.
     /// </summary>
-    internal class ApiDescriptionActionData
+    public class ApiDescriptionActionData
     {
         /// <summary>
         /// The <c>ApiDescription.GroupName</c> of <c>ApiDescription</c> objects for the associated

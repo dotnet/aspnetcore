@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1323", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1323", FlakyOn.All)]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -316,6 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -479,7 +480,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2197")]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore-internal/issues/2197")]
         public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;

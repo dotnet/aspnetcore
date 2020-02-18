@@ -4,13 +4,14 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Blazor applications.</Description>
     <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />

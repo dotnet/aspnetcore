@@ -2,23 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
     internal class RedisProtocol
     {
-        private readonly IReadOnlyList<IHubProtocol> _protocols;
+        private readonly DefaultHubMessageSerializer _messageSerializer;
 
-        public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
+        public RedisProtocol(DefaultHubMessageSerializer messageSerializer)
         {
-            _protocols = protocols;
+            _messageSerializer = messageSerializer;
         }
 
         // The Redis Protocol:
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         // * Acks are sent to the Acknowledgement channel.
         // * See the Write[type] methods for a description of the protocol for each in-depth.
         // * The "Variable length integer" is the length-prefixing format used by BinaryReader/BinaryWriter:
-        //   * https://docs.microsoft.com/en-us/dotnet/api/system.io.binarywriter.write?view=netstandard-2.0
+        //   * https://docs.microsoft.com/dotnet/api/system.io.binarywriter.write?view=netcore-2.2
         // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
         //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
@@ -42,31 +44,33 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // * [The output of WriteSerializedHubMessage, which is an 'arr']
             // Any additional items are discarded.
 
-            var writer = MemoryBufferWriter.Get();
-
+            var memoryBufferWriter = MemoryBufferWriter.Get();
             try
             {
-                MessagePackBinary.WriteArrayHeader(writer, 2);
+                var writer = new MessagePackWriter(memoryBufferWriter);
+
+                writer.WriteArrayHeader(2);
                 if (excludedConnectionIds != null && excludedConnectionIds.Count > 0)
                 {
-                    MessagePackBinary.WriteArrayHeader(writer, excludedConnectionIds.Count);
+                    writer.WriteArrayHeader(excludedConnectionIds.Count);
                     foreach (var id in excludedConnectionIds)
                     {
-                        MessagePackBinary.WriteString(writer, id);
+                        writer.Write(id);
                     }
                 }
                 else
                 {
-                    MessagePackBinary.WriteArrayHeader(writer, 0);
+                    writer.WriteArrayHeader(0);
                 }
 
-                WriteSerializedHubMessage(writer,
-                    new SerializedHubMessage(new InvocationMessage(methodName, args)));
-                return writer.ToArray();
+                WriteHubMessage(ref writer, new InvocationMessage(methodName, args));
+                writer.Flush();
+
+                return memoryBufferWriter.ToArray();
             }
             finally
             {
-                MemoryBufferWriter.Return(writer);
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
         }
 
@@ -80,21 +84,24 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // * A 'str': The connection Id
             // Any additional items are discarded.
 
-            var writer = MemoryBufferWriter.Get();
+            var memoryBufferWriter = MemoryBufferWriter.Get();
             try
             {
-                MessagePackBinary.WriteArrayHeader(writer, 5);
-                MessagePackBinary.WriteInt32(writer, command.Id);
-                MessagePackBinary.WriteString(writer, command.ServerName);
-                MessagePackBinary.WriteByte(writer, (byte)command.Action);
-                MessagePackBinary.WriteString(writer, command.GroupName);
-                MessagePackBinary.WriteString(writer, command.ConnectionId);
+                var writer = new MessagePackWriter(memoryBufferWriter);
 
-                return writer.ToArray();
+                writer.WriteArrayHeader(5);
+                writer.Write(command.Id);
+                writer.Write(command.ServerName);
+                writer.Write((byte)command.Action);
+                writer.Write(command.GroupName);
+                writer.Write(command.ConnectionId);
+                writer.Flush();
+
+                return memoryBufferWriter.ToArray();
             }
             finally
             {
-                MemoryBufferWriter.Return(writer);
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
         }
 
@@ -104,100 +111,110 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // * An 'int': The Id of the command being acknowledged.
             // Any additional items are discarded.
 
-            var writer = MemoryBufferWriter.Get();
+            var memoryBufferWriter = MemoryBufferWriter.Get();
             try
             {
-                MessagePackBinary.WriteArrayHeader(writer, 1);
-                MessagePackBinary.WriteInt32(writer, messageId);
+                var writer = new MessagePackWriter(memoryBufferWriter);
 
-                return writer.ToArray();
+                writer.WriteArrayHeader(1);
+                writer.Write(messageId);
+                writer.Flush();
+
+                return memoryBufferWriter.ToArray();
             }
             finally
             {
-                MemoryBufferWriter.Return(writer);
+                MemoryBufferWriter.Return(memoryBufferWriter);
             }
         }
 
         public RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
         {
             // See WriteInvocation for the format
-            ValidateArraySize(ref data, 2, "Invocation");
+            var reader = new MessagePackReader(data);
+            ValidateArraySize(ref reader, 2, "Invocation");
 
             // Read excluded Ids
             IReadOnlyList<string> excludedConnectionIds = null;
-            var idCount = MessagePackUtil.ReadArrayHeader(ref data);
+            var idCount = reader.ReadArrayHeader();
             if (idCount > 0)
             {
                 var ids = new string[idCount];
                 for (var i = 0; i < idCount; i++)
                 {
-                    ids[i] = MessagePackUtil.ReadString(ref data);
+                    ids[i] = reader.ReadString();
                 }
 
                 excludedConnectionIds = ids;
             }
 
             // Read payload
-            var message = ReadSerializedHubMessage(ref data);
+            var message = ReadSerializedHubMessage(ref reader);
             return new RedisInvocation(message, excludedConnectionIds);
         }
 
         public RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)
         {
-            // See WriteGroupCommand for format.
-            ValidateArraySize(ref data, 5, "GroupCommand");
+            var reader = new MessagePackReader(data);
 
-            var id = MessagePackUtil.ReadInt32(ref data);
-            var serverName = MessagePackUtil.ReadString(ref data);
-            var action = (GroupAction)MessagePackUtil.ReadByte(ref data);
-            var groupName = MessagePackUtil.ReadString(ref data);
-            var connectionId = MessagePackUtil.ReadString(ref data);
+            // See WriteGroupCommand for format.
+            ValidateArraySize(ref reader, 5, "GroupCommand");
+
+            var id = reader.ReadInt32();
+            var serverName = reader.ReadString();
+            var action = (GroupAction)reader.ReadByte();
+            var groupName = reader.ReadString();
+            var connectionId = reader.ReadString();
 
             return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
         }
 
         public int ReadAck(ReadOnlyMemory<byte> data)
         {
+            var reader = new MessagePackReader(data);
+
             // See WriteAck for format
-            ValidateArraySize(ref data, 1, "Ack");
-            return MessagePackUtil.ReadInt32(ref data);
+            ValidateArraySize(ref reader, 1, "Ack");
+            return reader.ReadInt32();
         }
 
-        private void WriteSerializedHubMessage(Stream stream, SerializedHubMessage message)
+        private void WriteHubMessage(ref MessagePackWriter writer, HubMessage message)
         {
             // Written as a MessagePack 'map' where the keys are the name of the protocol (as a MessagePack 'str')
             // and the values are the serialized blob (as a MessagePack 'bin').
 
-            MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
+            var serializedHubMessages = _messageSerializer.SerializeMessage(message);
 
-            foreach (var protocol in _protocols)
+            writer.WriteMapHeader(serializedHubMessages.Count);
+
+            foreach (var serializedMessage in serializedHubMessages)
             {
-                MessagePackBinary.WriteString(stream, protocol.Name);
+                writer.Write(serializedMessage.ProtocolName);
 
-                var serialized = message.GetSerializedMessage(protocol);
-                var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
+                var isArray = MemoryMarshal.TryGetArray(serializedMessage.Serialized, out var array);
                 Debug.Assert(isArray);
-                MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
+                writer.Write(array);
             }
         }
 
-        public static SerializedHubMessage ReadSerializedHubMessage(ref ReadOnlyMemory<byte> data)
+        public static SerializedHubMessage ReadSerializedHubMessage(ref MessagePackReader reader)
         {
-            var count = MessagePackUtil.ReadMapHeader(ref data);
+            var count = reader.ReadMapHeader();
             var serializations = new SerializedMessage[count];
             for (var i = 0; i < count; i++)
             {
-                var protocol = MessagePackUtil.ReadString(ref data);
-                var serialized = MessagePackUtil.ReadBytes(ref data);
+                var protocol = reader.ReadString();
+                var serialized = reader.ReadBytes()?.ToArray() ?? Array.Empty<byte>();
+
                 serializations[i] = new SerializedMessage(protocol, serialized);
             }
 
             return new SerializedHubMessage(serializations);
         }
 
-        private static void ValidateArraySize(ref ReadOnlyMemory<byte> data, int expectedLength, string messageType)
+        private static void ValidateArraySize(ref MessagePackReader reader, int expectedLength, string messageType)
         {
-            var length = MessagePackUtil.ReadArrayHeader(ref data);
+            var length = reader.ReadArrayHeader();
 
             if (length < expectedLength)
             {

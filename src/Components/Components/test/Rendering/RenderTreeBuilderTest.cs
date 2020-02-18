@@ -299,6 +299,39 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
+        public void CanAddMultipleAttributes_WithChildRegion()
+        {
+            // This represents bug https://github.com/dotnet/aspnetcore/issues/16570
+            // If a sequence of attributes is terminated by a call to builder.OpenRegion,
+            // then the attribute deduplication logic wasn't working correctly
+
+            // Arrange
+            var builder = new RenderTreeBuilder();
+
+            // Act
+            builder.OpenElement(0, "myelement");
+            builder.AddAttribute(0, "attribute1", "value1");
+            builder.AddMultipleAttributes(1, new Dictionary<string, object>()
+            {
+                { "attribute1", "value2" },
+            });
+            builder.OpenRegion(2);
+            builder.OpenElement(3, "child");
+            builder.CloseElement();
+            builder.CloseRegion();
+            builder.CloseElement();
+
+            // Assert
+            var frames = builder.GetFrames().AsEnumerable().ToArray();
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Element(frame, "myelement", 4),
+                frame => AssertFrame.Attribute(frame, "attribute1", "value2"),
+                frame => AssertFrame.Region(frame, 2, 2),
+                frame => AssertFrame.Element(frame, "child", 1, 3));
+        }
+
+        [Fact]
         public void CanAddMultipleAttributes_DictionaryObject()
         {
             var attributes = new Dictionary<string, object>

@@ -218,6 +218,18 @@ public:
         return &m_struConfigPath;
     }
 
+    BOOL
+    QueryEnableOutOfProcessConsoleRedirection()
+    {
+        return !m_fEnableOutOfProcessConsoleRedirection.Equals(L"false", 1);
+    }
+
+    STRU*
+    QueryForwardResponseConnectionHeader()
+    {
+        return &m_struForwardResponseConnectionHeader;
+    }
+
 protected:
 
     //
@@ -249,12 +261,14 @@ protected:
     STRU                   m_struApplicationPhysicalPath;
     STRU                   m_struApplicationVirtualPath;
     STRU                   m_struConfigPath;
+    STRU                   m_struForwardResponseConnectionHeader;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
     BOOL                   m_fDisableStartUpErrorPage;
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
+    STRU                   m_fEnableOutOfProcessConsoleRedirection;
     APP_HOSTING_MODEL      m_hostingModel;
     std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;

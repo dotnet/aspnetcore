@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
@@ -30,6 +30,9 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
+
+    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
@@ -46,13 +49,12 @@
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>netcoreapp5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
@@ -62,6 +64,10 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
+    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
+    <!-- Needed until we resolve https://github.com/dotnet/aspnetcore-internal/issues/3103 -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
@@ -86,7 +92,7 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(IsServicingBuild)' == 'true' AND '$(DotNetBuildFromSource)' != 'true'">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
@@ -105,6 +111,7 @@
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
+    <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <TargetRuntimeIdentifier>$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
 

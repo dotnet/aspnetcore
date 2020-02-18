@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         // Not configurable on purpose, high enough that if we reach here, it's likely
         // a buggy server
         private static readonly int _maxRedirects = 100;
+        private static readonly int _protocolVersionNumber = 1;
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // This should only need to happen once
-                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
 
                 // We're going to search for the transfer format as a string because we don't want to parse
                 // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -382,10 +383,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             if (negotiationResponse == null)
                             {
                                 negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
-                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                             }
 
-                            Log.StartingTransport(_logger, transportType, connectUrl);
+                            Log.StartingTransport(_logger, transportType, uri);
                             await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
                             break;
                         }
@@ -428,8 +429,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     urlBuilder.Path += "/";
                 }
                 urlBuilder.Path += "negotiate";
+                Uri uri;
+                if (urlBuilder.Query.Contains("negotiateVersion"))
+                {
+                    uri = urlBuilder.Uri;
+                }
+                else
+                {
+                    uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
+                }
 
-                using (var request = new HttpRequestMessage(HttpMethod.Post, urlBuilder.Uri))
+                using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
                 {
                     // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
                     request.Version = new Version(1, 1);
@@ -466,7 +476,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 throw new FormatException("Invalid connection id.");
             }
 
-            return Utils.AppendQueryString(url, "id=" + connectionId);
+            return Utils.AppendQueryString(url, $"id={connectionId}");
         }
 
         private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
@@ -507,13 +517,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 {
                     httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                 }
-                if (_httpConnectionOptions.Cookies != null)
+
+                // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
+                // if the user has configured those options
+                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
+                if (_httpConnectionOptions.Cookies.Count > 0)
                 {
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
-
-                // Only access HttpClientHandler.ClientCertificates if the user has configured client certs
-                // Mono does not support client certs and will throw NotImplementedException
                 // https://github.com/aspnet/SignalR/issues/2232
                 var clientCertificates = _httpConnectionOptions.ClientCertificates;
                 if (clientCertificates?.Count > 0)
@@ -551,14 +562,34 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.Timeout = HttpClientTimeout;
 
             // Start with the user agent header
-            httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
+            httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
             {
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
-                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    // Check if the key is User-Agent and remove if empty string then replace if it exists.
+                    if (string.Equals(header.Key, Constants.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.IsNullOrEmpty(header.Value))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                        }
+                        else if (httpClient.DefaultRequestHeaders.Contains(header.Key))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                        else
+                        {
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                    }
+                    else
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
                 }
             }
 
@@ -607,7 +638,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
             var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
+            // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
+            // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
+            // connectionToken on the client to the same value.
             _connectionId = negotiationResponse.ConnectionId;
+            if (negotiationResponse.Version == 0)
+            {
+                negotiationResponse.ConnectionToken = _connectionId;
+            }
+
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;
         }

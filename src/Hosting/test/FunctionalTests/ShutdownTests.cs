@@ -24,17 +24,15 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2577")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2577", FlakyOn.All)]
         public async Task ShutdownTestRun()
         {
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/Hosting/issues/1214", FlakyOn.All)]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
-// https://github.com/aspnet/AspNetCore/issues/8247
+// https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = Tfm.NetCoreApp31,
+                    TargetFramework = Tfm.NetCoreApp50,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false

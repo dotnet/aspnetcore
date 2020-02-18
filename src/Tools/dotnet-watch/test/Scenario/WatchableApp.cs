@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -88,15 +88,25 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             };
             args.AddRange(arguments);
 
+            var dotnetPath = "dotnet";
+
+            // Fallback to embedded path to dotnet when not on helix
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                dotnetPath = typeof(WatchableApp).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .Single(s => s.Key == "DotnetPath").Value;
+            }
+
             var spec = new ProcessSpec
             {
-                Executable = DotNetMuxer.MuxerPathOrDefault(),
+                Executable = dotnetPath,
                 Arguments = args,
                 WorkingDirectory = SourceDirectory,
                 EnvironmentVariables =
                 {
                     ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
+                    ["DOTNET_ROOT"] = Directory.GetParent(dotnetPath).FullName,
                 },
             };
 

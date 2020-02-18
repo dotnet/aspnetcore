@@ -14,6 +14,8 @@ class ConfigUtility
     #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
     #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
     #define CS_ASPNETCORE_DEBUG_FILE                         L"debugFile"
+    #define CS_ASPNETCORE_ENABLE_OUT_OF_PROCESS_CONSOLE_REDIRECTION L"enableOutOfProcessConsoleRedirection"
+    #define CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER L"forwardResponseConnectionHeader"
     #define CS_ASPNETCORE_DEBUG_LEVEL                        L"debugLevel"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_NAME              L"name"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_VALUE             L"value"
@@ -38,6 +40,20 @@ public:
     FindDebugLevel(IAppHostElement* pElement, STRU& strDebugFile)
     {
         return FindKeyValuePair(pElement, CS_ASPNETCORE_DEBUG_LEVEL, strDebugFile);
+    }
+
+    static
+    HRESULT
+    FindEnableOutOfProcessConsoleRedirection(IAppHostElement* pElement, STRU& strEnableOutOfProcessConsoleRedirection)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_ENABLE_OUT_OF_PROCESS_CONSOLE_REDIRECTION, strEnableOutOfProcessConsoleRedirection);
+    }
+
+    static
+    HRESULT
+    FindForwardResponseConnectionHeader(IAppHostElement* pElement, STRU& strForwardResponseConnectionHeader)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER, strForwardResponseConnectionHeader);
     }
 
 private:

@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             WebSocketFeature webSocketFeature = null;
             var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
-            contextBuilder.Configure(context =>
+            contextBuilder.Configure((context, reader) =>
             {
                 var request = context.Request;
                 var scheme = uri.Scheme;
@@ -72,10 +74,15 @@ namespace Microsoft.AspNetCore.TestHost
                     request.PathBase = _pathBase;
                 }
                 request.QueryString = QueryString.FromUriComponent(uri);
-                request.Headers.Add("Connection", new string[] { "Upgrade" });
-                request.Headers.Add("Upgrade", new string[] { "websocket" });
-                request.Headers.Add("Sec-WebSocket-Version", new string[] { "13" });
-                request.Headers.Add("Sec-WebSocket-Key", new string[] { CreateRequestKey() });
+                request.Headers.Add(HeaderNames.Connection, new string[] { "Upgrade" });
+                request.Headers.Add(HeaderNames.Upgrade, new string[] { "websocket" });
+                request.Headers.Add(HeaderNames.SecWebSocketVersion, new string[] { "13" });
+                request.Headers.Add(HeaderNames.SecWebSocketKey, new string[] { CreateRequestKey() });
+                if (SubProtocols.Any())
+                {
+                    request.Headers.Add(HeaderNames.SecWebSocketProtocol, SubProtocols.ToArray());
+                }
+
                 request.Body = Stream.Null;
 
                 // WebSocket
@@ -102,8 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
         private string CreateRequestKey()
         {
             byte[] data = new byte[16];
-            var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return Convert.ToBase64String(data);
         }
 

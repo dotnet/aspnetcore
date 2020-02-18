@@ -12,6 +12,7 @@ using MessagePack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.Components.Server.BlazorPack
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
     /// <summary>
     /// Implements the SignalR Hub Protocol using MessagePack with limited type support.
     /// </summary>
+    [NonDefaultHubProtocol]
     internal sealed class BlazorPackHubProtocol : IHubProtocol
     {
         internal const string ProtocolName = "blazorpack";
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                     message = PingMessage.Instance;
                     return true;
                 case HubProtocolConstants.CloseMessageType:
-                    message = CreateCloseMessage(ref reader);
+                    message = CreateCloseMessage(ref reader, itemCount);
                     return true;
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
@@ -196,10 +198,23 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
         }
 
-        private static CloseMessage CreateCloseMessage(ref MessagePackReader reader)
+        private static CloseMessage CreateCloseMessage(ref MessagePackReader reader, int itemCount)
         {
             var error = ReadString(ref reader, "error");
-            return new CloseMessage(error);
+            var allowReconnect = false;
+
+            if (itemCount > 2)
+            {
+                allowReconnect = ReadBoolean(ref reader, "allowReconnect");
+            }
+
+            // An empty string is still an error
+            if (error == null && !allowReconnect)
+            {
+                return CloseMessage.Empty;
+            }
+
+            return new CloseMessage(error, allowReconnect);
         }
 
         private static Dictionary<string, string> ReadHeaders(ref MessagePackReader reader)
@@ -515,7 +530,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 
         private void WriteCloseMessage(CloseMessage message, ref MessagePackWriter writer)
         {
-            writer.WriteArrayHeader(2);
+            writer.WriteArrayHeader(3);
             writer.Write(HubProtocolConstants.CloseMessageType);
             if (string.IsNullOrEmpty(message.Error))
             {
@@ -525,6 +540,8 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             {
                 writer.Write(message.Error);
             }
+
+            writer.Write(message.AllowReconnect);
         }
 
         private void WritePingMessage(PingMessage _, ref MessagePackWriter writer)
@@ -557,6 +574,17 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
             }
 
             return destination;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool ReadBoolean(ref MessagePackReader reader, string field)
+        {
+            if (reader.End || reader.NextMessagePackType != MessagePackType.Boolean)
+            {
+                ThrowInvalidDataException(field, "Boolean");
+            }
+
+            return reader.ReadBoolean();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

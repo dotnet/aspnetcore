@@ -51,6 +51,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpResponseInfoTypeQosProperty,
         }
 
+        internal enum HTTP_REQUEST_PROPERTY
+        {
+            HttpRequestPropertyIsb,
+            HttpRequestPropertyTcpInfoV0,
+            HttpRequestPropertyQuicStats,
+            HttpRequestPropertyTcpInfoV1,
+            HttpRequestPropertySni,
+            HttpRequestPropertyStreamError,
+        }
+
         internal enum HTTP_TIMEOUT_TYPE
         {
             EntityBody,
@@ -59,6 +69,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             IdleConnection,
             HeaderWait,
             MinSendRate,
+        }
+
+        internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
+        {
+            internal uint ErrorCode;
         }
 
         internal const int MaxTimeout = 6;
@@ -88,6 +103,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             [FieldOffset(8)]
             internal FromFileHandle fromFile;
+
+            [FieldOffset(8)]
+            internal Trailers trailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -104,6 +122,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal ulong offset;
             internal ulong count;
             internal IntPtr fileHandle;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Trailers
+        {
+            internal ushort trailerCount;
+            internal IntPtr pTrailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -362,10 +387,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal enum HTTP_DATA_CHUNK_TYPE : int
         {
-            HttpDataChunkFromMemory = 0,
-            HttpDataChunkFromFileHandle = 1,
-            HttpDataChunkFromFragmentCache = 2,
-            HttpDataChunkMaximum = 3,
+            HttpDataChunkFromMemory,
+            HttpDataChunkFromFileHandle,
+            HttpDataChunkFromFragmentCache,
+            HttpDataChunkFromFragmentCacheEx,
+            HttpDataChunkTrailers,
+            HttpDataChunkMaximum,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -602,6 +629,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_INITIALIZE_SERVER = 0x00000001,
             HTTP_INITIALIZE_CBT = 0x00000004,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
+            HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
         }
 
         [Flags]
@@ -613,6 +641,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_AUTH_ENABLE_NTLM = 0x00000004,
             HTTP_AUTH_ENABLE_NEGOTIATE = 0x00000008,
             HTTP_AUTH_ENABLE_KERBEROS = 0x00000010,
+        }
+
+        [Flags]
+        internal enum HTTP_CREATE_REQUEST_QUEUE_FLAG : uint
+        {
+            None = 0,
+            // The HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING flag allows applications to open an existing request queue by name and retrieve the request queue handle. The pName parameter must contain a valid request queue name; it cannot be NULL.
+            OpenExisting = 1,
+            // The handle to the request queue created using this flag cannot be used to perform I/O operations. This flag can be set only when the request queue handle is created.
+            Controller = 2,
         }
 
         internal static class HTTP_RESPONSE_HEADER_ID

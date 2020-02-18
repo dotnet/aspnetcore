@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ConnectionMiddlewareTests : LoggedTest
     {
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         [Fact]
         public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer()
         {

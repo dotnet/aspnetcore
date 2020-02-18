@@ -14,9 +14,11 @@
 /src/Hosting/                   @tratcher @anurse
 /src/Http/                      @tratcher @jkotalik @anurse
 /src/Middleware/                @tratcher @anurse
-/src/ProjectTemplates/          @ryanbrandenburg
+/src/Middleware/HttpsPolicy/    @jkotalik @anurse
+/src/Middleware/Rewrite/        @jkotalik @anurse
+# /src/ProjectTemplates/          @ryanbrandenburg
 /src/Security/                  @tratcher @anurse
 /src/Servers/                   @tratcher @jkotalik @anurse @halter73
-/src/Middleware/Rewrite         @jkotalik @anurse
-/src/Middleware/HttpsPolicy     @jkotalik @anurse
-/src/SignalR/                   @mikaelm12 @BrennanConroy @halter73 @anurse
+/src/Shared/runtime/            @dotnet/http
+/src/Shared/test/Shared.Tests/runtime/ @dotnet/http
+/src/SignalR/                   @BrennanConroy @halter73 @anurse

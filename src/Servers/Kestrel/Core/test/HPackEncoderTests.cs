@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using System.Net.Http.HPack;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests

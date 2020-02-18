@@ -136,7 +136,7 @@ namespace FunctionalTests
                     }
                 }
 
-                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                if (HttpMethods.IsOptions(context.Request.Method))
                 {
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return Task.CompletedTask;

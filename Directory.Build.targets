@@ -58,7 +58,8 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
+  <PropertyGroup
+      Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
@@ -98,11 +99,18 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
     <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Language)' == 'C#'">
+    <!-- Reference assemblies should always use Major.Minor.0.0 for assembly versions even during servicing. Only the package version should be updated. -->
+    <!-- Pinning the implementation assemblies at Major.Minor.0.0 as we figure out compiling against ref assemblies. -->
+    <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">

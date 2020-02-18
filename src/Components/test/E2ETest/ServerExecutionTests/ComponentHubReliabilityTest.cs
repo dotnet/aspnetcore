@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using TestServer;
 using Xunit;
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
-                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. " +
                 "Location change to 'http://example.com' failed.";
 
             var rootUri = ServerFixture.RootUri;
@@ -245,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
-                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. " +
                 "Location change failed.";
 
             var rootUri = ServerFixture.RootUri;

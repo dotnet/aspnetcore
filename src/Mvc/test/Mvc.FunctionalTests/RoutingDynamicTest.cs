@@ -6,6 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using RoutingWebSite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -14,12 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public RoutingDynamicTest(MvcTestFixture<RoutingWebSite.StartupForDynamic> fixture)
         {
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-            Client = factory.CreateDefaultClient();
+            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = Factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<RoutingWebSite.StartupForDynamic>();
 
+        public WebApplicationFactory<StartupForDynamic> Factory { get; }
         public HttpClient Client { get; }
 
         [Fact]
@@ -98,6 +101,40 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello from dynamic page: /DynamicPage", content);
+        }
+
+        [Fact]
+        public async Task AppWithDynamicRouteAndMapRazorPages_CanRouteToRazorPage()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13996
+            // Arrange
+            var client = Factory.WithWebHostBuilder(b => b.UseStartup<StartupForDynamicAndRazorPages>()).CreateDefaultClient();
+            var url = "/PageWithLinks";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            var document = await response.GetHtmlDocumentAsync();
+            var editLink = document.RequiredQuerySelector("#editlink");
+            Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
+        }
+
+        [Fact]
+        public async Task AppWithDynamicRouteAndMapRazorPages_CanRouteToDynamicController()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/13996
+            // Arrange
+            var client = Factory.WithWebHostBuilder(b => b.UseStartup<StartupForDynamicAndRazorPages>()).CreateDefaultClient();
+            var url = "/de/area%3Dadmin,controller%3Ddynamic,action%3Dindex";
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Hello from dynamic controller", content);
         }
     }
 }

@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection
+    public partial class HubConnection : IAsyncDisposable
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
@@ -292,8 +291,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
-        public async Task DisposeAsync()
+        /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
+        public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -504,8 +503,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 if (disposing)
                 {
-                    (_serviceProvider as IDisposable)?.Dispose();
+                    // Must set this before calling DisposeAsync because the service provider has a reference to the HubConnection and will try to dispose it again
                     _disposed = true;
+                    if (_serviceProvider is IAsyncDisposable asyncDispose)
+                    {
+                        await asyncDispose.DisposeAsync();
+                    }
+                    else
+                    {
+                        (_serviceProvider as IDisposable)?.Dispose();
+                    }
                 }
             }
             finally
@@ -878,7 +885,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
+        private async Task<CloseMessage> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
         {
             Log.ResettingKeepAliveTimer(_logger);
             connectionState.ResetTimeout();
@@ -911,7 +918,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     if (!connectionState.TryGetInvocation(streamItem.InvocationId, out irq))
                     {
                         Log.DroppedStreamMessage(_logger, streamItem.InvocationId);
-                        return (close: false, exception: null);
+                        break;
                     }
                     await DispatchInvocationStreamItemAsync(streamItem, irq);
                     break;
@@ -919,13 +926,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     if (string.IsNullOrEmpty(close.Error))
                     {
                         Log.ReceivedClose(_logger);
-                        return (close: true, exception: null);
                     }
                     else
                     {
                         Log.ReceivedCloseWithError(_logger, close.Error);
-                        return (close: true, exception: new HubException($"The server closed the connection with the following error: {close.Error}"));
                     }
+                    return close;
                 case PingMessage _:
                     Log.ReceivedPing(_logger);
                     // timeout is reset above, on receiving any message
@@ -934,7 +940,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
             }
 
-            return (close: false, exception: null);
+            return null;
         }
 
         private async Task DispatchInvocationAsync(InvocationMessage invocation)
@@ -1150,25 +1156,33 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         {
                             Log.ProcessingMessage(_logger, buffer.Length);
 
-                            var close = false;
+                            CloseMessage closeMessage = null;
 
                             while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
                             {
-                                Exception exception;
-
                                 // We have data, process it
-                                (close, exception) = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
-                                if (close)
+                                closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
+
+                                if (closeMessage != null)
                                 {
                                     // Closing because we got a close frame, possibly with an error in it.
-                                    connectionState.CloseException = exception;
-                                    connectionState.Stopping = true;
+                                    if (closeMessage.Error != null)
+                                    {
+                                        connectionState.CloseException = new HubException($"The server closed the connection with the following error: {closeMessage.Error}");
+                                    }
+
+                                    // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
+                                    if (!closeMessage.AllowReconnect)
+                                    {
+                                        connectionState.Stopping = true;
+                                    }
+
                                     break;
                                 }
                             }
 
                             // If we're closing stop everything
-                            if (close)
+                            if (closeMessage != null)
                             {
                                 break;
                             }
@@ -1619,6 +1633,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             private readonly HubConnection _hubConnection;
             private readonly ILogger _logger;
+            private readonly bool _hasInherentKeepAlive;
 
             private readonly object _lock = new object();
             private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
@@ -1630,13 +1645,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private long _nextActivationServerTimeout;
             private long _nextActivationSendPing;
-            private bool _hasInherentKeepAlive;
 
             public ConnectionContext Connection { get; }
             public Task ReceiveTask { get; set; }
             public Exception CloseException { get; set; }
             public CancellationToken UploadStreamToken { get; set; }
 
+            // Indicates the connection is stopping AND the client should NOT attempt to reconnect even if automatic reconnects are enabled.
+            // This means either HubConnection.DisposeAsync/StopAsync was called OR a CloseMessage with AllowReconnects set to false was received.
             public bool Stopping
             {
                 get => _stopping;
@@ -1757,7 +1773,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
                 // The TimerLoop is started from the ReceiveLoop with the connection lock still acquired.
                 _hubConnection._state.AssertInConnectionLock();
-                await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                if (!_hasInherentKeepAlive)
+                {
+                    await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                }
 
                 // initialize the timers
                 timer.Start();
@@ -1787,7 +1806,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Internal for testing
             internal async Task RunTimerActions()
             {
-                if (!_hasInherentKeepAlive && DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
+                if (_hasInherentKeepAlive)
+                {
+                    return;
+                }
+
+                if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
                 {
                     OnServerTimeout();
                 }

@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
-            _http1Connection.Reset();
         }
 
         public void Dispose()
@@ -751,7 +750,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.Abort(new ConnectionAbortedException());
 
             // The following line will throw an ODE because the original CTS backing the token has been diposed.
-            // See https://github.com/aspnet/AspNetCore/pull/4447 for the history behind this test.
+            // See https://github.com/dotnet/aspnetcore/pull/4447 for the history behind this test.
             //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
             Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
 

@@ -27,21 +27,21 @@ namespace Microsoft.AspNetCore.NodeServices
     public partial class NodeServicesOptions
     {
         public NodeServicesOptions(System.IServiceProvider serviceProvider) { }
-        public System.Threading.CancellationToken ApplicationStoppingToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int DebuggingPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<string, string> EnvironmentVariables { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int InvocationTimeoutMilliseconds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool LaunchWithDebugging { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance> NodeInstanceFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.Extensions.Logging.ILogger NodeInstanceOutputLogger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ProjectPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string[] WatchFileExtensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Threading.CancellationToken ApplicationStoppingToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int DebuggingPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<string, string> EnvironmentVariables { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int InvocationTimeoutMilliseconds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool LaunchWithDebugging { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance> NodeInstanceFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.Extensions.Logging.ILogger NodeInstanceOutputLogger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ProjectPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string[] WatchFileExtensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public sealed partial class StringAsTempFile : System.IDisposable
     {
         public StringAsTempFile(string content, System.Threading.CancellationToken applicationStoppingToken) { }
-        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Dispose() { }
         ~StringAsTempFile() { }
     }
@@ -58,16 +58,16 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     {
         public NodeInvocationException(string message, string details) { }
         public NodeInvocationException(string message, string details, bool nodeInstanceUnavailable, bool allowConnectionDraining) { }
-        public bool AllowConnectionDraining { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool NodeInstanceUnavailable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool AllowConnectionDraining { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool NodeInstanceUnavailable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class NodeInvocationInfo
     {
         public NodeInvocationInfo() { }
-        public object[] Args { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ExportedFunctionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ModuleName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public object[] Args { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ExportedFunctionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ModuleName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class NodeServicesOptionsExtensions

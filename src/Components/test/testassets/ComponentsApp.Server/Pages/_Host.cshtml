@@ -12,7 +12,7 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>@(await Html.RenderComponentAsync<App>(RenderMode.Server))</app>    
+    <component type="typeof(App)" render-mode="Server" />
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         Blazor.start({

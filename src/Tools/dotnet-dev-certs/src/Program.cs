@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         {
             var now = DateTimeOffset.Now;
             var certificateManager = new CertificateManager();
-            var certificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            var certificates = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             if (certificates.Count == 0)
             {
                 reporter.Output("No valid certificate found.");
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             if (trust != null && trust.HasValue())
             {
                 var store = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? StoreName.My : StoreName.Root;
-                var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
+                var trustedCertificates = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
                 if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                 {
                     reporter.Output($@"The following certificates were found, but none of them is trusted:

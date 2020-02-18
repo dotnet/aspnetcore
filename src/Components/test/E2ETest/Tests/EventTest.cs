@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987", FlakyOn.AzP.Windows)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1987", FlakyOn.AzP.Windows)]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // up for a bit it doesn't cause typing to lose keystrokes. But when running server-side, this
             // shows that network latency doesn't cause keystrokes to be lost even if:
             // [1] By the time a keystroke event arrives, the event handler ID has since changed
-            // [2] We have the situation described under "the problem" at https://github.com/aspnet/AspNetCore/issues/8204#issuecomment-493986702
+            // [2] We have the situation described under "the problem" at https://github.com/dotnet/aspnetcore/issues/8204#issuecomment-493986702
 
             Browser.MountTestComponent<LaggyTypingComponent>();
 
@@ -205,6 +205,37 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             SendKeysSequentially(input, "hijklmn");
             Browser.Equal("abcdefghijklmn", () => output.Text);
+        }
+
+        [Fact]
+        public void NonInteractiveElementWithDisabledAttributeDoesRespondToMouseEvents()
+        {
+            Browser.MountTestComponent<EventDisablingComponent>();
+            var element = Browser.FindElement(By.Id("disabled-div"));
+            var eventLog = Browser.FindElement(By.Id("event-log"));
+
+            Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+            element.Click();
+            Browser.Equal("Got event on div", () => eventLog.GetAttribute("value"));
+        }
+
+        [Theory]
+        [InlineData("#disabled-button")]
+        [InlineData("#disabled-button span")]
+        [InlineData("#disabled-textarea")]
+        public void InteractiveElementWithDisabledAttributeDoesNotRespondToMouseEvents(string elementSelector)
+        {
+            Browser.MountTestComponent<EventDisablingComponent>();
+            var element = Browser.FindElement(By.CssSelector(elementSelector));
+            var eventLog = Browser.FindElement(By.Id("event-log"));
+
+            Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+            element.Click();
+
+            // It's no use observing that the log is still empty, since maybe the UI just hasn't updated yet
+            // To be sure that the preceding action has no effect, we need to trigger a different action that does have an effect
+            Browser.FindElement(By.Id("enabled-button")).Click();
+            Browser.Equal("Got event on enabled button", () => eventLog.GetAttribute("value"));
         }
 
         void SendKeysSequentially(IWebElement target, string text)

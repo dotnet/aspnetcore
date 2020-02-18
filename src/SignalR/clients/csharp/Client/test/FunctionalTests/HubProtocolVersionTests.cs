@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(TransportTypes))]
         public async Task ClientUsingOldCallWithOriginalProtocol(HttpTransportType transportType)
         {
-            using (StartServer<VersionStartup>(out var server))
+            using (var server = await StartServer<VersionStartup>())
             {
                 var connectionBuilder = new HubConnectionBuilder()
                     .WithLoggerFactory(LoggerFactory)
@@ -65,9 +65,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         [Theory]
         [MemberData(nameof(TransportTypes))]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientUsingOldCallWithNewProtocol(HttpTransportType transportType)
         {
-            using (StartServer<VersionStartup>(out var server))
+            using (var server = await StartServer<VersionStartup>())
             {
                 var connectionBuilder = new HubConnectionBuilder()
                     .WithLoggerFactory(LoggerFactory)
@@ -98,9 +99,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         [Theory]
         [MemberData(nameof(TransportTypes))]
+        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientUsingNewCallWithNewProtocol(HttpTransportType transportType)
         {
-            using (StartServer<VersionStartup>(out var server))
+            using (var server = await StartServer<VersionStartup>())
             {
                 var httpConnectionFactory = new HttpConnectionFactory(
                     Options.Create(new HttpConnectionOptions
@@ -166,7 +168,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 return writeContext.LoggerName == typeof(HubConnection).FullName;
             }
 
-            using (StartServer<VersionStartup>(out var server, ExpectedErrors))
+            using (var server = await StartServer<VersionStartup>(ExpectedErrors))
             {
                 var connectionBuilder = new HubConnectionBuilder()
                     .WithLoggerFactory(LoggerFactory)

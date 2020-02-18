@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore
 
         public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
 
+        public static string GetTargetingPackDependencies() => GetTestDataValue("TargetingPackDependencies");
+
         public static string GetTestDataValue(string key)
              => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
     }

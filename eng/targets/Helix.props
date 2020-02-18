@@ -12,11 +12,12 @@
   <PropertyGroup>
     <CreateHelixPayload>true</CreateHelixPayload>
     <HelixTimeout>00:30:00</HelixTimeout>
+    <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
-    <HelixTestName>$(MSBuildProjectName)-$(TargetFramework)</HelixTestName>
+    <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
-    <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">true</LoggingTestingDisableFileLogging>
+    <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
   </PropertyGroup>
 

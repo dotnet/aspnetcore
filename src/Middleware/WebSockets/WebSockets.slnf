@@ -1,0 +1,25 @@
+{
+  "solution": {
+    "path": "..\\Middleware.sln",
+    "projects": [
+      "..\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "..\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "..\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "..\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "..\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "..\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "..\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "..\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
+      "..\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "..\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "..\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
+      "..\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "WebSockets\\samples\\EchoApp\\EchoApp.csproj",
+      "WebSockets\\samples\\TestServer\\WebSockets.TestServer.csproj",
+      "WebSockets\\src\\Microsoft.AspNetCore.WebSockets.csproj",
+      "WebSockets\\test\\ConformanceTests\\AutobahnTestApp\\AutobahnTestApp.csproj",
+      "WebSockets\\test\\ConformanceTests\\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj",
+      "WebSockets\\test\\UnitTests\\Microsoft.AspNetCore.WebSockets.Tests.csproj"
+    ]
+  }
+}

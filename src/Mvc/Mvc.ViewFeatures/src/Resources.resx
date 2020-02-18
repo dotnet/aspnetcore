@@ -295,4 +295,7 @@
   <data name="TempData_CannotDeserializeType" xml:space="preserve">
     <value>Unsupported data type '{0}'.</value>
   </data>
+  <data name="UnsupportedRenderMode" xml:space="preserve">
+    <value>Unsupported RenderMode '{0}'.</value>
+  </data>
 </root>

@@ -569,6 +569,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class GenericMethodHub : Hub
+    {
+        public void GenericMethod<T>()
+        {
+        }
+    }
+
     public class DisposeTrackingHub : TestHub
     {
         private readonly TrackDispose _trackDispose;
@@ -660,7 +667,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
         }
 
-        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferredOverChannelReader(int count)
         {
             return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
         }
@@ -928,6 +935,36 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await token.WaitForCancellationAsync();
                 channel.Writer.TryComplete();
                 _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamNullableParameter(int x, string y, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(x);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(y);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> StreamNullableParameter(int x, int? input)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(() =>
+            {
+                _tcsService.StartedMethod.SetResult(x);
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(input);
+                return Task.CompletedTask;
             });
 
             return channel.Reader;

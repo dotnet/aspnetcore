@@ -25,12 +25,11 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/14022")]
+        [Fact]
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [Fact]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
-
 
         private async Task MvcTemplateCore(string languageOverride)
         {
@@ -46,6 +45,12 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
+
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
 
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
@@ -177,6 +182,7 @@ namespace Templates.Test
                         PageUrls.PrivacyUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
+                        PageUrls.ResendEmailConfirmation,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl }
                 },

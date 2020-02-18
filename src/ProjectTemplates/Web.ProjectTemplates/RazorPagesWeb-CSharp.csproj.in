@@ -13,7 +13,7 @@
 
   <!--#endif -->
   <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
-    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <!--#if (IndividualB2CAuth || IndividualLocalAuth || OrganizationalAuth) -->

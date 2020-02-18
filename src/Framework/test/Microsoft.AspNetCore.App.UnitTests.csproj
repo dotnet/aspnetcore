@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <!-- https://github.com/aspnet/AspNetCore/issues/7939: This unit test requires the shared framework be available in Helix. -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/7939: This unit test requires the shared framework be available in Helix. -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
@@ -53,6 +53,13 @@
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
+    <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+        Targets="_ResolveTargetingPackContent"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
+    </MSBuild>
+
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
     <MSBuild Projects="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Targets="_GetPackageVersionInfo"
@@ -68,6 +75,11 @@
     </MSBuild>
 
     <ItemGroup>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>TargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(_TargetingPackDependencies)</_Parameter2>
+      </AssemblyAttribute>
+
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>RepositoryCommit</_Parameter1>
         <_Parameter2>$(SourceRevisionId)</_Parameter2>

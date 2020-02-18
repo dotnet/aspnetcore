@@ -3,7 +3,10 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -33,9 +36,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)
         {
             var request = context.ActionContext.HttpContext.Request;
+            IFormCollection form;
+
+            try
+            {
+                form = await request.ReadFormAsync();
+            }
+            catch (InvalidDataException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+
             var valueProvider = new FormValueProvider(
                 BindingSource.Form,
-                await request.ReadFormAsync(),
+                form,
                 CultureInfo.CurrentCulture);
 
             context.ValueProviders.Add(valueProvider);

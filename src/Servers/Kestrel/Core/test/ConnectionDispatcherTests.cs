@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(stateObject, callbackState);
             var errors = logger.Messages.Where(e => e.LogLevel >= LogLevel.Error).ToArray();
             Assert.Single(errors);
-            Assert.Equal("An error occured running an IConnectionCompleteFeature.OnCompleted callback.", errors[0].Message);
+            Assert.Equal("An error occurred running an IConnectionCompleteFeature.OnCompleted callback.", errors[0].Message);
         }
 
         private class ThrowingListener : IConnectionListener

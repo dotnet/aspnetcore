@@ -113,6 +113,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Performance", "WebUtilities\perf\Microsoft.AspNetCore.WebUtilities.Performance\Microsoft.AspNetCore.WebUtilities.Performance.csproj", "{21AC56E7-4E77-4B0E-B63E-C8E836E4D14E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization.Policy", "..\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj", "{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cors", "..\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj", "{09168958-FD5B-4D25-8FBF-75E2C80D903B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -603,6 +607,30 @@ Global
 		{21AC56E7-4E77-4B0E-B63E-C8E836E4D14E}.Release|x64.Build.0 = Release|Any CPU
 		{21AC56E7-4E77-4B0E-B63E-C8E836E4D14E}.Release|x86.ActiveCfg = Release|Any CPU
 		{21AC56E7-4E77-4B0E-B63E-C8E836E4D14E}.Release|x86.Build.0 = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|x64.Build.0 = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Debug|x86.Build.0 = Debug|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|x64.ActiveCfg = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|x64.Build.0 = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B}.Release|x86.Build.0 = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|x64.Build.0 = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Debug|x86.Build.0 = Debug|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|x64.ActiveCfg = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|x64.Build.0 = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|x86.ActiveCfg = Release|Any CPU
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -651,6 +679,8 @@ Global
 		{611794D2-EF3A-422A-A077-23E61C7ADE49} = {793FFE24-138A-4C3D-81AB-18D625E36230}
 		{1062FCDE-E145-40EC-B175-FDBCAA0C59A0} = {793FFE24-138A-4C3D-81AB-18D625E36230}
 		{21AC56E7-4E77-4B0E-B63E-C8E836E4D14E} = {80A090C8-ED02-4DE3-875A-30DCCDBD84BA}
+		{8BCAA9EC-0ACD-435C-BF8A-8C843499FF7B} = {793FFE24-138A-4C3D-81AB-18D625E36230}
+		{09168958-FD5B-4D25-8FBF-75E2C80D903B} = {793FFE24-138A-4C3D-81AB-18D625E36230}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {85B5E151-2E9D-419C-83DD-0DDCF446C83A}

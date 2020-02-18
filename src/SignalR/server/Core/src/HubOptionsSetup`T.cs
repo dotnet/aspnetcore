@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public void Configure(HubOptions<THub> options)
         {
+            // Do a deep copy, otherwise users modifying the HubOptions<THub> list would be changing the global options list
             options.SupportedProtocols = new List<string>(_hubOptions.SupportedProtocols.Count);
             foreach (var protocol in _hubOptions.SupportedProtocols)
             {
@@ -23,6 +24,12 @@ namespace Microsoft.AspNetCore.SignalR
             }
             options.KeepAliveInterval = _hubOptions.KeepAliveInterval;
             options.HandshakeTimeout = _hubOptions.HandshakeTimeout;
+            options.ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval;
+            options.EnableDetailedErrors = _hubOptions.EnableDetailedErrors;
+            options.MaximumReceiveMessageSize = _hubOptions.MaximumReceiveMessageSize;
+            options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
+
+            options.UserHasSetValues = true;
         }
     }
 }

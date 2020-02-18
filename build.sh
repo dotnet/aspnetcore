@@ -278,7 +278,7 @@ nodeReuse=false
 export MSBUILDDISABLENODEREUSE=1
 
 # Our build often has warnings that we can't fix
-# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
+# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 warn_as_error=false
 
 # Workaround Arcade check which asserts BinaryLog is true on CI.

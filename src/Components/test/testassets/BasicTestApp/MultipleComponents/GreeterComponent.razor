@@ -9,7 +9,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && Name == null)
         {
             Name = "Alfred";
             interactive = "interactive";

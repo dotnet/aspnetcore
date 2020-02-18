@@ -11,11 +11,10 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal class StaticComponentRenderer
     {
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                         // all components have rendered.
                         throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
                             "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                            "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
+                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
                     }
 
                     httpContext.Response.Redirect(navigationException.Location);

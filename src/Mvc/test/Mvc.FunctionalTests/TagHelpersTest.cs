@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient EncodedClient { get; }
 
         [Theory]
+        [InlineData("GlobbingTagHelpers")]
         [InlineData("Index")]
         [InlineData("About")]
         [InlineData("Help")]
@@ -61,6 +62,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #else
             Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
+        }
+
+        [Fact]
+        public async Task GivesCorrectCallstackForSyncronousCalls()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
+            // Arrange
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
+
+            // Assert
+            Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
         }
 
         [Fact]

@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -20,12 +19,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    // Flaky doesn't support classes :(
-    // https://github.com/aspnet/Extensions/issues/1568
     public class HttpsTests
     {
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_200OK_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -39,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_SendHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -55,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_EchoHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -73,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -110,8 +103,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
-        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         public async Task Https_SkipsITlsHandshakeFeatureOnWin7()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -133,8 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task Https_SetsITlsHandshakeFeature()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -164,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task Https_ITlsHandshakeFeature_MatchesIHttpSysExtensionInfoFeature()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -206,16 +197,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private async Task<string> SendRequestAsync(string uri,
             X509Certificate cert = null)
         {
-            var handler = new WinHttpHandler();
-            handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             if (cert != null)
             {
                 handler.ClientCertificates.Add(cert);
             }
-            using (HttpClient client = new HttpClient(handler))
-            {
-                return await client.GetStringAsync(uri);
-            }
+            using HttpClient client = new HttpClient(handler);
+            return await client.GetStringAsync(uri);
         }
 
         private async Task<string> SendRequestAsync(string uri, string upload)

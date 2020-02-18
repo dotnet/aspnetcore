@@ -4,6 +4,8 @@
 using System;
 using System.Text;
 
+#nullable enable
+
 namespace Ignitor
 {
     public static class RenderBatchReader
@@ -206,7 +208,7 @@ namespace Ignitor
             return new ArrayRange<ulong>(Array.Empty<ulong>(), 0);
         }
 
-        private static string ReadString(ReadOnlySpan<byte> data, string[] strings)
+        private static string? ReadString(ReadOnlySpan<byte> data, string[] strings)
         {
             var index = BitConverter.ToInt32(data.Slice(0, 4));
             return index >= 0 ? strings[index] : null;
@@ -279,3 +281,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore

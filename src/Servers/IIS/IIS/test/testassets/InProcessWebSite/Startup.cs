@@ -32,8 +32,14 @@ namespace TestSite
 {
     public partial class Startup
     {
+        public static bool StartupHookCalled;
+
         public void Configure(IApplicationBuilder app)
         {
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
+            {
+                app.UseHttpsRedirection();
+            }
             TestStartup.Register(app, this);
         }
 
@@ -61,6 +67,11 @@ namespace TestSite
         {
             var serverAddresses = ctx.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
+        }
+
+        private async Task CheckProtocol(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(ctx.Request.Protocol);
         }
 
         private async Task ConsoleWrite(HttpContext ctx)
@@ -136,6 +147,12 @@ namespace TestSite
             }
 
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
+        }
+
+        public Task ConnectionClose(HttpContext context)
+        {
+            context.Response.Headers["connection"] = "close";
             return Task.CompletedTask;
         }
 
@@ -896,6 +913,11 @@ namespace TestSite
             RecursiveFunction(i - 1);
         }
 
+        private async Task StartupHook(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(StartupHookCalled.ToString());
+        }
+
         private async Task GetServerVariableStress(HttpContext ctx)
         {
             // This test simulates the scenario where native Flush call is being
@@ -981,11 +1003,25 @@ namespace TestSite
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
 
+        public async Task ANCM_HTTPS_PORT(HttpContext context)
+        {
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
+
         public async Task HTTPS_PORT(HttpContext context)
         {
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
+
+        public async Task SlowOnCompleted(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
+            await context.Response.WriteAsync("SlowOnCompleted");
         }
     }
 }

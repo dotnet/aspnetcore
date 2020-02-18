@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
             Assert.Collection(
                 middlewareAnalysis.Middleware,
-                item => Assert.Equal("UseAuthorization", item.UseMethod.Name),
+                item => Assert.Equal("UseStaticFiles", item.UseMethod.Name),
                 item => Assert.Equal("UseMiddleware", item.UseMethod.Name),
                 item => Assert.Equal("UseMvc", item.UseMethod.Name),
                 item => Assert.Equal("UseRouting", item.UseMethod.Name),
@@ -227,6 +227,124 @@ namespace Microsoft.AspNetCore.Analyzers
                     Assert.Same(StartupAnalyzer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
                 });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredCorrectly_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectly));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredAsAChain_ReportsNoDiagnostics()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15203
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectlyChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthMultipleTimes));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRouting_ReportsDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRouting));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRoutingChained_ReportsDiagnostics()
+        {
+            // This one asserts a false negative for https://github.com/dotnet/aspnetcore/issues/15203.
+            // We don't correctly identify chained calls, this test verifies the behavior.
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRoutingChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredAfterUseEndpoints_ReportsDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthAfterUseEndpoints));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MultipleUseAuthorization_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthFallbackPolicy));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
         }
     }
 }

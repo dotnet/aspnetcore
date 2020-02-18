@@ -12,7 +12,7 @@
   window.initMono = function initMono(loadAssemblyUrls, onReadyCallback) {
     window.Module = {
       locateFile: function (fileName) {
-        return fileName === 'mono.wasm' ? '/_framework/wasm/mono.wasm' : fileName;
+        return fileName === 'dotnet.wasm' ? '/_framework/wasm/dotnet.wasm' : fileName;
       },
       onRuntimeInitialized: function () {
         var allAssemblyUrls = loadAssemblyUrls.concat([
@@ -20,7 +20,9 @@
           'mscorlib.dll',
           'System.dll',
           'System.Core.dll',
-          'System.Net.Http.dll'
+          'System.Net.Http.dll',
+          'WebAssembly.Bindings.dll',
+          'WebAssembly.Net.Http.dll'
         ]);
 
         // For these tests we're using Mono's built-in mono_load_runtime_and_bcl util.
@@ -115,7 +117,7 @@
     }
 
     var scriptElem = document.createElement('script');
-    scriptElem.src = '/_framework/wasm/mono.js';
+    scriptElem.src = '/_framework/wasm/dotnet.js';
     document.body.appendChild(scriptElem);
   }
 

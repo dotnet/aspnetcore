@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
+#nullable enable
 namespace Ignitor
 {
     public class ElementHive
@@ -35,7 +37,7 @@ namespace Ignitor
             }
         }
 
-        public bool TryFindElementById(string id, out ElementNode element)
+        public bool TryFindElementById(string id, [NotNullWhen(true)] out ElementNode? element)
         {
             foreach (var kvp in Components)
             {
@@ -49,7 +51,7 @@ namespace Ignitor
             element = null;
             return false;
 
-            bool TryGetElementFromChildren(Node node, out ElementNode foundNode)
+            bool TryGetElementFromChildren(Node node, out ElementNode? foundNode)
             {
                 if (node is ElementNode elementNode &&
                     elementNode.Attributes.TryGetValue("id", out var elementId) &&
@@ -81,6 +83,7 @@ namespace Ignitor
             {
                 component = new ComponentNode(componentId);
                 Components.Add(componentId, component);
+
             }
 
             ApplyEdits(batch, component, 0, edits);
@@ -199,7 +202,7 @@ namespace Ignitor
 
                     case RenderTreeEditType.StepOut:
                         {
-                            parent = parent.Parent;
+                            parent = parent.Parent ?? throw new InvalidOperationException($"Cannot step out of {parent}");
                             currentDepth--;
                             childIndexAtCurrentDepth = currentDepth == 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
                             break;
@@ -469,3 +472,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore

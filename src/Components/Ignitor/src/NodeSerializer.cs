@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 
+#nullable enable
+
 namespace Ignitor
 {
     internal static class NodeSerializer
@@ -96,7 +98,7 @@ namespace Ignitor
                     if (attribute.Value != null)
                     {
                         Write("=\"");
-                        Write(attribute.Value.ToString());
+                        Write(attribute.Value.ToString()!);
                         Write("\"");
                     }
                 }
@@ -113,7 +115,7 @@ namespace Ignitor
                         if (properties.Value != null)
                         {
                             Write("=\"");
-                            Write(properties.Value.ToString());
+                            Write(properties.Value.ToString()!);
                             Write("\"");
                         }
                     }
@@ -194,3 +196,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore

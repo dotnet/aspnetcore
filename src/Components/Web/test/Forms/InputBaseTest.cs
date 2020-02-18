@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
             var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
-            // Act/Assert: Initally, it's valid and unmodified
+            // Act/Assert: Initially, it's valid and unmodified
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
             Assert.Equal("valid", inputComponent.CssClass); //  no Class was specified
 
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
             // Act
-            inputComponent.CurrentValueAsString = "1991/11/20";
+            await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
 
             // Assert
             var receivedParsedValue = valueChangedArgs.Single();
@@ -324,14 +324,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
             // Act/Assert 1: Transition to invalid
-            inputComponent.CurrentValueAsString = "1991/11/40";
+            await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
             Assert.Empty(valueChangedArgs);
             Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
             Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
             Assert.Equal(1, numValidationStateChanges);
 
             // Act/Assert 2: Transition to valid
-            inputComponent.CurrentValueAsString = "1991/11/20";
+            await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
             var receivedParsedValue = valueChangedArgs.Single();
             Assert.Equal(1991, receivedParsedValue.Year);
             Assert.Equal(11, receivedParsedValue.Month);
@@ -339,6 +339,65 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
             Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
             Assert.Equal(2, numValidationStateChanges);
+        }
+
+        [Fact]
+        public async Task RespondsToValidationStateChangeNotifications()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+            var renderer = new TestRenderer();
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            await renderer.RenderRootComponentAsync(rootComponentId);
+
+            // Initally, it rendered one batch and is valid
+            var batch1 = renderer.Batches.Single();
+            var componentFrame1 = batch1.GetComponentFrames<TestInputComponent<string>>().Single();
+            var inputComponentId = componentFrame1.ComponentId;
+            var component = (TestInputComponent<string>)componentFrame1.Component;
+            Assert.Equal("valid", component.CssClass);
+
+            // Act: update the field state in the EditContext and notify
+            var messageStore = new ValidationMessageStore(rootComponent.EditContext);
+            messageStore.Add(fieldIdentifier, "Some message");
+            await renderer.Dispatcher.InvokeAsync(rootComponent.EditContext.NotifyValidationStateChanged);
+
+            // Assert: The input component rendered itself again and now has the new class
+            var batch2 = renderer.Batches.Skip(1).Single();
+            Assert.Equal(inputComponentId, batch2.DiffsByComponentId.Keys.Single());
+            Assert.Equal("invalid", component.CssClass);
+        }
+
+        [Fact]
+        public async Task UnsubscribesFromValidationStateChangeNotifications()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+            var renderer = new TestRenderer();
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            await renderer.RenderRootComponentAsync(rootComponentId);
+            var component = renderer.Batches.Single().GetComponentFrames<TestInputComponent<string>>().Single().Component;
+
+            // Act: dispose, then update the field state in the EditContext and notify
+            ((IDisposable)component).Dispose();
+            var messageStore = new ValidationMessageStore(rootComponent.EditContext);
+            messageStore.Add(fieldIdentifier, "Some message");
+            await renderer.Dispatcher.InvokeAsync(rootComponent.EditContext.NotifyValidationStateChanged);
+
+            // Assert: No additional render
+            Assert.Empty(renderer.Batches.Skip(1));
         }
 
         private static TComponent FindComponent<TComponent>(CapturedBatch batch)
@@ -376,7 +435,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             public new string CurrentValueAsString
             {
                 get => base.CurrentValueAsString;
-                set { base.CurrentValueAsString = value; }
             }
 
             public new IReadOnlyDictionary<string, object> AdditionalAttributes => base.AdditionalAttributes;
@@ -390,6 +448,15 @@ namespace Microsoft.AspNetCore.Components.Forms
             protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
             {
                 throw new NotImplementedException();
+            }
+
+            public async Task SetCurrentValueAsStringAsync(string value)
+            {
+                // This is equivalent to the subclass writing to CurrentValueAsString
+                // (e.g., from @bind), except to simplify the test code there's an InvokeAsync
+                // here. In production code it wouldn't normally be required because @bind
+                // calls run on the sync context anyway.
+                await InvokeAsync(() => { base.CurrentValueAsString = value; });
             }
         }
 

@@ -86,10 +86,20 @@ namespace Microsoft.AspNetCore.E2ETesting
             var port = FindAvailablePort();
             var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
 
+            var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.Testing.SeleniumConfigPath")
+                ?.Value;
+
+            if (seleniumConfigPath == null)
+            {
+                throw new InvalidOperationException("Selenium config path not configured. Does this project import the E2ETesting.targets?");
+            }
+
             var psi = new ProcessStartInfo
             {
                 FileName = "npm",
-                Arguments = $"run selenium-standalone start -- -- -port {port}",
+                Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" -- -port {port}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
@@ -191,7 +201,7 @@ Captured output lines:
 
         private static Process StartSentinelProcess(Process process, string sentinelFile, int timeout)
         {
-            // This sentinel process will start and will kill any roge selenium server that want' torn down
+            // This sentinel process will start and will kill any rouge selenium server that want' torn down
             // via normal means.
             var psi = new ProcessStartInfo
             {

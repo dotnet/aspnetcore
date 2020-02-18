@@ -52,6 +52,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             private static readonly Action<ILogger, string, Exception> _failedToReadHttpRequestBody =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "FailedToReadHttpRequestBody"), "Connection {TransportConnectionId} failed to read the HTTP request body.");
 
+            private static readonly Action<ILogger, int, Exception> _negotiateProtocolVersionMismatch =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(15, "NegotiateProtocolVersionMismatch"), "The client requested version '{clientProtocolVersion}', but the server does not support this version.");
+
+            private static readonly Action<ILogger, string, Exception> _invalidNegotiateProtocolVersion =
+               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(16, "InvalidNegotiateProtocolVersion"), "The client requested an invalid protocol version '{queryStringVersionValue}'");
+
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
                 _connectionDisposed(logger, connectionId, null);
@@ -120,6 +126,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             public static void FailedToReadHttpRequestBody(ILogger logger, string connectionId, Exception ex)
             {
                 _failedToReadHttpRequestBody(logger, connectionId, ex);
+            }
+
+            public static void NegotiateProtocolVersionMismatch(ILogger logger, int clientProtocolVersion)
+            {
+                _negotiateProtocolVersionMismatch(logger, clientProtocolVersion, null);
+            }
+
+            public static void InvalidNegotiateProtocolVersion(ILogger logger, string requestedProtocolVersion)
+            {
+                _invalidNegotiateProtocolVersion(logger, requestedProtocolVersion, null);
             }
         }
     }

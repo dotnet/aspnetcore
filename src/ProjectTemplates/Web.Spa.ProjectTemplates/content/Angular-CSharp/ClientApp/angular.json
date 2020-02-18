@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "progress": true,
+            "progress": false,
             "extractCss": true,
             "outputPath": "dist",
             "index": "src/index.html",
@@ -71,7 +71,7 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": ["styles.css"],
+            "styles": ["src/styles.css"],
             "scripts": [],
             "assets": ["src/assets"]
           }

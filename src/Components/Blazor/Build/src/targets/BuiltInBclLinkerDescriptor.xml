@@ -2,11 +2,11 @@
 
   <!-- This file specifies which parts of the BCL or Blazor packages must not be stripped
   by the IL linker even if they are not referenced by user code. The file format is
-  described at https://github.com/mono/linker/blob/master/linker/README.md#syntax-of-xml-descriptor -->
+  described at https://github.com/mono/linker/blob/master/src/linker/README.md#syntax-of-xml-descriptor -->
 
   <assembly fullname="mscorlib">
     <!-- Preserve all methods on WasmRuntime, because these are called by JS-side code
-    to implement timers. Fixes https://github.com/aspnet/Blazor/issues/239 -->
+    to implement timers. Fixes https://github.com/dotnet/blazor/issues/239 -->
     <type fullname="System.Threading.WasmRuntime" />
   </assembly>
 
@@ -17,5 +17,11 @@
     <!-- TypeConverters are only used through reflection. These are two built-in TypeConverters that are useful. -->
     <type fullname="System.ComponentModel.GuidConverter" />
     <type fullname="System.ComponentModel.TimeSpanConverter" />
+  </assembly>
+
+  <assembly fullname="WebAssembly.Net.Http">
+    <!-- Without this, the setter for DefaultCredentials would be removed, but we need it -->
+    <type fullname="WebAssembly.Net.Http.HttpClient.FetchCredentialsOption" />
+    <type fullname="WebAssembly.Net.Http.HttpClient.WasmHttpMessageHandler" />
   </assembly>
 </linker>

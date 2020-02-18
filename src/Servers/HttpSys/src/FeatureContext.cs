@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature,
-        IHttpSysRequestInfoFeature
+        IHttpSysRequestInfoFeature,
+        IHttpResponseTrailersFeature,
+        IHttpResetFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private PipeWriter _pipeWriter;
         private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
+        private IHeaderDictionary _responseTrailers;
 
         private Fields _initializedFields;
 
@@ -85,7 +88,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _query = Request.QueryString;
             _rawTarget = Request.RawUrl;
             _scheme = Request.Scheme;
-            _user = _requestContext.User;
+
+            if (requestContext.Server.Options.Authentication.AutomaticAuthentication)
+            {
+                _user = _requestContext.User;
+            }
 
             _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
             _responseHeaders = Response.Headers;
@@ -174,23 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    var protocol = Request.ProtocolVersion;
-                    if (protocol == Constants.V2)
-                    {
-                        _httpProtocolVersion = "HTTP/2";
-                    }
-                    else if (protocol == Constants.V1_1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol == Constants.V1_0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
+                    _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -316,7 +307,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
-                    _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync;
+                    var method = _requestContext.Server.Options.ClientCertificateMethod;
+                    if (method == ClientCertificateMethod.AllowCertificate)
+                    {
+                        _clientCert = Request.ClientCertificate;
+                    }
+                    else if (method == ClientCertificateMethod.AllowRenegotation)
+                    {
+                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync over async;
+                    }
+                    // else if (method == ClientCertificateMethod.NoCertificate) // No-op
+
                     SetInitialized(Fields.ClientCertificate);
                 }
                 return _clientCert;
@@ -346,6 +347,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal ITlsHandshakeFeature GetTlsHandshakeFeature()
         {
             return Request.IsHttps ? this : null;
+        }
+
+        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
+            {
+                return this;
+            }
+            return null;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsReset)
+            {
+                return this;
+            }
+            return null;
         }
 
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -391,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _responseHeaders = value; }
         }
 
-        bool IHttpResponseFeature.HasStarted => Response.HasStarted;
+        bool IHttpResponseFeature.HasStarted => _responseStarted;
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
@@ -445,6 +464,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            _requestContext.SetResetCode(errorCode);
+            _requestContext.Abort();
+        }
 
         internal async Task CompleteAsync()
         {
@@ -548,6 +573,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
         IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => _responseTrailers ??= Response.Trailers;
+            set => _responseTrailers = value;
+        }
 
         internal async Task OnResponseStart()
         {

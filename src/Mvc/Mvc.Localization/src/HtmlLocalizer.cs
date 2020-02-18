@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.Localization
@@ -83,20 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <inheritdoc />
         public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
             _localizer.GetAllStrings(includeParentCultures);
-
-        /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            return new HtmlLocalizer(_localizer.WithCulture(culture));
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
 
         /// <summary>
         /// Creates a new <see cref="LocalizedHtmlString"/> for a <see cref="LocalizedString"/>.

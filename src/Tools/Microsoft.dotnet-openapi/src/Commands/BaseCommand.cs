@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Openapi.Tools;
@@ -156,7 +159,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var items = project.GetItems(tagName);
             var fileItems = items.Where(i => string.Equals(GetFullPath(i.EvaluatedInclude), GetFullPath(sourceFile), StringComparison.Ordinal));
 
-            if (fileItems.Count() > 0)
+            if (fileItems.Any())
             {
                 Warning.Write($"One or more references to {sourceFile} already exist in '{project.FullPath}'. Duplicate references could lead to unexpected behavior.");
                 return;
@@ -197,56 +200,71 @@ namespace Microsoft.DotNet.OpenApi.Commands
                 var packageId = kvp.Key;
                 var version = urlPackages != null && urlPackages.ContainsKey(packageId) ? urlPackages[packageId] : kvp.Value;
 
-                var args = new[] {
-                    "add",
-                    "package",
-                    packageId,
-                    "--version",
-                    version,
-                    "--no-restore"
-                };
+                await TryAddPackage(packageId, version, projectFile);
+            }
+        }
 
-                var muxer = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(muxer))
+        private async Task TryAddPackage(string packageId, string packageVersion, FileInfo projectFile)
+        {
+            var args = new[] {
+                "add",
+                "package",
+                packageId,
+                "--version",
+                packageVersion,
+                "--no-restore"
+            };
+
+            var muxer = DotNetMuxer.MuxerPathOrDefault();
+            if (string.IsNullOrEmpty(muxer))
+            {
+                throw new ArgumentException($"dotnet was not found on the path.");
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = muxer,
+                Arguments = string.Join(" ", args),
+                WorkingDirectory = projectFile.Directory.FullName,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+            };
+
+            using var process = Process.Start(startInfo);
+
+            var timeout = 20;
+            if (!process.WaitForExit(timeout * 1000))
+            {
+                throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
+            }
+
+            if (process.ExitCode != 0)
+            {
+                using var csprojStream = projectFile.OpenRead();
+                using var csprojReader = new StreamReader(csprojStream);
+                var csprojContent = await csprojReader.ReadToEndAsync();
+                // We suspect that sometimes dotnet add package is giving a non-zero exit code when it has actually succeeded.
+                if (!csprojContent.Contains($"<PackageReference Include=\"{packageId}\" Version=\"{packageVersion}\""))
                 {
-                    throw new ArgumentException($"dotnet was not found on the path.");
-                }
+                    var output = await process.StandardOutput.ReadToEndAsync();
+                    var error = await process.StandardError.ReadToEndAsync();
+                    await Out.WriteAsync(output);
+                    await Error.WriteAsync(error);
 
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = muxer,
-                    Arguments = string.Join(" ", args),
-                    WorkingDirectory = projectFile.Directory.FullName,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                };
-
-                var process = Process.Start(startInfo);
-
-                var timeout = 20;
-                if (!process.WaitForExit(timeout * 1000))
-                {
-                    throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
-                }
-
-                if (process.ExitCode != 0)
-                {
-                    Out.Write(process.StandardOutput.ReadToEnd());
-                    Error.Write(process.StandardError.ReadToEnd());
-                    throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}`");
+                    throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` returned ExitCode `{process.ExitCode}` and gave error `{error}` and output `{output}`");
                 }
             }
         }
 
         internal async Task DownloadToFileAsync(string url, string destinationPath, bool overwrite)
         {
-            using var response = await _httpClient.GetResponseAsync(url);
+            using var response = await RetryRequest(() => _httpClient.GetResponseAsync(url));
             await WriteToFileAsync(await response.Stream, destinationPath, overwrite);
         }
 
         internal async Task<string> DownloadGivenOption(string url, CommandOption fileOption)
         {
-            using var response = await _httpClient.GetResponseAsync(url);
+            using var response = await RetryRequest(() => _httpClient.GetResponseAsync(url));
 
             if (response.IsSuccessCode())
             {
@@ -270,6 +288,56 @@ namespace Microsoft.DotNet.OpenApi.Commands
             {
                 throw new ArgumentException($"The given url returned '{response.StatusCode}', indicating failure. The url might be wrong, or there might be a networking issue.");
             }
+        }
+
+        /// <summary>
+        /// Retries every 1 sec for 60 times by default.
+        /// </summary>
+        /// <param name="retryBlock"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="retryCount"></param>
+        private static async Task<IHttpResponseMessageWrapper> RetryRequest(
+            Func<Task<IHttpResponseMessageWrapper>> retryBlock,
+            CancellationToken cancellationToken = default,
+            int retryCount = 60)
+        {
+            for (var retry = 0; retry < retryCount; retry++)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException("Failed to connect, retry canceled.", cancellationToken);
+                }
+
+                try
+                {
+                    var response = await retryBlock().ConfigureAwait(false);
+
+                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                    {
+                        // Automatically retry on 503. May be application is still booting.
+                        continue;
+                    }
+
+                    return response; // Went through successfully
+                }
+                catch (Exception exception)
+                {
+                    if (retry == retryCount - 1)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        if (exception is HttpRequestException || exception is WebException)
+                        {
+                            await Task.Delay(1 * 1000); //Wait for a while before retry.
+                        }
+                    }
+                }
+            }
+
+            throw new OperationCanceledException("Failed to connect, retry limit exceeded.");
         }
 
         private string GetUniqueFileName(string directory, string fileName, string extension)
@@ -315,7 +383,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             else
             {
                 var uri = new Uri(url);
-                if (uri.Segments.Count() > 0 && uri.Segments.Last() != "/")
+                if (uri.Segments.Any() && uri.Segments.Last() != "/")
                 {
                     var lastSegment = uri.Segments.Last();
                     if (!Path.HasExtension(lastSegment))

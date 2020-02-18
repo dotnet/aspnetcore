@@ -26,7 +26,10 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private bool _returningResponse;
         private object _testContext;
+        private Pipe _requestPipe;
+
         private Action<HttpContext> _responseReadCompleteCallback;
+        private Task _sendRequestStreamTask;
 
         internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
@@ -38,12 +41,14 @@ namespace Microsoft.AspNetCore.TestHost
             _requestLifetimeFeature = new RequestLifetimeFeature(Abort);
 
             var request = _httpContext.Request;
-            request.Protocol = "HTTP/1.1";
+            request.Protocol = HttpProtocol.Http11;
             request.Method = HttpMethods.Get;
 
-            var pipe = new Pipe();
-            _responseReaderStream = new ResponseBodyReaderStream(pipe, ClientInitiatedAbort, () => _responseReadCompleteCallback?.Invoke(_httpContext));
-            _responsePipeWriter = new ResponseBodyPipeWriter(pipe, ReturnResponseMessageAsync);
+            _requestPipe = new Pipe();
+
+            var responsePipe = new Pipe();
+            _responseReaderStream = new ResponseBodyReaderStream(responsePipe, ClientInitiatedAbort, () => _responseReadCompleteCallback?.Invoke(_httpContext));
+            _responsePipeWriter = new ResponseBodyPipeWriter(responsePipe, ReturnResponseMessageAsync);
             _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
             _responseFeature.BodyWriter = _responsePipeWriter;
 
@@ -56,14 +61,24 @@ namespace Microsoft.AspNetCore.TestHost
 
         public bool AllowSynchronousIO { get; set; }
 
-        internal void Configure(Action<HttpContext> configureContext)
+        internal void Configure(Action<HttpContext, PipeReader> configureContext)
         {
             if (configureContext == null)
             {
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            configureContext(_httpContext);
+            configureContext(_httpContext, _requestPipe.Reader);
+        }
+
+        internal void SendRequestStream(Func<PipeWriter, Task> sendRequestStream)
+        {
+            if (sendRequestStream == null)
+            {
+                throw new ArgumentNullException(nameof(sendRequestStream));
+            }
+
+            _sendRequestStreamTask = sendRequestStream(_requestPipe.Writer);
         }
 
         internal void RegisterResponseReadCompleteCallback(Action<HttpContext> responseReadCompleteCallback)
@@ -83,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (string.Equals("HTTP/2", _httpContext.Request.Protocol, StringComparison.OrdinalIgnoreCase))
+                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }
@@ -92,10 +107,10 @@ namespace Microsoft.AspNetCore.TestHost
                 // since we are now inside the Server's execution context. If it happens outside this cont
                 // it will be lost when we abandon the execution context.
                 _testContext = _application.CreateContext(_httpContext.Features);
-
                 try
                 {
                     await _application.ProcessRequestAsync(_testContext);
+                    await CompleteRequestAsync();
                     await CompleteResponseAsync();
                     _application.DisposeContext(_testContext, exception: null);
                 }
@@ -134,8 +149,50 @@ namespace Microsoft.AspNetCore.TestHost
                 // We don't want to trigger the token for already completed responses.
                 _requestLifetimeFeature.Cancel();
             }
+
             // Writes will still succeed, the app will only get an error if they check the CT.
             _responseReaderStream.Abort(new IOException("The client aborted the request."));
+
+            // Cancel any pending request async activity when the client aborts a duplex
+            // streaming scenario by disposing the HttpResponseMessage.
+            CancelRequestBody();
+        }
+
+        private async Task CompleteRequestAsync()
+        {
+            bool requestBodyInProgress;
+            try
+            {
+                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
+            }
+
+            if (requestBodyInProgress)
+            {
+                // If request is still in progress then abort it.
+                CancelRequestBody();
+            }
+            else
+            {
+                // Writer was already completed in send request callback.
+                await _requestPipe.Reader.CompleteAsync();
+            }
+
+            if (_sendRequestStreamTask != null)
+            {
+                try
+                {
+                    // Ensure duplex request is either completely read or has been aborted.
+                    await _sendRequestStreamTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Request was canceled, likely because it wasn't read before the request ended.
+                }
+            }
         }
 
         internal async Task CompleteResponseAsync()
@@ -192,6 +249,13 @@ namespace Microsoft.AspNetCore.TestHost
             _responseReaderStream.Abort(exception);
             _requestLifetimeFeature.Cancel();
             _responseTcs.TrySetException(exception);
+            CancelRequestBody();
+        }
+
+        private void CancelRequestBody()
+        {
+            _requestPipe.Writer.CancelPendingFlush();
+            _requestPipe.Reader.CancelPendingRead();
         }
 
         void IHttpResetFeature.Reset(int errorCode)

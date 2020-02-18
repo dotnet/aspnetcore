@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         // Used for UTF8/ASCII (precalculated for fast path)
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (buffer.IsSingleSegment)
             {
-                ParseFormValuesFast(buffer.First.Span,
+                ParseFormValuesFast(buffer.FirstSpan,
                     ref accumulator,
                     isFinalBlock,
                     out var consumed);
@@ -166,8 +167,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // If we're not in the final block, then consume nothing
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
-                        if (span.Length > KeyLengthLimit + ValueLengthLimit)
+                        // Don't buffer indefinitely
+                        if ((uint)span.Length > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();
                         }
@@ -235,8 +236,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
-                        // Don't buffer indefinately
-                        if ((sequenceReader.Consumed - consumedBytes) > KeyLengthLimit + ValueLengthLimit)
+                        // Don't buffer indefinitely
+                        if ((uint)(sequenceReader.Consumed - consumedBytes) > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
                         {
                             ThrowKeyOrValueTooLargeException();
                         }
@@ -317,7 +318,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (ros.IsSingleSegment)
             {
-                return GetDecodedString(ros.First.Span);
+                return GetDecodedString(ros.FirstSpan);
             }
 
             if (ros.Length < StackAllocThreshold)
