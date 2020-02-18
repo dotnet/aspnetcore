@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileDoesNotExist(result, "dist", "Fake-License.txt");
 
             // Verify web.config
-            Assert.FileExists(result, blazorPublishDirectory, "web.config");
+            Assert.FileExists(result, publishDirectory, "web.config");
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
 
             // Verify web.config
-            Assert.FileExists(result, blazorPublishDirectory, "web.config");
+            Assert.FileExists(result, publishDirectory, "web.config");
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "styles.css");
 
             // Verify web.config
-            Assert.FileExists(result, blazorPublishDirectory, "web.config");
+            Assert.FileExists(result, publishDirectory, "web.config");
         }
 
         [Fact]

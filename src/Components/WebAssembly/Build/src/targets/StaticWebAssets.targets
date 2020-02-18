@@ -93,16 +93,13 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
 
-    </ItemGroup>
+      <ResolvedFileToPublish Include="$(MSBuildThisFileDirectory)Standalone.Web.config">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <RelativePath>web.config</RelativePath>
+      </ResolvedFileToPublish>
 
-    <ItemGroup>
-      <_StandaloneWebConfigContent Include="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Standalone.Web.config'))"/>
     </ItemGroup>
-
-    <WriteLinesToFile
-      Condition="!Exists('$(_BlazorStandalonePublishDir)web.config')"
-      File="$(_BlazorStandalonePublishDir)web.config"
-      Lines="@(_StandaloneWebConfigContent->Replace('[ServeSubdirectory]','$(BlazorPublishDistDir)'))" />
 
   </Target>
 
