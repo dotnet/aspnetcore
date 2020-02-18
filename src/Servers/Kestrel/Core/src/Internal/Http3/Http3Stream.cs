@@ -393,7 +393,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void OnEndStreamReceived()
         {
-            Log.LogTrace("OnEndStreamReceived");
             if (InputRemaining.HasValue)
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
