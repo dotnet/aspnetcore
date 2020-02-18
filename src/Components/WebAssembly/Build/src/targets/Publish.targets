@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
+
     <BlazorLinkOnBuild Condition="'$(BlazorLinkOnBuild)'==''">true</BlazorLinkOnBuild>
-    <BlazorPublishDistDir>$(AssemblyName)\dist\</BlazorPublishDistDir>
 
     <!-- Disable unwanted parts of the default publish process -->
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
@@ -10,30 +10,7 @@
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
+
   </PropertyGroup>
 
-  <Target Name="_BlazorRemoveResolvedAssembliesFromPublish"
-          BeforeTargets="GetCopyToPublishDirectoryItems"
-          DependsOnTargets="PrepareBlazorOutputs"
-          Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
-
-    <ItemGroup>
-      <!-- Don't want to publish the assemblies from the regular 'bin' dir. Instead we publish ones from 'dist'. -->
-      <ResolvedAssembliesToPublish Remove="@(ResolvedAssembliesToPublish)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- The following target runs only for standalone publishing -->
-  <Target Name="BlazorCompleteStandalonePublish" AfterTargets="CopyFilesToPublishDirectory">
-    <!-- Add a suitable web.config file if there isn't one already -->
-
-    <ItemGroup>
-      <_StandaloneWebConfigContent Include="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Standalone.Web.config'))"/>
-    </ItemGroup>
-
-    <WriteLinesToFile
-      Condition="!Exists('$(PublishDir)web.config')"
-      File="$(PublishDir)web.config"
-      Lines="@(_StandaloneWebConfigContent->Replace('[ServeSubdirectory]','$(BlazorPublishDistDir)'))" />
-  </Target>
 </Project>

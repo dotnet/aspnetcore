@@ -5,10 +5,12 @@
       <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'%(FullPath)')" RemoveMetadata="TargetOutputPath">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <RelativePath>$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('dist\','').Replace('\','/'))</RelativePath>
       </StaticWebAsset>
+
+      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'$(BlazorEnableDebugging)' != 'true' and '%(SourceType)' == '' and '%(Extension)' == '.pdb'" />
 
       <!-- We are dependingo on a "private" property for static web assets, but this is something we can clean-up in a later release.
            These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail.
@@ -18,17 +20,89 @@
         <SourceId>$(PackageId)</SourceId>
         <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
         <SourceType>Generated</SourceType>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
       </_ExternalStaticWebAsset>
 
       <!-- These items we are adding for forward-compatibility with newer SDK versions. The paths listed here will be added unconditionally
            to the generated static web assets manifest. This is only needed for forward compatibility in Blazor standalone scenarios. -->
-      <StaticWebAssetsManifestPath Include="$([MSBuild]::NormalizeDirectory('$(TargetDir)dist\'))">
+      <StaticWebAssetsManifestPath Include="$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))">
         <SourceId>$(PackageId)</SourceId>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
       </StaticWebAssetsManifestPath>
     </ItemGroup>
+
+  </Target>
+
+  <Target Name="_StaticWebAssetsCopyGeneratedFilesToOutputDirectory"
+    DependsOnTargets="ResolveStaticWebAssetsInputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
+    AfterTargets="CopyFilesToOutputDirectory"
+    Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
+
+    <PropertyGroup>
+      <_BlazorCurrentProjectWWWroot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)\wwwroot\'))</_BlazorCurrentProjectWWWroot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BlazorCopyLocalAssets Include="@(StaticWebAsset)" Condition="'%(SourceType)' == '' and '%(ContentRoot)' != '$(_BlazorCurrentProjectWWWroot)'" />
+    </ItemGroup>
+
+    <!-- Copy the blazor output files  -->
+    <Copy
+      SourceFiles="@(_BlazorCopyLocalAssets)"
+      DestinationFiles="@(_BlazorCopyLocalAssets->'%(ContentRoot)%(RelativePath)')"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+      Condition="'@(_BlazorCopyLocalAssets)' != '' and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
+    </Copy>
+
+    <ItemGroup>
+      <FileWrites Include="@(_BlazorCopyLocalAssets->'%(ContentRoot)%(RelativePath)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_BlazorStatisticsOutput Include="@(_BlazorCopyLocalAssets->'%(RelativePath)')" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="$(TargetName) (Blazor output) -> $(TargetDir)wwwroot" />
+  </Target>
+
+  <Target Name="_StaticWebAssetsBlazorStandalonePublish"
+    AfterTargets="_StaticWebAssetsComputeFilesToPublish">
+
+    <PropertyGroup>
+      <_BlazorStandalonePublishDir>$([MSBuild]::NormalizeDirectory('$(PublishDir)wwwroot\'))</_BlazorStandalonePublishDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+
+      <_CurrentProjectStandalonePublishStaticWebAsset Include="%(StaticWebAsset.FullPath)" Condition="'%(StaticWebAsset.SourceType)' == ''">
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot\%(BasePath)\%(RelativePath)'))'))</RelativePath>
+      </_CurrentProjectStandalonePublishStaticWebAsset>
+
+      <!-- Remove any existing external static web asset that might have been added as part of the
+           regular publish pipeline. -->
+      <ResolvedFileToPublish Remove="@(_CurrentProjectStandalonePublishStaticWebAsset)" />
+
+      <ResolvedFileToPublish Include="@(_CurrentProjectStandalonePublishStaticWebAsset)">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+
+    </ItemGroup>
+
+    <ItemGroup>
+      <_StandaloneWebConfigContent Include="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Standalone.Web.config'))"/>
+    </ItemGroup>
+
+    <WriteLinesToFile
+      Condition="!Exists('$(_BlazorStandalonePublishDir)web.config')"
+      File="$(_BlazorStandalonePublishDir)web.config"
+      Lines="@(_StandaloneWebConfigContent->Replace('[ServeSubdirectory]','$(BlazorPublishDistDir)'))" />
 
   </Target>
 
@@ -91,36 +165,4 @@
 
   </Target>
 
-  <Target Name="BlazorStaticWebAssetsComputeFilesToPublish"
-    AfterTargets="_StaticWebAssetsComputeFilesToPublish">
-
-    <ItemGroup>
-      <!-- We need to update the external static web assets to follow the blazor publish output convention that puts them inside $(TargetName)/dist instead of wwwroot -->
-      <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != '' and '$([System.String]::Copy(%(Identity))).StartsWith($(MSBuildThisProjectDirectory))' != 'true'">
-        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
-      </_StandaloneExternalPublishStaticWebAsset>
-
-      <_CurrentProjectWwwrootStaticWebAsset Include="@(StaticWebAsset)" Exclude="@(BlazorOutputWithTargetPath->'%(FullPath)')" Condition="'%(StaticWebAsset.SourceType)' == ''" />
-
-      <_StandaloneWwwrootCurrentProjectPublishStaticWebAsset Include="%(_CurrentProjectWwwrootStaticWebAsset.Identity)">
-        <RelativePath>$(BlazorPublishDistDir)%(RelativePath)</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </_StandaloneWwwrootCurrentProjectPublishStaticWebAsset>
-
-      <!-- Update doesn't work inside targets so we need to remove the items and re-add them. See https://github.com/microsoft/msbuild/issues/2835 for details -->
-      <ResolvedFileToPublish Remove="@(_ExternalPublishStaticWebAsset)" />
-      <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
-
-      <!-- Gets rid of the content and sets it up on the right path -->
-      <ResolvedFileToPublish Remove="@(_CurrentProjectWwwrootStaticWebAsset)" />
-      <ResolvedFileToPublish Include="@(_StandaloneWwwrootCurrentProjectPublishStaticWebAsset)" />
-
-      <!-- Makes sure the generated static web assets for this project are copied to the expected output folder -->
-      <ResolvedFileToPublish Include="@(StaticWebAsset)" Exclude="@(_CurrentProjectWwwrootStaticWebAsset)" Condition="'@(SourceType)' == ''">
-        <RelativePath>$(BlazorPublishDistDir)%(RelativePath)</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ResolvedFileToPublish>
-
-    </ItemGroup>
-  </Target>
 </Project>

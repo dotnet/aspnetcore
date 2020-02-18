@@ -1,14 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <_BlazorCopyFilesToOutputDirectoryDependsOn>
-      $(_BlazorCopyFilesToOutputDirectoryDependsOn);
-      _WriteServiceWorkerAssetsManifest;
-      ResolveStaticWebAssetsInputs;
-    </_BlazorCopyFilesToOutputDirectoryDependsOn>
-  </PropertyGroup>
-
-
   <Target Name="_ComputeServiceWorkerAssetsManifestInputs"
           Condition="'$(ServiceWorkerAssetsManifest)' != ''"
           BeforeTargets="_ResolveBlazorOutputs">
@@ -30,6 +21,7 @@
   <Target Name="_WriteServiceWorkerAssetsManifest"
           Inputs="@(ServiceWorkerAssetsManifestItem)"
           Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
+          BeforeTargets="_StaticWebAssetsCopyGeneratedFilesToOutputDirectory"
           DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion">
 
     <GenerateServiceWorkerAssetsManifest

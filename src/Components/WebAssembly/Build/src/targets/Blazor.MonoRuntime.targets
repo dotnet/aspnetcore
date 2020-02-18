@@ -20,36 +20,6 @@
   </PropertyGroup>
 
   <Target
-    Name="_BlazorCopyFilesToOutputDirectory"
-    DependsOnTargets="PrepareBlazorOutputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
-    AfterTargets="CopyFilesToOutputDirectory"
-    Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
-
-    <!-- Copy the blazor output files  -->
-    <Copy
-      SourceFiles="@(BlazorOutputWithTargetPath)"
-      DestinationFiles="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-      Condition="'@(BlazorOutputWithTargetPath)' != '' and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
-    </Copy>
-
-    <ItemGroup>
-      <FileWrites Include="@(BlazorOutputWithTargetPath->'$(TargetDir)%(TargetOutputPath)')" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_BlazorStatisticsOutput Include="@(BlazorOutputWithTargetPath->'%(TargetOutputPath)')" />
-    </ItemGroup>
-
-    <Message Importance="high" Text="$(TargetName) (Blazor output) -> $(TargetDir)dist" />
-  </Target>
-
-  <Target
     Name="PrepareBlazorOutputs"
     DependsOnTargets="_ResolveBlazorInputs;_ResolveBlazorOutputs;_GenerateBlazorBootJson">
   </Target>
