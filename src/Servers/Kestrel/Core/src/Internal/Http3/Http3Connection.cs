@@ -115,15 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            if (!previousState)
-            {
-                //var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
-
-                //if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
-                //{
-                //    Input.CancelPendingRead();
-                //}
-            }
+            // TODO figure out how to gracefully close next requests
         }
 
         public void OnConnectionClosed()
@@ -134,33 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 previousState = _aborted;
             }
 
-            if (!previousState)
-            {
-                //TryClose();
-                //_frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
-            }
+            // TODO figure out how to gracefully close next requests
         }
-
-        //private bool TryClose()
-        //{
-        //    if (Interlocked.Exchange(ref _isClosed, 1) == 0)
-        //    {
-        //        Log.Http2ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        //public void Abort(ConnectionAbortedException ex)
-        //{
-        //    if (TryClose())
-        //    {
-        //        _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
-        //    }
-
-        //    _frameWriter.Abort(ex);
-        //}
 
         public void Abort(ConnectionAbortedException ex)
         {
