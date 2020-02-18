@@ -3,22 +3,6 @@
     <BlazorLinkOnBuild Condition="$(BlazorLinkOnBuild) == ''">true</BlazorLinkOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- Stop-gap until we can migrate Blazor.Mono package to use better naming convention -->
-    <DotNetWebAssemblyBCLPath Condition="'$(DotNetWebAssemblyBCLPath)' == '' AND '$(MonoBaseClassLibraryPath)' != ''">$(MonoBaseClassLibraryPath)</DotNetWebAssemblyBCLPath>
-    <DotNetWebAssemblyBCLFacadesPath Condition="'$(DotNetWebAssemblyBCLFacadesPath)' == '' AND '$(MonoBaseClassLibraryFacadesPath)' != ''">$(MonoBaseClassLibraryFacadesPath)</DotNetWebAssemblyBCLFacadesPath>
-    <DotNetWebAssemblyRuntimePath Condition="'$(DotNetWebAssemblyRuntimePath)' == '' AND '$(MonoWasmRuntimePath)' != ''">$(MonoWasmRuntimePath)</DotNetWebAssemblyRuntimePath>
-    <DotNetWebAssemblyFrameworkPath Condition="'$(DotNetWebAssemblyFrameworkPath)' == '' AND '$(MonoWasmFrameworkPath)' != ''">$(MonoWasmFrameworkPath)</DotNetWebAssemblyFrameworkPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(DotNetWebAssemblyArtifactsRoot)' != ''">
-    <!-- Compute paths given a path to DotNet WASM artifacts. This is meant to make it easy to test WASM builds -->
-    <DotNetWebAssemblyBCLPath>$(DotNetWebAssemblyArtifactsRoot)\wasm-bcl\wasm\</DotNetWebAssemblyBCLPath>
-    <DotNetWebAssemblyBCLFacadesPath>$(DotNetWebAssemblyBCLPath)\Facades\</DotNetWebAssemblyBCLFacadesPath>
-    <DotNetWebAssemblyRuntimePath>$(DotNetWebAssemblyArtifactsRoot)\builds\debug\</DotNetWebAssemblyRuntimePath>
-    <DotNetWebAssemblyFrameworkPath>$(DotNetWebAssemblyArtifactsRoot)\framework\</DotNetWebAssemblyFrameworkPath>
-  </PropertyGroup>
-
   <Target
     Name="_BlazorCopyFilesToOutputDirectory"
     DependsOnTargets="PrepareBlazorOutputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
@@ -77,9 +61,9 @@
 
     <ItemGroup>
       <_WebAssemblyBCLFolder Include="
-        $(DotNetWebAssemblyBCLPath);
-        $(DotNetWebAssemblyBCLFacadesPath);
-        $(DotNetWebAssemblyFrameworkPath)" />
+        $(ComponentsWebAssemblyBaseClassLibraryPath);
+        $(ComponentsWebAssemblyBaseClassLibraryFacadesPath);
+        $(ComponentsWebAssemblyFrameworkPath)" />
 
       <_WebAssemblyBCLAssembly Include="%(_WebAssemblyBCLFolder.Identity)*.dll" />
     </ItemGroup>
@@ -131,7 +115,7 @@
         <BlazorRuntimeFile>true</BlazorRuntimeFile>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
-      </BlazorOutputWithTargetPath>      
+      </BlazorOutputWithTargetPath>
     </ItemGroup>
 
     <!--
@@ -164,7 +148,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <MonoWasmFile Include="$(DotNetWebAssemblyRuntimePath)*" />
+      <MonoWasmFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
       <BlazorJSFile Include="$(BlazorJSPath)" />
       <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
 
@@ -284,7 +268,7 @@
     </PropertyGroup>
 
     <BlazorILLink
-        ILLinkPath="$(MonoLinkerPath)"
+        ILLinkPath="$(ComponentsWebAssemblyLinkerPath)"
         AssemblyPaths="@(_BlazorAssemblyToLink)"
         RootAssemblyNames="@(_BlazorLinkerRoot)"
         RootDescriptorFiles="@(BlazorLinkerDescriptor)"

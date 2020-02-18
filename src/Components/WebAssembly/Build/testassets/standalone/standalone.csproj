@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
