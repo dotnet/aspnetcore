@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicConnectionContext : TransportMultiplexedConnection
+    internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
     {
         private QuicConnection _connection;
         private readonly QuicTransportContext _context;
@@ -20,12 +20,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private ValueTask _closeTask;
 
+        public long Error { get; set; }
+
         public QuicConnectionContext(QuicConnection connection, QuicTransportContext context)
         {
             _log = context.Log;
             _context = context;
             _connection = connection;
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
+            Features.Set<IProtocolErrorCodeFeature>(this);
 
             _log.NewConnection(ConnectionId);
         }
@@ -66,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _closeTask = _connection.CloseAsync(errorCode: _context.Options.AbortErrorCode);
+            _closeTask = _connection.CloseAsync(errorCode: Error);
         }
 
         public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)

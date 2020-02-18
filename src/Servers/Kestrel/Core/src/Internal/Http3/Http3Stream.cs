@@ -355,12 +355,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 error = ex;
                 //errorCode = ex.ErrorCode;
                 Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
-                Log.LogWarning(0, ex, "Stream threw an exception.");
             }
             catch (Exception ex)
             {
                 error = ex;
-                Log.LogWarning(0, ex, "Stream threw an exception.");
+                Log.LogWarning(0, ex, "Stream threw an unexpected exception.");
             }
             finally
             {

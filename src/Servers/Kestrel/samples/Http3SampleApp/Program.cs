@@ -14,7 +14,7 @@ namespace Http3SampleApp
     {
         public static void Main(string[] args)
         {
-            var cert = CertificateLoader.LoadFromStoreCert("JUSTIN-LAPTOP", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
+            var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
 
             var hostBuilder = new HostBuilder()
                 .ConfigureLogging((_, factory) =>
@@ -44,16 +44,6 @@ namespace Http3SampleApp
                             });
                             listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                         });
-                        //options.Listen(IPAddress.Any, basePort, listenOptions =>
-                        //{
-                        //    listenOptions.UseHttps(httpsOptions =>
-                        //    {
-                        //        httpsOptions.ServerCertificate = cert;
-                        //    });
-                        //    listenOptions.Protocols = HttpProtocols.Http3;
-                        //    //listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                        //});
-
                     })
                     .UseStartup<Startup>();
                 });
