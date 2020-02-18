@@ -393,11 +393,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f3f8e1930c28b67f29990126bc2e8527e959a2e</Sha>
     </Dependency>
-    <!-- This package was dead-ended, pinning it until we decide whether or not to replace it with something else -->
-    <Dependency Name="Microsoft.CSharp" Version="4.7.0" Pinned="true">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
