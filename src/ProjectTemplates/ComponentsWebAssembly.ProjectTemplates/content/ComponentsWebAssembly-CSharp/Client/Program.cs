@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
@@ -19,6 +19,7 @@ namespace ComponentsWebAssembly_CSharp
             builder.RootComponents.Add<App>("app");
 
             // use builder.Services to configure application services.
+            builder.Services.AddBaseAddressHttpClient();
 #if (IndividualLocalAuth)
     #if (Hosted)
             builder.Services.AddApiAuthorization();

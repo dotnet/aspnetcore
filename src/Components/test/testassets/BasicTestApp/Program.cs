@@ -34,6 +34,7 @@ namespace BasicTestApp
 
             builder.RootComponents.Add<Index>("root");
 
+            builder.Services.AddBaseAddressHttpClient();
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
             builder.Services.AddAuthorizationCore(options =>
             {
