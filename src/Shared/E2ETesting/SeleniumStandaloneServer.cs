@@ -110,34 +110,43 @@ namespace Microsoft.AspNetCore.E2ETesting
                 psi.Arguments = $"/c npm {psi.Arguments}";
             }
 
-            // It's important that we get the folder value before we start the process to prevent
-            // untracked processes when the tracking folder is not correctly configure.
-            var trackingFolder = GetProcessTrackingFolder();
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-            {
-                // Just create a random tracking folder on helix
-                trackingFolder = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
-                Directory.CreateDirectory(trackingFolder);
-            }
-            if (!Directory.Exists(trackingFolder))
-            {
-                throw new InvalidOperationException($"Invalid tracking folder. Set the 'SeleniumProcessTrackingFolder' MSBuild property to a valid folder.");
-            }
-
             Process process = null;
             Process sentinel = null;
             string pidFilePath = null;
-            try
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                // It's important that we get the folder value before we start the process to prevent
+                // untracked processes when the tracking folder is not correctly configure.
+                var trackingFolder = GetProcessTrackingFolder();
+
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+                {
+                    // Just create a random tracking folder on helix
+                    trackingFolder = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+                    Directory.CreateDirectory(trackingFolder);
+                }
+
+                if (!Directory.Exists(trackingFolder))
+                {
+                    throw new InvalidOperationException($"Invalid tracking folder. Set the 'SeleniumProcessTrackingFolder' MSBuild property to a valid folder.");
+                }
+
+                try
+                {
+                    process = Process.Start(psi);
+                    pidFilePath = await WriteTrackingFileAsync(output, trackingFolder, process);
+                    sentinel = StartSentinelProcess(process, pidFilePath, SeleniumProcessTimeout);
+                }
+                catch
+                {
+                    ProcessCleanup(process, pidFilePath);
+                    ProcessCleanup(sentinel, pidFilePath: null);
+                    throw;
+                }
+            }
+            else
             {
                 process = Process.Start(psi);
-                pidFilePath = await WriteTrackingFileAsync(output, trackingFolder, process);
-                sentinel = StartSentinelProcess(process, pidFilePath, SeleniumProcessTimeout);
-            }
-            catch
-            {
-                ProcessCleanup(process, pidFilePath);
-                ProcessCleanup(sentinel, pidFilePath: null);
-                throw;
             }
 
             // Log output for selenium standalone process.
