@@ -206,6 +206,8 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>3.1.0</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>3.1.0</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
     <MicrosoftAspNetCoreIdentityUIPackageVersion>3.1.0</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.1.0</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
@@ -281,6 +283,8 @@
     <MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion)</MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreIdentityUIPackageVersion>$(MicrosoftAspNetCoreIdentityUIPackageVersion)</MicrosoftAspNetCoreIdentityUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion)</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion)</MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">

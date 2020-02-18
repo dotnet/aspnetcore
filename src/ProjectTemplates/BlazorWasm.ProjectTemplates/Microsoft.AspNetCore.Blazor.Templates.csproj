@@ -18,20 +18,31 @@
       MicrosoftAspNetCoreBlazorBuildPackageVersion=$(MicrosoftAspNetCoreBlazorBuildPackageVersion);
       MicrosoftAspNetCoreBlazorDevServerPackageVersion=$(MicrosoftAspNetCoreBlazorDevServerPackageVersion);
       MicrosoftAspNetCoreBlazorHttpClientPackageVersion=$(MicrosoftAspNetCoreBlazorHttpClientPackageVersion);
-      MonoWebAssemblyInteropPackageVersion=$(MonoWebAssemblyInteropPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftAspNetCoreBlazorServerPackageVersion=$(MicrosoftAspNetCoreBlazorServerPackageVersion);
+      MicrosoftAspNetCoreComponentsAuthorizationPackageVersion=$(MicrosoftAspNetCoreComponentsAuthorizationPackageVersion);
+      MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
+      MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
+      MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion);
+      MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion);
+      MicrosoftAspNetCoreIdentityUIPackageVersion=$(MicrosoftAspNetCoreIdentityUIPackageVersion);
+      MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion=$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
+      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
+      MonoWebAssemblyInteropPackageVersion=$(MonoWebAssemblyInteropPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Build\src\Microsoft.AspNetCore.Blazor.Build.csproj" />
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj" />
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj" />
     <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
   </ItemGroup>
 
   <ItemGroup>

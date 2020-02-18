@@ -157,6 +157,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="$(MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="$(MicrosoftAspNetCoreIdentityUIPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
   </ItemGroup>
 
