@@ -117,8 +117,9 @@ namespace Templates.Test
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
+        [SkipOnHelix("ef restore no worky")]
         public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
         {
             Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
