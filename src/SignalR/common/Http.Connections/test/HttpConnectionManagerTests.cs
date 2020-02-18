@@ -235,9 +235,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     try
                     {
                         Assert.True(result.IsCompleted);
-
-                        // We should be able to write
-                        await connection.Transport.Output.WriteAsync(new byte[] { 1 });
                     }
                     finally
                     {
@@ -248,13 +245,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connection.TransportTask = Task.Run(async () =>
                 {
                     var result = await connection.Application.Input.ReadAsync();
-                    Assert.Equal(new byte[] { 1 }, result.Buffer.ToArray());
-                    connection.Application.Input.AdvanceTo(result.Buffer.End);
-
-                    result = await connection.Application.Input.ReadAsync();
                     try
                     {
-                        Assert.True(result.IsCompleted);
+                        Assert.True(result.IsCanceled);
                     }
                     finally
                     {

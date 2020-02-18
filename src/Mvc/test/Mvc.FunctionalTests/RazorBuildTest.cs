@@ -3,9 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -14,7 +20,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public RazorBuildTest(MvcTestFixture<RazorBuildWebSite.Startup> fixture)
         {
-            Client = fixture.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.Startup>());
+            factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
+
+            Client = factory.CreateDefaultClient();
+
+            static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
+            {
+                // Workaround for incorrectly generated deps file. The build output has all of the binaries required to compile. We'll grab these and
+                // add it to the list of assemblies runtime compilation uses.
+                foreach (var path in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
+                {
+                    options.AdditionalReferencePaths.Add(path);
+                }
+            }
         }
 
         public HttpClient Client { get; }
@@ -77,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var actual2 = body.Trim();
             Assert.NotEqual(expected1, actual2);
 
-            // Act - 3 
+            // Act - 3
             // With all things being the same, expect a cached compilation
             body = await Client.GetStringAsync("/UpdateableViews");
 

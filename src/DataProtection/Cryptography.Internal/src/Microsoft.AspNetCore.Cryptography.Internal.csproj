@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <Description>Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

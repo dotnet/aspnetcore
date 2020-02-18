@@ -123,17 +123,7 @@ namespace Microsoft.AspNetCore.Components
         public ElementReference(string id) { throw null; }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback
-    {
-        private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public static readonly Microsoft.AspNetCore.Components.EventCallback Empty;
-        public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
-        public bool HasDelegate { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
-    }
     public sealed partial class EventCallbackFactory
     {
         public EventCallbackFactory() { }
@@ -197,16 +187,7 @@ namespace Microsoft.AspNetCore.Components
         public EventCallbackWorkItem(System.MulticastDelegate @delegate) { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback<TValue>
-    {
-        private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
-        public bool HasDelegate { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
-    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class EventHandlerAttribute : System.Attribute
     {

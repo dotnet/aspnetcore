@@ -222,6 +222,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             _loaded = true;
 
+            Options.Latin1RequestHeaders = ConfigurationReader.Latin1RequestHeaders;
+
             LoadDefaultCert(ConfigurationReader);
 
             foreach (var endpoint in ConfigurationReader.Endpoints)

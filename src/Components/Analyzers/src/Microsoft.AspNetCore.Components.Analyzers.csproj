@@ -18,6 +18,7 @@
   <ItemGroup>
     <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="build/netstandard2.0/*" Pack="true" PackagePath="build/netstandard2.0" />
+    <None Include="buildTransitive/netstandard2.0/*" Pack="true" PackagePath="buildTransitive/netstandard2.0" />
   </ItemGroup>
 
 </Project>

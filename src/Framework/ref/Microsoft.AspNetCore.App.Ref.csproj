@@ -31,15 +31,20 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <GenerateDependencyFile>false</GenerateDependencyFile>
 
-    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
-    <!-- We are ignoring MSB3243 warnings since implemenation and reference assemblies are versioned differently. We need both to compose the targeting pack with reference assemblies and xml docs. -->
-    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages >
+    <!--
+      We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
+      We need both to compose the targeting pack with reference assemblies and xml docs.
+    -->
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
+    <!-- We are ignoring NU5131 and NU5128 warnings since the dependency group should be kept empty. -->
+    <NoWarn>$(NoWarn);NU5131;NU5128</NoWarn>
 
     <!-- Platform manifest data -->
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
@@ -48,13 +53,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Platform manifest and package override metatdata -->
     <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
     <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
-    <ReferencePlatformManifestOutputPath>$(ArtifactsObjDir)ref\PlatformManifest.txt</ReferencePlatformManifestOutputPath>
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
+    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
-    <Reference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" IncludeAssets="Build" />
     <!-- Enforce build order. Targeting pack needs to bundle information about the runtime. -->
     <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -78,8 +83,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- If this project won't produce a package, don't bother building anything. -->
     <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
-      GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
+      GeneratePackageConflictManifest;
       IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
@@ -110,16 +115,28 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
 
     <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ReferencedExtensionsRefAssemblies" />
+    </JoinItems>
+
+    <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(ExternalAspNetCoreAppReference)" LeftKey="Filename" RightKey="Identity" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefs" />
+    </JoinItems>
+
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_SelectedExtensionsRefs)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
       <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefAssemblies" />
     </JoinItems>
 
     <ItemGroup>
+      <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
+          Condition="'%(ReferencePathWithRefAssemblies.IsReferenceAssembly)' == 'true'"
           Exclude="
-            @(_SelectedExtensionsRefAssemblies);
+            @(_ReferencedExtensionsRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
-            @(ReferencePathWithRefAssemblies->WithMetadataValue('IsReferenceAssembly', 'false'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Security.Cryptography.Pkcs'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Drawing.Common'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Win32.SystemEvents'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
       <AspNetCoreReferenceAssemblyPath
@@ -127,34 +144,26 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
-    </ItemGroup>
 
-    <RepoTasks.GenerateSharedFrameworkDepsFile
-      DepsFilePath="$(ProjectDepsFilePath)"
-      TargetFramework="$(TargetFramework)"
-      FrameworkName="$(TargetingPackName)"
-      FrameworkVersion="$(ReferencePackSharedFxVersion)"
-      References="@(AspNetCoreReferenceAssemblyPath)"
-      RuntimeIdentifier="$(TargetRuntimeIdentifier)"
-      RuntimePackageName="$(PackageId)"
-      PlatformManifestOutputPath="$(ReferencePlatformManifestOutputPath)" />
-
-    <ItemGroup>
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
-      <RefPackContent Include="$(ReferencePlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
   <Target Name="GeneratePackageConflictManifest"
-          DependsOnTargets="ResolveReferences"
+          DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
-
     <ItemGroup>
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition=" '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(ReferencePath.IsReferenceAssembly)' == 'true' " />
+      <!-- Use package version for non-Extensions references -->
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Internal.Extensions.Refs' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+
+      <!-- Pin version for extensions references -->
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />
+
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(AspNetCoreReferenceAssemblyPath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -192,7 +201,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
           Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
-          Condition="'$(IsPackable)' == 'true'">
+          Condition=" '$(IsPackable)' == 'true' ">
     <PropertyGroup>
       <_TarCommand>tar</_TarCommand>
       <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">"$(RepoRoot).tools\tar.exe"</_TarCommand>

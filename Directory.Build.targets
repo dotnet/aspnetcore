@@ -1,17 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
-    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(IsPackable)' != 'false' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
-
-    <!--
-      By default, assemblies which are only in the Microsoft.AspNetCore.App shared framework are not available as NuGet packages.
-    -->
-    <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
-
-    <!-- Only build assemblies in Microsoft.AspNetCore.App in source build -->
+    <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
-    <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceBuild
+        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsReferenceAssemblyProject)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">
@@ -28,7 +21,7 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
-    <SiteExtensionSuffix>$(VersionPrefix)</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion>$(VersionPrefix)</SiteExtensionPackageVersion>
     <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
 
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
@@ -58,16 +51,22 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup
-      Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Used to distinguish between packages building -->
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
-    <!-- Suppress creation of .nupkg for servicing builds. -->
+    <!-- Suppress creation of .nupkg for servicing builds of non-shipping projects. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
+    <!-- Keep this below where we set "IsPackageInThisPatch" -->
+    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
@@ -83,6 +82,9 @@
     -->
     <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
     <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
+
+    <!-- For servicing builds, we want to resolve baseline versions of project packages that aren't building, always -->
+    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -92,7 +94,8 @@
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
 
-    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true'">true</HasReferenceAssembly>
+    <HasReferenceAssembly
+        Condition=" '$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
 
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
@@ -106,9 +109,8 @@
     <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Language)' == 'C#'">
+  <PropertyGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
     <!-- Reference assemblies should always use Major.Minor.0.0 for assembly versions even during servicing. Only the package version should be updated. -->
-    <!-- Pinning the implementation assemblies at Major.Minor.0.0 as we figure out compiling against ref assemblies. -->
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
@@ -162,6 +164,6 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
-  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
+  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" $(HasReferenceAssembly) " />
 
 </Project>

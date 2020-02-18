@@ -11,11 +11,12 @@
 
   Items used by the resolution strategy:
 
-    * BaselinePackageReference = a list of packages that were reference in the last release of the project currently building
+    * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
+      - mainly used to ensure references do not change in servicing builds unless $(UseLatestPackageReferences) is not true.
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
- -->
+-->
 <Project>
 
   <PropertyGroup>
@@ -29,43 +30,49 @@
 
   <PropertyGroup>
     <!--
-      Projects should only use the latest package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
+      Projects should use the latest package references when:
+        * preparing a new major or minor release i.e. a non-servicing builds
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+      That is, use latest package references unless this is a servicing build, the project is normally packable, and
+      the package is not included in this release.
     -->
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackableInNonServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
     <!--
-      Projects should only use the project references instead of baseline package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
-        * when a project is a test or sample project
-      We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
+      Projects should use project references (instead of baseline packages), compile against ref/ assemblies, and
+      execute against implementation assemblies in almost all cases. But, there's no need for implementation assemblies
+      and their $(TargetRefPath) indirection when building a ref/ project.
     -->
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
 
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies
+        Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies
+        Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
 
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies
+        Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies
+        Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <Reference>
-      <IsSharedSource></IsSharedSource>
+      <IsSharedSource />
     </Reference>
   </ItemDefinitionGroup>
 
   <ItemGroup Condition="'$(EnableCustomReferenceResolution)' == 'true'">
     <Reference Update="@(Reference)">
-      <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
+      <IsSharedSource
+          Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
     </Reference>
 
     <!-- Packages which are implicitly defined by the .NET Core SDK. -->
@@ -73,35 +80,40 @@
     <!-- Capture a list of references which were set explicitly in the project. -->
     <_AllowedExplicitPackageReference Include="@(PackageReference->WithMetadataValue('AllowExplicitReference', 'true'))" />
     <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
-    <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
+    <_ExplicitPackageReference Include="@(PackageReference)"
+        Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
 
     <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
-    <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
+    <_CompilationOnlyReference Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))"
+        Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
-      Include="@(Reference)"
-      Exclude="
-        @(AspNetCoreAppReference);
-        @(AspNetCoreAppReferenceAndPackage);
-        @(ExternalAspNetCoreAppReference);
-        @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
+        Include="@(Reference)"
+        Exclude="
+          @(AspNetCoreAppReference);
+          @(AspNetCoreAppReferenceAndPackage);
+          @(ExternalAspNetCoreAppReference);
+          @(_CompilationOnlyReference);
+          @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <_OriginalReferences Include="@(Reference)" />
+
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
       Order matters. This comes before package resolution because projects should be used when possible instead of packages.
     -->
     <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
-      Include="@(ProjectReferenceProvider)"
-      Exclude="@(_UnusedProjectReferenceProvider)" />
+        Include="@(ProjectReferenceProvider)"
+        Exclude="@(_UnusedProjectReferenceProvider)" />
 
     <!-- Use ref assembly project paths for ref assembly projects -->
-    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')"
+        Condition="'$(ReferenceImplementationAssemblies)' == 'true'">
       <IsReferenceAssembly>false</IsReferenceAssembly>
     </ProjectReference>
 
-    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')"
+        Condition="'$(ReferenceReferenceAssemblies)' == 'true'">
       <IsReferenceAssembly>true</IsReferenceAssembly>
     </ProjectReference>
 
@@ -109,30 +121,31 @@
   </ItemGroup>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
-    This target helps ensure projects within the shared framework do no unintentionally add new references,
+    This target helps ensure projects within the shared framework do not unintentionally add new references,
     and that assemblies outside the shared framework reference the framework as a whole instead of using
     individual assemblies.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
-
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
-           Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
+        Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
 
     <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0"
-           Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
+        Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
-    <Warning Condition="@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count()) &gt; 1"
-             Text="Redundant &lt;FrameworkReference&gt;. If you have an explicit item in the project file, you might be able to remove it. Some SDKs, like Microsoft.NET.Sdk.Web, add this implicitly." />
+    <Warning
+        Condition="@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count()) &gt; 1"
+        Text="Redundant &lt;FrameworkReference&gt;. If you have an explicit item in the project file, you might be able to remove it. Some SDKs, like Microsoft.NET.Sdk.Web, add this implicitly." />
   </Target>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
+    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ResolveCustomReferences"
+      BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences"
+      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
@@ -141,9 +154,15 @@
       </Reference>
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
+          Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+      <!--
+        Temporarily ignore the above. Restore Condition="'$(IsServicingBuild)' != 'true'" when
+        https://github.com/aspnet/AspNetCore/issues/14630 is resolved.
+      -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
@@ -153,19 +172,21 @@
         <Id>%(LatestPackageReference.Identity)</Id>
         <Version>%(LatestPackageReference.Version)</Version>
       </_LatestPackageReferenceWithVersion>
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)"
+          Condition="'%(Id)' != '%(Identity)' " />
 
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
-      <!-- Resolve references from BaselinePackageReference for servicing builds. -->
-      <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+      <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
+      <_BaselinePackageReferenceWithVersion Include="@(Reference)"
+          Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
         <Id>%(BaselinePackageReference.Identity)</Id>
         <Version>%(BaselinePackageReference.Version)</Version>
       </_BaselinePackageReferenceWithVersion>
-
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)"
+          Condition="'%(Id)' != '%(Identity)' " />
 
       <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
@@ -176,10 +197,10 @@
         <Id>%(LatestPackageReference.Identity)</Id>
         <Version>%(LatestPackageReference.Version)</Version>
       </_PrivatePackageReferenceWithVersion>
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)"
+          Condition="'%(Id)' != '%(Identity)' " />
 
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
-
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <!-- Remove reference items that have been resolved to an item with PrivateAssets="All". -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
 
@@ -190,24 +211,91 @@
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
 
-    <Error Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND @(_ExplicitPackageReference->Count()) != 0"
-           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead to replace the reference to @(_ExplicitPackageReference, ', '). See docs/ReferenceResolution.md for more details." />
+    <Error
+        Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND @(_ExplicitPackageReference->Count()) != 0"
+        Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead to replace the reference to @(_ExplicitPackageReference, ', '). See docs/ReferenceResolution.md for more details." />
 
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
-             Code="BUILD001"
-             Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
+    <Warning
+        Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
+        Code="BUILD001"
+        Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
 
-    <Error Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0"
-           Code="BUILD002"
-           Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
+    <Error
+        Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0"
+        Code="BUILD002"
+        Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
-    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
-           Code="MSB3245"
-           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
+    <Error
+        Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
+        Code="MSB3245"
+        Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
+  </Target>
+
+  <!--
+    Update metadata of implementation projects to include information about associated ref assembly (if any).
+  -->
+  <PropertyGroup>
+    <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
+    <_CompileTfmUsingReferenceAssemblies
+        Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
+    <_ReferenceProjectFile>$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)</_ReferenceProjectFile>
+
+    <!--
+      Set properties controlling the item group GetTargetPathWithTargetPlatformMoniker, GetTargetPath and Build return.
+      Ensures dependent projects know about the ref/ assembly. Done late enough that Compile does not attempt to create
+      this assembly. Reset properties to avoid error when copying non-existent @(IntermediateRefAssembly) to
+      $(TargetRefPath).
+    -->
+    <GetTargetPathWithTargetPlatformMonikerDependsOn>$(GetTargetPathWithTargetPlatformMonikerDependsOn);AddReferenceProjectMetadata</GetTargetPathWithTargetPlatformMonikerDependsOn>
+    <PrepareForRunDependsOn>RemoveReferenceProjectMetadata;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
+  </PropertyGroup>
+  <ItemGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
+    <!-- Ensure ref/ project is built prior to the implementation project. Capture its target path. -->
+    <ProjectReference Include="$(_ReferenceProjectFile)">
+      <OutputItemType>ReferenceProjectMetadata</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="AddReferenceProjectMetadata" DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+      <TargetRefPath>@(ReferenceProjectMetadata)</TargetRefPath>
+    </PropertyGroup>
+  </Target>
+  <Target Name="RemoveReferenceProjectMetadata">
+    <PropertyGroup>
+      <ProduceReferenceAssembly />
+      <TargetRefPath />
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    If we have a ref/ assembly from Extensions for a package, use that when compiling. The build-only reference to
+    Microsoft.Internal.Extensions.Refs ensures package is installed and $(MicrosoftInternalExtensionsRefsPath) is set.
+  -->
+  <ItemGroup
+      Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+    <PackageReference Include="Microsoft.Internal.Extensions.Refs"
+        Version="$(MicrosoftInternalExtensionsRefsPackageVersion)"
+        IsImplicitlyDefined="true"
+        IncludeAssets="Build"
+        PrivateAssets="All" />
+  </ItemGroup>
+  <Target Name="AddReferencePackageMetadata"
+      BeforeTargets="FindReferenceAssembliesForReferences"
+      Condition=" $(_CompileTfmUsingReferenceAssemblies) ">
+    <ItemGroup>
+      <ReferencePath>
+        <ReferenceAssembly
+            Condition=" '%(ReferencePath.ReferenceAssembly)' == '' AND Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') AND '%(FileName)' != 'Microsoft.AspNetCore.Testing' ">$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll</ReferenceAssembly>
+      </ReferencePath>
+    </ItemGroup>
   </Target>
 
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
@@ -231,24 +319,36 @@
       <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
     </PropertyGroup>
 
-    <Error Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true' AND Exists($(ReferenceAssemblyDirectory))" Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
-    <Error Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true'" Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
+    <Error
+        Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND !$(HasReferenceAssembly) AND Exists($(ReferenceAssemblyDirectory))"
+        Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
+    <Error
+        Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND !$(HasReferenceAssembly) "
+        Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
+    <Warning Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' != 'true' "
+        Text="Only implementation projects should set IsAspNetCoreApp=true." />
+    <Warning Condition=" '$(IsAspNetCoreApp)' != 'true' AND $(HasReferenceAssembly) "
+        Text="Only projects in the shared framework i.e. IsAspNetCoreApp==true should produce a reference assembly." />
 
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
-        <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
+        <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
-        <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
+        <ReferenceAssemblyProjectFileRelativePath
+            Condition=" $(HasReferenceAssembly) ">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>
 
   <!-- This is used by the eng/scripts/AddAllProjectRefsToSolution.ps1 script to traverse the ProjectRef graph -->
   <PropertyGroup>
-    <_CustomCollectProjectReferenceDependsOn Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
+    <_CustomCollectProjectReferenceDependsOn
+        Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
   </PropertyGroup>
-  <Target Name="_CustomCollectProjectReference" DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)" Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
+  <Target Name="_CustomCollectProjectReference"
+      DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)"
+      Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
     <ItemGroup>
       <_TargetFrameworks Include="$(TargetFrameworks)" />
     </ItemGroup>

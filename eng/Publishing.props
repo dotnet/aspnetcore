@@ -30,8 +30,11 @@
   </ItemGroup>
 
   <Target Name="_PublishInstallers">
-    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
-    <MSBuild Projects="$(RepoRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj"
+    <!-- 
+      This target is defined in eng/targets/Packaging.targets and included in every C# and F# project.
+      We use Microsoft.AspNetCore.DeveloperCertificates.XPlat because it is a nonshipping package, and we need a non-stable version string to use as our publish location.
+    -->
+    <MSBuild Projects="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />

@@ -21,6 +21,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
 
+    <!-- We need to reference the implementation assemblies when composing the shared framework -->
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
     <!-- This file is used by the dotnet/core-sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFileOutputPath>$(InstallersOutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
@@ -33,7 +37,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimePrivateDownloadUrl>$(DotNetPrivateAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimePrivateDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -52,6 +57,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Always generated, even though output type == Library -->
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <ProjectRuntimeConfigFileName>$(SharedFxName).runtimeconfig.json</ProjectRuntimeConfigFileName>
+    <!-- Target the latest runtime patch so the latest version is specified in runtimeconfig.json -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
 
     <!-- Suppress .deps generation (we have to customize its layout. -->
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -295,6 +302,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   -->
   <PropertyGroup>
     <CrossgenToolDir>$(IntermediateOutputPath)crossgen\</CrossgenToolDir>
+    <CrossgenPlatformAssembliesDir>$(IntermediateOutputPath)platformAssemblies\</CrossgenPlatformAssembliesDir>
     <!-- Pick the right coreclr jit based on whether we are cross-compiling or not -->
     <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' == ''">$(RuntimePackageRoot)runtimes\$(RuntimeIdentifier)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
     <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' != ''">$(RuntimepackageRoot)runtimes\$(CrossCompileDirectory)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
@@ -302,6 +310,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <ItemGroup>
     <CreateDirectory Include="$(CrossgenToolDir)" />
+    <CreateDirectory Include="$(CrossgenPlatformAssembliesDir)" />
     <CreateDirectory Include="$(SharedFxLayoutTargetDir)" />
     <CreateDirectory Include="$(RedistLayoutTargetDir)" />
     <CreateDirectory Include="$(LocalInstallationOutputPath)" />
@@ -310,13 +319,19 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="Crossgen" DependsOnTargets="$(CrossgenDependsOn)" />
 
   <Target Name="PrepareForCrossGen" Condition="'$(CrossgenOutput)' == 'true'">
+    <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
+
     <!-- Resolve list of assemblies to crossgen -->
     <ItemGroup>
       <IntermediateCrossgenAssembly Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'" />
 
       <!-- These are the paths used by crossgen to find assemblies that are expected to exist at runtime in the shared frameworks. -->
       <_PlatformAssemblyPaths Include="$(CrossgenToolDir)" />
-      <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" />
+      <!-- Include the directories of the assemblies not built in this repo. These contain only implementation assemblies. -->
+      <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' == ''"/>
+      <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Use the directory with only impl assemblies. -->
+      <_PlatformAssemblyPaths Include="$(CrossgenPlatformAssembliesDir)"/>
 
       <ReferenceCopyLocalPaths Remove="@(IntermediateCrossgenAssembly)" />
       <ReferenceCopyLocalPaths Include="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')" />
@@ -369,9 +384,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   -->
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
-      SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationFolder="$(BaseIntermediateOutputPath)"
-      DestinationFileName="$(DotNetRuntimeArchiveFileName)" />
+      Uri="$(DotNetRuntimeDownloadUrl)"
+      PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
+      PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
+      DestinationPath="$(DotNetRuntimeArchive)" />
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"

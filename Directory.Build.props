@@ -91,8 +91,14 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
+    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.2. -->
+    <!-- We can remove the 3.1.2 line from any branch other than release/3.1 and from here after 3.1.2 is released. -->
+    <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(VersionPrefix)' == '3.1.2' ">true</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
@@ -179,7 +185,6 @@
 
   <Import Project="eng\Workarounds.props" />
   <Import Project="eng\Dependencies.props" />
-  <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />
   <Import Project="eng\SharedFramework.External.props" />

@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
                 // in the string
                 if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+        private static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
             => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
@@ -194,6 +194,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
             }
         }
+
+        private static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = span)
+            {
+                // This returns false if there are any null (0 byte) characters in the string.
+                if (!StringUtilities.TryGetLatin1String(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    throw new InvalidOperationException();
+                }
+            }
+
+            return resultString;
+        }
+
+        public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
+            useLatin1 ? GetLatin1StringNonNullCharacters(span) : GetAsciiOrUTF8StringNonNullCharacters(span);
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
         {

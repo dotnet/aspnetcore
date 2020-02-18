@@ -82,10 +82,10 @@ namespace Microsoft.AspNetCore.SignalR
         /// <inheritdoc />
         public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, null);
+            return SendToAllConnections(methodName, args, include: null, cancellationToken);
         }
 
-        private Task SendToAllConnections(string methodName, object[] args, Func<HubConnectionContext, object, bool> include, object state = null)
+        private Task SendToAllConnections(string methodName, object[] args, Func<HubConnectionContext, object, bool> include, object state = null, CancellationToken cancellationToken)
         {
             List<Task> tasks = null;
             SerializedHubMessage message = null;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR
                     message = CreateSerializedInvocationMessage(methodName, args);
                 }
 
-                var task = connection.WriteAsync(message);
+                var task = connection.WriteAsync(message, cancellationToken);
 
                 if (!task.IsCompletedSuccessfully)
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         // Tasks and message are passed by ref so they can be lazily created inside the method post-filtering,
         // while still being re-usable when sending to multiple groups
-        private void SendToGroupConnections(string methodName, object[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object, bool> include, object state, ref List<Task> tasks, ref SerializedHubMessage message)
+        private void SendToGroupConnections(string methodName, object[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object, bool> include, object state, ref List<Task> tasks, ref SerializedHubMessage message, CancellationToken cancellationToken)
         {
             // foreach over ConcurrentDictionary avoids allocating an enumerator
             foreach (var connection in connections)
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR
                     message = CreateSerializedInvocationMessage(methodName, args);
                 }
 
-                var task = connection.Value.WriteAsync(message);
+                var task = connection.Value.WriteAsync(message, cancellationToken);
 
                 if (!task.IsCompletedSuccessfully)
                 {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR
             // Write message directly to connection without caching it in memory
             var message = CreateInvocationMessage(methodName, args);
 
-            return connection.WriteAsync(message).AsTask();
+            return connection.WriteAsync(message, cancellationToken).AsTask();
         }
 
         /// <inheritdoc />
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // group might be modified inbetween checking and sending
                 List<Task> tasks = null;
                 SerializedHubMessage message = null;
-                SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message);
+                SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
 
                 if (tasks != null)
                 {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var group = _groups[groupName];
                 if (group != null)
                 {
-                    SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message);
+                    SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
                 }
             }
 
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.SignalR
                 List<Task> tasks = null;
                 SerializedHubMessage message = null;
 
-                SendToGroupConnections(methodName, args, group, (connection, state) => !((IReadOnlyList<string>)state).Contains(connection.ConnectionId), excludedConnectionIds, ref tasks, ref message);
+                SendToGroupConnections(methodName, args, group, (connection, state) => !((IReadOnlyList<string>)state).Contains(connection.ConnectionId), excludedConnectionIds, ref tasks, ref message, cancellationToken);
 
                 if (tasks != null)
                 {
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <inheritdoc />
         public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, (connection, state) => string.Equals(connection.UserIdentifier, (string)state, StringComparison.Ordinal), userId);
+            return SendToAllConnections(methodName, args, (connection, state) => string.Equals(connection.UserIdentifier, (string)state, StringComparison.Ordinal), userId, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -292,19 +292,19 @@ namespace Microsoft.AspNetCore.SignalR
         /// <inheritdoc />
         public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, (connection, state) => !((IReadOnlyList<string>)state).Contains(connection.ConnectionId), excludedConnectionIds);
+            return SendToAllConnections(methodName, args, (connection, state) => !((IReadOnlyList<string>)state).Contains(connection.ConnectionId), excludedConnectionIds, cancellationToken);
         }
 
         /// <inheritdoc />
         public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state).Contains(connection.ConnectionId), connectionIds);
+            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state).Contains(connection.ConnectionId), connectionIds, cancellationToken);
         }
 
         /// <inheritdoc />
         public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state).Contains(connection.UserIdentifier), userIds);
+            return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state).Contains(connection.UserIdentifier), userIds, cancellationToken);
         }
     }
 }

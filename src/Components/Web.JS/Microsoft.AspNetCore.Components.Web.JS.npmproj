@@ -28,6 +28,11 @@
 
   <Target Name="GetTargetPath" />
 
+  <!-- Workaround strange issues with something calling these targets. -->
+  <Target Name="GetTargetFramework" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
+  <Target Name="GetTargetPath" />
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
 </Project>

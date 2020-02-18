@@ -118,6 +118,35 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         }
 
         [Fact]
+        public void GetDirectoryContents_HandlesEmptyBasePath()
+        {
+            // Arrange
+            var provider = new StaticWebAssetsFileProvider("/",
+                Path.Combine(AppContext.BaseDirectory, "testroot", "wwwroot"));
+
+            // Act
+            var directory = provider.GetDirectoryContents("/Static Web/");
+
+            // Assert
+            Assert.Collection(directory,
+                file =>
+                {
+                    Assert.Equal("Static Web.txt", file.Name);
+                });
+        }
+
+        [Fact]
+        public void StaticWebAssetsFileProviderWithEmptyBasePath_FindsFile()
+        {
+            // Arrange & Act
+            var provider = new StaticWebAssetsFileProvider("/",
+                Path.Combine(AppContext.BaseDirectory, "testroot", "wwwroot"));
+
+            // Assert
+            Assert.True(provider.GetFileInfo("/Static Web Assets.txt").Exists);
+        }
+
+        [Fact]
         public void GetFileInfo_DoesNotMatch_IncompletePrefixSegments()
         {
             // Arrange
