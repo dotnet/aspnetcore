@@ -38,6 +38,8 @@ echo "Creating nugetRestore directory: $NUGET_RESTORE"
 mkdir $NUGET_RESTORE
 mkdir logs
 
+ls -la
+
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
