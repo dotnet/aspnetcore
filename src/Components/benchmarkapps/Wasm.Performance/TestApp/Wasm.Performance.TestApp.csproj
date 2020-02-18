@@ -7,6 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,50 @@
+<Project>
+
+  <!-- Require rebuild if the targets change -->
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BlazorToolsDir Condition="'$(BlazorToolsDir)' == ''">$(MSBuildThisFileDirectory)..\tools\</BlazorToolsDir>
+    <_BlazorTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_BlazorTasksTFM>
+    <_BlazorTasksTFM Condition=" '$(_BlazorTasksTFM)' == ''">netfx</_BlazorTasksTFM>
+    <BlazorTasksPath>$(BlazorToolsDir)$(_BlazorTasksTFM)\Microsoft.AspNetCore.Components.WebAssembly.Build.Tasks.dll</BlazorTasksPath>
+
+    <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- By default, enable debugging for debug builds. -->
+    <BlazorEnableDebugging Condition="'$(Configuration)' == 'Debug' AND '$(BlazorEnableDebugging)' == ''">true</BlazorEnableDebugging>
+  </PropertyGroup>
+
+  <Import Project="Blazor.MonoRuntime.targets" />
+  <Import Project="Publish.targets" />
+  <Import Project="StaticWebAssets.targets" />
+  <Import Project="ServiceWorkerAssetsManifest.targets" />
+
+  <Target Name="GenerateBlazorMetadataFile"
+    BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>
+      <BlazorMetadataFilePath>$(TargetDir)$(BlazorMetadataFileName)</BlazorMetadataFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BlazorConfigContent Include="$(MSBuildProjectFullPath)" />
+      <_BlazorConfigContent Include="$(TargetPath)" />
+      <_BlazorConfigContent Include="debug:true" Condition="'$(BlazorEnableDebugging)'=='true'" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(BlazorMetadataFilePath)"
+      Lines="@(_BlazorConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
+</Project>

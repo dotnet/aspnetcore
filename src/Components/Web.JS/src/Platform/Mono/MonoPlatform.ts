@@ -36,7 +36,7 @@ export const monoPlatform: Platform = {
     // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
     // outer promise reflects the startup process, and the inner one reflects the possibly-async
     // .NET entrypoint method.
-    const invokeEntrypoint = bindStaticMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting.EntrypointInvoker', 'InvokeEntrypoint');
+    const invokeEntrypoint = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Hosting.EntrypointInvoker', 'InvokeEntrypoint');
     // Note we're passing in null because passing arrays is problematic until https://github.com/mono/mono/issues/18245 is resolved.
     invokeEntrypoint(assemblyName, null);
   },

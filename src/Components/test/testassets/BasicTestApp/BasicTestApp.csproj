@@ -14,10 +14,10 @@
 
   <ItemGroup>
     <Reference Include="System.ComponentModel" />
-    <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" />
+    <Reference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" />
   </ItemGroup>
 
   <ItemGroup>

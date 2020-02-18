@@ -37,7 +37,7 @@
       Private="false" />
   </ItemGroup>
 
-  <Import Project="Blazor\Build\src\ReferenceFromSource.props" Condition="'$(ReferenceBlazorBuildLocally)' == 'true'" />
+  <Import Project="WebAssembly\Build\src\ReferenceFromSource.props" Condition="'$(ReferenceBlazorBuildLocally)' == 'true'" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 </Project>
