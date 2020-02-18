@@ -58,21 +58,16 @@ else
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri(Navigation.BaseUri);
 
-        var tokenResult = await AuthenticationService.GetAccessToken();
+        var tokenResult = await AuthenticationService.RequestAccessToken();
 
-        switch (tokenResult.Status)
+        if (tokenResult.TryGetToken(out var token))
         {
-            case AccessTokenResultStatus.Success:
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokenResult.Token.Value}");
-                forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
-                break;
-            case AccessTokenResultStatus.RequiresRedirect:
-                // Save any page state here before redirecting to the Identity Provider.
-                // You will be redirected back to this page once the authorization successfully completes.
-                Navigation.NavigateTo(tokenResult.RedirectUrl);
-                break;
-            default:
-                break;
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
+            forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+        }
+        else
+        {
+            Navigation.NavigateTo(tokenResult.RedirectUrl);
         }
 
             #else
