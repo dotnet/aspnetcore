@@ -71,8 +71,6 @@ namespace ComponentsWebAssembly_CSharp.Server
             services.AddRazorPages();
 #endif
 
-            services.AddWebAssemblyStaticFilesConfiguration();
-
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -127,6 +125,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #endif
                 endpoints.MapControllers();
 
+                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }
