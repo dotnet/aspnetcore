@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var httpConnectionContext = new Http3ConnectionContext
             {
-                MultiplexedConnectionContext = _multiplexedContext,
+                ConnectionContext = _multiplexedContext,
                 ConnectionFeatures = features,
                 ServiceContext = _serviceContext,
                 MemoryPool = _memoryPool,
@@ -449,6 +449,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override IFeatureCollection Features { get; }
 
             public override IDictionary<object, object> Items { get; set; }
+
+            public override void Abort()
+            {
+            }
+
+            public override void Abort(ConnectionAbortedException abortReason)
+            {
+            }
 
             public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)
             {

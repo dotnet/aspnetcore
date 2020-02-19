@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _connection.Dispose();
         }
 
+        public override void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via MultiplexedConnectionContext.Abort()."));
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _closeTask = _connection.CloseAsync(errorCode: Error);

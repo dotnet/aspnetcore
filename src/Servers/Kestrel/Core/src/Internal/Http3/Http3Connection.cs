@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public Http3Connection(Http3ConnectionContext context)
         {
-            _multiplexedContext = context.MultiplexedConnectionContext;
+            _multiplexedContext = context.ConnectionContext;
             _context = context;
             DynamicTable = new DynamicTable(0);
             _systemClock = context.ServiceContext.SystemClock;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((Http3Connection)state).StopProcessingNextRequest(), this);
 
                 // Register for connection close
-                using var closedRegistration = _context.MultiplexedConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state).OnConnectionClosed(), this);
+                using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3Connection)state).OnConnectionClosed(), this);
 
                 await InnerProcessRequestsAsync(httpApplication);
             }

@@ -66,7 +66,7 @@ namespace QuicSampleApp
                              }
                          }
 
-                         listenOptions.Run(EchoServer);
+                         listenOptions.RunMultiplexed(EchoServer);
                      });
                  })
                  .UseStartup<Startup>();

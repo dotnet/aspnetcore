@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var http3ConnectionContext = new Http3ConnectionContext
             {
                 ConnectionId = connectionContext.ConnectionId,
-                MultiplexedConnectionContext = connectionContext,
+                ConnectionContext = connectionContext,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 MemoryPool = memoryPoolFeature.MemoryPool,

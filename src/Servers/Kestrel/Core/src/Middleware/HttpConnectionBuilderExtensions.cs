@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public static IMultiplexedConnectionBuilder UseHttp3Server<TContext>(this IMultiplexedConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
         {
             var middleware = new Http3ConnectionMiddleware<TContext>(serviceContext, application);
-            return builder.Use(next =>
+            return builder.UseMultiplexed(next =>
             {
                 return middleware.OnConnectionAsync;
             });

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     internal class Http3ConnectionContext
     {
         public string ConnectionId { get; set; }
-        public MultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
+        public MultiplexedConnectionContext ConnectionContext { get; set; }
         public ServiceContext ServiceContext { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
         public MemoryPool<byte> MemoryPool { get; set; }
