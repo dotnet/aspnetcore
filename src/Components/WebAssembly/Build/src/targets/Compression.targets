@@ -1,0 +1,61 @@
+<Project>
+  <PropertyGroup>
+
+    <ResolveCurrentProjectStaticWebAssetsDependsOn>
+      $(ResolveCurrentProjectStaticWebAssetsDependsOn);
+      _CompressBlazorApplicationFiles;
+    </ResolveCurrentProjectStaticWebAssetsDependsOn>
+
+  </PropertyGroup>
+
+  <Target Name="_ResolveAssetsToCompress" AfterTargets="_ResolveBlazorGeneratedAssets">
+
+    <PropertyGroup>
+      <StaticResourcesIntermediateOutputPath>$(IntermediateOutputPath)compressed\</StaticResourcesIntermediateOutputPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(StaticResourcesIntermediateOutputPath)" />
+    <ItemGroup>
+      <_StaticResourceToCompress Include="@(StaticWebAsset)" Condition="'%(SourceType)' == '' and $([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('_framework/'))" KeepDuplicates="false">
+        <TargetCompressionPath>$(StaticResourcesIntermediateOutputPath)%(RelativePath).gz</TargetCompressionPath>
+        <TargetOutputPath>%(RelativePath).gz</TargetOutputPath>
+        <RelativePath>%(RelativePath).gz</RelativePath>
+        <InputSource>%(FullPath)</InputSource>
+      </_StaticResourceToCompress>
+
+      <_StaticResourceToCompress Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
+        <InputSource>$([MSBuild]::NormalizePath('$(StaticResourcesIntermediateOutputPath)%(RelativePath).hash'))</InputSource>
+      </_StaticResourceToCompress>
+
+      <_CompressedStaticWebAsset Include="@(_StaticResourceToCompress->'%(TargetCompressionPath)')" RemoveMetadata="TargetOutputPath;TargetCompressionPath" />
+
+      <StaticWebAsset Include="@(_CompressedStaticWebAsset->'%(FullPath)')" KeepMetadata="SourceType;SourceId;ContentRoot;BasePath;RelativePath" />
+      <FileWrites Include="@(_CompressedStaticWebAsset)" />
+
+    </ItemGroup>
+
+    <GetFileHash Files="@(_StaticResourceToCompress)" Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
+      <Output TaskParameter="Items" ItemName="_LinkerOutputHashes" />
+    </GetFileHash>
+
+    <WriteLinesToFile Condition="'@(_LinkerOutputHashes)' != ''" Lines="%(_LinkerOutputHashes.FileHash)" File="%(_LinkerOutputHashes.InputSource)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
+    <ItemGroup>
+      <FileWrites Include="%(_LinkerOutputHashes.InputSource)" />
+    </ItemGroup>
+
+  </Target>
+
+  <UsingTask TaskName="CompressBlazorApplicationFiles" AssemblyFile="$(BlazorTasksPath)" />
+
+  <Target
+    Name="_CompressBlazorApplicationFiles"
+    AfterTargets="_ResolveAssetsToCompress"
+    Inputs="%(_StaticResourceToCompress.InputSource)"
+    Outputs="%(_StaticResourceToCompress.TargetCompressionPath)">
+
+    <CompressBlazorApplicationFiles StaticWebAsset="@(_StaticResourceToCompress)" />
+
+  </Target>
+
+</Project>

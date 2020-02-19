@@ -22,5 +22,6 @@
   <Import Project="Publish.targets" />
   <Import Project="StaticWebAssets.targets" />
   <Import Project="ServiceWorkerAssetsManifest.targets" />
+  <Import Project="Compression.targets" />
 
 </Project>
