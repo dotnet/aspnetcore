@@ -70,7 +70,6 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.1.20117.8</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview.1.20117.8</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftCSharpPackageVersion>5.0.0-alpha.1.19563.6</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.1.20117.8</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-preview.1.20117.8</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.1.20117.8</SystemComponentModelAnnotationsPackageVersion>
@@ -192,6 +191,7 @@
     <MicrosoftSymbolUploaderBuildTaskPackageVersion>1.0.0-beta-64023-03</MicrosoftSymbolUploaderBuildTaskPackageVersion>
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
+    <MicrosoftCSharpPackageVersion>4.7.0</MicrosoftCSharpPackageVersion>
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
     <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>

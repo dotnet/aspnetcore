@@ -12,7 +12,8 @@
   <Import Project="..\Build.props" />
 
   <ItemGroup>
-    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
+    <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' != 'true'" Include="@(HelixAvailableTargetQueue->'%(Identity)'->Replace('.Open',''))" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -21,11 +22,13 @@
     <IsExternal>true</IsExternal>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+    <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
-    <Creator>aspnetcore</Creator>
+    <!-- Creator is not valid for internal queues -->
+    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
     <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
@@ -34,8 +37,9 @@
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <HelixType>dev</HelixType>
-    <Creator>$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
+    <!-- Creator is not valid for internal queues -->
+    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
     <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
   </PropertyGroup>
 
