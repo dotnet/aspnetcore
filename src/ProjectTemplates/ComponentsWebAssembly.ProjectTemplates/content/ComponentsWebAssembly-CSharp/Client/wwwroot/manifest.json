@@ -1,6 +1,6 @@
 {
-  "name": "BlazorWasm-CSharp",
-  "short_name": "BlazorWasm-CSharp",
+  "name": "ComponentsWebAssembly-CSharp",
+  "short_name": "ComponentsWebAssembly-CSharp",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
