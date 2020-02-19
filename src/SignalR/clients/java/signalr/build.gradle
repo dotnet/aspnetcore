@@ -6,6 +6,7 @@ buildscript {
   }
   dependencies {
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.14.0"
+    classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
   }
 }
 
@@ -16,6 +17,7 @@ plugins {
 
 apply plugin: "java-library"
 apply plugin: "com.diffplug.gradle.spotless"
+apply plugin: 'org.junit.platform.gradle.plugin'
 
 group 'com.microsoft.signalr'
 
@@ -64,8 +66,8 @@ spotless {
     }
 }
 
-test {
-    useJUnitPlatform()
+junitPlatform {
+    reportsDir file('test-results')
 }
 
 task sourceJar(type: Jar) {

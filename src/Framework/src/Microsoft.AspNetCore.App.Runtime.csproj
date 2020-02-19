@@ -7,7 +7,7 @@
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <!-- Do not exclude this project from source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <HasReferenceAssembly>false</HasReferenceAssembly>

@@ -35,6 +35,5 @@
   </ItemDefinitionGroup>
 
   <Import Project="CSharp.ReferenceAssembly.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-  <Import Project="Helix.props" Condition="'$(IsTestProject)' == 'true'" />
 
 </Project>

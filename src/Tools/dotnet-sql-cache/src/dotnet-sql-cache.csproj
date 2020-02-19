@@ -6,7 +6,7 @@
     <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

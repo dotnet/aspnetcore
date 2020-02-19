@@ -15,7 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 

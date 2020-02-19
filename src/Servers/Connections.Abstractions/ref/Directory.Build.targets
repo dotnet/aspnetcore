@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+  </PropertyGroup>
+</Project>
