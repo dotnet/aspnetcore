@@ -30,6 +30,7 @@ set HELIX=%helixQueue%
 set HELIX_DIR=%cd%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%cd%\nugetRestore
+echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
 mkdir logs
