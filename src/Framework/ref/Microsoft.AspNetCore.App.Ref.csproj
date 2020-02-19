@@ -130,7 +130,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
-          Condition="'%(ReferencePathWithRefAssemblies.IsReferenceAssembly)' == 'true'"
+          Condition="'%(ReferencePathWithRefAssemblies.IsReferenceAssembly)' != 'false'"
           Exclude="
             @(_ReferencedExtensionsRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
