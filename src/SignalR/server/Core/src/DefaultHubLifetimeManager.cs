@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <inheritdoc />
         public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            return SendToAllConnections(methodName, args, include: null, cancellationToken);
+            return SendToAllConnections(methodName, args, include: null, state: null, cancellationToken);
         }
 
         private Task SendToAllConnections(string methodName, object[] args, Func<HubConnectionContext, object, bool> include, object state = null, CancellationToken cancellationToken = default)
