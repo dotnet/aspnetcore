@@ -15,6 +15,8 @@
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
+    <IsMacHelixQueue>false</IsMacHelixQueue>
+    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
@@ -31,18 +33,6 @@
 
   <ItemGroup>
     <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
 </Project>
