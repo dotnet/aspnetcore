@@ -2,13 +2,13 @@
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>
       $(ResolveStaticWebAssetsInputsDependsOn);
-      _ApplyLinkPreferencesToStaticWebAssets;
+      _BlazorApplyLinkPreferencesToStaticWebAssets;
       _ResolveBlazorGeneratedAssets;
     </ResolveStaticWebAssetsInputsDependsOn>
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
       $(GetCurrentProjectStaticWebAssetsDependsOn);
-      _ApplyLinkPreferencesToStaticWebAssets;
+      _BlazorApplyLinkPreferencesToStaticWebAssets;
       _ResolveBlazorGeneratedAssets;
     </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>

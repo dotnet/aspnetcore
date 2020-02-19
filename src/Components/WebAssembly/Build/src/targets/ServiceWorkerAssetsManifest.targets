@@ -21,7 +21,7 @@
   <Target Name="_WriteServiceWorkerAssetsManifest"
           Inputs="@(ServiceWorkerAssetsManifestItem)"
           Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
-          BeforeTargets="_StaticWebAssetsCopyGeneratedFilesToOutputDirectory"
+          BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"
           DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion">
 
     <GenerateServiceWorkerAssetsManifest

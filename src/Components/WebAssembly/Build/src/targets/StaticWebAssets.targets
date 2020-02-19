@@ -34,7 +34,7 @@
 
   </Target>
 
-  <Target Name="_StaticWebAssetsCopyGeneratedFilesToOutputDirectory"
+  <Target Name="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"
     DependsOnTargets="ResolveStaticWebAssetsInputs;$(_BlazorCopyFilesToOutputDirectoryDependsOn)"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
@@ -74,10 +74,6 @@
   <Target Name="_StaticWebAssetsBlazorStandalonePublish"
     AfterTargets="_StaticWebAssetsComputeFilesToPublish">
 
-    <PropertyGroup>
-      <_BlazorStandalonePublishDir>$([MSBuild]::NormalizeDirectory('$(PublishDir)wwwroot\'))</_BlazorStandalonePublishDir>
-    </PropertyGroup>
-
     <ItemGroup>
 
       <_CurrentProjectStandalonePublishStaticWebAsset Include="%(StaticWebAsset.FullPath)" Condition="'%(StaticWebAsset.SourceType)' == ''">
@@ -103,7 +99,7 @@
 
   </Target>
 
-  <Target Name="_ApplyLinkPreferencesToStaticWebAssets">
+  <Target Name="_BlazorApplyLinkPreferencesToStaticWebAssets">
     <ItemGroup>
       <_ContentWithWwrootLinkAttribute Include="@(Content)" Condition="'%(Content.Link)' != '' and $([System.String]::Copy('%(Content.Link)').Replace('\','/').StartsWith('wwwroot/'))" />
 

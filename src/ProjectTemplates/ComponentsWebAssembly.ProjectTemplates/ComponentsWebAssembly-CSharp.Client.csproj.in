@@ -26,5 +26,6 @@
     <Content Remove="wwwroot\service-worker.js" />
     <Content Update="wwwroot\service-worker.published.js" Link="wwwroot\service-worker.js" />
   </ItemGroup>
+
   <!--#endif -->
 </Project>
