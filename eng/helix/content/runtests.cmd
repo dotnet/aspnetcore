@@ -26,9 +26,9 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
 )
 
-echo "Current Directory: %CD"
+echo "Current Directory: %HELIX_WORKITEM_ROOT%"
 set HELIX=%helixQueue%
-set HELIX_DIR=%CD%
+set HELIX_DIR=%HELIX_WORKITEM_ROOT%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%cd%\nugetRestore
 echo "Setting HELIX_DIR: %HELIX_DIR%"
