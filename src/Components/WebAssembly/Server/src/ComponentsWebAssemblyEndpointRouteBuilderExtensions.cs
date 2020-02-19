@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
                     if (ctx.Request.Path.StartsWithSegments(pathPrefix, out var rest) &&
                         rest.StartsWithSegments("/_framework"))
                     {
-                        // At this point we mapped something from the _/framework
+                        // At this point we mapped something from the /_framework
                         ctx.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
                     }
 
