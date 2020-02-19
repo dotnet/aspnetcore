@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Components.WebAssembly.Runtime" version="$MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion$" include="all" />
     </dependencies>
   </metadata>
   <files>

@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
   </ItemGroup>
 
   <Target Name="_BuildBlazorBuildProject" BeforeTargets="ResolveProjectReferences">

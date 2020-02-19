@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" />
-    <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
@@ -59,9 +59,9 @@
   <!-- A bit of msbuild magic to support reference resolver tests -->
   <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
     <ItemGroup>
-      <_BclDirectory Include="$(MonoBaseClassLibraryPath)" />
-      <_BclDirectory Include="$(MonoBaseClassLibraryFacadesPath)" />
-      <_BclDirectory Include="$(MonoWasmFrameworkPath)" />
+      <_BclDirectory Include="$(ComponentsWebAssemblyBaseClassLibraryPath)" />
+      <_BclDirectory Include="$(ComponentsWebAssemblyBaseClassLibraryFacadesPath)" />
+      <_BclDirectory Include="$(ComponentsWebAssemblyFrameworkPath)" />
     </ItemGroup>
 
     <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
