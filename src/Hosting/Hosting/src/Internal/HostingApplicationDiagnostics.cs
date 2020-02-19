@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Web;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         if (NameValueHeaderValue.TryParse(item, out var baggageItem))
                         {
-                            activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                            activity.AddBaggage(baggageItem.Name.ToString(), WebUtility.UrlDecode(baggageItem.Value.ToString()));
                         }
                     }
                 }
