@@ -172,7 +172,6 @@ namespace System.Net.Quic.Implementations.MsQuic
             }
             catch (Exception)
             {
-                // Console.WriteLine(ex.Message);
                 return MsQuicStatusCodes.InternalError;
             }
         }
