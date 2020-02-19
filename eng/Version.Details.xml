@@ -13,21 +13,21 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.1.20114.1">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.1.20114.5">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>609026ea14eeb52a068d228d84987f24f3c64136</Sha>
+      <Sha>9acda9485be8e2238067508474dfa44fcc34f81e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.1.20114.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.1.20114.5">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>609026ea14eeb52a068d228d84987f24f3c64136</Sha>
+      <Sha>9acda9485be8e2238067508474dfa44fcc34f81e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.1.20114.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.1.20114.5">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>609026ea14eeb52a068d228d84987f24f3c64136</Sha>
+      <Sha>9acda9485be8e2238067508474dfa44fcc34f81e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.1.20114.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.1.20114.5">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>609026ea14eeb52a068d228d84987f24f3c64136</Sha>
+      <Sha>9acda9485be8e2238067508474dfa44fcc34f81e</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-preview.1.20113.3">
       <Uri>https://github.com/dotnet/efcore</Uri>
@@ -288,10 +288,6 @@
     <Dependency Name="Microsoft.JSInterop" Version="5.0.0-preview.1.20114.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>396aff55e0b4628a7a44375e4b72e5d19a6e37ab</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CSharp" Version="5.0.0-alpha.1.19563.6" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>5cee7c97d602f294e27c582d4dab81ec388f1d7b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.1.20113.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>

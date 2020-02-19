@@ -40,6 +40,12 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
+      <_Temp Include="@(HelixAvailableTargetQueue)" />
+      <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
+      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open',''))" />
+    </ItemGroup>    
+    
     <ItemGroup>
       <!-- Include default queues based on platform -->
       <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true'" />
