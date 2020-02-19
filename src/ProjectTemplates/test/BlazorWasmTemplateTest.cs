@@ -54,7 +54,8 @@ namespace Templates.Test
             TestBasicNavigation(project.ProjectName);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("npm")]
         public async Task BlazorWasmHostedTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
