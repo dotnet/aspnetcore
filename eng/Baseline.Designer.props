@@ -97,7 +97,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Cookies-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.16</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.1.2, )" />
@@ -621,7 +621,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.1.11</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.16</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.1.1, )" />
