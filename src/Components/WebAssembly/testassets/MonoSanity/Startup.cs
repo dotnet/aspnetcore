@@ -10,7 +10,6 @@ namespace MonoSanity
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -21,6 +20,7 @@ namespace MonoSanity
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

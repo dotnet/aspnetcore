@@ -19,7 +19,6 @@ namespace TestServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddWebAssemblyStaticFilesConfiguration();
             services.AddCors(options =>
             {
                 // It's not enough just to return "Access-Control-Allow-Origin: *", because
@@ -54,6 +53,8 @@ namespace TestServer
 
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapBlazorWebAssemblyApplication();
+
                     endpoints.MapControllers();
                     endpoints.MapFallbackToFile("index.html");
                 });

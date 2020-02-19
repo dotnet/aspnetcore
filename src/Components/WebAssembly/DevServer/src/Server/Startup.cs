@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         {
             services.AddRouting();
 
-            services.AddWebAssemblyStaticFilesConfiguration();
-
             services.AddResponseCompression(options =>
             {
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
@@ -54,6 +52,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

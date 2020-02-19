@@ -15,7 +15,6 @@ namespace HostedInAspNet.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<RequestLog>();
-            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,12 +33,11 @@ namespace HostedInAspNet.Server
                 app.UseBlazorDebugging();
             }
 
-            app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

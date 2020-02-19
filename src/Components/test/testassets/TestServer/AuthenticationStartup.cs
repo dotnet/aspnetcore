@@ -28,8 +28,6 @@ namespace TestServer
 
             services.AddServerSideBlazor();
 
-            services.AddWebAssemblyStaticFilesConfiguration();
-
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddAuthorization(options =>
             {
@@ -56,6 +54,7 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapBlazorWebAssemblyApplication();
                     endpoints.MapControllers();
                     endpoints.MapRazorPages();
                     endpoints.MapBlazorHub();
