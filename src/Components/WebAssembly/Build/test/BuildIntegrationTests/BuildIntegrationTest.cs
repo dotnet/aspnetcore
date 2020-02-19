@@ -20,12 +20,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.webassembly.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "standalone.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, Path.Combine("netstandard2.1", "wwwroot"));
         }
 
         [Fact]
@@ -39,12 +42,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.BuildPassed(result);
 
             var buildOutputDirectory = project.BuildOutputDirectory;
-            var blazorConfig = Path.Combine(buildOutputDirectory, "standalone.blazor.config");
-            Assert.FileExists(result, blazorConfig);
 
             var path = Path.GetFullPath(Path.Combine(project.SolutionPath, "standalone", "bin", project.Configuration, "netstandard2.1", "standalone.dll"));
-            Assert.FileContains(result, blazorConfig, path);
-            Assert.FileDoesNotExist(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorhosted.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, Path.Combine("netstandard2.1", "wwwroot"));
+            Assert.FileContains(result, staticWebAssets, Path.Combine("razorclasslibrary", "wwwroot"));
+            Assert.FileContains(result, staticWebAssets, Path.Combine("standalone", "wwwroot"));
         }
 
         [Fact]
@@ -63,12 +68,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "blazor.webassembly.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "wasm", "dotnet.js");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
         }
 
         [Fact]
@@ -91,12 +96,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "classlibrarywithsatelliteassemblies.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "classlibrarywithsatelliteassemblies.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
 
-            var bootJsonPath = Path.Combine(buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
             Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
         }
@@ -122,12 +127,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "classlibrarywithsatelliteassemblies.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
-            Assert.FileExists(result, buildOutputDirectory, "dist", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "classlibrarywithsatelliteassemblies.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
 
-            var bootJsonPath = Path.Combine(buildOutputDirectory, "dist", "_framework", "blazor.boot.json");
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
             Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
         }

@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         {
             services.AddRouting();
 
+            services.AddWebAssemblyStaticFilesConfiguration();
+
             services.AddResponseCompression(options =>
             {
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
@@ -40,8 +42,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IConfiguration configuration)
         {
-            var applicationAssemblyFullPath = ResolveApplicationAssemblyFullPath();
-
             app.UseDeveloperExceptionPage();
             app.UseResponseCompression();
             EnableConfiguredPathbase(app, configuration);
@@ -49,32 +49,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
             app.UseBlazorDebugging();
 
             app.UseStaticFiles();
-            app.UseClientSideBlazorFiles(applicationAssemblyFullPath);
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapFallbackToClientSideBlazor(applicationAssemblyFullPath, "index.html");
+                endpoints.MapFallbackToFile("index.html");
             });
-        }
-
-        private string ResolveApplicationAssemblyFullPath()
-        {
-            const string applicationPathKey = "applicationpath";
-            var configuredApplicationPath = Configuration.GetValue<string>(applicationPathKey);
-            if (string.IsNullOrEmpty(configuredApplicationPath))
-            {
-                throw new InvalidOperationException($"No value was supplied for the required option '{applicationPathKey}'.");
-            }
-
-            var resolvedApplicationPath = Path.GetFullPath(configuredApplicationPath);
-            if (!File.Exists(resolvedApplicationPath))
-            {
-                throw new InvalidOperationException($"Application assembly not found at {resolvedApplicationPath}.");
-            }
-
-            return resolvedApplicationPath;
         }
 
         private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)

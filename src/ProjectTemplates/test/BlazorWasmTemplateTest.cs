@@ -56,7 +56,7 @@ namespace Templates.Test
 
         private ProcessEx RunPublishedStandaloneBlazorProject(Project project)
         {
-            var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
             AspNetProcess.EnsureDevelopmentCertificates();
 
             Output.WriteLine("Running dotnet serve on published output...");
@@ -123,7 +123,7 @@ namespace Templates.Test
 
             await BuildAndRunTest(project.ProjectName, project);
 
-            var publishDir = Path.Combine(project.TemplatePublishDir, project.ProjectName, "dist");
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
             // When publishing the PWA template, we generate an assets manifest
             // and move service-worker.published.js to overwrite service-worker.js

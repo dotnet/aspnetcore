@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
+            serverFixture.BuildWebHostMethod = Program.BuildWebHost;
         }
 
         public override Task InitializeAsync()
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
+            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 
