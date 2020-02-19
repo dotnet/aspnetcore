@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.FileProvider = _webHostEnvironment.WebRootFileProvider;
                 var contentTypeProvider = new FileExtensionContentTypeProvider();
                 AddMapping(contentTypeProvider, ".dll", MediaTypeNames.Application.Octet);
-                // We unconditionally map dlls as there will be no dlls in the output folder for
+                // We unconditionally map pdbs as there will be no pdbs in the output folder for
                 // release builds unless BlazorEnableDebugging is explicitly set to true.
                 AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
 
