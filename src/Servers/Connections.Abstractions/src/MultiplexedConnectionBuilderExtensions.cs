@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Connections
 {
     public static class MultiplexedConnectionBuilderExtensions
     {
-        public static IMultiplexedConnectionBuilder UseMultiplexed(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Func<Task>, Task> middleware)
+        public static IMultiplexedConnectionBuilder Use(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Func<Task>, Task> middleware)
         {
-            return connectionBuilder.UseMultiplexed(next =>
+            return connectionBuilder.Use(next =>
             {
                 return context =>
                 {
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Connections
             });
         }
 
-        public static IMultiplexedConnectionBuilder RunMultiplexed(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Task> middleware)
+        public static IMultiplexedConnectionBuilder Run(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Task> middleware)
         {
-            return connectionBuilder.UseMultiplexed(next =>
+            return connectionBuilder.Use(next =>
             {
                 return context =>
                 {

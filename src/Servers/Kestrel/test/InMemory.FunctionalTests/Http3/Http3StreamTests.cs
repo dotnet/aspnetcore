@@ -584,7 +584,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", responseHeaders[HeaderNames.ContentLength]);
         }
 
-
         [Fact(Skip = "Http3OutputProducer.Complete is called before input recognizes there is an error. Why is this different than HTTP/2?")]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {

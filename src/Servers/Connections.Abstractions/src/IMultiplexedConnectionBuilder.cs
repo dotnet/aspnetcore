@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Connections
         /// </summary>
         /// <param name="middleware">The middleware delegate.</param>
         /// <returns>The <see cref="IMultiplexedConnectionBuilder"/>.</returns>
-        IMultiplexedConnectionBuilder UseMultiplexed(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware);
+        IMultiplexedConnectionBuilder Use(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware);
 
         /// <summary>
         /// Builds the delegate used by this application to process connections.
         /// </summary>
         /// <returns>The connection handling delegate.</returns>
-        MultiplexedConnectionDelegate BuildMultiplexed();
+        MultiplexedConnectionDelegate Build();
     }
 }
