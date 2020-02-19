@@ -8,14 +8,14 @@
 
   <!-- For the targeting pack, always use packages with PatchVersion=0 -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref'">
-    <SystemIOPipelinesPackageVersionForSharedFramework>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersionForSharedFramework>
-    <SystemSecurityCryptographyXmlPackageVersionForSharedFramework>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersionForSharedFramework>
-    <MicrosoftWin32SystemEventsPackageVersionForSharedFramework>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsPackageVersionForSharedFramework>
-    <SystemDiagnosticsEventLogPackageVersionForSharedFramework>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersionForSharedFramework>
-    <SystemDrawingCommonPackageVersionForSharedFramework>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonPackageVersionForSharedFramework>
-    <SystemSecurityCryptographyPkcsPackageVersionForSharedFramework>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsPackageVersionForSharedFramework>
-    <SystemSecurityPermissionsPackageVersionForSharedFramework>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsPackageVersionForSharedFramework>
-    <SystemWindowsExtensionsPackageVersionForSharedFramework>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsPackageVersionForSharedFramework>
+    <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsPackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDrawingCommonPackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
 
 
@@ -65,8 +65,8 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
 
     <!-- Dependencies from dotnet/corefx -->
-    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersionForSharedFramework)" />
-    <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersionForSharedFramework)" />
+    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
@@ -77,12 +77,12 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
-    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsPackageVersionForSharedFramework)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersionForSharedFramework)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonPackageVersionForSharedFramework)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersionForSharedFramework)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersionForSharedFramework)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsPackageVersionForSharedFramework)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">
