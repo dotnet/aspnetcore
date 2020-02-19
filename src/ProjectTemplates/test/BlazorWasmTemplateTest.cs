@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Templates.Test.Helpers;
 using Xunit;
