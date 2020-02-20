@@ -15,15 +15,18 @@ namespace Templates.Test.SpaTemplateTest
         public AngularTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output)
             : base(projectFactory, browserFixture, output) { }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task AngularTemplate_Works()
             => SpaTemplateImplAsync("angularnoauth", "angular", useLocalDb: false, usesAuth: false);
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task AngularTemplate_IndividualAuth_Works()
             => SpaTemplateImplAsync("angularindividual", "angular", useLocalDb: false, usesAuth: true);
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task AngularTemplate_IndividualAuth_Works_LocalDb()
             => SpaTemplateImplAsync("angularindividualuld", "angular", useLocalDb: true, usesAuth: true);
     }

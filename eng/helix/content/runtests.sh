@@ -31,6 +31,14 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Used by SkipOnHelix attribute
 export helix="$helix_queue_name"
+export HELIX_DIR="$DIR"
+export NUGET_FALLBACK_PACKAGES="$DIR"
+export NUGET_RESTORE="$DIR/nugetRestore"
+echo "Creating nugetRestore directory: $NUGET_RESTORE"
+mkdir $NUGET_RESTORE
+mkdir logs
+
+ls -la
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -80,6 +88,13 @@ if [ $? -ne 0 ]; then
             runtime_retries=0
         fi
     done
+fi
+
+# Copy over any local shared fx if found
+if [ -d "Microsoft.AspNetCore.App" ]
+then
+    echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
+    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 fi
 
 if [ -e /proc/self/coredump_filter ]; then

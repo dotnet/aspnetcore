@@ -21,7 +21,22 @@ set PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
+if EXIST ".\Microsoft.AspNetCore.App" (
+    echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
+    xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
+)
+
+echo "Current Directory: %HELIX_WORKITEM_ROOT%"
 set HELIX=%$helixQueue%
+set HELIX_DIR=%HELIX_WORKITEM_ROOT%
+set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
+set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
+echo "Setting HELIX_DIR: %HELIX_DIR%"
+echo Creating nuget restore directory: %NUGET_RESTORE%
+mkdir %NUGET_RESTORE%
+mkdir logs
+
+dir
 
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt

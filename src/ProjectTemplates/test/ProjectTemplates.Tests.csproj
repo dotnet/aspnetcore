@@ -13,10 +13,7 @@
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
-    <BaseOutputPath />
-    <OutputPath />
 
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
@@ -24,12 +21,14 @@
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

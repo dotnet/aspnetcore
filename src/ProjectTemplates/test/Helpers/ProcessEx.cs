@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -189,11 +190,12 @@ namespace Templates.Test.Helpers
             }
         }
 
-        private static string GetNugetPackagesRestorePath() =>
-            typeof(ProcessEx).Assembly
+        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE"))) 
+            ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "TestPackageRestorePath")
-                .Value;
+                .Value
+            : Environment.GetEnvironmentVariable("NUGET_RESTORE");
 
         public void Dispose()
         {
