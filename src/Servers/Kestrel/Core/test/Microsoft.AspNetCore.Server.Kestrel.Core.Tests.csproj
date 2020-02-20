@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,7 +15,7 @@
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
-    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\Http2\**\*.cs" Link="Shared\Http2\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\**\*.cs" Link="Shared\runtime\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

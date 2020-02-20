@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             |                       Frame Payload (*)                     ...
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         */
-        internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3Frame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
+        internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3RawFrame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
         {
             framePayload = ReadOnlySequence<byte>.Empty;
             var consumed = readableBuffer.Start;

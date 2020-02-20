@@ -119,7 +119,7 @@
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
 
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />

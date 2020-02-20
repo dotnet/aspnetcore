@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -1373,6 +1374,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 await _context.Transport.Input.CompleteAsync();
                 _input.Writer.Complete(error);
             }
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
         }
 
         private class StreamCloseAwaitable : ICriticalNotifyCompletion
