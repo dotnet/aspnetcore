@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <_ExpectedSharedFrameworkBinaries Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
-    <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'" Include="aspnetcorev2_inprocess" />
+    <_ExpectedSharedFrameworkBinaries Condition="'$(IsServicingBuild)' == 'true' OR ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm')" Include="aspnetcorev2_inprocess" />
 
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>SharedFxVersion</_Parameter1>
