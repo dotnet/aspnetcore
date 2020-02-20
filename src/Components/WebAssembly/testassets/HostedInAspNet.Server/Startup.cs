@@ -33,11 +33,13 @@ namespace HostedInAspNet.Server
                 app.UseBlazorDebugging();
             }
 
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

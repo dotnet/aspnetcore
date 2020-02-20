@@ -36,6 +36,7 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
+                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
 
                 app.UseRequestLocalization(options =>
@@ -54,8 +55,6 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorWebAssemblyApplication();
-
                     endpoints.MapControllers();
                     endpoints.MapBlazorHub();
                     endpoints.MapFallbackToPage("/_ServerHost");

@@ -16,11 +16,11 @@ namespace MonoSanity
         {
             app.UseDeveloperExceptionPage();
             app.UseFileServer(new FileServerOptions() { EnableDefaultFiles = true, });
+            app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

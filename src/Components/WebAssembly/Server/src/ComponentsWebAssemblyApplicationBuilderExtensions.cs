@@ -5,7 +5,6 @@ using System;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -16,74 +15,50 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extensions for mapping Blazor WebAssembly applications.
     /// </summary>
-    public static class ComponentsWebAssemblyEndpointRouteBuilderExtensions
+    public static class ComponentsWebAssemblyApplicationBuilderExtensions
     {
         /// <summary>
         /// Maps a Blazor webassembly application to the <paramref name="pathPrefix"/>.
         /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor application.</param>
-        /// <returns>The <see cref="IEndpointConventionBuilder"/></returns>
-        public static IEndpointConventionBuilder MapBlazorWebAssemblyApplication(this IEndpointRouteBuilder endpoints, PathString pathPrefix)
+        /// <returns>The <see cref="IApplicationBuilder"/></returns>
+        public static IApplicationBuilder MapBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
         {
-            if (endpoints is null)
+            if (builder is null)
             {
-                throw new ArgumentNullException(nameof(endpoints));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            var webHostEnvironment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+            var webHostEnvironment = builder.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
             var options = CreateStaticFilesOptions(webHostEnvironment.WebRootFileProvider);
-            var appBuilder = endpoints.CreateApplicationBuilder();
 
-            appBuilder.Use(async (ctx, next) =>
+            builder.MapWhen(ctx => ctx.Request.Path.StartsWithSegments(pathPrefix, out var rest) && rest.StartsWithSegments("/_framework") && !rest.StartsWithSegments("/_framework/blazor.server.js"),
+            subBuilder =>
             {
-                var endpoint = ctx.GetEndpoint();
-                try
+                subBuilder.Use(async (ctx, next) =>
                 {
-                    // Set the endpoint to null so that static files doesn't discard the path.
-                    ctx.SetEndpoint(null);
-
-                    if (ctx.Request.Path.StartsWithSegments(pathPrefix, out var rest) &&
-                        rest.StartsWithSegments("/_framework"))
-                    {
-                        // At this point we mapped something from the /_framework
-                        ctx.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
-                    }
-
+                    // At this point we mapped something from the /_framework
+                    ctx.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
                     // This will invoke the static files middleware plugged-in below.
                     await next();
+                });
 
-                }
-                finally
-                {
-                    ctx.SetEndpoint(endpoint);
-                }
+                subBuilder.UseStaticFiles(options);
             });
 
-            appBuilder.UseStaticFiles(options);
-
-            var conventionBuilder = endpoints.Map(
-                $"{pathPrefix}/{{*path:file}}",
-                appBuilder.Build());
-
-            conventionBuilder.Add(builder =>
-            {
-                // Map this route with low priority so that it doesn't interfere with any other potential request.
-                ((RouteEndpointBuilder)builder).Order = int.MaxValue - 100;
-            });
-
-            return conventionBuilder;
+            return builder;
         }
 
         /// <summary>
         /// Maps a Blazor webassembly application to the root path of the application "/".
         /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor application.</param>
-        /// <returns>The <see cref="IEndpointConventionBuilder"/></returns>
-        public static IEndpointConventionBuilder MapBlazorWebAssemblyApplication(this IEndpointRouteBuilder endpoints) =>
-            MapBlazorWebAssemblyApplication(endpoints, default);
+        /// <returns>The <see cref="IApplicationBuilder"/></returns>
+        public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder applicationBuilder) =>
+            MapBlazorFrameworkFiles(applicationBuilder, default);
 
         private static StaticFileOptions CreateStaticFilesOptions(IFileProvider webRootFileProvider)
         {
