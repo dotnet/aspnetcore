@@ -66,7 +66,13 @@ namespace QuicSampleApp
                              }
                          }
 
-                         listenOptions.Run(EchoServer);
+                         ((IMultiplexedConnectionBuilder)listenOptions).Use(next =>
+                         {
+                             return context =>
+                             {
+                                 return EchoServer(context);
+                             };
+                         });
                      });
                  })
                  .UseStartup<Startup>();
