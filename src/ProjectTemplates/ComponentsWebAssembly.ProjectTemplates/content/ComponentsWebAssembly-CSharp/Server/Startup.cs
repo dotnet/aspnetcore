@@ -1,6 +1,12 @@
 #if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
 #endif
+#if (OrganizationalAuth)
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+#endif
+#if (IndividualB2CAuth)
+using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+#endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Components.Authorization;
