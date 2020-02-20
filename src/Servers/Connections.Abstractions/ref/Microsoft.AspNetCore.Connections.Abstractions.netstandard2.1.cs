@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Connections
     }
     public static partial class MultiplexedConnectionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder RunMultiplexed(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Threading.Tasks.Task> middleware) { throw null; }
+        public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Run(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Threading.Tasks.Task> middleware) { throw null; }
         public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder UseMultiplexed(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task> middleware) { throw null; }
     }
     public abstract partial class MultiplexedConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Connections
             });
         }
 
-        public static IMultiplexedConnectionBuilder RunMultiplexed(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Task> middleware)
+        public static IMultiplexedConnectionBuilder Run(this IMultiplexedConnectionBuilder connectionBuilder, Func<MultiplexedConnectionContext, Task> middleware)
         {
             return connectionBuilder.Use(next =>
             {
