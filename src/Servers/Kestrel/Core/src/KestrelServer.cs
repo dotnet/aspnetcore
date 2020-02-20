@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             _transportFactories = transportFactories.ToList();
             _multiplexedTransportFactories = multiplexedFactories?.ToList();
 
-            if (_transportFactories.Count == 0 && _multiplexedTransportFactories?.Count == 0)
+            if (_transportFactories.Count == 0 && (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0))
             {
                 throw new InvalidOperationException(CoreStrings.TransportNotFound);
             }
