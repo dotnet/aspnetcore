@@ -104,7 +104,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 WorkingDirectory = SourceDirectory,
                 EnvironmentVariables =
                 {
-                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
                 },
             };
