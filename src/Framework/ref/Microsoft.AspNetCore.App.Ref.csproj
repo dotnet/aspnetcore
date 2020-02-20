@@ -9,7 +9,8 @@
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
     <!-- This is a reference package and does not include any dependencies. -->
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- We also disable warnings about package downgrades, because we intentionally reference lower versions of certain packages -->
+    <NoWarn>$(NoWarn);NU5128;NU1605</NoWarn>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 
