@@ -51,7 +51,7 @@ export class WebSocketTransport implements ITransport {
             let opened = false;
 
             if (Platform.isNode) {
-                const headers = {};
+                const headers = this.httpClient.getHeaders();
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 

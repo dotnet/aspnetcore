@@ -60,7 +60,7 @@ export class LongPollingTransport implements ITransport {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
-        const headers = {};
+        const headers = this.httpClient.getHeaders();
         const [name, value] = getUserAgentHeader();
         headers[name] = value;
 
@@ -106,7 +106,7 @@ export class LongPollingTransport implements ITransport {
 
     private updateHeaderToken(request: HttpRequest, token: string | null) {
         if (!request.headers) {
-            request.headers = {};
+            request.headers = this.httpClient.getHeaders();
         }
         if (token) {
             // tslint:disable-next-line:no-string-literal
@@ -201,7 +201,7 @@ export class LongPollingTransport implements ITransport {
             // Send DELETE to clean up long polling on the server
             this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
 
-            const headers = {};
+            const headers = this.httpClient.getHeaders();
             const [name, value] = getUserAgentHeader();
             headers[name] = value;
 

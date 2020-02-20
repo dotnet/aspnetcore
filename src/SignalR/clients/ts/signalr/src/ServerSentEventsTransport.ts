@@ -64,9 +64,8 @@ export class ServerSentEventsTransport implements ITransport {
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this.httpClient.getCookieString(url);
-                const headers = {
-                    Cookie: cookies,
-                };
+                const headers = this.httpClient.getHeaders();
+                headers.Cookie = cookies;
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 

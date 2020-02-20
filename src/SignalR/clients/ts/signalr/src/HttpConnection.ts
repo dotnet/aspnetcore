@@ -104,7 +104,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
+        this.httpClient = options.httpClient || new DefaultHttpClient(this.logger, options.headers);
         this.connectionState = ConnectionState.Disconnected;
         this.connectionStarted = false;
         this.options = options;
@@ -298,7 +298,7 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        const headers = {};
+        const headers = this.httpClient.getHeaders();
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
             if (token) {

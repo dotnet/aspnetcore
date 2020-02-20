@@ -4,6 +4,7 @@
 import { AbortError } from "./Errors";
 import { FetchHttpClient } from "./FetchHttpClient";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger } from "./ILogger";
 import { NodeHttpClient } from "./NodeHttpClient";
 import { XhrHttpClient } from "./XhrHttpClient";
@@ -11,11 +12,13 @@ import { XhrHttpClient } from "./XhrHttpClient";
 /** Default implementation of {@link @microsoft/signalr.HttpClient}. */
 export class DefaultHttpClient extends HttpClient {
     private readonly httpClient: HttpClient;
+    private readonly headers: MessageHeaders;
 
     /** Creates a new instance of the {@link @microsoft/signalr.DefaultHttpClient}, using the provided {@link @microsoft/signalr.ILogger} to log messages. */
-    public constructor(logger: ILogger) {
+    public constructor(logger: ILogger, headers?: MessageHeaders) {
         super();
 
+        this.headers = headers || {};
         if (typeof fetch !== "undefined") {
             this.httpClient = new FetchHttpClient(logger);
         } else if (typeof XMLHttpRequest !== "undefined") {
@@ -27,6 +30,7 @@ export class DefaultHttpClient extends HttpClient {
 
     /** @inheritDoc */
     public send(request: HttpRequest): Promise<HttpResponse> {
+        request.headers = {...this.headers, ...request.headers};
         // Check that abort was not signaled before calling send
         if (request.abortSignal && request.abortSignal.aborted) {
             return Promise.reject(new AbortError());
@@ -44,5 +48,9 @@ export class DefaultHttpClient extends HttpClient {
 
     public getCookieString(url: string): string {
         return this.httpClient.getCookieString(url);
+    }
+
+    public getHeaders(): MessageHeaders {
+      return this.headers;
     }
 }
