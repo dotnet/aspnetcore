@@ -7,7 +7,7 @@
 <Project>
 
   <!-- For the targeting pack, always use packages with PatchVersion=0 -->
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR $(IsReferenceAssemblyProject) ">
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR '$(IsReferenceAssemblyProject)' == 'true' ">
     <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsPackageVersion>
