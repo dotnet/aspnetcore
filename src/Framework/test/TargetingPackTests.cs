@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore
             _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
         }
 
-        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
+        [Fact]
         public void AssembliesAreReferenceAssemblies()
         {
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
+        [Fact]
         public void PlatformManifestListsAllFiles()
         {
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
@@ -89,6 +89,12 @@ namespace Microsoft.AspNetCore
                         : fileName;
                 })
                 .ToHashSet();
+
+            if (!TestData.VerifyAncmBinary())
+            {
+                actualAssemblies.Remove("aspnetcorev2_inprocess");
+                expectedAssemblies.Remove("aspnetcorev2_inprocess");
+            }
 
             var missing = expectedAssemblies.Except(actualAssemblies);
             var unexpected = actualAssemblies.Except(expectedAssemblies);
