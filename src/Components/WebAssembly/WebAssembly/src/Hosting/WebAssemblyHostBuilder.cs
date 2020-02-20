@@ -98,15 +98,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
             Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
-            Services.AddSingleton<HttpClient>(s =>
-            {
-                // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
-                var navigationManager = s.GetRequiredService<NavigationManager>();
-                return new HttpClient
-                {
-                    BaseAddress = new Uri(navigationManager.BaseUri)
-                };
-            });
         }
     }
 }
