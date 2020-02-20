@@ -269,6 +269,10 @@ namespace System.Net.Http.QPack
 
                             if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
                             {
+                                if (intResult == 0)
+                                {
+                                    throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                                }
                                 OnStringLength(intResult, State.HeaderName);
                             }
                             else
@@ -303,6 +307,10 @@ namespace System.Net.Http.QPack
                 case State.HeaderNameLength:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
+                        if (intResult == 0)
+                        {
+                            throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                        }
                         OnStringLength(intResult, nextState: State.HeaderName);
                     }
                     break;
