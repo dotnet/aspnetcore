@@ -17,7 +17,8 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        repository: 'dotnet/aspnetcore'
+        # repository: 'dotnet/aspnetcore'
+        repository: 'tratcher/aspnetcore'
         path: aspnetcore
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
@@ -50,6 +51,4 @@ jobs:
         # Test this script using an issue in the local forked repo
         $issue = 'https://api.github.com/repos/Tratcher/aspnetcore/issues/1'
         # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
-        dir
-        dir .\aspnetcore\.github\workflows\
         .\aspnetcore\.github\workflows\ReportDiff.ps1
