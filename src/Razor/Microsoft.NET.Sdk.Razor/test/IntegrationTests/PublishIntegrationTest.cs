@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/13303")]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
         public async Task Publish_SimpleMvcFSharp_NoopsWithoutFailing()
         {
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Publish", "/p:NoBuild=true");
 
             Assert.BuildFailed(result);
-            Assert.BuildError(result, "MSB3030"); // Could not copy the file "obj/Debug/netcoreapp3.1/SimpleMvc.dll because it couldn't be found.
+            Assert.BuildError(result, "MSB3030"); // Could not copy the file "obj/Debug/netcoreapp5.0/SimpleMvc.dll because it couldn't be found.
 
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");

@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var content = @"
 @* some comment *@
-     
+
 @page
 ";
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(content, "Test.cshtml"));

@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task IntrospectJsonContentFiles_WithExcludeConfigFilesFromBuildOutputSet()
         {
-            // Verifies that the fix for https://github.com/aspnet/AspNetCore/issues/14017 works.
+            // Verifies that the fix for https://github.com/dotnet/aspnetcore/issues/14017 works.
             var result = await DotnetMSBuild("_IntrospectContentItems", "/p:ExcludeConfigFilesFromBuildOutput=true");
 
             Assert.BuildPassed(result);
@@ -229,21 +229,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task IntrospectRazorTasksDllPath()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/17308
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/17308
             var solutionRoot = GetType().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(a => a.Key == "Testing.RepoRoot")
                 .Value;
 
             var tfm =
-#if NETCOREAPP3_1
-                "netcoreapp3.1";
+#if NETCOREAPP5_0
+                "netcoreapp5.0";
 #else
 #error Target framework needs to be updated.
 #endif
 
             var expected = Path.Combine(solutionRoot, "artifacts", "bin", "Microsoft.NET.Sdk.Razor", Configuration, "sdk-output", "tasks", tfm, "Microsoft.NET.Sdk.Razor.Tasks.dll");
 
-            // Verifies the fix for https://github.com/aspnet/AspNetCore/issues/17308
+            // Verifies the fix for https://github.com/dotnet/aspnetcore/issues/17308
             var result = await DotnetMSBuild("_IntrospectRazorTasks");
 
             Assert.BuildPassed(result);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var tfm = "net46";
             var expected = Path.Combine(solutionRoot, "artifacts", "bin", "Microsoft.NET.Sdk.Razor", Configuration, "sdk-output", "tasks", tfm, "Microsoft.NET.Sdk.Razor.Tasks.dll");
 
-            // Verifies the fix for https://github.com/aspnet/AspNetCore/issues/17308
+            // Verifies the fix for https://github.com/dotnet/aspnetcore/issues/17308
             var result = await DotnetMSBuild("_IntrospectRazorTasks", msBuildProcessKind: MSBuildProcessKind.Desktop);
 
             Assert.BuildPassed(result);

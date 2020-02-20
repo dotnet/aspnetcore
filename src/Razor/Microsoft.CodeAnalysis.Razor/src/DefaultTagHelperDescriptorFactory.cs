@@ -80,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var targetElementAttributes = type
                 .GetAttributes()
-                .Where(attribute => Equals(attribute.AttributeClass, _htmlTargetElementAttributeSymbol));
+                .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, _htmlTargetElementAttributeSymbol));
 
             // If there isn't an attribute specifying the tag name derive it from the name
             if (!targetElementAttributes.Any())
@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private void AddAllowedChildren(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
-            var restrictChildrenAttribute = type.GetAttributes().Where(a => Equals(a.AttributeClass, _restrictChildrenAttributeSymbol)).FirstOrDefault();
+            var restrictChildrenAttribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _restrictChildrenAttributeSymbol)).FirstOrDefault();
             if (restrictChildrenAttribute == null)
             {
                 return;
@@ -174,7 +174,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private void AddTagOutputHint(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
             string outputElementHint = null;
-            var outputElementHintAttribute = type.GetAttributes().Where(a => Equals(a.AttributeClass, _outputElementHintAttributeSymbol)).FirstOrDefault();
+            var outputElementHintAttribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _outputElementHintAttributeSymbol)).FirstOrDefault();
             if (outputElementHintAttribute != null)
             {
                 outputElementHint = (string)(outputElementHintAttribute.ConstructorArguments[0]).Value;
@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var attributeNameAttribute = property
                 .GetAttributes()
-                .Where(a => Equals(a.AttributeClass, _htmlAttributeNameAttributeSymbol))
+                .Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _htmlAttributeNameAttributeSymbol))
                 .FirstOrDefault();
 
             bool hasExplicitName;
@@ -310,13 +310,13 @@ namespace Microsoft.CodeAnalysis.Razor
         private IReadOnlyList<ITypeSymbol> GetDictionaryArgumentTypes(IPropertySymbol property)
         {
             INamedTypeSymbol dictionaryType;
-            if (Equals((property.Type as INamedTypeSymbol)?.ConstructedFrom, _iDictionarySymbol))
+            if (SymbolEqualityComparer.Default.Equals((property.Type as INamedTypeSymbol)?.ConstructedFrom, _iDictionarySymbol))
             {
                 dictionaryType = (INamedTypeSymbol)property.Type;
             }
-            else if (property.Type.AllInterfaces.Any(s => Equals(s.ConstructedFrom, _iDictionarySymbol)))
+            else if (property.Type.AllInterfaces.Any(s => SymbolEqualityComparer.Default.Equals(s.ConstructedFrom, _iDictionarySymbol)))
             {
-                dictionaryType = property.Type.AllInterfaces.First(s => Equals(s.ConstructedFrom, _iDictionarySymbol));
+                dictionaryType = property.Type.AllInterfaces.First(s => SymbolEqualityComparer.Default.Equals(s.ConstructedFrom, _iDictionarySymbol));
             }
             else
             {
@@ -380,7 +380,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private bool IsPotentialDictionaryProperty(IPropertySymbol property)
         {
             return
-                (Equals((property.Type as INamedTypeSymbol)?.ConstructedFrom, _iDictionarySymbol) || property.Type.AllInterfaces.Any(s => Equals(s.ConstructedFrom, _iDictionarySymbol))) &&
+                (SymbolEqualityComparer.Default.Equals((property.Type as INamedTypeSymbol)?.ConstructedFrom, _iDictionarySymbol) || property.Type.AllInterfaces.Any(s => SymbolEqualityComparer.Default.Equals(s.ConstructedFrom, _iDictionarySymbol))) &&
                 GetDictionaryArgumentTypes(property)?[0].SpecialType == SpecialType.System_String;
         }
 
@@ -397,8 +397,8 @@ namespace Microsoft.CodeAnalysis.Razor
                         property.Parameters.Length == 0 &&
                         property.GetMethod != null &&
                         property.GetMethod.DeclaredAccessibility == Accessibility.Public &&
-                        property.GetAttributes().Where(a => Equals(a.AttributeClass, _htmlAttributeNotBoundAttributeSymbol)).FirstOrDefault() == null &&
-                        (property.GetAttributes().Any(a => Equals(a.AttributeClass, _htmlAttributeNameAttributeSymbol)) ||
+                        property.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _htmlAttributeNotBoundAttributeSymbol)).FirstOrDefault() == null &&
+                        (property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _htmlAttributeNameAttributeSymbol)) ||
                         property.SetMethod != null && property.SetMethod.DeclaredAccessibility == Accessibility.Public ||
                         IsPotentialDictionaryProperty(property)) &&
                         !accessibleProperties.ContainsKey(property.Name))
@@ -418,7 +418,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             if (ExcludeHidden)
             {
-                var editorBrowsableAttribute = symbol.GetAttributes().Where(a => Equals(a.AttributeClass, _editorBrowsableAttributeSymbol)).FirstOrDefault();
+                var editorBrowsableAttribute = symbol.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, _editorBrowsableAttributeSymbol)).FirstOrDefault();
 
                 if (editorBrowsableAttribute == null)
                 {

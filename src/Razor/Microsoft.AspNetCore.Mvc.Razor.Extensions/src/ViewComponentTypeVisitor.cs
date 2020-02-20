@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return false;
             }
 
-            var attribute = type.GetAttributes().Where(a => Equals(a.AttributeClass, queryAttribute)).FirstOrDefault();
+            var attribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, queryAttribute)).FirstOrDefault();
 
             if (attribute != null)
             {
