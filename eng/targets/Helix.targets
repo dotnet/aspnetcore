@@ -27,7 +27,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRuntime)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*.nupkg" />
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
   </ItemGroup>  
   
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
