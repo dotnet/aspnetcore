@@ -10,6 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <Reference Include="Microsoft.Authentication.WebAssembly.Msal" />
   </ItemGroup>
 
   <ItemGroup>
