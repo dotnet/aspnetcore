@@ -9,8 +9,6 @@
     <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
     <IsPackable>true</IsPackable>
 
-    <IsShippingPackage>true</IsShippingPackage>
-
     <IsTestProject>true</IsTestProject>
 
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->

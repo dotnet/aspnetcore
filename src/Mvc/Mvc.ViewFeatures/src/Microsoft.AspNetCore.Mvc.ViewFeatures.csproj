@@ -14,7 +14,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,9 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
   </ItemGroup>
 

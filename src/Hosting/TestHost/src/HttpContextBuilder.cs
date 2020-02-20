@@ -110,8 +110,10 @@ namespace Microsoft.AspNetCore.TestHost
                 try
                 {
                     await _application.ProcessRequestAsync(_testContext);
-                    await CompleteRequestAsync();
+
+                    // Matches Kestrel server: response is completed before request is drained
                     await CompleteResponseAsync();
+                    await CompleteRequestAsync();
                     _application.DisposeContext(_testContext, exception: null);
                 }
                 catch (Exception ex)
@@ -181,18 +183,9 @@ namespace Microsoft.AspNetCore.TestHost
                 await _requestPipe.Reader.CompleteAsync();
             }
 
-            if (_sendRequestStreamTask != null)
-            {
-                try
-                {
-                    // Ensure duplex request is either completely read or has been aborted.
-                    await _sendRequestStreamTask;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Request was canceled, likely because it wasn't read before the request ended.
-                }
-            }
+            // Don't wait for request to drain. It could block indefinitely. In a real server
+            // we would wait for a timeout and then kill the socket.
+            // Potential future improvement: add logging that the request timed out
         }
 
         internal async Task CompleteResponseAsync()
