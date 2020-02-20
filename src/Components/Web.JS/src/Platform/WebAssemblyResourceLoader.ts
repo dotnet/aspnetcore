@@ -36,7 +36,16 @@ export class WebAssemblyResourceLoader {
   loadResource(name: string, url: string, contentHash: string): LoadingResource {
     // Setting 'cacheBootResources' to false bypasses the entire cache flow, including integrity checking.
     // This gives developers an easy opt-out if they don't like anything about the default cache mechanism.
-    const response = this.bootConfig.cacheBootResources
+
+    // There's also a Chromium bug we need to work around here: the CacheStorage APIs say that when
+    // caches.open(name) returns a promise that succeeds, the value is meant to be a Cache instance.
+    // However, if the browser was launched with a --user-data-dir param that's "too long" in some sense,
+    // then even through the promise resolves as success, the value given is `undefined`.
+    // See https://stackoverflow.com/a/46626574. We're reporting this to Chromium and others, but in
+    // the meantime, if this.cache isn't set, just proceed without caching.
+    const useCache = this.bootConfig.cacheBootResources && this.cache;
+
+    const response = useCache
       ? this.loadResourceWithCaching(name, url, contentHash)
       : fetch(url, { cache: networkFetchCacheMode });
     return { name, url, response };
