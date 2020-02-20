@@ -24,7 +24,8 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
