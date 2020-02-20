@@ -159,25 +159,51 @@ class MsalAuthorizeService implements AuthorizeService {
         try {
             const request: Msal.AuthenticationParameters = {
                 redirectUri: this._settings.auth.redirectUri as string,
-                scopes: this._settings.defaultAccessTokenScopes,
                 state: await this.saveState(state)
             };
 
-            const result = await this._msalApplication.loginPopup(request);
+            if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
+                request.scopes = this._settings.defaultAccessTokenScopes;
+            }
 
-            let accessToken: Msal.AuthResponse;
+            const result = await this.signInCore(request);
+            if (!result) {
+                return this.redirect();
+            }
+
+            let accessToken: Msal.AuthResponse | undefined = undefined;
             try {
-                accessToken = await this._msalApplication.acquireTokenSilent(request);
+                if (this._settings.defaultAccessTokenScopes?.length > 0) {
+                    accessToken = await this._msalApplication.acquireTokenSilent(request);
+                }
             } catch (e) {
                 return this.error(e.message);
             }
 
             this.updateState(result.idTokenClaims);
-            this._scopes = accessToken.scopes;
+            this._scopes = accessToken?.scopes || [];
 
             return this.success(state);
         } catch (e) {
             return this.error(e.message);
+        }
+    }
+
+    async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | undefined> {
+        try {
+            const response = await this._msalApplication.loginPopup(request);
+            response.idTokenClaims
+            return response;
+        } catch (e) {
+            if (/*e.errorCode !== 'user_cancelled'*/true) {
+                try {
+                    this._msalApplication.loginRedirect(request);
+                } catch (e) {
+                    console.log(e);
+                }
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -194,7 +220,6 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async completeSignOut(url: string) {
-        debugger;
         const logoutStateId = sessionStorage.getItem('LogoutState');
         const updatedUrl = new URL(url);
         updatedUrl.search = `?state=${logoutStateId}`;
