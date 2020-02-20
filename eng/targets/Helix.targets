@@ -1,10 +1,26 @@
 <Project>
+  <ItemGroup Condition="'$(TestDependsOnJava)' == 'true'">
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
+  </ItemGroup>
 
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
   </ItemGroup>
-  
+
 <!--
 
 This target is meant to be used when invoking helix tests on one project at a time.
@@ -40,6 +56,12 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
     </PropertyGroup>
 
+    <ItemGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
+      <_Temp Include="@(HelixAvailableTargetQueue)" />
+      <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
+      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open',''))" />
+    </ItemGroup>    
+    
     <ItemGroup>
       <!-- Include default queues based on platform -->
       <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true'" />
@@ -71,6 +93,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
     </PropertyGroup>
 
+    <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
@@ -85,6 +108,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <PostCommands>@(HelixPostCommand)</PostCommands>
         <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests)</Command>
+        <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

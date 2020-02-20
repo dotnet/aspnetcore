@@ -71,7 +71,17 @@ endif()
 
 if(TARGET_ARCH_NAME MATCHES "^(arm|armel)$")
   add_compile_options(-mthumb)
-  add_compile_options(-mfpu=vfpv3)
+  if (NOT DEFINED CLR_ARM_FPU_TYPE)
+    set (CLR_ARM_FPU_TYPE vfpv3)
+  endif (NOT DEFINED CLR_ARM_FPU_TYPE)
+
+  add_compile_options (-mfpu=${CLR_ARM_FPU_TYPE})
+  if (NOT DEFINED CLR_ARM_FPU_CAPABILITY)
+    set (CLR_ARM_FPU_CAPABILITY 0x7)
+  endif (NOT DEFINED CLR_ARM_FPU_CAPABILITY)
+
+  add_definitions (-DCLR_ARM_FPU_CAPABILITY=${CLR_ARM_FPU_CAPABILITY})
+
   if(TARGET_ARCH_NAME STREQUAL "armel")
     add_compile_options(-mfloat-abi=softfp)
     if(DEFINED TIZEN_TOOLCHAIN)
