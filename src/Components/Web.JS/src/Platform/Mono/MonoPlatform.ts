@@ -263,9 +263,9 @@ function bindStaticMethod(assembly: string, typeName: string, method: string) : 
 }
 
 function attachInteropInvoker(): void {
-  const dotNetDispatcherInvokeMethodHandle =  bindStaticMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop.MonoWebAssemblyJSRuntime', 'InvokeDotNet');
-  const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop.MonoWebAssemblyJSRuntime', 'BeginInvokeDotNet');
-  const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop.MonoWebAssemblyJSRuntime', 'EndInvokeJS');
+  const dotNetDispatcherInvokeMethodHandle =  bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'InvokeDotNet');
+  const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
+  const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
 
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {

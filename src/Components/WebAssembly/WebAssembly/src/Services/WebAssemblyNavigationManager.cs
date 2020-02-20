@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         {
             // As described in the comment block above, BrowserNavigationManager is only for
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
-            var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
-            var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
+            var baseUri = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
+            var uri = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
             Initialize(baseUri, uri);
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            WebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
         }
     }
 }

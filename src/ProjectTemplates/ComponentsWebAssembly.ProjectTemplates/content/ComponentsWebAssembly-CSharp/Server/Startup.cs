@@ -95,7 +95,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #if (IndividualLocalAuth)
                 app.UseDatabaseErrorPage();
 #endif
-                app.UseBlazorDebugging();
+                app.UseWebAssemblyDebugging();
             }
             else
             {

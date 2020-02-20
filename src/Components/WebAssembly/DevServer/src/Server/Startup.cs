@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
             app.UseDeveloperExceptionPage();
             EnableConfiguredPathbase(app, configuration);
 
-            app.UseBlazorDebugging();
+            app.UseWebAssemblyDebugging();
 
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();

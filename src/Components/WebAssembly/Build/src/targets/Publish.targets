@@ -1,8 +1,5 @@
 <Project>
   <PropertyGroup>
-
-    <BlazorLinkOnBuild Condition="'$(BlazorLinkOnBuild)'==''">true</BlazorLinkOnBuild>
-
     <!-- Disable unwanted parts of the default publish process -->
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
@@ -10,7 +7,6 @@
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
-
   </PropertyGroup>
 
 </Project>

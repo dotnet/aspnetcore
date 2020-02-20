@@ -1,13 +1,13 @@
 <Project>
 
-  <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="PrepareBlazorOutputs">
+  <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="_PrepareBlazorOutputs">
     <ItemGroup>
-      <StaticWebAsset Include="@(BlazorOutputWithTargetPath->'%(FullPath)')" RemoveMetadata="TargetOutputPath">
+      <StaticWebAsset Include="@(_BlazorOutputWithTargetPath->'%(FullPath)')" RemoveMetadata="TargetOutputPath">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').Replace('dist/',''))</RelativePath>
+        <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').Replace('dist/',''))</RelativePath>
       </StaticWebAsset>
 
       <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'$(BlazorEnableDebugging)' != 'true' and '%(SourceType)' == '' and '%(Extension)' == '.pdb'" />
@@ -16,7 +16,7 @@
            These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail.
            We only need to do this for the standalone case, for hosted scenarios this works just fine as the assets are considered
            external. -->
-      <_ExternalStaticWebAsset Include="@(BlazorOutputWithTargetPath->'%(FullPath)')">
+      <_ExternalStaticWebAsset Include="@(_BlazorOutputWithTargetPath->'%(FullPath)')">
         <SourceId>$(PackageId)</SourceId>
         <!-- We just do this to keep the existing implementation happy. We will update this in the next release. -->
         <SourceType>Generated</SourceType>

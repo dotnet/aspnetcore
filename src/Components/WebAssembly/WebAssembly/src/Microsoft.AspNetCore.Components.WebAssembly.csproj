@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Mono.WebAssembly.Interop" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="WebAssembly.JSInterop" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
+    <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
 
 </Project>

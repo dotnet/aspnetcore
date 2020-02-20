@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Description>Abstractions and features for interop between Mono WebAssembly and JavaScript code.</Description>
+    <Description>Abstractions and features for interop between .NET WebAssembly and JavaScript code.</Description>
     <PackageTags>wasm;javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>

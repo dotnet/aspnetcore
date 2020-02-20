@@ -44,7 +44,7 @@ namespace Wasm.Authentication.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBlazorDebugging();
+                app.UseWebAssemblyDebugging();
             }
 
             app.UseBlazorFrameworkFiles();
