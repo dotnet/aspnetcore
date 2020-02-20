@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         // Add the connection to the connection manager before we queue it for execution
                         var id = Interlocked.Increment(ref _lastConnectionId);
                         // TODO Don't pass null in here! use a base class
-                        var kestrelConnection = new MultiplexedKestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+                        var kestrelConnection = new KestrelConnection<MultiplexedConnectionContext>(id, _serviceContext, c => _connectionDelegate(c), connection, Log);
 
-                        _serviceContext.MultiplexedConnectionManager.AddConnection(id, kestrelConnection);
+                        _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
 
                         Log.ConnectionAccepted(connection.ConnectionId);
 

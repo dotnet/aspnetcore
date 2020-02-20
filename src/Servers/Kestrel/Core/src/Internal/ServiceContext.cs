@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public ConnectionManager ConnectionManager { get; set; }
 
-        public MultiplexedConnectionManager MultiplexedConnectionManager { get; set; }
-
         public Heartbeat Heartbeat { get; set; }
 
         public KestrelServerOptions ServerOptions { get; set; }

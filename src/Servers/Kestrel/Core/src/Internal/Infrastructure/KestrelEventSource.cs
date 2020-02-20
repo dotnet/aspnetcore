@@ -26,20 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
         [NonEvent]
-        public void ConnectionStart(ConnectionContext connection)
-        {
-            // avoid allocating strings unless this event source is enabled
-            if (IsEnabled())
-            {
-                ConnectionStart(
-                    connection.ConnectionId,
-                    connection.LocalEndPoint?.ToString(),
-                    connection.RemoteEndPoint?.ToString());
-            }
-        }
-
-        [NonEvent]
-        public void ConnectionStart(MultiplexedConnectionContext connection)
+        public void ConnectionStart(BaseConnectionContext connection)
         {
             // avoid allocating strings unless this event source is enabled
             if (IsEnabled())
@@ -66,16 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void ConnectionStop(ConnectionContext connection)
-        {
-            if (IsEnabled())
-            {
-                ConnectionStop(connection.ConnectionId);
-            }
-        }
-
-        [NonEvent]
-        public void ConnectionStop(MultiplexedConnectionContext connection)
+        public void ConnectionStop(BaseConnectionContext connection)
         {
             if (IsEnabled())
             {

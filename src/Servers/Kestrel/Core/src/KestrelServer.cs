@@ -90,15 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-            var multiplexedConnectionManager = new MultiplexedConnectionManager(
-                trace);
-
             var heartbeatManager = new HeartbeatManager(connectionManager);
-            var multiplexedHeartbeat = new MultiplexedHeartbeatManager(multiplexedConnectionManager);
             var dateHeaderValueManager = new DateHeaderValueManager();
 
             var heartbeat = new Heartbeat(
-                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager, multiplexedHeartbeat },
+                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
                 new SystemClock(),
                 DebuggerWrapper.Singleton,
                 trace);
@@ -111,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
-                MultiplexedConnectionManager = multiplexedConnectionManager,
                 Heartbeat = heartbeat,
                 ServerOptions = serverOptions,
             };
