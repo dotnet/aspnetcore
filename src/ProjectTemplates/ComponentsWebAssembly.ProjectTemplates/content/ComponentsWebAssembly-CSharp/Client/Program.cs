@@ -31,7 +31,7 @@ namespace ComponentsWebAssembly_CSharp
     #endif
 #endif
 #if (IndividualB2CAuth)
-            builder.Services.AddMsalSpaAuthentication(options =>
+            builder.Services.AddMsalAuthentication(options =>
             {
                 var authentication = options.ProviderOptions.Authentication;
                 authentication.Authority = "https:////aadB2CInstance.b2clogin.com/qualified.domain.name/MySignUpSignInPolicyId";
@@ -43,7 +43,7 @@ namespace ComponentsWebAssembly_CSharp
             });
 #endif
 #if(OrganizationalAuth)
-            builder.Services.AddMsalSpaAuthentication(options =>
+            builder.Services.AddMsalAuthentication(options =>
             {
                 var authentication = options.ProviderOptions.Authentication;
                 authentication.Authority = "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222";

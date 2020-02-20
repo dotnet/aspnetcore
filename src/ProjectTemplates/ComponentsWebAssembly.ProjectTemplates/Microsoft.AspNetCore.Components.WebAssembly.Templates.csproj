@@ -43,6 +43,7 @@
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
+    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
   </ItemGroup>
 
   <ItemGroup>
