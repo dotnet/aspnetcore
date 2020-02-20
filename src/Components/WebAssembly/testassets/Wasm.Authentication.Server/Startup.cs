@@ -37,8 +37,6 @@ namespace Wasm.Authentication.Server
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
-            services.AddWebAssemblyStaticFilesConfiguration();
-
             services.AddMvc();
             services.AddResponseCompression(opts =>
             {
@@ -58,8 +56,6 @@ namespace Wasm.Authentication.Server
                 app.UseBlazorDebugging();
             }
 
-            app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -70,6 +66,8 @@ namespace Wasm.Authentication.Server
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
+
+                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

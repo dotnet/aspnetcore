@@ -21,7 +21,6 @@ namespace TestServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -34,7 +33,12 @@ namespace TestServer
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
             app.Map("/subdir", app =>
             {
-                app.UseStaticFiles();
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapBlazorWebAssemblyApplication();
+                });
             });
 
             // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.

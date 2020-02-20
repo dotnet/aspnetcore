@@ -23,7 +23,6 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddWebAssemblyStaticFilesConfiguration();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +54,8 @@ namespace TestServer
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapBlazorWebAssemblyApplication();
+
                     endpoints.MapControllers();
                     endpoints.MapBlazorHub();
                     endpoints.MapFallbackToPage("/_ServerHost");
