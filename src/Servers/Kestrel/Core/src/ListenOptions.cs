@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return this;
         }
 
-        public IMultiplexedConnectionBuilder UseMultiplexed(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
+        IMultiplexedConnectionBuilder IMultiplexedConnectionBuilder.Use(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
         {
             _multiplexedMiddleware.Add(middleware);
             return this;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return app;
         }
 
-        public MultiplexedConnectionDelegate BuildMultiplexed()
+        MultiplexedConnectionDelegate IMultiplexedConnectionBuilder.Build()
         {
             MultiplexedConnectionDelegate app = context =>
             {

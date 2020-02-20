@@ -8,6 +8,19 @@ namespace Microsoft.AspNetCore.Connections
         public AddressInUseException(string message) { }
         public AddressInUseException(string message, System.Exception inner) { }
     }
+    public abstract partial class BaseConnectionContext
+    {
+        protected BaseConnectionContext() { }
+        public virtual System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public abstract string ConnectionId { get; set; }
+        public abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get; }
+        public abstract System.Collections.Generic.IDictionary<object, object> Items { get; set; }
+        public virtual System.Net.EndPoint LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual System.Net.EndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public abstract void Abort();
+        public abstract void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason);
+        public virtual System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+    }
     public partial class ConnectionAbortedException : System.OperationCanceledException
     {
         public ConnectionAbortedException() { }
@@ -27,19 +40,12 @@ namespace Microsoft.AspNetCore.Connections
         public static Microsoft.AspNetCore.Connections.IConnectionBuilder Use(this Microsoft.AspNetCore.Connections.IConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task> middleware) { throw null; }
         public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Connections.IConnectionBuilder connectionBuilder) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
     }
-    public abstract partial class ConnectionContext : System.IAsyncDisposable
+    public abstract partial class ConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable
     {
         protected ConnectionContext() { }
-        public virtual System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public abstract string ConnectionId { get; set; }
-        public abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get; }
-        public abstract System.Collections.Generic.IDictionary<object, object> Items { get; set; }
-        public virtual System.Net.EndPoint LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual System.Net.EndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public abstract System.IO.Pipelines.IDuplexPipe Transport { get; set; }
-        public virtual void Abort() { }
-        public virtual void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
-        public virtual System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+        public override void Abort() { }
+        public override void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
     }
     public delegate System.Threading.Tasks.Task ConnectionDelegate(Microsoft.AspNetCore.Connections.ConnectionContext connection);
     public abstract partial class ConnectionHandler
@@ -126,8 +132,8 @@ namespace Microsoft.AspNetCore.Connections
     public partial interface IMultiplexedConnectionBuilder
     {
         System.IServiceProvider ApplicationServices { get; }
-        Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate BuildMultiplexed();
-        Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder UseMultiplexed(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware);
+        Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate Build();
+        Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware);
     }
     public partial interface IMultiplexedConnectionFactory
     {
@@ -147,28 +153,19 @@ namespace Microsoft.AspNetCore.Connections
     {
         public MultiplexedConnectionBuilder(System.IServiceProvider applicationServices) { }
         public System.IServiceProvider ApplicationServices { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate BuildMultiplexed() { throw null; }
-        public Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder UseMultiplexed(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware) { throw null; }
+        public Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate Build() { throw null; }
+        public Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware) { throw null; }
     }
     public static partial class MultiplexedConnectionBuilderExtensions
     {
         public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder RunMultiplexed(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Threading.Tasks.Task> middleware) { throw null; }
         public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder UseMultiplexed(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task> middleware) { throw null; }
     }
-    public abstract partial class MultiplexedConnectionContext : System.IAsyncDisposable
+    public abstract partial class MultiplexedConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable
     {
         protected MultiplexedConnectionContext() { }
-        public virtual System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public abstract string ConnectionId { get; set; }
-        public abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get; }
-        public abstract System.Collections.Generic.IDictionary<object, object> Items { get; set; }
-        public virtual System.Net.EndPoint LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual System.Net.EndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual void Abort() { }
-        public virtual void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
         public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.StreamContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.StreamContext> ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        public virtual System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
     }
     public delegate System.Threading.Tasks.Task MultiplexedConnectionDelegate(Microsoft.AspNetCore.Connections.MultiplexedConnectionContext connection);
     public abstract partial class StreamContext : Microsoft.AspNetCore.Connections.ConnectionContext

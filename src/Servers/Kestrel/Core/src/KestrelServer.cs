@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         }
 
                         options.UseHttp3Server(ServiceContext, application, options.Protocols);
-                        var multiplxedConnectionDelegate = options.BuildMultiplexed();
+                        var multiplxedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         var multiplexedConnectionDispatcher = new MultiplexedConnectionDispatcher(ServiceContext, multiplxedConnectionDelegate);
                         var multiplexedFactory = _multiplexedTransportFactories.Last();
