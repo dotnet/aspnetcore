@@ -8,6 +8,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
     <Description>Templates for ASP.NET Core Blazor projects.</Description>
     <PackageTags>$(PackageTags);blazor;spa</PackageTags>
   </PropertyGroup>
