@@ -11,8 +11,7 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
+    <!-- Some tests still do not work on Helix, so continue running these on azdo for now-->
     <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
 
     <!-- Properties that affect test runs -->
