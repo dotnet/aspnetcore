@@ -46,6 +46,10 @@ namespace Templates.Test
             var publishResult = await project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
+            // The service worker assets manifest isn't generated for non-PWA projects
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
+
             var buildResult = await project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
