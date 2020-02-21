@@ -57,8 +57,13 @@ class MsalAuthorizeService implements AuthorizeService {
 
     constructor(settings: AuthorizeServiceConfiguration) {
         this._settings = settings;
+
+        // It is important that we capture the callback-url here as msal will remove the auth parameters
+        // from the url as soon as it gets initialized.
         const callbackUrl = location.href;
         this._msalApplication = new Msal.UserAgentApplication(this._settings);
+
+        // This promise will only resolve in callback-paths, which is where we check it.
         this._callbackPromise = this.createCallbackResult(callbackUrl);
     }
 
@@ -105,6 +110,9 @@ class MsalAuthorizeService implements AuthorizeService {
 
     async signIn(state: any) {
         try {
+            // Before we start any sign-in flow, clear out any previous state so that it doesn't pile up.
+            this.purgeState();
+
             const request: Msal.AuthenticationParameters = {
                 redirectUri: this._settings.auth.redirectUri as string,
                 state: await this.saveState(state)
@@ -139,7 +147,6 @@ class MsalAuthorizeService implements AuthorizeService {
         } catch (e) {
             return this.error(e.message);
         }
-
     }
 
     async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | Msal.AuthError | undefined> {
@@ -158,24 +165,35 @@ class MsalAuthorizeService implements AuthorizeService {
         }
     }
 
-    async completeSignIn() {
-        const result = await this._callbackPromise;
-        return result;
+    completeSignIn() {
+        return this._callbackPromise;
     }
 
     async signOut(state: any) {
+        // We are about to sign out, so clear any state before we do so and leave just the sign out state for
+        // the current sign out flow.
+        this.purgeState();
+
         const logoutStateId = await this.saveState(state);
-        sessionStorage.setItem('LogoutState', logoutStateId);
-        console.log(this._msalApplication.getCurrentConfiguration().auth.postLogoutRedirectUri);
+
+        // msal.js doesn't support providing logout state, so we shim it by putting the identifier in session storage
+        // and using that on the logout callback to workout the problems.
+        sessionStorage.setItem(`${AuthenticationService._infrastructureKey}.LogoutState`, logoutStateId);
+
         this._msalApplication.logout();
-        return this.operationCompleted();
+
+        // We are about to be redirected.
+        return this.redirect();
     }
 
     async completeSignOut(url: string) {
-        const logoutStateId = sessionStorage.getItem('LogoutState');
+        const logoutStateId = sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
         const updatedUrl = new URL(url);
         updatedUrl.search = `?state=${logoutStateId}`;
-        const logoutState = await this.retrieveState(updatedUrl.href);
+        const logoutState = await this.retrieveState(updatedUrl.href, /*isLogout*/ true);
+
+        sessionStorage.removeItem(`${AuthenticationService._infrastructureKey}.LogoutState`);
+
         if (logoutState) {
             return this.success(logoutState);
         } else {
@@ -183,18 +201,28 @@ class MsalAuthorizeService implements AuthorizeService {
         }
     }
 
+    // msal.js only allows a string as the account state and it simply attaches it to the sign-in request state.
+    // Given that we don't want to serialize the entire state and put it in the query string, we need to serialize the
+    // state ourselves and pass an identifier to retrieve it while in the callback flow.
     async saveState<T>(state: T): Promise<string> {
-        const entropy = window.crypto.getRandomValues(new Uint8Array(32));
-        const base64 = await new Promise<string>((resolve, _) => {
+        const base64UrlIdentifier = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = evt => resolve((evt?.target?.result as string).split(',')[1].replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''));
+            reader.onloadend = evt => resolve((evt?.target?.result as string)
+                // The result comes back as a base64 string inside a dataUrl.
+                // We remove the prefix and convert it to base64url by replacing '+' with '-', '/' with '_' and removing '='.
+                .split(',')[1].replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''));
+            reader.onerror = evt => reject(evt.target?.error?.message);
+
+            // We generate a base 64 url encoded string of random data.
+            const entropy = window.crypto.getRandomValues(new Uint8Array(32));
             reader.readAsDataURL(new Blob([entropy]));
-        })
-        sessionStorage.setItem(`AuthorizeService.${base64}`, JSON.stringify(state));
-        return base64;
+        });
+
+        sessionStorage.setItem(`${AuthenticationService._infrastructureKey}.AuthorizeService.${base64UrlIdentifier}`, JSON.stringify(state));
+        return base64UrlIdentifier;
     }
 
-    async retrieveState<T>(url: string): Promise<T | undefined> {
+    async retrieveState<T>(url: string, isLogout: boolean = false): Promise<T | undefined> {
         const parsedUrl = new URL(url);
         const fromHash = parsedUrl.hash && parsedUrl.hash.length > 0 && new URLSearchParams(parsedUrl.hash.substring(1));
         let state = fromHash && fromHash.getAll('state');
@@ -207,24 +235,29 @@ class MsalAuthorizeService implements AuthorizeService {
             }
         }
 
-        const appState = this._msalApplication.getAccountState(state[0])
-        const signInStateKey = `AuthorizeService.${appState}`;
-        const signInStateString = sessionStorage.getItem(signInStateKey);
-        if (signInStateString) {
-            sessionStorage.removeItem(signInStateKey);
-            const savedState = JSON.parse(signInStateString);
-            return savedState;
-        }
-
-        const signOutStateKey = `AuthorizeService.${state[0]}`;
-        const signOutStateString = sessionStorage.getItem(signOutStateKey);
-        if (signOutStateString) {
-            sessionStorage.removeItem(signOutStateKey);
-            const savedState = JSON.parse(signOutStateString);
+        // We need to calculate the state key in two different ways. The reason for it is that
+        // msal.js doesn't support the state parameter on logout flows, which forces us to shim our own logout state.
+        // The format then is different, as msal follows the pattern state=<<guid>>|<<user_state>> and our format
+        // simple uses <<base64urlIdentifier>>.
+        const appState = !isLogout? this._msalApplication.getAccountState(state[0]): state[0];
+        const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${appState}`;
+        const stateString = sessionStorage.getItem(stateKey);
+        if (stateString) {
+            sessionStorage.removeItem(stateKey);
+            const savedState = JSON.parse(stateString);
             return savedState;
         }
 
         return undefined;
+    }
+
+    purgeState() {
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key?.startsWith(AuthenticationService._infrastructureKey)) {
+                sessionStorage.removeItem(key);
+            }
+        }
     }
 
     private async createCallbackResult(callbackUrl: string): Promise<AuthenticationResult> {
@@ -283,7 +316,7 @@ class MsalAuthorizeService implements AuthorizeService {
 
 export class AuthenticationService {
 
-    static _infrastructureKey = 'Microsoft.AspNetCore.Components.WebAssembly.Authentication';
+    static _infrastructureKey = 'Microsoft.Authentication.WebAssembly.Msal';
     static _initialized = false;
     static instance: MsalAuthorizeService;
 
