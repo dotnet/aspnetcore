@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             var mock = new Mock<ITaskItem>();
             mock.Setup(m => m.ItemSpec).Returns(itemSpec);
-            mock.Setup(m => m.GetMetadata("TargetOutputPath")).Returns($"something\\{itemSpec}");
+            mock.Setup(m => m.GetMetadata("TargetOutputPath")).Returns(itemSpec);
             mock.Setup(m => m.GetMetadata("BootResourceType")).Returns(type.ToString());
             mock.Setup(m => m.GetMetadata("RelativeOutputPath")).Returns(relativeOutputPath);
             mock.Setup(m => m.GetMetadata("FileHash")).Returns(fileHash);
