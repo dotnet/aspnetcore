@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.TestHost
                     // Determine whether request body was complete when the delegate exited.
                     // This could throw an error if there was a pending server read. Needs to
                     // happen before completing the response so the response returns the error.
-                    bool requestBodyInProgress = RequestBodyReadInProgress();
+                    var requestBodyInProgress = RequestBodyReadInProgress();
 
                     // Matches Kestrel server: response is completed before request is drained
                     await CompleteResponseAsync();
