@@ -185,17 +185,14 @@ namespace Microsoft.AspNetCore.TestHost
 
         private bool RequestBodyReadInProgress()
         {
-            bool requestBodyInProgress;
             try
             {
-                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+                return !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
             }
-
-            return requestBodyInProgress;
         }
 
         internal async Task CompleteResponseAsync()
