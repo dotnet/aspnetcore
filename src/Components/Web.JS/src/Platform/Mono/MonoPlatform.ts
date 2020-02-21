@@ -118,17 +118,20 @@ function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  const dotnetJsResourceName = 'dotnet.js';
-  const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
+  // The dotnet.*.js file has a version or hash in its name as a form of cache-busting. This is needed
+  // because it's the only part of the loading process that can't use cache:'no-cache' (because it's
+  // not a 'fetch') and isn't controllable by the developer (so they can't put in their own cache-busting
+  // querystring). So, to find out the exact URL we have to search the boot manifest.
+  const dotnetJsResourceName = Object
+    .keys(resourceLoader.bootConfig.resources.runtime)
+    .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
   const scriptElem = document.createElement('script');
-
-  // To ensure we're fetching fresh content even for servers that don't put cache-control:no-cache
-  // on the response, we add our own cache-busting parameter
-  scriptElem.src = `_framework/wasm/${dotnetJsResourceName}?v=${encodeURIComponent(contentHash)}`;
+  scriptElem.src = `_framework/wasm/${dotnetJsResourceName}`;
   scriptElem.defer = true;
 
   // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
   if (resourceLoader.bootConfig.cacheBootResources) {
+    const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
     scriptElem.integrity = contentHash;
   }
 
@@ -177,7 +180,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           /* name */ dotnetWasmResourceName,
           /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
           /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
-        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);  
+        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       } catch (ex) {
         module.printErr(ex);
         throw ex;

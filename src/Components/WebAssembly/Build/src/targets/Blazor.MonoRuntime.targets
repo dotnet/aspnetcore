@@ -120,15 +120,34 @@
       </BlazorOutputWithTargetPath>
     </ItemGroup>
 
-    <ItemGroup>
-      <MonoWasmFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
-      <BlazorJSFile Include="$(BlazorJSPath)" />
-      <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
+    <!--
+      TODO: Instead of dynamically switching the TargetOutputPath for dotnet.js here, actually
+      change the physical filename inside the M.A.C.W.Runtime package so it includes the package's
+      version (e.g., dotnet.3.2.0-preview3.12345.js). Then we can eliminate the following property
+      and recombine the two item groups MonoWasmFile and MonoJsFile below, simply putting all of
+      $(ComponentsWebAssemblyRuntimePath)* into BlazorOutputWithTargetPath using their physical names.
 
+      The actual value 3.2.0-preview2 is hardcoded here until we update M.A.C.W.Runtime to do this.
+    -->
+    <PropertyGroup>
+      <TemporaryDotNetJsFileVersion>3.2.0-preview2</TemporaryDotNetJsFileVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MonoWasmFile Include="$(ComponentsWebAssemblyRuntimePath)*.wasm" />
       <BlazorOutputWithTargetPath Include="@(MonoWasmFile)">
         <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <_BlazorBootManifestResourceType>runtime</_BlazorBootManifestResourceType>
       </BlazorOutputWithTargetPath>
+
+      <MonoJsFile Include="$(ComponentsWebAssemblyRuntimePath)*.js" />
+      <BlazorOutputWithTargetPath Include="@(MonoJsFile)">
+        <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName).$(TemporaryDotNetJsFileVersion)%(Extension)</TargetOutputPath>
+        <_BlazorBootManifestResourceType>runtime</_BlazorBootManifestResourceType>
+      </BlazorOutputWithTargetPath>
+
+      <BlazorJSFile Include="$(BlazorJSPath)" />
+      <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
       <BlazorOutputWithTargetPath Include="@(BlazorJSFile)">
         <TargetOutputPath>$(BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </BlazorOutputWithTargetPath>
