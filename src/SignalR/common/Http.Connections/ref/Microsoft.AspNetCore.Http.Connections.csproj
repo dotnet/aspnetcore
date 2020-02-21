@@ -11,7 +11,6 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="System.Security.Principal.Windows" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" Key="" />
   </ItemGroup>
