@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+                    listenOptions.UseHttps(TestResources.GetTestCertificate("aspnetdevcert.pfx", "testPassword"));
                 }))
             {
                 using (var connection = server.CreateConnection())
