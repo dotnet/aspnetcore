@@ -18,6 +18,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.Specification.Tests" ProjectPath="$(RepoRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.UI" ProjectPath="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Facebook" ProjectPath="$(RepoRoot)src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Google" ProjectPath="$(RepoRoot)src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj"  />
@@ -58,6 +59,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepoRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepoRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.HttpClient" ProjectPath="$(RepoRoot)src\Components\Blazor\Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj"  />
+    <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\Components\Blazor\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepoRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" ProjectPath="$(RepoRoot)src\Components\Blazor\Validation\src\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj"  />
     <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj"  />

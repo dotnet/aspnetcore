@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
 
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
             }
 
             while (onCompleted.TryPop(out var entry))
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
         }

@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
@@ -205,7 +204,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition=" '$(IsPackable)' == 'true' ">
     <PropertyGroup>
       <_TarCommand>tar</_TarCommand>
-      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">$(RepoRoot).tools\tar.exe</_TarCommand>
+      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">"$(RepoRoot).tools\tar.exe"</_TarCommand>
 
       <!-- For the tar packed with git, transform e.g. "C:\root\AspNetCore\File.tar.gz" to "/C/root/AspNetCore/File.tar.gz". -->
       <_TarArchiveOutputPath>$(TarArchiveOutputPath)</_TarArchiveOutputPath>
@@ -219,8 +218,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true" />
 
     <!-- Requires Windows 10 version 1803 or newer -->
-    <Message Importance="High" Text="Executing: $(_TarCommand) -czf $(_TarArchiveOutputPath) ." />
-    <Exec Command="$(_TarCommand) -czf $(_TarArchiveOutputPath) ."
+    <Message Importance="High" Text="Executing: $(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ." />
+    <Exec Command="$(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ."
         WorkingDirectory="$(TargetingPackLayoutRoot)" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />

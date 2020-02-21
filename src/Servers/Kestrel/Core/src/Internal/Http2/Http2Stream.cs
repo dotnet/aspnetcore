@@ -19,22 +19,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
-        private readonly Http2StreamContext _context;
-        private readonly Http2OutputProducer _http2Output;
-        private readonly StreamInputFlowControl _inputFlowControl;
-        private readonly StreamOutputFlowControl _outputFlowControl;
+        private Http2StreamContext _context;
+        private Http2OutputProducer _http2Output;
+        private StreamInputFlowControl _inputFlowControl;
+        private StreamOutputFlowControl _outputFlowControl;
 
         private bool _decrementCalled;
-        public Pipe RequestBodyPipe { get; }
+
+        public Pipe RequestBodyPipe { get; set; }
 
         internal long DrainExpirationTicks { get; set; }
 
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
 
-        public Http2Stream(Http2StreamContext context)
-            : base(context)
+        public void Initialize(Http2StreamContext context)
         {
+            base.Initialize(context);
+
+            _decrementCalled = false;
+            _completionState = StreamCompletionFlags.None;
+            InputRemaining = null;
+            RequestBodyStarted = false;
+            DrainExpirationTicks = 0;
+
             _context = context;
 
             _inputFlowControl = new StreamInputFlowControl(
@@ -60,6 +68,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Output = _http2Output;
         }
 
+        public void InitializeWithExistingContext(int streamId)
+        {
+            _context.StreamId = streamId;
+            Initialize(_context);
+        }
+
         public int StreamId => _context.StreamId;
 
         public long? InputRemaining { get; internal set; }
@@ -82,6 +96,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             ResetHttp2Features();
         }
 

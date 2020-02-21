@@ -69,6 +69,11 @@ namespace TestSite
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
         }
 
+        private async Task CheckProtocol(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(ctx.Request.Protocol);
+        }
+
         private async Task ConsoleWrite(HttpContext ctx)
         {
             Console.WriteLine("TEST MESSAGE");
@@ -142,6 +147,12 @@ namespace TestSite
             }
 
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
+        }
+
+        public Task ConnectionClose(HttpContext context)
+        {
+            context.Response.Headers["connection"] = "close";
             return Task.CompletedTask;
         }
 
@@ -1004,6 +1015,13 @@ namespace TestSite
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
+
+        public async Task SlowOnCompleted(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
+            await context.Response.WriteAsync("SlowOnCompleted");
         }
     }
 }

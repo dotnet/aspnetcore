@@ -14,7 +14,7 @@ namespace Interop.FunctionalTests
                 // "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492"
                 && new OSSkipConditionAttribute(OperatingSystems.MacOSX).IsMet
                 // Debian 8 uses OpenSSL 1.0.1 which does not support ALPN
-                && new SkipOnHelixAttribute("https://github.com/aspnet/AspNetCore/issues/10428") { Queues = "Debian.8.Amd64.Open" }.IsMet;
+                && new SkipOnHelixAttribute("https://github.com/dotnet/aspnetcore/issues/10428") { Queues = "Debian.8.Amd64;Debian.8.Amd64.Open" }.IsMet;
         }
     }
 }

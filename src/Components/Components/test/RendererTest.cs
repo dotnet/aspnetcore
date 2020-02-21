@@ -2575,7 +2575,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanCombineBindAndConditionalAttribute()
         {
-            // This test represents https://github.com/aspnet/Blazor/issues/624
+            // This test represents https://github.com/dotnet/blazor/issues/624
 
             // Arrange: Rendered with textbox enabled
             var renderer = new TestRenderer();
@@ -2811,7 +2811,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7487")]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered
@@ -3574,7 +3574,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);

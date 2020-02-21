@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.TestHost
             _requestLifetimeFeature = new RequestLifetimeFeature(Abort);
 
             var request = _httpContext.Request;
-            request.Protocol = "HTTP/1.1";
+            request.Protocol = HttpProtocol.Http11;
             request.Method = HttpMethods.Get;
 
             _requestPipe = new Pipe();
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (string.Equals("HTTP/2", _httpContext.Request.Protocol, StringComparison.OrdinalIgnoreCase))
+                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }
@@ -162,7 +162,17 @@ namespace Microsoft.AspNetCore.TestHost
 
         private async Task CompleteRequestAsync()
         {
-            if (!_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted)
+            bool requestBodyInProgress;
+            try
+            {
+                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
+            }
+
+            if (requestBodyInProgress)
             {
                 // If request is still in progress then abort it.
                 CancelRequestBody();

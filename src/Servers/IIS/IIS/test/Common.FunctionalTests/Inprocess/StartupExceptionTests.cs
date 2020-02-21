@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Contains("500.30 - ANCM In-Process Start Failure", responseText);
+            Assert.Contains("500.30", responseText);
         }
     }
 }

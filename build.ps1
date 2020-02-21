@@ -99,7 +99,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
@@ -336,7 +336,7 @@ $env:MSBUILDDISABLENODEREUSE=1
 
 # Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
 # conditions in building C++
-# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
+# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 $warnAsError = $false
 
 if ($ForceCoreMsbuild) {

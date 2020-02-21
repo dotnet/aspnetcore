@@ -20,7 +20,7 @@
 
 
   <ItemGroup>
-    <!-- Dependencies from aspnet/Extensions -->
+    <!-- Dependencies from dotnet/extensions -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />

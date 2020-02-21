@@ -23,8 +23,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             var app = GetApplication();
             var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
             var json = await File.ReadAllTextAsync(expectedJsonPath);
@@ -38,8 +37,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             app = GetApplication();
             run = app.Execute(new[] { "refresh", FakeOpenApiUrl });
 
-            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
-            Assert.Equal(0, run);
+            AssertNoErrors(run);
 
             var secondWriteTime = File.GetLastWriteTime(expectedJsonPath);
             Assert.True(firstWriteTime < secondWriteTime, $"File wasn't updated! {firstWriteTime} {secondWriteTime}");

@@ -15,7 +15,7 @@ using Xunit;
 namespace IIS.Tests
 {
     [SkipIfHostableWebCoreNotAvailable]
-    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "https://github.com/aspnet/IISIntegration/issues/866")]
     public class MaxRequestBodySizeTests : LoggedTest
     {
         [ConditionalFact]

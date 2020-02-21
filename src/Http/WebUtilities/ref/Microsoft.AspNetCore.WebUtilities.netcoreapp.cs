@@ -92,26 +92,26 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         public FileMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection section) { }
         public FileMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection section, Microsoft.Net.Http.Headers.ContentDispositionHeaderValue header) { }
-        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IO.Stream FileStream { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class FormMultipartSection
     {
         public FormMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection section) { }
         public FormMultipartSection(Microsoft.AspNetCore.WebUtilities.MultipartSection section, Microsoft.Net.Http.Headers.ContentDispositionHeaderValue header) { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Threading.Tasks.Task<string> GetValueAsync() { throw null; }
     }
     public partial class FormPipeReader
     {
         public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader) { }
         public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader, System.Text.Encoding encoding) { }
-        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>> ReadFormAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         public FormReader(System.IO.Stream stream, System.Text.Encoding encoding, System.Buffers.ArrayPool<char> charPool) { }
         public FormReader(string data) { }
         public FormReader(string data, System.Buffers.ArrayPool<char> charPool) { }
-        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Dispose() { }
         public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> ReadForm() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public HttpResponseStreamWriter(System.IO.Stream stream, System.Text.Encoding encoding) { }
         public HttpResponseStreamWriter(System.IO.Stream stream, System.Text.Encoding encoding, int bufferSize) { }
         public HttpResponseStreamWriter(System.IO.Stream stream, System.Text.Encoding encoding, int bufferSize, System.Buffers.ArrayPool<byte> bytePool, System.Buffers.ArrayPool<char> charPool) { }
-        public override System.Text.Encoding Encoding { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override System.Text.Encoding Encoding { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override void Dispose(bool disposing) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
@@ -161,10 +161,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override System.Threading.Tasks.Task FlushAsync() { throw null; }
         public override void Write(char value) { }
         public override void Write(char[] values, int index, int count) { }
+        public override void Write(System.ReadOnlySpan<char> value) { }
         public override void Write(string value) { }
         public override System.Threading.Tasks.Task WriteAsync(char value) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(char[] values, int index, int count) { throw null; }
+        public override System.Threading.Tasks.Task WriteAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(string value) { throw null; }
+        public override void WriteLine(System.ReadOnlySpan<char> value) { }
+        public override System.Threading.Tasks.Task WriteLineAsync(System.ReadOnlyMemory<char> value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct KeyValueAccumulator
@@ -173,7 +177,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _dummyPrimitive;
         public bool HasValues { get { throw null; } }
         public int KeyCount { get { throw null; } }
-        public int ValueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int ValueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Append(string key, string value) { }
         public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> GetResults() { throw null; }
     }
@@ -183,20 +187,20 @@ namespace Microsoft.AspNetCore.WebUtilities
         public const int DefaultHeadersLengthLimit = 16384;
         public MultipartReader(string boundary, System.IO.Stream stream) { }
         public MultipartReader(string boundary, System.IO.Stream stream, int bufferSize) { }
-        public long? BodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int HeadersCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int HeadersLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? BodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int HeadersCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int HeadersLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.WebUtilities.MultipartSection> ReadNextSectionAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public partial class MultipartSection
     {
         public MultipartSection() { }
-        public long? BaseStreamOffset { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? BaseStreamOffset { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string ContentDisposition { get { throw null; } }
         public string ContentType { get { throw null; } }
-        public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class MultipartSectionConverterExtensions
     {

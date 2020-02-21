@@ -237,7 +237,7 @@ public class Program
                 using (HttpResponseMessage m = await ctx.HttpClient.SendAsync(req))
                 {
                     ValidateResponse(m, httpVersion);
-                    ValidateContent(content, await m.Content.ReadAsStringAsync());;
+                    ValidateContent(content, await m.Content.ReadAsStringAsync());
                 }
             }),
 

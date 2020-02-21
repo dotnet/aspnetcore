@@ -569,6 +569,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class GenericMethodHub : Hub
+    {
+        public void GenericMethod<T>()
+        {
+        }
+    }
+
     public class DisposeTrackingHub : TestHub
     {
         private readonly TrackDispose _trackDispose;
@@ -660,7 +667,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
         }
 
-        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferredOverChannelReader(int count)
         {
             return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
         }

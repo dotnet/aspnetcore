@@ -6,9 +6,9 @@ namespace Microsoft.AspNetCore.Builder
     public abstract partial class EndpointBuilder
     {
         protected EndpointBuilder() { }
-        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<object> Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<object> Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public abstract Microsoft.AspNetCore.Http.Endpoint Build();
     }
     public partial interface IApplicationBuilder
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Builder
     public static partial class MapExtensions
     {
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Http.PathString pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> configuration) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Http.PathString pathMatch, bool preserveMatchedPathSegment, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> configuration) { throw null; }
     }
     public static partial class MapWhenExtensions
     {
@@ -65,8 +66,9 @@ namespace Microsoft.AspNetCore.Builder.Extensions
     public partial class MapOptions
     {
         public MapOptions() { }
-        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.PathString PathMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.PathString PathMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool PreserveMatchedPathSegment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class MapWhenMiddleware
     {
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
     public partial class MapWhenOptions
     {
         public MapWhenOptions() { }
-        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Func<Microsoft.AspNetCore.Http.HttpContext, bool> Predicate { get { throw null; } set { } }
     }
     public partial class UsePathBaseMiddleware
@@ -109,15 +111,15 @@ namespace Microsoft.AspNetCore.Http
     public partial class CookieBuilder
     {
         public CookieBuilder() { }
-        public virtual string Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual System.TimeSpan? Expiration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual bool IsEssential { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual string Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual System.TimeSpan? Expiration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual bool IsEssential { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual string Name { get { throw null; } set { } }
-        public virtual string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.AspNetCore.Http.SameSiteMode SameSite { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.AspNetCore.Http.CookieSecurePolicy SecurePolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.AspNetCore.Http.SameSiteMode SameSite { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.AspNetCore.Http.CookieSecurePolicy SecurePolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
         public virtual Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context, System.DateTimeOffset expiresFrom) { throw null; }
     }
@@ -130,9 +132,9 @@ namespace Microsoft.AspNetCore.Http
     public partial class Endpoint
     {
         public Endpoint(Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection metadata, string displayName) { }
-        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.EndpointMetadataCollection Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Http.EndpointMetadataCollection Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string ToString() { throw null; }
     }
     public static partial class EndpointHttpContextExtensions
@@ -157,7 +159,7 @@ namespace Microsoft.AspNetCore.Http
         {
             private object _dummy;
             private int _dummyPrimitive;
-            public object Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+            public object Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
             public void Dispose() { }
             public bool MoveNext() { throw null; }
             public void Reset() { }
@@ -167,6 +169,7 @@ namespace Microsoft.AspNetCore.Http
     public readonly partial struct FragmentString : System.IEquatable<Microsoft.AspNetCore.Http.FragmentString>
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.FragmentString Empty;
         public FragmentString(string value) { throw null; }
         public bool HasValue { get { throw null; } }
@@ -192,6 +195,7 @@ namespace Microsoft.AspNetCore.Http
     public readonly partial struct HostString : System.IEquatable<Microsoft.AspNetCore.Http.HostString>
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public HostString(string value) { throw null; }
         public HostString(string host, int port) { throw null; }
         public bool HasValue { get { throw null; } }
@@ -246,6 +250,18 @@ namespace Microsoft.AspNetCore.Http
         public static bool IsPut(string method) { throw null; }
         public static bool IsTrace(string method) { throw null; }
     }
+    public static partial class HttpProtocol
+    {
+        public static readonly string Http10;
+        public static readonly string Http11;
+        public static readonly string Http2;
+        public static readonly string Http3;
+        public static string GetHttpProtocol(System.Version version) { throw null; }
+        public static bool IsHttp10(string protocol) { throw null; }
+        public static bool IsHttp11(string protocol) { throw null; }
+        public static bool IsHttp2(string protocol) { throw null; }
+        public static bool IsHttp3(string protocol) { throw null; }
+    }
     public abstract partial class HttpRequest
     {
         protected HttpRequest() { }
@@ -266,7 +282,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract string Protocol { get; set; }
         public abstract Microsoft.AspNetCore.Http.IQueryCollection Query { get; set; }
         public abstract Microsoft.AspNetCore.Http.QueryString QueryString { get; set; }
-        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public abstract string Scheme { get; set; }
         public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection> ReadFormAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
@@ -320,6 +336,7 @@ namespace Microsoft.AspNetCore.Http
     public readonly partial struct PathString : System.IEquatable<Microsoft.AspNetCore.Http.PathString>
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.PathString Empty;
         public PathString(string value) { throw null; }
         public bool HasValue { get { throw null; } }
@@ -353,6 +370,7 @@ namespace Microsoft.AspNetCore.Http
     public readonly partial struct QueryString : System.IEquatable<Microsoft.AspNetCore.Http.QueryString>
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.QueryString Empty;
         public QueryString(string value) { throw null; }
         public bool HasValue { get { throw null; } }
@@ -510,7 +528,7 @@ namespace Microsoft.AspNetCore.Routing
             private object _dummy;
             private int _dummyPrimitive;
             public Enumerator(Microsoft.AspNetCore.Routing.RouteValueDictionary dictionary) { throw null; }
-            public System.Collections.Generic.KeyValuePair<string, object> Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+            public System.Collections.Generic.KeyValuePair<string, object> Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
             public void Dispose() { }
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public bool MoveNext() { throw null; }

@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <para>
         /// The full name is defaulted to the full namespace of the view component class, prepended to
         /// the class name with a '.' character as the separator. If the view component class uses
-        /// <code>ViewComponent</code> as a suffix, the suffix will be omitted from the <see cref="FullName"/>.
+        /// <c>ViewComponent</c> as a suffix, the suffix will be omitted from the <see cref="FullName"/>.
         /// </para>
         /// <example>
         ///     Class Name: Contoso.Products.LoginViewComponent
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <remarks>
         /// <para>
         /// The short name is defaulted to the name of the view component class. If the view component class uses
-        /// <code>ViewComponent</code> as a suffix, the suffix will be omitted from the <see cref="ShortName"/>.
+        /// <c>ViewComponent</c> as a suffix, the suffix will be omitted from the <see cref="ShortName"/>.
         /// </para>
         /// <example>
         ///     Class Name: Contoso.Products.LoginViewComponent

@@ -22,7 +22,7 @@ namespace RepoTasks
         /// status, it will try to download the file from `PrivateUri`.
         /// </summary>
         public string PrivateUri { get; set; }
-        
+
         /// <summary>
         /// Suffix for the private URI in base64 form (for SAS compatibility)
         /// </summary>

@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            if (context.GetEndpoint() == null &&
-                Helpers.IsGetOrHeadMethod(context.Request.Method)
+            if (context.GetEndpoint() == null
+                && Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
@@ -80,17 +80,13 @@ namespace Microsoft.AspNetCore.StaticFiles
                         {
                             // If the path matches a directory but does not end in a slash, redirect to add the slash.
                             // This prevents relative links from breaking.
-                            if (!Helpers.PathEndsInSlash(context.Request.Path))
+                            if (_options.RedirectToAppendTrailingSlash && !Helpers.PathEndsInSlash(context.Request.Path))
                             {
-                                context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
-                                var request = context.Request;
-                                var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
-                                context.Response.Headers[HeaderNames.Location] = redirect;
+                                Helpers.RedirectToPathWithSlash(context);
                                 return Task.CompletedTask;
                             }
-
                             // Match found, re-write the url. A later middleware will actually serve the file.
-                            context.Request.Path = new PathString(context.Request.Path.Value + defaultFile);
+                            context.Request.Path = new PathString(Helpers.GetPathValueWithSlash(context.Request.Path) + defaultFile);
                             break;
                         }
                     }

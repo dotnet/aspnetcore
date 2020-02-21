@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <!-- Avoid MSB3277 warnings due to dependencies brought in through Microsoft.AspNetCore.Blazor targeting netstandard2.0. -->

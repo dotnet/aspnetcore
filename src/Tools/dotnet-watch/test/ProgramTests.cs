@@ -24,11 +24,12 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        [Flaky("<No longer required; Tracked in Kusto>", FlakyOn.All)]
         public async Task ConsoleCancelKey()
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp3.1")
+                .WithTargetFrameworks("netcoreapp5.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();

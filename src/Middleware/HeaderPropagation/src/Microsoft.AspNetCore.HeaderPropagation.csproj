@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core middleware to propagate HTTP headers from the incoming request to the outgoing HTTP Client requests</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;httpclient</PackageTags>

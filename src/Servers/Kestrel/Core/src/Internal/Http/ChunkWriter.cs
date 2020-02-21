@@ -4,15 +4,11 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Text;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ChunkWriter
     {
-        private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
-
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
             // Determine the most-significant non-zero nibble
@@ -27,14 +23,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             count = (total >> 2) + 3;
 
-            var offset = 0;
-            ref var startHex = ref _hex[0];
+            // This must be explicity typed as ReadOnlySpan<byte>
+            // It then becomes a non-allocating mapping to the data section of the assembly.
+            // For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+            ReadOnlySpan<byte> hex = new byte[16] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f' };
 
+            var offset = 0;
             for (shift = total; shift >= 0; shift -= 4)
             {
-                // Using Unsafe.Add to elide the bounds check on _hex as the & 0x0f definately
-                // constrains it to the range 0x0 - 0xf, matching the bounds of the array
-                span[offset] = Unsafe.Add(ref startHex, ((dataCount >> shift) & 0x0f));
+                // Uses dotnet/runtime#1644 to elide the bounds check on hex as the & 0x0f definitely
+                // constrains it to the range 0x0 - 0xf, matching the bounds of the array.
+                span[offset] = hex[(dataCount >> shift) & 0x0f];
                 offset++;
             }
 
@@ -54,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // bytes for the chunked prefix, so we would have to copy once we call advance. Therefore, to avoid this scenario,
             // we slice the memory by one byte.
 
-            // See https://gist.github.com/halter73/af2b9f78978f83813b19e187c4e5309e if you would like to tweek the algorithm at all.
+            // See https://gist.github.com/halter73/af2b9f78978f83813b19e187c4e5309e if you would like to tweak the algorithm at all.
 
             if (length <= 65544)
             {

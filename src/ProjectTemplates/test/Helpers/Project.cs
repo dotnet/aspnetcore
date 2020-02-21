@@ -21,13 +21,10 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public const string DefaultFramework = "netcoreapp3.1";
-
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
-        public static string ArtifactsLogDir => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "ArtifactsLogDir")?.Value;
+        public static string ArtifactsLogDir => GetAssemblyMetadata("ArtifactsLogDir");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -35,14 +32,16 @@ namespace Templates.Test.Helpers
         public string ProjectArguments { get; set; }
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
-        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", DefaultFramework);
-        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", DefaultFramework, "publish");
+        public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
+
+        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
+        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
 
         private string TemplateServerDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Server");
         private string TemplateClientDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Client");
-        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", DefaultFramework);
-        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", DefaultFramework, "publish");
-        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", DefaultFramework, "publish");
+        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", TargetFramework);
+        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", TargetFramework, "publish");
+        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", TargetFramework, "publish");
 
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
@@ -110,7 +109,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -121,7 +120,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -132,7 +131,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -143,7 +142,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug /bl {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -242,7 +241,7 @@ namespace Templates.Test.Helpers
             do
             {
                 restoreResult = await RestoreAsync(output, workingDirectory);
-                if (restoreResult.ExitCode == 0)
+                if (restoreResult.HasExited && restoreResult.ExitCode == 0)
                 {
                     return restoreResult;
                 }
@@ -524,5 +523,18 @@ namespace Templates.Test.Helpers
         }
 
         public override string ToString() => $"{ProjectName}: {TemplateOutputDir}";
+
+        private static string GetAssemblyMetadata(string key)
+        {
+            var attribute = typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == key);
+
+            if (attribute is null)
+            {
+                throw new ArgumentException($"AssemblyMetadataAttribute with key {key} was not found.");
+            }
+
+            return attribute.Value;
+        }
     }
 }

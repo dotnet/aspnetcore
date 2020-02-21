@@ -135,7 +135,7 @@ export class AuthorizeService {
         await this.userManager.signoutRedirect(this.createArguments(state));
         return this.redirect();
       } catch (redirectSignOutError) {
-        console.log('Redirect signout error: ', popupSignOutError);
+        console.log('Redirect signout error: ', redirectSignOutError);
         return this.error(redirectSignOutError);
       }
     }

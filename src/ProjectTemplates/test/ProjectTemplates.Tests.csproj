@@ -12,8 +12,9 @@
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
     <OutputPath />
 
@@ -52,18 +53,22 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/$(DefaultNetCoreTargetFramework)/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
       <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Test.DefaultTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-  
+
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
@@ -81,7 +86,7 @@
         <_Parameter1>ArtifactsLogDir</_Parameter1>
         <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log'))</_Parameter2>
       </AssemblyAttribute>
-      
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
         <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>

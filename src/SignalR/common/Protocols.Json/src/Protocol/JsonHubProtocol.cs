@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -508,7 +509,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 writer.WritePropertyName(ResultPropertyNameBytes);
-                JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                if (message.Result == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                }
             }
         }
 
@@ -522,7 +530,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             writer.WritePropertyName(ItemPropertyNameBytes);
-            JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            if (message.Item == null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            }
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -563,18 +578,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
-                var type = argument?.GetType();
-                if (type == typeof(DateTime))
+                if (argument == null)
                 {
-                    writer.WriteStringValue((DateTime)argument);
-                }
-                else if (type == typeof(DateTimeOffset))
-                {
-                    writer.WriteStringValue((DateTimeOffset)argument);
+                    writer.WriteNullValue();
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, argument, type, _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
                 }
             }
             writer.WriteEndArray();
@@ -757,19 +767,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         internal static JsonSerializerOptions CreateDefaultSerializerSettings()
         {
-            var options = new JsonSerializerOptions();
-            options.WriteIndented = false;
-            options.ReadCommentHandling = JsonCommentHandling.Disallow;
-            options.AllowTrailingCommas = false;
-            options.IgnoreNullValues = false;
-            options.IgnoreReadOnlyProperties = false;
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            options.PropertyNameCaseInsensitive = true;
-            options.MaxDepth = 64;
-            options.DictionaryKeyPolicy = null;
-            options.DefaultBufferSize = 16 * 1024;
-
-            return options;
+            return new JsonSerializerOptions()
+            {
+                WriteIndented = false,
+                ReadCommentHandling = JsonCommentHandling.Disallow,
+                AllowTrailingCommas = false,
+                IgnoreNullValues = false,
+                IgnoreReadOnlyProperties = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+                MaxDepth = 64,
+                DictionaryKeyPolicy = null,
+                DefaultBufferSize = 16 * 1024,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            };
         }
     }
 }

@@ -2,6 +2,7 @@
 .gradletasknamecache
 .gradle/
 build/
+/test-results
 .settings/
 out/
 *.class
