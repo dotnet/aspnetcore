@@ -30,24 +30,18 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.FileExtensions"            Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Ini"                       Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Json"                      Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.KeyPerFile"                Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.UserSecrets"               Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Xml"                       Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"   Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.HealthChecks"                Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)"  />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Composite"                 Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Embedded"                  Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Physical"                  Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileSystemGlobbing"                      Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting.Abstractions"                    Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting"                                 Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Http"                                    Version="$(MicrosoftExtensionsHttpPackageVersion)"  />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Localization.Abstractions"               Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Localization"                            Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Abstractions"                    Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Configuration"                   Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
@@ -56,13 +50,10 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventLog"                        Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.TraceSource"                     Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.ObjectPool"                              Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"         Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
 
     <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
