@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Provides experimental support for validation using DataAnnotations.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 

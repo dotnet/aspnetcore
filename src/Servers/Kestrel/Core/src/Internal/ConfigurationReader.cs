@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,11 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
+        private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
 
         private IConfiguration _configuration;
         private IDictionary<string, CertificateConfig> _certificates;
         private IList<EndpointConfig> _endpoints;
         private EndpointDefaults _endpointDefaults;
+        private bool? _latin1RequestHeaders;
 
         public ConfigurationReader(IConfiguration configuration)
         {
@@ -62,6 +64,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
 
                 return _endpoints;
+            }
+        }
+
+        public bool Latin1RequestHeaders
+        {
+            get
+            {
+                if (_latin1RequestHeaders is null)
+                {
+                    _latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
+                }
+
+                return _latin1RequestHeaders.Value;
             }
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections
@@ -15,19 +16,19 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         private const byte LineFeed = (byte)'\n';
 
-        public static async Task WriteMessageAsync(ReadOnlySequence<byte> payload, Stream output)
+        public static async Task WriteMessageAsync(ReadOnlySequence<byte> payload, Stream output, CancellationToken token)
         {
             // Payload does not contain a line feed so write it directly to output
             if (payload.PositionOf(LineFeed) == null)
             {
                 if (payload.Length > 0)
                 {
-                    await output.WriteAsync(DataPrefix, 0, DataPrefix.Length);
-                    await output.WriteAsync(payload);
-                    await output.WriteAsync(Newline, 0, Newline.Length);
+                    await output.WriteAsync(DataPrefix, 0, DataPrefix.Length, token);
+                    await output.WriteAsync(payload, token);
+                    await output.WriteAsync(Newline, 0, Newline.Length, token);
                 }
 
-                await output.WriteAsync(Newline, 0, Newline.Length);
+                await output.WriteAsync(Newline, 0, Newline.Length, token);
                 return;
             }
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             await WriteMessageToMemory(ms, payload);
             ms.Position = 0;
 
-            await ms.CopyToAsync(output);
+            await ms.CopyToAsync(output, token);
         }
 
         /// <summary>

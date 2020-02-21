@@ -7,7 +7,7 @@
     <AssemblyName>dotnet-openapi</AssemblyName>
     <PackageId>Microsoft.dotnet-openapi</PackageId>
     <PackAsTool>true</PackAsTool>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

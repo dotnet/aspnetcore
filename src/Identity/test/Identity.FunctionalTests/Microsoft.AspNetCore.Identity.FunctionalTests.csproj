@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
     <SkipHelixArm>true</SkipHelixArm>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
    </PropertyGroup>
 
   <ItemGroup>

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Microsoft.Extensions.CommandLineUtils;
@@ -122,7 +123,16 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 propertyGroup.Add(new XElement("UserSecretsId", newSecretsId));
             }
 
-            projectDocument.Save(projectPath);
+            var settings = new XmlWriterSettings
+            {
+                Indent = true,
+                OmitXmlDeclaration = true,
+            };
+
+            using (var xw = XmlWriter.Create(projectPath, settings))
+            {
+                projectDocument.Save(xw);
+            }
 
             context.Reporter.Output(Resources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
         }

@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
 
         /// <summary>
         /// Gets or sets the endpoint metadata for this action.
+        /// This API is meant for infrastructure and should not be used by application code.
         /// </summary>
         public IList<object> EndpointMetadata { get; set; }
 

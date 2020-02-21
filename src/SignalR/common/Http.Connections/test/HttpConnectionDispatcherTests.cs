@@ -1050,6 +1050,176 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        private class BlockingStream : Stream
+        {
+            private readonly SyncPoint _sync;
+            private bool _isSSE;
+            public BlockingStream(SyncPoint sync, bool isSSE = false)
+            {
+                _sync = sync;
+                _isSSE = isSSE;
+            }
+            public override bool CanRead => throw new NotImplementedException();
+            public override bool CanSeek => throw new NotImplementedException();
+            public override bool CanWrite => throw new NotImplementedException();
+            public override long Length => throw new NotImplementedException();
+            public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+            public override void Flush()
+            {
+            }
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+            public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                if (_isSSE)
+                {
+                    // SSE does an initial write of :\r\n that we want to ignore in testing
+                    _isSSE = false;
+                    return;
+                }
+                await _sync.WaitToContinue();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                if (_isSSE)
+                {
+                    // SSE does an initial write of :\r\n that we want to ignore in testing
+                    _isSSE = false;
+                    return;
+                }
+                await _sync.WaitToContinue();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Debug)]
+        public async Task LongPollingConnectionClosesWhenSendTimeoutReached()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return (writeContext.LoggerName == typeof(Internal.Transports.LongPollingServerTransport).FullName &&
+                       writeContext.EventId.Name == "LongPollingTerminated") ||
+                       (writeContext.LoggerName == typeof(HttpConnectionManager).FullName && writeContext.EventId.Name == "FailedDispose");
+            }
+
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = MakeRequest("/foo", connection);
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                // First poll completes immediately
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                var sync = new SyncPoint();
+                context.Response.Body = new BlockingStream(sync);
+                var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
+                await sync.WaitForSyncPoint().OrTimeout();
+                // Cancel write to response body
+                connection.TryCancelSend(long.MaxValue);
+                sync.Continue();
+                await dispatcherTask.OrTimeout();
+                // Connection should be removed on canceled write
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Debug)]
+        public async Task SSEConnectionClosesWhenSendTimeoutReached()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, connection.TransportType);
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var sync = new SyncPoint();
+                context.Response.Body = new BlockingStream(sync, isSSE: true);
+                var options = new HttpConnectionDispatcherOptions();
+                var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
+                await sync.WaitForSyncPoint().OrTimeout();
+                // Cancel write to response body
+                connection.TryCancelSend(long.MaxValue);
+                sync.Continue();
+                await dispatcherTask.OrTimeout();
+                // Connection should be removed on canceled write
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Debug)]
+        public async Task WebSocketConnectionClosesWhenSendTimeoutReached()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(Internal.Transports.WebSocketsServerTransport).FullName &&
+                       writeContext.EventId.Name == "ErrorWritingFrame";
+            }
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.WebSockets;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var sync = new SyncPoint();
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, connection.TransportType, sync);
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
+                var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
+                await sync.WaitForSyncPoint().OrTimeout();
+                // Cancel write to response body
+                connection.TryCancelSend(long.MaxValue);
+                sync.Continue();
+                await dispatcherTask.OrTimeout();
+                // Connection should be removed on canceled write
+                Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
+            }
+        }
+
         [Fact]
         [LogLevel(LogLevel.Trace)]
         public async Task WebSocketTransportTimesOutWhenCloseFrameNotReceived()
@@ -1635,6 +1805,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
+                await connection.DisposeAndRemoveTask.OrTimeout();
+
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
             }
@@ -1685,6 +1857,110 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
+            }
+        }
+
+        [Fact]
+        public async Task DeleteEndpointTerminatesLongPollingWithHangingApplication()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var pipeOptions = new PipeOptions(pauseWriterThreshold: 2, resumeWriterThreshold: 1);
+                var connection = manager.CreateConnection(pipeOptions, pipeOptions);
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var context = MakeRequest("/foo", connection);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var pollTask = dispatcher.ExecuteAsync(context, options, app);
+                Assert.True(pollTask.IsCompleted);
+
+                // Now send the second poll
+                pollTask = dispatcher.ExecuteAsync(context, options, app);
+
+                // Issue the delete request and make sure the poll completes
+                var deleteContext = new DefaultHttpContext();
+                deleteContext.Request.Path = "/foo";
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.Method = "DELETE";
+
+                Assert.False(pollTask.IsCompleted);
+
+                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+
+                await pollTask.OrTimeout();
+
+                // Verify that transport shuts down
+                await connection.TransportTask.OrTimeout();
+
+                // Verify the response from the DELETE request
+                Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
+                Assert.Equal("text/plain", deleteContext.Response.ContentType);
+                Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+
+                // Verify the connection not removed because application is hanging
+                Assert.True(manager.TryGetConnection(connection.ConnectionId, out _));
+            }
+        }
+
+        [Fact]
+        public async Task PollCanReceiveFinalMessageAfterAppCompletes()
+        {
+            using (StartVerifiableLog())
+            {
+                var transportType = HttpTransportType.LongPolling;
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = transportType;
+
+                var waitForMessageTcs1 = new TaskCompletionSource<object>();
+                var messageTcs1 = new TaskCompletionSource<object>();
+                var waitForMessageTcs2 = new TaskCompletionSource<object>();
+                var messageTcs2 = new TaskCompletionSource<object>();
+                ConnectionDelegate connectionDelegate = async c =>
+                {
+                    await waitForMessageTcs1.Task.OrTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).OrTimeout();
+                    messageTcs1.TrySetResult(null);
+                    await waitForMessageTcs2.Task.OrTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).OrTimeout();
+                    messageTcs2.TrySetResult(null);
+                };
+                {
+                    var options = new HttpConnectionDispatcherOptions();
+                    var context = MakeRequest("/foo", connection);
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+
+                    // second poll should have data
+                    waitForMessageTcs1.SetResult(null);
+                    await messageTcs1.Task.OrTimeout();
+
+                    var ms = new MemoryStream();
+                    context.Response.Body = ms;
+                    // Now send the second poll
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    Assert.Equal("Message1", Encoding.UTF8.GetString(ms.ToArray()));
+
+                    waitForMessageTcs2.SetResult(null);
+                    await messageTcs2.Task.OrTimeout();
+
+                    context = MakeRequest("/foo", connection);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    context.Response.Body = ms;
+                    // This is the third poll which gets the final message after the app is complete
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    Assert.Equal("Message2", Encoding.UTF8.GetString(ms.ToArray()));
+                }
             }
         }
 
@@ -2000,12 +2276,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             return context;
         }
 
-        private static void SetTransport(HttpContext context, HttpTransportType transportType)
+        private static void SetTransport(HttpContext context, HttpTransportType transportType, SyncPoint sync = null)
         {
             switch (transportType)
             {
                 case HttpTransportType.WebSockets:
-                    context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketConnectionFeature());
+                    context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketConnectionFeature(sync));
                     break;
                 case HttpTransportType.ServerSentEvents:
                     context.Request.Headers["Accept"] = "text/event-stream";
