@@ -287,7 +287,6 @@
     </Dependency>
     <Dependency Name="Microsoft.JSInterop" Version="5.0.0-preview.1.20114.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>396aff55e0b4628a7a44375e4b72e5d19a6e37ab</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.1.20113.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
