@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Hosting;
@@ -85,6 +86,22 @@ namespace Microsoft.AspNetCore.Builder
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
+
+            // Static files middleware will try to use application/x-gzip as the content
+            // type when serving a file with a gz extension. We need to correct that before
+            // sending the file.
+            options.OnPrepareResponse = fileContext =>
+            {
+                var requestPath = fileContext.Context.Request.Path;
+                if (string.Equals(Path.GetExtension(requestPath.Value), ".gz"))
+                {
+                    var originalPath = Path.GetFileNameWithoutExtension(requestPath.Value);
+                    if (contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
+                    {
+                        fileContext.Context.Response.ContentType = originalContentType;
+                    }
+                }
+            };
 
             return options;
         }
