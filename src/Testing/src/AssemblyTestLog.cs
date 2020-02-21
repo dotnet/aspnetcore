@@ -222,7 +222,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
                     // Try to clear previous logs, continue if it fails.
                     var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
-                    if (!string.IsNullOrEmpty(assemblyBaseDirectory))
+                    if (!string.IsNullOrEmpty(assemblyBaseDirectory) && !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
                     {
                         try
                         {
