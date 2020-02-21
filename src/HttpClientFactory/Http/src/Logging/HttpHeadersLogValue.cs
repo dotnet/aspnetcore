@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,13 +12,15 @@ namespace Microsoft.Extensions.Http.Logging
     internal class HttpHeadersLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly Kind _kind;
+        private readonly Func<string, bool> _shouldRedactHeaderValue;
 
         private string _formatted;
         private List<KeyValuePair<string, object>> _values;
 
-        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders)
+        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Func<string, bool> shouldRedactHeaderValue)
         {
             _kind = kind;
+            _shouldRedactHeaderValue = shouldRedactHeaderValue;
 
             Headers = headers;
             ContentHeaders = contentHeaders;
@@ -27,7 +29,7 @@ namespace Microsoft.Extensions.Http.Logging
         public HttpHeaders Headers { get; }
 
         public HttpHeaders ContentHeaders { get; }
-        
+
         private List<KeyValuePair<string, object>> Values
         {
             get
@@ -35,7 +37,7 @@ namespace Microsoft.Extensions.Http.Logging
                 if (_values == null)
                 {
                     var values = new List<KeyValuePair<string, object>>();
-                    
+
                     foreach (var kvp in Headers)
                     {
                         values.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
@@ -94,15 +96,28 @@ namespace Microsoft.Extensions.Http.Logging
                     builder.Append(kvp.Key);
                     builder.Append(": ");
 
-                    foreach (var value in (IEnumerable<object>)kvp.Value)
+                    if (_shouldRedactHeaderValue(kvp.Key))
                     {
-                        builder.Append(value);
-                        builder.Append(", ");
+                        builder.Append("*");
+                        builder.AppendLine();
                     }
+                    else
+                    {
+#if NETCOREAPP
+                        builder.AppendJoin(", ", (IEnumerable<object>)kvp.Value);
+                        builder.AppendLine();
+#else
+                        foreach (var value in (IEnumerable<object>)kvp.Value)
+                        {
+                            builder.Append(value);
+                            builder.Append(", ");
+                        }
 
-                    // Remove the extra ', '
-                    builder.Remove(builder.Length - 2, 2);
-                    builder.AppendLine();
+                        // Remove the extra ', '
+                        builder.Remove(builder.Length - 2, 2);
+                        builder.AppendLine();
+#endif
+                    }
                 }
 
                 _formatted = builder.ToString();

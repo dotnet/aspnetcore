@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             var result = await cache.ScriptEvaluateAsync(
                 HmGetScript,
                 new RedisKey[] { key },
-                GetRedisMembers(members));
+                GetRedisMembers(members)).ConfigureAwait(false);
 
             // TODO: Error checking?
             return (RedisValue[])result;

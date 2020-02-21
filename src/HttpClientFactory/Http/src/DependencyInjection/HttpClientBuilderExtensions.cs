@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a delegate that will be used to configure a named <see cref="HttpClient"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
         /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         public static IHttpClientBuilder ConfigureHttpClient(this IHttpClientBuilder builder, Action<HttpClient> configureClient)
@@ -42,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a delegate that will be used to configure a named <see cref="HttpClient"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
         /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         /// <remarks>
@@ -295,7 +296,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// associated with the <see cref="IHttpClientBuilder"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -515,6 +516,62 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClient = httpClientFactory.CreateClient(builder.Name);
 
                 return factory(httpClient, s);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="shouldRedactHeaderValue">The <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        /// <remarks>The provided <paramref name="shouldRedactHeaderValue"/> predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
+        /// </remarks>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Func<string, bool> shouldRedactHeaderValue)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (shouldRedactHeaderValue == null)
+            {
+                throw new ArgumentNullException(nameof(shouldRedactHeaderValue));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                options.ShouldRedactHeaderValue = shouldRedactHeaderValue;
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the collection of HTTP headers names for which values should be redacted before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (redactedLoggedHeaderNames == null)
+            {
+                throw new ArgumentNullException(nameof(redactedLoggedHeaderNames));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                var sensitiveHeaders = new HashSet<string>(redactedLoggedHeaderNames, StringComparer.OrdinalIgnoreCase);
+
+                options.ShouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
             });
 
             return builder;

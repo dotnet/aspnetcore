@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -68,6 +68,11 @@ namespace Microsoft.Extensions.Http
                 _handlerLifetime = value;
             }
         }
+
+        /// <summary>
+        /// The <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.
+        /// </summary>
+        public Func<string, bool> ShouldRedactHeaderValue { get; set; } = (header) => false;
 
         /// <summary>
         /// <para>
