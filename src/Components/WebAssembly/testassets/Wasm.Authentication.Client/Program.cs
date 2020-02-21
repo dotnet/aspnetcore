@@ -13,17 +13,18 @@ namespace Wasm.Authentication.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services.AddApiAuthorization();
+            //builder.Services.AddApiAuthorization();
 
             // B2C hosted
-            //builder.Services.AddMsalAuthentication(options =>
-            //{
-            //    var authentication = options.ProviderOptions.Authentication;
-            //    authentication.Authority = "https://jacalvarb2c.b2clogin.com/jacalvarb2c.onmicrosoft.com/b2c_1_siupin";
-            //    authentication.ClientId = "e6b0c1e2-bb93-4cc5-996e-e175c7bd8f1a";
-            //    authentication.ValidateAuthority = false;
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://jacalvarb2c.onmicrosoft.com/BlazorWasmAadB2CServerAPI/All");
-            //});
+            builder.Services.AddMsalAuthentication(options =>
+            {
+                var authentication = options.ProviderOptions.Authentication;
+                authentication.Authority = "https://jacalvarb2c.b2clogin.com/jacalvarb2c.onmicrosoft.com/b2c_1_siupin";
+                authentication.ClientId = "e6b0c1e2-bb93-4cc5-996e-e175c7bd8f1a";
+                authentication.ValidateAuthority = false;
+                options.ProviderOptions.DefaultAccessTokenScopes.Add("https://jacalvarb2c.onmicrosoft.com/BlazorWasmAadB2CServerAPI/All");
+                options.ProviderOptions.AdditionalScopesToConsent.Add("https://jacalvarb2c.onmicrosoft.com/BlazorWasmAadB2CAdditionalAPI/user_impersonation");
+            });
 
             // B2C standalone
             //builder.Services.AddMsalAuthentication(options =>

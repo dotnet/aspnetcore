@@ -19,5 +19,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal.Models
         public MsalCacheOptions Cache { get; set; }
 
         public IList<string> DefaultAccessTokenScopes { get; set; } = new List<string>();
+
+        public IList<string> AdditionalScopesToConsent { get; set; } = new List<string>();
     }
 }

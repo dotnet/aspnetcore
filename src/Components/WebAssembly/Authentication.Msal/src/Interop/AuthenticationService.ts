@@ -45,7 +45,8 @@ interface AuthorizeService {
 }
 
 interface AuthorizeServiceConfiguration extends Msal.Configuration {
-    defaultAccessTokenScopes: string[]
+    defaultAccessTokenScopes: string[];
+    additionalScopesToConsent: string []
 }
 
 class MsalAuthorizeService implements AuthorizeService {
@@ -59,6 +60,7 @@ class MsalAuthorizeService implements AuthorizeService {
     constructor(settings: AuthorizeServiceConfiguration) {
         this._settings = settings;
         console.log('Settings:', settings);
+        const callbackUrl = location.href;
         this._msalApplication = new Msal.UserAgentApplication(this._settings);
         this._callbackPromise = new Promise((resolve, _) => {
             this._msalApplication.handleRedirectCallback(
@@ -66,7 +68,10 @@ class MsalAuthorizeService implements AuthorizeService {
                     if (window.self !== window.top) {
                         resolve(this.operationCompleted());
                     } else {
-                        resolve(this.success(this.retrieveState(location.href)));
+                        this.retrieveState(callbackUrl)
+                            .then(state => {
+                                resolve(this.success(state));
+                            });
                     }
                 },
                 erc => {
@@ -145,11 +150,6 @@ class MsalAuthorizeService implements AuthorizeService {
                 expires: response.expiresOn
             };
         } catch (e) {
-            try {
-                response = await this._msalApplication.acquireTokenPopup(tokenScopes);
-            } catch (e) {
-                this._msalApplication.acquireTokenRedirect(tokenScopes);
-            }
         }
 
         return undefined;
@@ -164,6 +164,10 @@ class MsalAuthorizeService implements AuthorizeService {
 
             if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
                 request.scopes = this._settings.defaultAccessTokenScopes;
+            }
+
+            if (this._settings.additionalScopesToConsent && this._settings.additionalScopesToConsent.length > 0) {
+                request.extraScopesToConsent = this._settings.additionalScopesToConsent;
             }
 
             const result = await this.signInCore(request);
@@ -208,7 +212,8 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async completeSignIn(url: string) {
-        return this._callbackPromise;
+        const result = await this._callbackPromise;
+        return result;
     }
 
     async signOut(state: any) {
@@ -248,17 +253,33 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async retrieveState<T>(url: string): Promise<T | undefined> {
-        const params = new URL(url).searchParams;
-        const state = params.getAll('state');
-        if (!state || state.length !== 1) {
+        const parsedUrl = new URL(url);
+        const fromHash = parsedUrl.hash && parsedUrl.hash.length > 0 && new URLSearchParams(parsedUrl.hash.substring(1));
+        let state = fromHash && fromHash.getAll('state');
+        if (state && state.length > 1) {
             return undefined;
+        } else if (!state || state.length == 0) {
+            state = parsedUrl.searchParams && parsedUrl.searchParams.getAll('state');
+            if (!state || state.length !== 1) {
+                return undefined;
+            }
         }
 
-        const stateKey = `AuthorizeService.${state[0]}`;
-        const stateString = sessionStorage.getItem(stateKey);
-        if (stateString) {
-            sessionStorage.removeItem(stateKey);
-            return JSON.parse(stateString);
+        const appState = this._msalApplication.getAccountState(state[0])
+        const signInStateKey = `AuthorizeService.${appState}`;
+        const signInStateString = sessionStorage.getItem(signInStateKey);
+        if (signInStateString) {
+            sessionStorage.removeItem(signInStateKey);
+            const savedState = JSON.parse(signInStateString);
+            return savedState;
+        }
+
+        const signOutStateKey = `AuthorizeService.${state[0]}`;
+        const signOutStateString = sessionStorage.getItem(signOutStateKey);
+        if (signOutStateString) {
+            sessionStorage.removeItem(signOutStateKey);
+            const savedState = JSON.parse(signOutStateString);
+            return savedState;
         }
 
         return undefined;
@@ -302,8 +323,8 @@ export class AuthenticationService {
         return AuthenticationService.instance.getUser();
     }
 
-    public static getAccessToken() {
-        return AuthenticationService.instance.getAccessToken();
+    public static getAccessToken(request: AccessTokenRequestOptions) {
+        return AuthenticationService.instance.getAccessToken(request);
     }
 
     public static signIn(state: any) {
