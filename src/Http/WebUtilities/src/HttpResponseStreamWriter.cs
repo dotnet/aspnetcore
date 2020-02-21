@@ -135,21 +135,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            var written = 0;
-            while (true)
+            var remaining = value.Length;
+            while (remaining > 0)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     FlushInternal(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(value);
-
-                if (written == value.Length)
-                {
-                    break;
-                }
-
+                var written = CopyToCharBuffer(value);
+                
+                remaining -= written;
                 value = value.Slice(written);
             };
         }
@@ -292,6 +288,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var count = value.Length;
 
             Debug.Assert(count > 0);
+            Debug.Assert(_charBufferSize - _charBufferCount < count);
 
             var index = 0;
             while (count > 0)
@@ -340,21 +337,17 @@ namespace Microsoft.AspNetCore.WebUtilities
             Debug.Assert(value.Length > 0);
             Debug.Assert(_charBufferSize - _charBufferCount < value.Length);
 
-            int written = 0;
-            while (true)
+            var remaining = value.Length;
+            while (remaining > 0)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     await FlushInternalAsync(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(value.Span);
-
-                if (written == value.Length)
-                {
-                    break;
-                }
-
+                var written = CopyToCharBuffer(value.Span);
+                
+                remaining -= written;
                 value = value.Slice(written);
             };
         }
