@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Builder
             if (StringSegment.Equals("gzip", selectedEncoding, StringComparison.OrdinalIgnoreCase))
             {
                 var targetPath = context.Request.Path + ".gz";
-                if (webHost.WebRootFileProvider.GetFileInfo(targetPath) != null)
+                if (webHost.WebRootFileProvider.GetFileInfo(targetPath).Exists)
                 {
                     // We only try to serve the pre-compressed file if it's actually there.
                     context.Request.Path = targetPath;
@@ -188,6 +188,6 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         private static bool ResourceExists(HttpContext context, IWebHostEnvironment webHost, string extension) =>
-            webHost.WebRootFileProvider.GetFileInfo(context.Request.Path + extension) != null;
+            webHost.WebRootFileProvider.GetFileInfo(context.Request.Path + extension).Exists;
     }
 }
