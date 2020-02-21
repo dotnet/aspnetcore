@@ -46,12 +46,8 @@ else
         httpClient.BaseAddress = new Uri(Navigation.BaseUri);
 
         var tokenResult = await AuthenticationService.RequestAccessToken();
-        var otherTokenResult = await AuthenticationService.RequestAccessToken(new AccessTokenRequestOptions
-        {
-            Scopes = new[] { "https://jacalvarb2c.onmicrosoft.com/BlazorWasmAadB2CAdditionalAPI/user_impersonation" }
-        });
 
-        if (tokenResult.TryGetToken(out var token) && otherTokenResult.TryGetToken(out var otherToken))
+        if (tokenResult.TryGetToken(out var token))
         {
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
             forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
