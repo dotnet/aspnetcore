@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                         fileHash: "pdbhashpdbhashpdbhash"),
 
                     CreateResourceTaskItem(
-                        ResourceType.wasm,
-                        itemSpec: "some-wasm-file",
+                        ResourceType.runtime,
+                        itemSpec: "some-runtime-file",
                         relativeOutputPath: null,
-                        fileHash: "wasmhashwasmhashwasmhash")
+                        fileHash: "runtimehashruntimehash")
                 }
             };
 
@@ -75,9 +75,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 resourceListKey =>
                 {
                     var resources = parsedContent.resources[resourceListKey];
-                    Assert.Equal(ResourceType.wasm, resourceListKey);
+                    Assert.Equal(ResourceType.runtime, resourceListKey);
                     Assert.Single(resources);
-                    Assert.Equal("sha256-wasmhashwasmhashwasmhash", resources["some-wasm-file"]);
+                    Assert.Equal("sha256-runtimehashruntimehash", resources["some-runtime-file"]);
                 });
         }
 
@@ -145,6 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             var mock = new Mock<ITaskItem>();
             mock.Setup(m => m.ItemSpec).Returns(itemSpec);
+            mock.Setup(m => m.GetMetadata("TargetOutputPath")).Returns(itemSpec);
             mock.Setup(m => m.GetMetadata("BootResourceType")).Returns(type.ToString());
             mock.Setup(m => m.GetMetadata("RelativeOutputPath")).Returns(relativeOutputPath);
             mock.Setup(m => m.GetMetadata("FileHash")).Returns(fileHash);

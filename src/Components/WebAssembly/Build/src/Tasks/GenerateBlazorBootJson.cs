@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             {
                 // If RelativeOutputPath was not specified, we assume the item will be placed at the
                 // root of whatever directory is used for its resource type (e.g., assemblies go in _bin)
-                outputPath = Path.GetFileName(item.ItemSpec);
+                outputPath = Path.GetFileName(item.GetMetadata("TargetOutputPath"));
             }
 
             return outputPath.Replace('\\', '/');
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             assembly,
             pdb,
-            wasm
+            runtime,
         }
 #pragma warning restore IDE1006 // Naming Styles
     }

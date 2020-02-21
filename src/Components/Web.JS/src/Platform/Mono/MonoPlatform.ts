@@ -24,7 +24,7 @@ export const monoPlatform: Platform = {
       // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
         window['Module'] = createEmscriptenModuleInstance(resourceLoader, resolve, reject);
-        addScriptTagsToDocument();
+        addScriptTagsToDocument(resourceLoader);
       });
     });
   },
@@ -112,15 +112,29 @@ export const monoPlatform: Platform = {
   },
 };
 
-function addScriptTagsToDocument() {
+function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
     throw new Error('This browser does not support WebAssembly.');
   }
 
+  // The dotnet.*.js file has a version or hash in its name as a form of cache-busting. This is needed
+  // because it's the only part of the loading process that can't use cache:'no-cache' (because it's
+  // not a 'fetch') and isn't controllable by the developer (so they can't put in their own cache-busting
+  // querystring). So, to find out the exact URL we have to search the boot manifest.
+  const dotnetJsResourceName = Object
+    .keys(resourceLoader.bootConfig.resources.runtime)
+    .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
   const scriptElem = document.createElement('script');
-  scriptElem.src = '_framework/wasm/dotnet.js';
+  scriptElem.src = `_framework/wasm/${dotnetJsResourceName}`;
   scriptElem.defer = true;
+
+  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
+  if (resourceLoader.bootConfig.cacheBootResources) {
+    const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
+    scriptElem.integrity = contentHash;
+  }
+
   document.body.appendChild(scriptElem);
 }
 
@@ -165,8 +179,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         const dotnetWasmResource = await resourceLoader.loadResource(
           /* name */ dotnetWasmResourceName,
           /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-          /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
-        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);  
+          /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
+        compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       } catch (ex) {
         module.printErr(ex);
         throw ex;
