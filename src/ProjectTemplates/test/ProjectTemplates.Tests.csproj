@@ -15,7 +15,7 @@
     <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
     <OutputPath />
-    
+
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
