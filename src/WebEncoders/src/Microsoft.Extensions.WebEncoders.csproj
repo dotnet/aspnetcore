@@ -8,7 +8,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 

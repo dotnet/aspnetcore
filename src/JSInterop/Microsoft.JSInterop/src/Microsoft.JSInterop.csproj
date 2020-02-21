@@ -7,7 +7,6 @@
     <PackageTags>javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 

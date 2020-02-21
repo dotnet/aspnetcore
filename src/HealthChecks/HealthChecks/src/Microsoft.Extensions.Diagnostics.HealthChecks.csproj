@@ -12,7 +12,6 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
