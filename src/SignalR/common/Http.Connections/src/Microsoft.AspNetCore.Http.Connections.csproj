@@ -16,6 +16,8 @@
     <Compile Include="$(SignalRSharedSourceRoot)StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemClock.cs" Link="Internal\SystemClock.cs" />
   </ItemGroup>
 
   <ItemGroup>

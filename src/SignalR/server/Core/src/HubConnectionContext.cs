@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -34,13 +35,11 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly long _keepAliveInterval;
         private readonly long _clientTimeoutInterval;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
-        private readonly bool _useAbsoluteClientTimeout;
         private readonly object _receiveMessageTimeoutLock = new object();
+        private readonly ISystemClock _systemClock;
 
         private StreamTracker _streamTracker;
-        private long _lastSendTimeStamp = DateTime.UtcNow.Ticks;
-        private long _lastReceivedTimeStamp = DateTime.UtcNow.Ticks;
-        private bool _receivedMessageThisInterval = false;
+        private long _lastSendTimeStamp;
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
         private volatile bool _connectionAborted;
@@ -70,10 +69,8 @@ namespace Microsoft.AspNetCore.SignalR
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.UseAbsoluteClientTimeout", out var useAbsoluteClientTimeout))
-            {
-                _useAbsoluteClientTimeout = useAbsoluteClientTimeout;
-            }
+            _systemClock = _connectionContext.Features.Get<ISystemClock>() ?? new SystemClock();
+            _lastSendTimeStamp = _systemClock.UtcNowTicks;
         }
 
         internal StreamTracker StreamTracker
@@ -558,7 +555,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void KeepAliveTick()
         {
-            var currentTime = DateTime.UtcNow.Ticks;
+            var currentTime = _systemClock.UtcNowTicks;
 
             // Implements the keep-alive tick behavior
             // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
@@ -597,34 +594,16 @@ namespace Microsoft.AspNetCore.SignalR
                 return;
             }
 
-            if (_useAbsoluteClientTimeout)
+            lock (_receiveMessageTimeoutLock)
             {
-                // If it's been too long since we've heard from the client, then close this
-                if (DateTime.UtcNow.Ticks - Volatile.Read(ref _lastReceivedTimeStamp) > _clientTimeoutInterval)
+                if (_receivedMessageTimeoutEnabled)
                 {
-                    if (!_receivedMessageThisInterval)
+                    _receivedMessageElapsedTicks = _systemClock.UtcNowTicks - _receivedMessageTimestamp;
+
+                    if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                     {
                         Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
                         AbortAllowReconnect();
-                    }
-
-                    _receivedMessageThisInterval = false;
-                    Volatile.Write(ref _lastReceivedTimeStamp, DateTime.UtcNow.Ticks);
-                }
-            }
-            else
-            {
-                lock (_receiveMessageTimeoutLock)
-                {
-                    if (_receivedMessageTimeoutEnabled)
-                    {
-                        _receivedMessageElapsedTicks = DateTime.UtcNow.Ticks - _receivedMessageTimestamp;
-
-                        if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
-                        {
-                            Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
-                            AbortAllowReconnect();
-                        }
                     }
                 }
             }
@@ -670,37 +649,24 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        internal void ResetClientTimeout()
-        {
-            _receivedMessageThisInterval = true;
-        }
-
         internal void BeginClientTimeout()
         {
-            // check if new timeout behavior is in use
-            if (!_useAbsoluteClientTimeout)
+            lock (_receiveMessageTimeoutLock)
             {
-                lock (_receiveMessageTimeoutLock)
-                {
-                    _receivedMessageTimeoutEnabled = true;
-                    _receivedMessageTimestamp = DateTime.UtcNow.Ticks;
-                }
+                _receivedMessageTimeoutEnabled = true;
+                _receivedMessageTimestamp = _systemClock.UtcNowTicks;
             }
         }
 
         internal void StopClientTimeout()
         {
-            // check if new timeout behavior is in use
-            if (!_useAbsoluteClientTimeout)
+            lock (_receiveMessageTimeoutLock)
             {
-                lock (_receiveMessageTimeoutLock)
-                {
-                    // we received a message so stop the timer and reset it
-                    // it will resume after the message has been processed
-                    _receivedMessageElapsedTicks = 0;
-                    _receivedMessageTimestamp = 0;
-                    _receivedMessageTimeoutEnabled = false;
-                }
+                // we received a message so stop the timer and reset it
+                // it will resume after the message has been processed
+                _receivedMessageElapsedTicks = 0;
+                _receivedMessageTimestamp = 0;
+                _receivedMessageTimeoutEnabled = false;
             }
         }
 

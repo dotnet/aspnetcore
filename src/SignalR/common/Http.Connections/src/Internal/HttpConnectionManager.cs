@@ -10,7 +10,6 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -31,24 +30,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimerAwaitable _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
-        private readonly bool _useSendTimeout = true;
         private readonly TimeSpan _disconnectTimeout;
+        private readonly ISystemClock _systemClock;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
-            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
+            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }), new SystemClock())
         {
         }
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, ISystemClock systemClock)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
             _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Http.Connections.DoNotUseSendTimeout", out var timeoutDisabled))
-            {
-                _useSendTimeout = !timeoutDisabled;
-            }
+            _systemClock = systemClock;
 
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -103,6 +99,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
+            connection.Features.Set(_systemClock);
 
             _connections.TryAdd(connectionToken, (connection, connectionTimer));
 
@@ -161,7 +158,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
-                var utcNow = DateTimeOffset.UtcNow;
+                var utcNow = _systemClock.UtcNow;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
                 if (!Debugger.IsAttached && lastSeenUtc.HasValue && (utcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
@@ -176,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
                 else
                 {
-                    if (!Debugger.IsAttached && _useSendTimeout)
+                    if (!Debugger.IsAttached)
                     {
                         connection.TryCancelSend(utcNow.Ticks);
                     }

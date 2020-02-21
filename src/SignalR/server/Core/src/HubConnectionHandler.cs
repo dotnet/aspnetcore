@@ -223,8 +223,6 @@ namespace Microsoft.AspNetCore.SignalR
                 var result = await input.ReadAsync();
                 var buffer = result.Buffer;
 
-                connection.ResetClientTimeout();
-
                 try
                 {
                     if (result.IsCanceled)
