@@ -1,5 +1,6 @@
 import * as Msal from 'msal';
 import { StringDict } from 'msal/lib-commonjs/MsalTypes';
+import { ClientAuthErrorMessage } from 'msal/lib-commonjs/error/ClientAuthError';
 
 interface AccessTokenRequestOptions {
     scopes: string[];
@@ -50,7 +51,6 @@ interface AuthorizeServiceConfiguration extends Msal.Configuration {
 }
 
 class MsalAuthorizeService implements AuthorizeService {
-    _user: StringDict | null = null;
     _settings: AuthorizeServiceConfiguration;
     _msalApplication: Msal.UserAgentApplication;
     _callbackPromise: Promise<AuthenticationResult>;
@@ -64,12 +64,7 @@ class MsalAuthorizeService implements AuthorizeService {
 
     async getUser() {
         var account = this._msalApplication.getAccount();
-        if (account && account.idTokenClaims) {
-            this._user = account.idTokenClaims;
-            return account.idTokenClaims;
-        }
-
-        return undefined;
+        return account?.idTokenClaims;
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
@@ -81,10 +76,7 @@ class MsalAuthorizeService implements AuthorizeService {
             };
         } else {
             try {
-                const scopes = request && request.scopes ?
-                    request.scopes : undefined;
-
-                const newToken = await this.getTokenCore(scopes);
+                const newToken = await this.getTokenCore(request?.scopes);
 
                 return {
                     status: AccessTokenResultStatus.Success,
@@ -128,9 +120,8 @@ class MsalAuthorizeService implements AuthorizeService {
                 expires: response.expiresOn
             };
         } catch (e) {
+            return undefined;
         }
-
-        return undefined;
     }
 
     async signIn(state: any) {
@@ -151,44 +142,48 @@ class MsalAuthorizeService implements AuthorizeService {
             const result = await this.signInCore(request);
             if (!result) {
                 return this.redirect();
+            } else if (this.isError(result)) {
+                return this.error(result.errorMessage);
             }
 
-            let accessToken: Msal.AuthResponse | undefined = undefined;
             try {
                 if (this._settings.defaultAccessTokenScopes?.length > 0) {
-                    accessToken = await this._msalApplication.acquireTokenSilent(request);
+                    // This provisions the token as part of the sign-in flow eagerly so that is already in the cache
+                    // when the app asks for it.
+                    await this._msalApplication.acquireTokenSilent(request);
                 }
             } catch (e) {
-                return this.error(e.message);
+                return this.error(e.errorMessage);
             }
-
-            this.updateState(result.idTokenClaims);
 
             return this.success(state);
         } catch (e) {
             return this.error(e.message);
         }
+
     }
 
-    async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | undefined> {
+    isError(resultOrError: any): resultOrError is Msal.AuthError {
+        return resultOrError?.errorCode;
+    }
+
+    async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | Msal.AuthError | undefined> {
         try {
-            const response = await this._msalApplication.loginPopup(request);
-            response.idTokenClaims
-            return response;
+            return await this._msalApplication.loginPopup(request);
         } catch (e) {
-            if (/*e.errorCode !== 'user_cancelled'*/true) {
+            if (this.isError(e) && e.errorCode !== ClientAuthErrorMessage.userCancelledError.code) {
                 try {
                     this._msalApplication.loginRedirect(request);
                 } catch (e) {
-                    console.log(e);
+                    return e;
                 }
             } else {
-                throw e;
+                return e;
             }
         }
     }
 
-    async completeSignIn(url: string) {
+    async completeSignIn() {
         const result = await this._callbackPromise;
         return result;
     }
@@ -211,10 +206,6 @@ class MsalAuthorizeService implements AuthorizeService {
         } else {
             return this.operationCompleted();
         }
-    }
-
-    updateState(user: StringDict) {
-        this._user = user;
     }
 
     async saveState<T>(state: T): Promise<string> {
@@ -320,8 +311,11 @@ export class AuthenticationService {
         return AuthenticationService.instance.signIn(state);
     }
 
+    // url is not used in the msal.js implementation but we keep it here
+    // as it is part of the default RemoteAuthenticationService contract implementation.
+    // The unused parameter here just reflects that.
     public static completeSignIn(url: string) {
-        return AuthenticationService.instance.completeSignIn(url);
+        return AuthenticationService.instance.completeSignIn();
     }
 
     public static signOut(state: any) {
