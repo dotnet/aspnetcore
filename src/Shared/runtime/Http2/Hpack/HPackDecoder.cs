@@ -12,7 +12,7 @@ namespace System.Net.Http.HPack
 {
     internal class HPackDecoder
     {
-        private enum State
+        private enum State : byte
         {
             Ready,
             HeaderFieldIndex,
