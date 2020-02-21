@@ -28,20 +28,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         {
             services.AddRouting();
 
-            services.AddResponseCompression(options =>
-            {
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
-                {
-                    MediaTypeNames.Application.Octet,
-                    "application/wasm",
-                });
-            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IConfiguration configuration)
         {
             app.UseDeveloperExceptionPage();
-            app.UseResponseCompression();
             EnableConfiguredPathbase(app, configuration);
 
             app.UseBlazorDebugging();

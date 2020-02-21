@@ -10,5 +10,7 @@
 
     <!-- When using IISExpress with a standalone app, there's no point restarting IISExpress after build. It slows things unnecessarily and breaks in-flight HTTP requests. -->
     <NoRestartServerOnBuild>true</NoRestartServerOnBuild>
+
+    <BlazorEnableCompression Condition="'$(BlazorEnableCompression)' == ''">true</BlazorEnableCompression>
   </PropertyGroup>
 </Project>
