@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Builder
     public static class ComponentsWebAssemblyApplicationBuilderExtensions
     {
         /// <summary>
-        /// Maps a Blazor webassembly application to the <paramref name="pathPrefix"/>.
+        /// Configures the application to serve Blazor WebAssembly framework files from the path <paramref name="pathPrefix"/>. This path must correspond to a referenced Blazor WebAssembly application project.
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor application.</param>
+        /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
         /// <returns>The <see cref="IApplicationBuilder"/></returns>
         public static IApplicationBuilder MapBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
         {
@@ -52,10 +52,10 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Maps a Blazor webassembly application to the root path of the application "/".
+        /// Configures the application to serve Blazor WebAssembly framework files from the root path "/".
         /// </summary>
         /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor application.</param>
+        /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
         /// <returns>The <see cref="IApplicationBuilder"/></returns>
         public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder applicationBuilder) =>
             MapBlazorFrameworkFiles(applicationBuilder, default);
