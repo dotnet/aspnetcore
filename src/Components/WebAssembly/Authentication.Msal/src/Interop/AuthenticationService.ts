@@ -36,7 +36,7 @@ interface AuthenticationResult {
 }
 
 interface AuthorizeService {
-    getUser(): Promise<any>;
+    getUser(): Promise<StringDict | undefined>;
     getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult>;
     signIn(state: any): Promise<AuthenticationResult>;
     completeSignIn(state: any): Promise<AuthenticationResult>;
@@ -46,52 +46,30 @@ interface AuthorizeService {
 
 interface AuthorizeServiceConfiguration extends Msal.Configuration {
     defaultAccessTokenScopes: string[];
-    additionalScopesToConsent: string []
+    additionalScopesToConsent: string[]
 }
 
 class MsalAuthorizeService implements AuthorizeService {
     _user: StringDict | null = null;
-    _isAuthenticated = false;
-    _scopes: string[] = [];
     _settings: AuthorizeServiceConfiguration;
     _msalApplication: Msal.UserAgentApplication;
     _callbackPromise: Promise<AuthenticationResult>;
 
     constructor(settings: AuthorizeServiceConfiguration) {
         this._settings = settings;
-        console.log('Settings:', settings);
         const callbackUrl = location.href;
         this._msalApplication = new Msal.UserAgentApplication(this._settings);
-        this._callbackPromise = new Promise((resolve, _) => {
-            this._msalApplication.handleRedirectCallback(
-                trc => {
-                    if (window.self !== window.top) {
-                        resolve(this.operationCompleted());
-                    } else {
-                        this.retrieveState(callbackUrl)
-                            .then(state => {
-                                resolve(this.success(state));
-                            });
-                    }
-                },
-                erc => {
-                    resolve(this.error(erc.message));
-                });
-        });
+        this._callbackPromise = new Promise(this.createCallbackResult.bind(this, callbackUrl));
     }
 
     async getUser() {
-        if (this._user) {
-            return this._user;
-        }
-
         var account = this._msalApplication.getAccount();
         if (account && account.idTokenClaims) {
             this._user = account.idTokenClaims;
             return account.idTokenClaims;
         }
 
-        return this._user;
+        return undefined;
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
@@ -132,8 +110,8 @@ class MsalAuthorizeService implements AuthorizeService {
 
             return true;
         }
-
     }
+
     async getTokenCore(scopes?: string[]): Promise<AccessToken | undefined> {
         const tokenScopes = {
             redirectUri: this._settings.auth.redirectUri as string,
@@ -185,7 +163,6 @@ class MsalAuthorizeService implements AuthorizeService {
             }
 
             this.updateState(result.idTokenClaims);
-            this._scopes = accessToken?.scopes || [];
 
             return this.success(state);
         } catch (e) {
@@ -238,7 +215,6 @@ class MsalAuthorizeService implements AuthorizeService {
 
     updateState(user: StringDict) {
         this._user = user;
-        this._isAuthenticated = !!this._user;
     }
 
     async saveState<T>(state: T): Promise<string> {
@@ -285,8 +261,21 @@ class MsalAuthorizeService implements AuthorizeService {
         return undefined;
     }
 
-    private createArguments(state?: any) {
-        return { useReplaceToNavigate: true, data: state };
+    private createCallbackResult(callbackUrl: string, resolve: (result: AuthenticationResult) => void, _: (error: AuthenticationResult) => void) {
+        this._msalApplication.handleRedirectCallback(
+            authenticationResponse => {
+                if (window.self !== window.top) {
+                    resolve(this.operationCompleted());
+                } else {
+                    this.retrieveState(callbackUrl)
+                        .then(state => {
+                            resolve(this.success(state));
+                        });
+                }
+            },
+            authenticationError => {
+                resolve(this.error(authenticationError.message));
+            });
     }
 
     private error(message: string) {
