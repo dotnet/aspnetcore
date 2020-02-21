@@ -8,33 +8,35 @@
 
   </PropertyGroup>
 
-  <Target Name="_ResolveAssetsToCompress" AfterTargets="_ResolveBlazorGeneratedAssets">
+  <Target Name="_ResolveBlazorFilesToCompress" AfterTargets="_ResolveBlazorGeneratedAssets">
 
     <PropertyGroup>
-      <StaticResourcesIntermediateOutputPath>$(IntermediateOutputPath)compressed\</StaticResourcesIntermediateOutputPath>
+      <_BlazorFilesIntermediateOutputPath>$(IntermediateOutputPath)compressed\</_BlazorFilesIntermediateOutputPath>
     </PropertyGroup>
 
-    <MakeDir Directories="$(StaticResourcesIntermediateOutputPath)" />
+    <MakeDir Directories="$(_BlazorFilesIntermediateOutputPath)" />
     <ItemGroup>
-      <_StaticResourceToCompress Include="@(StaticWebAsset)" Condition="'%(SourceType)' == '' and $([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('_framework/'))" KeepDuplicates="false">
-        <TargetCompressionPath>$(StaticResourcesIntermediateOutputPath)%(RelativePath).gz</TargetCompressionPath>
+      <_BlazorFileToCompress Include="@(StaticWebAsset)" Condition="'%(SourceType)' == '' and $([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('_framework/'))" KeepDuplicates="false">
+        <TargetCompressionPath>$(_BlazorFilesIntermediateOutputPath)%(RelativePath).gz</TargetCompressionPath>
         <TargetOutputPath>%(RelativePath).gz</TargetOutputPath>
         <RelativePath>%(RelativePath).gz</RelativePath>
         <InputSource>%(FullPath)</InputSource>
-      </_StaticResourceToCompress>
+      </_BlazorFileToCompress>
 
-      <_StaticResourceToCompress Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
-        <InputSource>$([MSBuild]::NormalizePath('$(StaticResourcesIntermediateOutputPath)%(RelativePath).hash'))</InputSource>
-      </_StaticResourceToCompress>
+      <!-- The linker is not incremental, so to support incremental compression in addition to linking we need to compute the hashes of the dlls and
+           pdbs, write them to a file when they change and use that as input for the compression task instead. -->
+      <_BlazorFileToCompress Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
+        <InputSource>$([MSBuild]::NormalizePath('$(_BlazorFilesIntermediateOutputPath)%(RelativePath).hash'))</InputSource>
+      </_BlazorFileToCompress>
 
-      <_CompressedStaticWebAsset Include="@(_StaticResourceToCompress->'%(TargetCompressionPath)')" RemoveMetadata="TargetOutputPath;TargetCompressionPath" />
+      <_CompressedStaticWebAsset Include="@(_BlazorFileToCompress->'%(TargetCompressionPath)')" RemoveMetadata="TargetOutputPath;TargetCompressionPath" />
 
       <StaticWebAsset Include="@(_CompressedStaticWebAsset->'%(FullPath)')" KeepMetadata="SourceType;SourceId;ContentRoot;BasePath;RelativePath" />
       <FileWrites Include="@(_CompressedStaticWebAsset)" />
 
     </ItemGroup>
 
-    <GetFileHash Files="@(_StaticResourceToCompress)" Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
+    <GetFileHash Files="@(_BlazorFileToCompress)" Condition="'$(BlazorLinkOnBuild)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
       <Output TaskParameter="Items" ItemName="_LinkerOutputHashes" />
     </GetFileHash>
 
@@ -50,11 +52,11 @@
 
   <Target
     Name="_CompressBlazorApplicationFiles"
-    AfterTargets="_ResolveAssetsToCompress"
-    Inputs="%(_StaticResourceToCompress.InputSource)"
-    Outputs="%(_StaticResourceToCompress.TargetCompressionPath)">
+    AfterTargets="_ResolveBlazorFilesToCompress"
+    Inputs="%(_BlazorFileToCompress.InputSource)"
+    Outputs="%(_BlazorFileToCompress.TargetCompressionPath)">
 
-    <CompressBlazorApplicationFiles StaticWebAsset="@(_StaticResourceToCompress)" />
+    <CompressBlazorApplicationFiles StaticWebAsset="@(_BlazorFileToCompress)" />
 
   </Target>
 

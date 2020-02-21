@@ -22,6 +22,6 @@
   <Import Project="Publish.targets" />
   <Import Project="StaticWebAssets.targets" />
   <Import Project="ServiceWorkerAssetsManifest.targets" />
-  <Import Project="Compression.targets" />
+  <Import Project="Compression.targets" Condition="'$(BlazorEnableCompression)' == 'true'" />
 
 </Project>
