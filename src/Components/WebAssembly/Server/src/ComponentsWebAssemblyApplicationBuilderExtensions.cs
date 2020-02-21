@@ -95,6 +95,13 @@ namespace Microsoft.AspNetCore.Builder
                 var requestPath = fileContext.Context.Request.Path;
                 if (string.Equals(Path.GetExtension(requestPath.Value), ".gz"))
                 {
+                    // When we are serving framework files (under _framework/ we perform content negotiation
+                    // on the accept encoding and replace the path with <<original>>.gz if we can serve gzip
+                    // content.
+                    // Here we simply calculate the original content type by removing the extension and apply it
+                    // again.
+                    // When we revisit this, we should consider calculating the original content type and storing it
+                    // in the request along with the original target path so that we don't have to calculate it here.
                     var originalPath = Path.GetFileNameWithoutExtension(requestPath.Value);
                     if (contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
                     {
@@ -174,11 +181,10 @@ namespace Microsoft.AspNetCore.Builder
 
             if (StringSegment.Equals("gzip", selectedEncoding, StringComparison.OrdinalIgnoreCase))
             {
-                var targetPath = context.Request.Path + ".gz";
-                if (webHost.WebRootFileProvider.GetFileInfo(targetPath).Exists)
+                if (ResourceExists(context, webHost, ".gz"))
                 {
                     // We only try to serve the pre-compressed file if it's actually there.
-                    context.Request.Path = targetPath;
+                    context.Request.Path = context.Request.Path + ".gz";
                     context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
                     context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.ContentEncoding);
                 }
