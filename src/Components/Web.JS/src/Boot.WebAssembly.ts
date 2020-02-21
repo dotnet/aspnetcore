@@ -52,6 +52,12 @@ async function boot(options?: any): Promise<void> {
 window['Blazor'].start = boot;
 if (shouldAutoStart()) {
   boot().catch(error => {
-    Module.printErr(error); // Logs it, and causes the error UI to appear
+    if (typeof Module !== 'undefined' && Module.printErr) {
+      // Logs it, and causes the error UI to appear
+      Module.printErr(error);
+    } else {
+      // The error must have happened so early we didn't yet set up the error UI, so just log to console
+      console.error(error);
+    }
   });
 }
