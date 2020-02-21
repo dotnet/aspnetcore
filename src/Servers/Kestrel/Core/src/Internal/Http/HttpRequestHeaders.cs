@@ -14,11 +14,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
+        private readonly bool _useLatin1;
         private long _previousBits = 0;
 
-        public HttpRequestHeaders(bool reuseHeaderValues = true)
+        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
         {
             ReuseHeaderValues = reuseHeaderValues;
+            _useLatin1 = useLatin1;
         }
 
         public bool ReuseHeaderValues { get; set; }
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetAsciiOrUTF8StringNonNullCharacters());
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(_useLatin1));
             }
 
             _contentLength = parsed;

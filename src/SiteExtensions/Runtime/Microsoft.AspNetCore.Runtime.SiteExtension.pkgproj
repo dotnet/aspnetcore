@@ -12,7 +12,7 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 

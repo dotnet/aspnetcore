@@ -17,14 +17,12 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        # repository: 'Tratcher/aspnetcore'
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        # repository: 'Tratcher/runtime'
         repository: 'dotnet/runtime'
         path: runtime
     - name: Copy
@@ -32,9 +30,7 @@ jobs:
       working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\aspnetcore\
       env:
         ASPNETCORE_REPO: d:\a\aspnetcore\aspnetcore\aspnetcore\
-      run: |
-        dir
-        CopyToAspNetCore.cmd
+      run: CopyToAspNetCore.cmd
     - name: Diff
       shell: cmd
       working-directory: .\aspnetcore\
@@ -51,34 +47,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Check the code is in sync
-        $changed = (select-string "nothing to commit" artifacts\status.txt).count -eq 0
-        if (-not $changed) { exit }
         # Test this script using an issue in the local forked repo
-        # $issue = 'https://api.github.com/repos/Tratcher/aspnetcore/issues/1'
         $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
-        # Check if tracking issue is open/closed
-        $Headers = @{ Authorization = 'token {0}' -f $ENV:GITHUB_TOKEN; };
-        $result = Invoke-RestMethod -Uri $issue
-        if ($result.state -eq "closed") { 
-         $json = "{ `"state`": `"open`" }"
-         $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $issue -Body $json
-        }
-        # Add a comment
-        $status = [IO.File]::ReadAllText("artifacts\status.txt")
-        $diff = [IO.File]::ReadAllText("artifacts\diff.txt")
-        $body = @"
-        The shared code is out of sync.
-        <details>
-          <summary>The Diff</summary>
-          
-        ``````
-        $status
-        $diff
-        ``````
-        
-        </details>
-        "@
-        $json = ConvertTo-Json -InputObject @{ 'body' = $body }
-        $issue = $issue + '/comments'
-        $result = Invoke-RestMethod -Method POST -Headers $Headers -Uri $issue -Body $json
+        .\aspnetcore\.github\workflows\ReportDiff.ps1

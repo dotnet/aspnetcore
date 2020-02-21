@@ -89,7 +89,7 @@ namespace Templates.Test.Helpers
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-            Assert.Equal(5, builtPackages.Length);
+            Assert.Equal(4, builtPackages.Length);
 
             /*
              * The templates are indexed by path, for example:

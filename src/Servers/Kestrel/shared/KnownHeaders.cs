@@ -986,7 +986,7 @@ $@"        private void Clear(long bitsToClear)
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -1004,7 +1004,7 @@ $@"        private void Clear(long bitsToClear)
                 // The header was not one of the ""known"" headers.
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
                 // this method with rep stosd, which is slower than necessary.
-                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
                 AppendUnknownHeaders(name, valueStr);
             }}
         }}" : "")}
