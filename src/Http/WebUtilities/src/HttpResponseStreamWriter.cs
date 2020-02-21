@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             var written = 0;
-            while (written < value.Length)
+            while (true)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
@@ -145,10 +145,12 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 written = CopyToCharBuffer(value);
 
-                if (written < value.Length)
+                if (written == value.Length)
                 {
-                    value = value.Slice(written);
+                    break;
                 }
+
+                value = value.Slice(written);
             };
         }
 
@@ -290,7 +292,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             var count = value.Length;
 
             Debug.Assert(count > 0);
-            Debug.Assert(_charBufferSize - _charBufferCount < count);
 
             var index = 0;
             while (count > 0)
@@ -340,7 +341,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             Debug.Assert(_charBufferSize - _charBufferCount < value.Length);
 
             int written = 0;
-            while (written < value.Length)
+            while (true)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
@@ -349,10 +350,12 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 written = CopyToCharBuffer(value.Span);
 
-                if (written < value.Length)
+                if (written == value.Length)
                 {
-                    value = value.Slice(written);
+                    break;
                 }
+
+                value = value.Slice(written);
             };
         }
 
@@ -389,8 +392,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> value)
         {
-            await WriteAsyncAwaited(value);
-            await WriteAsyncAwaited(NewLine);
+            await WriteAsync(value);
+            await WriteAsync(NewLine);
         }
 
         // We want to flush the stream when Flush/FlushAsync is explicitly
