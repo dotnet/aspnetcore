@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
@@ -88,6 +89,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var idResolver = new ProjectIdResolver(MakeCommandContext().Reporter, projectDir);
 
             Assert.Equal(SecretId, idResolver.Resolve(null, null));
+        }
+
+        [Fact]
+        public void DoesNotAddXmlDeclarationToProject()
+        {
+            var projectDir = _fixture.CreateProject(null);
+            var projectFile = Path.Combine(projectDir, "TestProject.csproj");
+
+            new InitCommand(null, null).Execute(MakeCommandContext(), projectDir);
+
+            var projectDocument = XDocument.Load(projectFile);
+            Assert.Null(projectDocument.Declaration);
         }
 
         [Fact]

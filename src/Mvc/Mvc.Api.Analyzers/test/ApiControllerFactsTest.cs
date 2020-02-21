@@ -35,7 +35,7 @@ namespace TestNamespace
         }
     }
 }";
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
             Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var method = (IMethodSymbol)compilation.GetTypeByMetadataName("TestNamespace.TestController").GetMembers("Get").First();
@@ -130,7 +130,7 @@ namespace TestNamespace
         private Task<Compilation> GetCompilation(string testFile = "TestFile")
         {
             var testSource = MvcTestSource.Read(GetType().Name, testFile);
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();
         }

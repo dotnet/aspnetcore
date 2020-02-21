@@ -93,7 +93,15 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!buffer.IsEmpty)
                 {
-                    ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
+                    try
+                    {
+                        ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
+                    }
+                    catch
+                    {
+                        _pipeReader.AdvanceTo(buffer.Start);
+                        throw;
+                    }
                 }
 
                 if (readResult.IsCompleted)
