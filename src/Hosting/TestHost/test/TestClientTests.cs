@@ -386,6 +386,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
         {
             // Arrange
