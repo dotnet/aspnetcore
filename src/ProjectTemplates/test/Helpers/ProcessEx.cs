@@ -100,6 +100,11 @@ namespace Templates.Test.Helpers
             }
 
             startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
+            
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
+            {
+                startInfo.EnvironmentVariables["NUGET_FALLBACK_PACKAGES"] = Environment.GetEnvironmentVariable("NUGET_FALLBACK_PACKAGES");
+            }
 
             output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
