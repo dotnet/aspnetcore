@@ -110,14 +110,18 @@
     }
   }
 
-  function addScriptTagsToDocument() {
+  async function addScriptTagsToDocument() {
     var browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
     if (!browserSupportsNativeWebAssembly) {
       throw new Error('This browser does not support WebAssembly.');
     }
 
+    var bootJson = await fetch('/_framework/blazor.boot.json').then(res => res.json());
+    var dotNetJsResourceName = Object.keys(bootJson.resources.runtime)
+      .filter(name => name.endsWith('.js'));
+
     var scriptElem = document.createElement('script');
-    scriptElem.src = '/_framework/wasm/dotnet.js';
+    scriptElem.src = '/_framework/wasm/' + dotNetJsResourceName;
     document.body.appendChild(scriptElem);
   }
 
