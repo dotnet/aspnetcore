@@ -36,6 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 _sortedValues = new string[_originalValues.Count];
                 _originalValues.CopyTo(_sortedValues, 0);
+                for (int i = 0; i < _sortedValues.Length; i++)
+                {
+                    _sortedValues[i] = Normalize(_sortedValues[i]);
+                }
                 Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -52,12 +56,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return false;
             }
 
+            prefix = Normalize(prefix);
             if (prefix.Length == 0)
             {
                 return true; // Empty prefix matches all elements.
             }
 
             return BinarySearch(prefix) > -1;
+        }
+
+        private static string Normalize(string value)
+        {
+            // This normalizes to dot separators. This is not a form that is
+            // necessarily valid in a url query, but for purposes here should be
+            // safe and fast. This assumes that dots will never appear in a
+            // parameter name for model binding because they are reserved
+            // characters in C#.
+            value = value.Replace("]", ".", StringComparison.Ordinal)
+                         .Replace("[", ".", StringComparison.Ordinal)
+                         .Replace("..", ".", StringComparison.Ordinal);
+            if (value.EndsWith('.'))
+            {
+                value = value.Substring(0, (value.Length - 1));
+            }
+            return value;
         }
 
         // Given "foo.bar", "foo.hello", "something.other", foo[abc].baz and asking for prefix "foo" will return:
