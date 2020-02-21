@@ -81,6 +81,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ServerOptions = ServiceContext.ServerOptions;
 
+            HttpRequestHeaders = new HttpRequestHeaders(
+                reuseHeaderValues: !ServerOptions.DisableStringReuse,
+                useLatin1: ServerOptions.Latin1RequestHeaders);
+
             Reset();
 
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
@@ -137,13 +141,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
 
-        protected string _parsedPath = null;
         public string Path { get; set; }
-
-        protected string _parsedQueryString = null;
         public string QueryString { get; set; }
-
-        protected string _parsedRawTarget = null;
         public string RawTarget { get; set; }
 
         public string HttpVersion
@@ -310,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; set; } = new HttpRequestHeaders();
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -533,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
             RequestTrailers.Append(key, valueStr);
         }
 
@@ -1193,7 +1192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // TODO allow customization of this.
-            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3) 
+            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
             {
                 foreach (var option in ServerOptions.ListenOptions)
                 {

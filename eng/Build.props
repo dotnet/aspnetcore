@@ -141,6 +141,7 @@
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
                           $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
@@ -159,7 +160,35 @@
                           @(ProjectToExclude);
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
-                          $(RepoRoot)**\obj\**\*;" />
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <DotNetProjects Include="
+                          $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
+                          $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
+                          $(RepoRoot)src\DataProtection\**\src\*.csproj;
+                          $(RepoRoot)src\Antiforgery\**\src\*.csproj;
+                          $(RepoRoot)src\Hosting\**\src\*.csproj;
+                          $(RepoRoot)src\Http\**\src\*.csproj;
+                          $(RepoRoot)src\Html\**\src\*.csproj;
+                          $(RepoRoot)src\Identity\**\src\*.csproj;
+                          $(RepoRoot)src\Servers\**\src\*.csproj;
+                          $(RepoRoot)src\Security\**\src\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
+                          $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Middleware\**\src\*.csproj;
+                          $(RepoRoot)src\Razor\**\src\*.csproj;
+                          $(RepoRoot)src\Mvc\**\src\*.csproj;
+                          $(RepoRoot)src\Azure\**\src\*.csproj;
+                          $(RepoRoot)src\SignalR\**\src\*.csproj;
+                          $(RepoRoot)src\Components\**\src\*.csproj;
+                          "
+                        Exclude="
+                          @(ProjectToBuild);
+                          @(ProjectToExclude);
+                          $(RepoRoot)**\node_modules\**\*;
+                          $(RepoRoot)**\bin\**\*;
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
 
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />

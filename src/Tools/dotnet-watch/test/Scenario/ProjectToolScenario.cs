@@ -149,15 +149,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
         }
 
-        private string GetMetadata(string key)
-        {
-            return typeof(ProjectToolScenario)
-                .Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(a => string.Equals(a.Key, key, StringComparison.Ordinal))
-                .Value;
-        }
-
         public void Dispose()
         {
             try

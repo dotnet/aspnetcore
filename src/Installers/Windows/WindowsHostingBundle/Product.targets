@@ -23,13 +23,15 @@
     <PropertyGroup>
       <DotNetAssetRootUrl Condition=" '$(DotNetAssetRootUrl)' == '' ">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
       <DotNetAssetRootUrl Condition=" ! $(DotNetAssetRootUrl.EndsWith('/'))">$(DotNetAssetRootUrl)/</DotNetAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" '$(DotNetPrivateAssetRootUrl)' == '' ">https://dotnetclimsrc.azureedge.net/dotnet/</DotNetPrivateAssetRootUrl>
+      <DotNetPrivateAssetRootUrl Condition=" ! $(DotNetPrivateAssetRootUrl.EndsWith('/'))">$(DotNetPrivateAssetRootUrl)/</DotNetPrivateAssetRootUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
+      <RemoteAsset Include="Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
@@ -37,7 +39,10 @@
     <MakeDir Directories="$(DepsPath)" />
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
-                  SourceUrl="%(RemoteAsset.Identity)" DestinationFolder="$(DepsPath)" DestinationFileName="%(RemoteAsset.TargetFileName)" />
+                  Uri="$(DotNetAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUri="$(DotNetPrivateAssetRootUrl)%(RemoteAsset.Identity)"
+                  PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
+                  DestinationPath="$(DepsPath)%(RemoteAsset.TargetFileName)" />
   </Target>
 
   <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
