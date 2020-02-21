@@ -73,8 +73,10 @@ connection.start()
 ```JavaScript
 const signalR = require("@microsoft/signalr");
 
+const headers = { "X-API-KEY": "SECRET", "X-SIGNATURE": "SIGNATURE" };
+
 let connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chat")
+    .withUrl("/chat", { headers })
     .build();
 
 connection.on("send", data => {
