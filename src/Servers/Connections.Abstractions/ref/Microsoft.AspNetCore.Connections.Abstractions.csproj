@@ -6,18 +6,18 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Connections.Abstractions.netstandard2.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features"  />
-    <Reference Include="System.IO.Pipelines"  />
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces"  />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <Compile Include="Microsoft.AspNetCore.Connections.Abstractions.netstandard2.1.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features"  />
-    <Reference Include="System.IO.Pipelines"  />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.Connections.Abstractions.netcoreapp.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features"  />
-    <Reference Include="System.IO.Pipelines"  />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 </Project>
