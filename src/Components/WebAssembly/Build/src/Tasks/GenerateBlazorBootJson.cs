@@ -158,6 +158,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public enum ResourceType
         {
             assembly,
+            js,
             pdb,
             wasm
         }

@@ -302,6 +302,7 @@
     <ItemGroup>
       <_BlazorBootResource Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
       <_BlazorBootResource BootResourceType="assembly" Condition="'%(Extension)' == '.dll'" />
+      <_BlazorBootResource BootResourceType="js" Condition="'%(Extension)' == '.js'" />
       <_BlazorBootResource BootResourceType="pdb" Condition="'%(Extension)' == '.pdb'" />
       <_BlazorBootResource BootResourceType="wasm" Condition="'%(Extension)' == '.wasm'" />
     </ItemGroup>
