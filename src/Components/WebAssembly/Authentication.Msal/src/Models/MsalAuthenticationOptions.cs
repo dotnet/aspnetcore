@@ -45,7 +45,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>
-        /// Gets or sets whether or not to navigate to the login request url.
+        /// Gets or sets whether or not to navigate to the login request url after a successful login.
         /// </summary>
         public bool NavigateToLoginRequestUrl { get; set; } = false;
     }

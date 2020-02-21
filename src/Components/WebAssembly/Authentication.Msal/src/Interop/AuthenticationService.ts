@@ -51,12 +51,10 @@ interface AuthorizeServiceConfiguration extends Msal.Configuration {
 }
 
 class MsalAuthorizeService implements AuthorizeService {
-    _settings: AuthorizeServiceConfiguration;
-    _msalApplication: Msal.UserAgentApplication;
-    _callbackPromise: Promise<AuthenticationResult>;
+    readonly _msalApplication: Msal.UserAgentApplication;
+    readonly _callbackPromise: Promise<AuthenticationResult>;
 
-    constructor(settings: AuthorizeServiceConfiguration) {
-        this._settings = settings;
+    constructor(private readonly _settings: AuthorizeServiceConfiguration) {
 
         // It is important that we capture the callback-url here as msal will remove the auth parameters
         // from the url as soon as it gets initialized.
@@ -68,7 +66,7 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async getUser() {
-        var account = this._msalApplication.getAccount();
+        const account = this._msalApplication.getAccount();
         return account?.idTokenClaims;
     }
 
@@ -94,10 +92,8 @@ class MsalAuthorizeService implements AuthorizeService {
             scopes: scopes || this._settings.defaultAccessTokenScopes
         };
 
-        let response: Msal.AuthResponse;
-
         try {
-            response = await this._msalApplication.acquireTokenSilent(tokenScopes);
+            const response = await this._msalApplication.acquireTokenSilent(tokenScopes);
             return {
                 value: response.accessToken,
                 grantedScopes: response.scopes,
