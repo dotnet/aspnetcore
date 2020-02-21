@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.TestHost
         internal void Abort(Exception innerException)
         {
             Contract.Requires(innerException != null);
-            _aborted = true;
             _abortException = innerException;
+            _aborted = true;
             _pipe.Reader.CancelPendingRead();
         }
 

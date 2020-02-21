@@ -111,9 +111,14 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     await _application.ProcessRequestAsync(_testContext);
 
+                    // Determine whether request body is still being read when the delegate exited.
+                    // If so then this will throw an error to the response. Needs to happen
+                    // before completing the response.
+                    bool requestBodyInProgress = RequestBodyReadInProgress();
+
                     // Matches Kestrel server: response is completed before request is drained
                     await CompleteResponseAsync();
-                    await CompleteRequestAsync();
+                    await CompleteRequestAsync(requestBodyInProgress);
                     _application.DisposeContext(_testContext, exception: null);
                 }
                 catch (Exception ex)
@@ -160,18 +165,8 @@ namespace Microsoft.AspNetCore.TestHost
             CancelRequestBody();
         }
 
-        private async Task CompleteRequestAsync()
+        private async Task CompleteRequestAsync(bool requestBodyInProgress)
         {
-            bool requestBodyInProgress;
-            try
-            {
-                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
-            }
-
             if (requestBodyInProgress)
             {
                 // If request is still in progress then abort it.
@@ -186,6 +181,21 @@ namespace Microsoft.AspNetCore.TestHost
             // Don't wait for request to drain. It could block indefinitely. In a real server
             // we would wait for a timeout and then kill the socket.
             // Potential future improvement: add logging that the request timed out
+        }
+
+        private bool RequestBodyReadInProgress()
+        {
+            bool requestBodyInProgress;
+            try
+            {
+                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
+            }
+
+            return requestBodyInProgress;
         }
 
         internal async Task CompleteResponseAsync()
