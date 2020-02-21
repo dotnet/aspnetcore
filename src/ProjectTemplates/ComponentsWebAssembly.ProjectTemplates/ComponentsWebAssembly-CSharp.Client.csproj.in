@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="${MicrosoftAspNetCoreComponentsWebAssemblyDevServerPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="${MicrosoftAspNetCoreBlazorHttpClientPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationPackageVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
+    <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="${MicrosoftAuthenticationWebAssemblyMsalPackageVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
   </ItemGroup>
   <!--#if Hosted -->
   <ItemGroup>

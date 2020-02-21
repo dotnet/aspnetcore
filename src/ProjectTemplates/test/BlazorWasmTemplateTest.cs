@@ -58,22 +58,6 @@ namespace Templates.Test
             using var serveProcess = RunPublishedStandaloneBlazorProject(project);
         }
 
-        private ProcessEx RunPublishedStandaloneBlazorProject(Project project)
-        {
-            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-            AspNetProcess.EnsureDevelopmentCertificates();
-
-            Output.WriteLine("Running dotnet serve on published output...");
-            var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
-
-            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
-            var listeningUri = "https://localhost:8080";
-            Output.WriteLine($"Opening browser at {listeningUri}...");
-            Browser.Navigate().GoToUrl(listeningUri);
-            TestBasicNavigation(project.ProjectName);
-            return serveProcess;
-        }
-
         [Fact]
         public async Task BlazorWasmHostedTemplate_Works()
         {
@@ -259,6 +243,76 @@ namespace Templates.Test
             using var serveProcess = RunPublishedStandaloneBlazorProject(project);
         }
 
+        public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
+        {
+            new TemplateInstance(
+                "blazorwasmhostedaadb2c", "-ho",
+                "-au", "IndividualB2C",
+                "--aad-b2c-instance", "example.b2clogin.com",
+                "-ssp", "b2c_1_siupin",
+                "--client-id", "clientId",
+                "--domain", "my-domain",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaad", "-ho",
+                "-au", "SingleOrg",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmstandaloneaadb2c",
+                "-au", "IndividualB2C",
+                "--aad-b2c-instance", "example.b2clogin.com",
+                "-ssp", "b2c_1_siupin",
+                "--client-id", "clientId",
+                "--domain", "my-domain"),
+            new TemplateInstance(
+                "blazorwasmstandaloneaad",
+                "-au", "SingleOrg",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId"),
+        };
+
+        public class TemplateInstance
+        {
+            public TemplateInstance(string name, params string[] arguments)
+            {
+                Name = name;
+                Arguments = arguments;
+            }
+
+            public string Name { get; }
+            public string[] Arguments { get; }
+        }
+
+        [Theory]
+        [MemberData(nameof(TemplateData))]
+        public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
+        {
+            var project = await ProjectFactory.GetOrCreateProject(instance.Name, Output);
+            project.TargetFramework = "netstandard2.1";
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: instance.Arguments);
+
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+
+            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
+            // later, while the opposite is not true.
+
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        }
+
         protected async Task BuildAndRunTest(string appName, Project project, bool usesAuth = false)
         {
             using var aspNetProcess = project.StartBuiltProjectAsync();
@@ -403,6 +457,23 @@ namespace Templates.Test
             });
             var testAppSettings = appSettings.ToString();
             File.WriteAllText(Path.Combine(serverProject.TemplatePublishDir, "appsettings.json"), testAppSettings);
+        }
+
+
+        private ProcessEx RunPublishedStandaloneBlazorProject(Project project)
+        {
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+            AspNetProcess.EnsureDevelopmentCertificates();
+
+            Output.WriteLine("Running dotnet serve on published output...");
+            var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
+
+            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
+            var listeningUri = "https://localhost:8080";
+            Output.WriteLine($"Opening browser at {listeningUri}...");
+            Browser.Navigate().GoToUrl(listeningUri);
+            TestBasicNavigation(project.ProjectName);
+            return serveProcess;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the list of scopes to request for the token.
         /// </summary>
-        public IReadOnlyList<string> Scopes { get; set; }
+        public string[] Scopes { get; set; }
 
         /// <summary>
         /// Gets or sets a specific return url to use for returning the user back to the application if it needs to be
