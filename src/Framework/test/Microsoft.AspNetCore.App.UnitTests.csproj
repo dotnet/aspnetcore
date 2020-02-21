@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <!-- https://github.com/dotnet/aspnetcore/issues/7939: This unit test requires the shared framework be available in Helix. -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,6 +35,10 @@
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>TargetingPackLayoutRoot</_Parameter1>
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>VerifyAncmBinary</_Parameter1>
+      <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

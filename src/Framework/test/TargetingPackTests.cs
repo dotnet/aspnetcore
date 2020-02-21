@@ -90,6 +90,12 @@ namespace Microsoft.AspNetCore
                 })
                 .ToHashSet();
 
+            if (!TestData.VerifyAncmBinary())
+            {
+                actualAssemblies.Remove("aspnetcorev2_inprocess");
+                expectedAssemblies.Remove("aspnetcorev2_inprocess");
+            }
+
             var missing = expectedAssemblies.Except(actualAssemblies);
             var unexpected = actualAssemblies.Except(expectedAssemblies);
 
