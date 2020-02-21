@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.js");
+            Assert.FileCountEquals(result, 1, Path.Combine(blazorPublishDirectory, "_framework", "wasm"), "dotnet.*.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
