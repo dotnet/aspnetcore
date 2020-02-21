@@ -165,7 +165,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         const dotnetWasmResource = await resourceLoader.loadResource(
           /* name */ dotnetWasmResourceName,
           /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-          /* hash */ resourceLoader.bootConfig.resources.wasm[dotnetWasmResourceName]);
+          /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
         compiledInstance = await compileWasmModule(dotnetWasmResource, imports);  
       } catch (ex) {
         module.printErr(ex);

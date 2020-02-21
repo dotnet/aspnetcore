@@ -76,13 +76,15 @@
       <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" />
 
       <BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
-        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</_BlazorBootManifestResourceType>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</_BlazorBootManifestResourceType>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</RelativeOutputPath>
       </BlazorOutputWithTargetPath>
 
       <BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
-        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</_BlazorBootManifestResourceType>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</_BlazorBootManifestResourceType>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(FileName)%(Extension)</RelativeOutputPath>
       </BlazorOutputWithTargetPath>
@@ -111,7 +113,8 @@
       <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" Condition="'%(Extension)' == '.dll'" />
 
       <BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
-        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</_BlazorBootManifestResourceType>
+        <_BlazorBootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</_BlazorBootManifestResourceType>
         <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
         <RelativeOutputPath>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</RelativeOutputPath>
       </BlazorOutputWithTargetPath>
@@ -124,7 +127,7 @@
 
       <BlazorOutputWithTargetPath Include="@(MonoWasmFile)">
         <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-        <BlazorRuntimeFile>true</BlazorRuntimeFile>
+        <_BlazorBootManifestResourceType>runtime</_BlazorBootManifestResourceType>
       </BlazorOutputWithTargetPath>
       <BlazorOutputWithTargetPath Include="@(BlazorJSFile)">
         <TargetOutputPath>$(BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
@@ -300,14 +303,12 @@
     Inputs="$(MSBuildAllProjects);@(BlazorOutputWithTargetPath)"
     Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
-      <_BlazorBootResource Include="@(BlazorOutputWithTargetPath->WithMetadataValue('BlazorRuntimeFile', 'true'))" />
-      <_BlazorBootResource BootResourceType="assembly" Condition="'%(Extension)' == '.dll'" />
-      <_BlazorBootResource BootResourceType="js" Condition="'%(Extension)' == '.js'" />
-      <_BlazorBootResource BootResourceType="pdb" Condition="'%(Extension)' == '.pdb'" />
-      <_BlazorBootResource BootResourceType="wasm" Condition="'%(Extension)' == '.wasm'" />
+      <_BlazorBootResource Include="@(BlazorOutputWithTargetPath->HasMetadata('_BlazorBootManifestResourceType'))">
+        <BootResourceType>%(BlazorOutputWithTargetPath._BlazorBootManifestResourceType)</BootResourceType>
+      </_BlazorBootResource>
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorBootResource->HasMetadata('BootResourceType'))" Algorithm="SHA256" HashEncoding="base64">
+    <GetFileHash Files="@(_BlazorBootResource)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHash" />
     </GetFileHash>
 

@@ -185,9 +185,9 @@ interface BootJsonData {
 }
 
 interface ResourceGroups {
-  readonly wasm: ResourceList;
   readonly assembly: ResourceList;
   readonly pdb?: ResourceList;
+  readonly runtime: ResourceList;
 }
 
 interface LoadLogEntry {

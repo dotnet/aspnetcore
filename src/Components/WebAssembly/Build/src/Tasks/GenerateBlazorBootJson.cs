@@ -158,9 +158,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public enum ResourceType
         {
             assembly,
-            js,
             pdb,
-            wasm
+            runtime,
         }
 #pragma warning restore IDE1006 // Naming Styles
     }
