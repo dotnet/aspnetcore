@@ -5,39 +5,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 {
     public class RuntimeDependenciesResolverTest
     {
-        [ConditionalFact(Skip = " https://github.com/aspnet/AspNetCore/issues/12059")]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
+        [Fact]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
             var standaloneAppAssembly = typeof(StandaloneApp.Program).Assembly;
             var mainAssemblyLocation = standaloneAppAssembly.Location;
-            var mainAssemblyDirectory = Path.GetDirectoryName(mainAssemblyLocation);
-            // This list of hints is populated by MSBuild so it will be on the output
-            // folder.
-            var hintPaths = File.ReadAllLines(Path.Combine(
-                mainAssemblyDirectory, "referenceHints.txt"));
-            var bclLocations = File.ReadAllLines(Path.Combine(
-                mainAssemblyDirectory, "bclLocations.txt"));
-            var references = new[]
-            {
-                "Microsoft.AspNetCore.Blazor.dll",
-                "Microsoft.AspNetCore.Components.Web.dll",
-                "Microsoft.AspNetCore.Components.dll",
-                "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
-                "Microsoft.Extensions.DependencyInjection.dll",
-                "Microsoft.JSInterop.dll",
-                "Mono.WebAssembly.Interop.dll",
-            }.Select(a => hintPaths.Single(p => Path.GetFileName(p) == a))
-            .ToArray();
+
+            var hintPaths = ReadContent(standaloneAppAssembly, "StandaloneApp.referenceHints.txt");
+            var bclLocations = ReadContent(standaloneAppAssembly, "StandaloneApp.bclLocations.txt");
 
             var expectedContents = new[]
             {
@@ -57,53 +41,55 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
-                "Microsoft.AspNetCore.Blazor.dll",
-                "Microsoft.AspNetCore.Blazor.pdb",
-                "Microsoft.AspNetCore.Components.Web.dll",
-                "Microsoft.AspNetCore.Components.Web.pdb",
+                "Microsoft.AspNetCore.Blazor.HttpClient.dll",
+                "Microsoft.AspNetCore.Blazor.HttpClient.pdb",
                 "Microsoft.AspNetCore.Components.dll",
-                "Microsoft.AspNetCore.Components.pdb",
+                "Microsoft.AspNetCore.Components.Forms.dll",
+                "Microsoft.AspNetCore.Components.Web.dll",
+                "Microsoft.AspNetCore.Components.WebAssembly.dll",
+                "Microsoft.AspNetCore.Components.WebAssembly.pdb",
+                "Microsoft.Bcl.AsyncInterfaces.dll",
+                "Microsoft.Extensions.Configuration.Abstractions.dll",
+                "Microsoft.Extensions.Configuration.dll",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
                 "Microsoft.Extensions.DependencyInjection.dll",
+                "Microsoft.Extensions.Logging.Abstractions.dll",
+                "Microsoft.Extensions.Primitives.dll",
                 "Microsoft.JSInterop.dll",
                 "Mono.Security.dll",
                 "Mono.WebAssembly.Interop.dll",
+                "Mono.WebAssembly.Interop.pdb",
                 "mscorlib.dll",
                 "netstandard.dll",
                 "StandaloneApp.dll",
                 "StandaloneApp.pdb",
                 "System.dll",
                 "System.Buffers.dll",
-                "System.Collections.Concurrent.dll",
-                "System.Collections.dll",
-                "System.ComponentModel.Composition.dll",
-                "System.ComponentModel.dll",
                 "System.ComponentModel.Annotations.dll",
                 "System.ComponentModel.DataAnnotations.dll",
+                "System.ComponentModel.Composition.dll",
                 "System.Core.dll",
                 "System.Data.dll",
-                "System.Diagnostics.Debug.dll",
-                "System.Diagnostics.Tracing.dll",
+                "System.Data.DataSetExtensions.dll",
                 "System.Drawing.Common.dll",
                 "System.IO.Compression.dll",
                 "System.IO.Compression.FileSystem.dll",
-                "System.Linq.dll",
-                "System.Linq.Expressions.dll",
+                "System.Memory.dll",
                 "System.Net.Http.dll",
                 "System.Numerics.dll",
-                "System.Reflection.Emit.ILGeneration.dll",
-                "System.Reflection.Emit.Lightweight.dll",
-                "System.Reflection.Primitives.dll",
-                "System.Resources.ResourceManager.dll",
-                "System.Runtime.dll",
-                "System.Runtime.Extensions.dll",
+                "System.Numerics.Vectors.dll",
+                "System.Runtime.CompilerServices.Unsafe.dll",
                 "System.Runtime.Serialization.dll",
                 "System.ServiceModel.Internals.dll",
-                "System.Threading.dll",
+                "System.Text.Encodings.Web.dll",
+                "System.Text.Json.dll",
+                "System.Threading.Tasks.Extensions.dll",
                 "System.Transactions.dll",
-                "System.Web.Services.dll",
                 "System.Xml.dll",
                 "System.Xml.Linq.dll",
+                "WebAssembly.Bindings.dll",
+                "WebAssembly.Net.Http.dll",
+                "WebAssembly.Net.WebSockets.dll",
             }.OrderBy(i => i, StringComparer.Ordinal)
             .ToArray();
 
@@ -111,9 +97,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var paths = ResolveBlazorRuntimeDependencies
                 .ResolveRuntimeDependenciesCore(
-                    mainAssemblyLocation,
-                    references,
-                    bclLocations);
+                   mainAssemblyLocation,
+                   hintPaths,
+                   bclLocations);
 
             var contents = paths
                 .Select(p => Path.GetFileName(p))
@@ -137,6 +123,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             }
 
             Assert.Equal(expectedContents, contents);
+        }
+
+        private string[] ReadContent(Assembly standaloneAppAssembly, string fileName)
+        {
+            using var resource = standaloneAppAssembly.GetManifestResourceStream(fileName);
+            using var streamReader = new StreamReader(resource);
+
+            return streamReader.ReadToEnd().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private class ContentMisMatchException : Xunit.Sdk.XunitException
