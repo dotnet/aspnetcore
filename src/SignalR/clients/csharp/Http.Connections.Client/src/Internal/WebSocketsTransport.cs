@@ -37,12 +37,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _webSocket = new ClientWebSocket();
 
             // Full Framework will throw when trying to set this
-            // Catching is easier and safer than trying to use #if !NETSTANDARD2_0
-            try
-            {
-                _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
-            }
-            catch { }
+            // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
+#if !NETSTANDARD2_0
+            _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+#endif
 
             if (httpConnectionOptions != null)
             {
