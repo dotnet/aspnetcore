@@ -9,6 +9,7 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public EndPoint EndPoint { get; set; }
 
-        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
             try

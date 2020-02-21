@@ -479,18 +479,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private class TestStreamContext : StreamContext
+        private class TestStreamContext : StreamContext, IStreamDirectionFeature, IStreamIdFeature
         {
             private DuplexPipePair _pair;
             public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair, IProtocolErrorCodeFeature feature)
             {
                 _pair = pair;
                 Features = new FeatureCollection();
-                Features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead, canWrite));
+                Features.Set<IStreamDirectionFeature>(this);
+                CanRead = canRead;
+                CanWrite = canWrite;
                 Features.Set<IProtocolErrorCodeFeature>(feature);
             }
 
-            public override long StreamId { get; }
+            public override string StreamId { get; }
 
             public override string ConnectionId { get; set; }
 
@@ -509,6 +511,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     throw new NotImplementedException();
                 }
             }
+
+            public bool CanRead { get; }
+
+            public bool CanWrite { get; }
+
+            long IStreamIdFeature.StreamId { get; }
 
             public override void Abort(ConnectionAbortedException abortReason)
             {

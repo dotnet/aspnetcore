@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
@@ -28,8 +29,9 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Begins an asynchronous operation to accept an incoming connection.
         /// </summary>
+        /// <param name="features">A feature collection to pass options when accepting a connection.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>A <see cref="ValueTask{ConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="MultiplexedConnectionContext" /> representing the connection.</returns>
-        ValueTask<MultiplexedConnectionContext> AcceptAsync(CancellationToken cancellationToken = default);
+        ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default);
     }
 }

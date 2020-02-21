@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Connections
     public partial interface IMultiplexedConnectionListener : System.IAsyncDisposable
     {
         System.Net.EndPoint EndPoint { get; }
-        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> AcceptAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         System.Threading.Tasks.ValueTask UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial interface IMultiplexedConnectionListenerFactory
@@ -156,11 +156,6 @@ namespace Microsoft.AspNetCore.Connections
         public Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate Build() { throw null; }
         public Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware) { throw null; }
     }
-    public static partial class MultiplexedConnectionBuilderExtensions
-    {
-        public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Run(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Threading.Tasks.Task> middleware) { throw null; }
-        public static Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder UseMultiplexed(this Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext, System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task> middleware) { throw null; }
-    }
     public abstract partial class MultiplexedConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable
     {
         protected MultiplexedConnectionContext() { }
@@ -171,7 +166,7 @@ namespace Microsoft.AspNetCore.Connections
     public abstract partial class StreamContext : Microsoft.AspNetCore.Connections.ConnectionContext
     {
         protected StreamContext() { }
-        public abstract long StreamId { get; }
+        public abstract string StreamId { get; }
     }
     [System.FlagsAttribute]
     public enum TransferFormat
@@ -243,6 +238,10 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         bool CanRead { get; }
         bool CanWrite { get; }
+    }
+    public partial interface IStreamIdFeature
+    {
+        long StreamId { get; }
     }
     public partial interface ITlsHandshakeFeature
     {

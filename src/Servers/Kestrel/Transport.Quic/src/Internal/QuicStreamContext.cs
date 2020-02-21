@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature, IProtocolErrorCodeFeature
+    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
         private readonly Task _processingTask;
         private readonly QuicStream _stream;
@@ -67,11 +67,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public bool CanRead { get; }
         public bool CanWrite { get; }
 
-        public override long StreamId
+        long IStreamIdFeature.StreamId
         {
             get
             {
                 return _stream.StreamId;
+            }
+        }
+
+        public override string StreamId
+        {
+            get
+            {
+                return _stream.StreamId.ToString();
             }
         }
 

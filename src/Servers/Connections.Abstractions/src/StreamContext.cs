@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets the id assigned to the stream.
         /// </summary>
-        public abstract long StreamId { get; }
+        public abstract string StreamId { get; }
     }
 }

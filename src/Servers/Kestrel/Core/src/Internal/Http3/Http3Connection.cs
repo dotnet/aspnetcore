@@ -205,13 +205,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         break;
                     }
 
-                    var streamDirectionFeature = streamContext.Features.Get<IStreamDirectionFeature>();
+                    var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
+                    var streamIdFeature = streamContext.Features.Get<IStreamIdFeature>();
 
-                    Debug.Assert(streamDirectionFeature != null);
+                    Debug.Assert(quicStreamFeature != null);
 
                     var httpConnectionContext = new Http3StreamContext
                     {
-                        ConnectionId = streamContext.StreamId.ToString(),
+                        ConnectionId = streamContext.StreamId,
                         StreamContext = streamContext,
                         // TODO connection context is null here. Should we set it to anything?
                         ServiceContext = _context.ServiceContext,
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
                     };
 
-                    if (!streamDirectionFeature.CanWrite)
+                    if (!quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
                         var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
@@ -232,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     else
                     {
                         // Keep track of highest stream id seen for GOAWAY
-                        var streamId = streamContext.StreamId;
+                        var streamId = streamIdFeature.StreamId;
                         HighestStreamId = streamId;
 
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
