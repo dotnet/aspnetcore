@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // When implementing support for out-of-process runtimes, we'll need to call this
             // asynchronously and ensure we surface any exceptions correctly.
 
-            WebAssemblyJSRuntime.Instance.Invoke<object>(
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId,
@@ -91,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            WebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
+            DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
                 "Blazor._internal.renderBatch",
                 _webAssemblyRendererId,
                 batch);

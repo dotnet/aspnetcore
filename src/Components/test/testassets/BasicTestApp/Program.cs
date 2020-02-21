@@ -6,11 +6,11 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BasicTestApp.AuthTest;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Mono.WebAssembly.Interop;
 
 namespace BasicTestApp
 {
@@ -48,7 +48,7 @@ namespace BasicTestApp
         // Supports E2E tests in StartupErrorNotificationTest
         private static async Task SimulateErrorsIfNeededForTest()
         {
-            var currentUrl = new MonoWebAssemblyJSRuntime().Invoke<string>("getCurrentUrl");
+            var currentUrl = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>("getCurrentUrl");
             if (currentUrl.Contains("error=sync"))
             {
                 throw new InvalidTimeZoneException("This is a synchronous startup exception");

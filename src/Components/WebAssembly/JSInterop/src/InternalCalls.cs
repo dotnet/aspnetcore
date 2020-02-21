@@ -9,7 +9,7 @@ namespace WebAssembly.JSInterop
     /// Methods that map to the functions compiled into the Mono WebAssembly runtime,
     /// as defined by 'mono_add_internal_call' calls in driver.c
     /// </summary>
-    internal class InternalCalls
+    internal static class InternalCalls
     {
         // The exact namespace, type, and method names must match the corresponding entries
         // in driver.c in the Mono distribution

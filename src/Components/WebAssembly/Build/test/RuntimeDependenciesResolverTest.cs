@@ -57,8 +57,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "Microsoft.Extensions.Primitives.dll",
                 "Microsoft.JSInterop.dll",
                 "Mono.Security.dll",
-                "Mono.WebAssembly.Interop.dll",
-                "Mono.WebAssembly.Interop.pdb",
                 "mscorlib.dll",
                 "netstandard.dll",
                 "StandaloneApp.dll",
@@ -88,6 +86,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "System.Xml.dll",
                 "System.Xml.Linq.dll",
                 "WebAssembly.Bindings.dll",
+                "WebAssembly.JSInterop.dll",
+                "WebAssembly.JSInterop.pdb",
                 "WebAssembly.Net.Http.dll",
                 "WebAssembly.Net.WebSockets.dll",
             }.OrderBy(i => i, StringComparer.Ordinal)

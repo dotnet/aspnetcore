@@ -30,7 +30,7 @@ namespace HostedInAspNet.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBlazorDebugging();
+                app.UseWebAssemblyDebugging();
             }
 
             app.UseBlazorFrameworkFiles();

@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +41,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
             GC.KeepAlive(typeof(EntrypointInvoker));
             GC.KeepAlive(typeof(JSInteropMethods));
-            GC.KeepAlive(typeof(WebAssemblyEventDispatcher));
 
             _services = services;
             _scope = scope;

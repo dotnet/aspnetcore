@@ -10,13 +10,13 @@
 
   <PropertyGroup>
     <ComponentsRoot Condition="'$(ComponentsRoot)'==''">$(MSBuildThisFileDirectory)..\..\..\</ComponentsRoot>
-    <BlazorJsPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorJsPath>
-    <BlazorJsMapPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js.map</BlazorJsMapPath>
-    <BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\</BlazorToolsDir>
+    <_BlazorJsPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js</_BlazorJsPath>
+    <_BlazorJsMapPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js.map</_BlazorJsMapPath>
+    <_BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\</_BlazorToolsDir>
   </PropertyGroup>
 
-  <Target Name="CheckBlazorJSFiles" BeforeTargets="Build">
-    <Error Text="blazor.webassembly.js file could not be found at $(BlazorJsPath)" Condition="!Exists($(BlazorJsPath))" />
+  <Target Name="Check_BlazorJSFiles" BeforeTargets="Build">
+    <Error Text="blazor.webassembly.js file could not be found at $(_BlazorJsPath)" Condition="!Exists($(_BlazorJsPath))" />
   </Target>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />

@@ -48,7 +48,7 @@
 
   </Target>
 
-  <UsingTask TaskName="CompressBlazorApplicationFiles" AssemblyFile="$(BlazorTasksPath)" />
+  <UsingTask TaskName="CompressBlazorApplicationFiles" AssemblyFile="$(_BlazorTasksPath)" />
 
   <Target
     Name="_CompressBlazorApplicationFiles"

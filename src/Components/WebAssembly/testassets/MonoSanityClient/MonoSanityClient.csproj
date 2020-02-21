@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="BlazorLinkOnBuild">
+<Project Sdk="Microsoft.NET.Sdk.Razor" TreatAsLocalProperty="BlazorLinkOnBuild">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <OutputType>exe</OutputType>
     <RazorLangVersion>3.0</RazorLangVersion>
 

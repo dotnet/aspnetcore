@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary" });
             project.AddProjectFileContent(
 @"<PropertyGroup>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
 </PropertyGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             AddSiblingProjectFileContent(@"
 <PropertyGroup>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
 </PropertyGroup>");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.

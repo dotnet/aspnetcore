@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -93,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
         private void InitializeDefaultServices()
         {
-            Services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
+            Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();

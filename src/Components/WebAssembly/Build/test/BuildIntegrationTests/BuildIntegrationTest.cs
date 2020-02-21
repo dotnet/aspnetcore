@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             using var project = ProjectDirectory.Create("standalone");
             project.AddProjectFileContent(
 @"<PropertyGroup>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
 </PropertyGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
@@ -107,14 +107,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
-        public async Task Build_WithBlazorLinkOnBuildFalse_SatelliteAssembliesAreCopiedToBuildOutput()
+        public async Task Build_WithBlazorWebAssemblyEnableLinkingFalse_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
             project.AddProjectFileContent(
 @"
 <PropertyGroup>
-    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <DefineConstants>$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies</DefineConstants>
 </PropertyGroup>
 <ItemGroup>

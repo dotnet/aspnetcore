@@ -5,18 +5,18 @@
           BeforeTargets="_ResolveBlazorOutputs">
 
     <PropertyGroup>
-      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(BlazorIntermediateOutputPath)serviceworkerassets.js</_ServiceWorkerAssetsManifestIntermediateOutputPath>
+      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(_BlazorIntermediateOutputPath)serviceworkerassets.js</_ServiceWorkerAssetsManifestIntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <BlazorOutputWithTargetPath Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+      <_BlazorOutputWithTargetPath Condition="'$(ServiceWorkerAssetsManifest)' != ''"
         Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
-        TargetOutputPath="$(BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
+        TargetOutputPath="$(_BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
     </ItemGroup>
 
   </Target>
 
-  <UsingTask TaskName="GenerateServiceWorkerAssetsManifest" AssemblyFile="$(BlazorTasksPath)" />
+  <UsingTask TaskName="GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorTasksPath)" />
 
   <Target Name="_WriteServiceWorkerAssetsManifest"
           Inputs="@(ServiceWorkerAssetsManifestItem)"
@@ -55,7 +55,7 @@
   <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
           Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''">
     <PropertyGroup>
-      <_CombinedHashIntermediatePath>$(BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
+      <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
 
     <WriteLinesToFile

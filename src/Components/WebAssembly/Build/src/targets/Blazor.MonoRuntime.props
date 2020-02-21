@@ -1,20 +1,16 @@
 <Project>
 
   <PropertyGroup>
-    <BlazorJsPath Condition="'$(BlazorJsPath)' == ''">$(MSBuildThisFileDirectory)..\tools\blazor\blazor.webassembly.js</BlazorJsPath>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Blazor build outputs">
     <MonoLinkerI18NAssemblies>none</MonoLinkerI18NAssemblies> <!-- See Mono linker docs - allows comma-separated values from: none,all,cjk,mideast,other,rare,west -->
     <AdditionalMonoLinkerOptions>--disable-opt unreachablebodies --verbose --strip-security true --exclude-feature com -v false -c link -u link -b true</AdditionalMonoLinkerOptions>
-    <BaseBlazorDistPath>dist\</BaseBlazorDistPath>
-    <BaseBlazorPackageContentOutputPath>$(BaseBlazorDistPath)_content\</BaseBlazorPackageContentOutputPath>
-    <BaseBlazorRuntimeOutputPath>$(BaseBlazorDistPath)_framework\</BaseBlazorRuntimeOutputPath>
-    <BlazorRuntimeBinOutputPath>$(BaseBlazorRuntimeOutputPath)_bin\</BlazorRuntimeBinOutputPath>
-    <BlazorRuntimeWasmOutputPath>$(BaseBlazorRuntimeOutputPath)wasm\</BlazorRuntimeWasmOutputPath>
-    <BlazorWebRootName>wwwroot\</BlazorWebRootName>
-    <BlazorBootJsonName>blazor.boot.json</BlazorBootJsonName>
+
+    <_BlazorJsPath Condition="'$(_BlazorJsPath)' == ''">$(MSBuildThisFileDirectory)..\tools\blazor\blazor.webassembly.js</_BlazorJsPath>
+    <_BaseBlazorDistPath>dist\</_BaseBlazorDistPath>
+    <_BaseBlazorRuntimeOutputPath>$(_BaseBlazorDistPath)_framework\</_BaseBlazorRuntimeOutputPath>
+    <_BlazorRuntimeBinOutputPath>$(_BaseBlazorRuntimeOutputPath)_bin\</_BlazorRuntimeBinOutputPath>
+    <_BlazorRuntimeWasmOutputPath>$(_BaseBlazorRuntimeOutputPath)wasm\</_BlazorRuntimeWasmOutputPath>
     <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>
+    <_BlazorBootJsonName>blazor.boot.json</_BlazorBootJsonName>
   </PropertyGroup>
 
 </Project>

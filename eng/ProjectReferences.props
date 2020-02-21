@@ -7,7 +7,7 @@
   <ItemGroup>
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Build" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Build\src\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.HttpClient" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj"  />
-    <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj"  />
+    <ProjectReferenceProvider Include="WebAssembly.JSInterop" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\WebAssembly.JSInterop.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Validation\src\Microsoft.AspNetCore.Components.DataAnnotations.Validation.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj"  />

@@ -22,20 +22,20 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class WebAssemblyNetDebugProxyAppBuilderExtensions
     {
-        private static JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
             IgnoreNullValues = true
         };
 
-        private static string DefaultDebuggerHost = "http://localhost:9222";
+        private static readonly string DefaultDebuggerHost = "http://localhost:9222";
 
         /// <summary>
         /// Adds middleware for needed for debugging Blazor WebAssembly applications
         /// inside Chromium dev tools.
         /// </summary>
-        public static void UseBlazorDebugging(this IApplicationBuilder app)
+        public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
         {
             app.UseWebSockets();
 
