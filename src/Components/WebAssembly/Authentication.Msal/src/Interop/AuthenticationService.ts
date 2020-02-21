@@ -153,6 +153,7 @@ class MsalAuthorizeService implements AuthorizeService {
         try {
             return await this._msalApplication.loginPopup(request);
         } catch (e) {
+            // If the user explicitly cancelled the pop-up, avoid performing a redirect.
             if (this.isMsalError(e) && e.errorCode !== ClientAuthErrorMessage.userCancelledError.code) {
                 try {
                     this._msalApplication.loginRedirect(request);
