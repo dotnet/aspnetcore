@@ -56,6 +56,9 @@ namespace Wasm.Authentication.Server
                 app.UseBlazorDebugging();
             }
 
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseAuthentication();
@@ -67,7 +70,6 @@ namespace Wasm.Authentication.Server
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
 
-                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

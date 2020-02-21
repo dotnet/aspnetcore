@@ -104,6 +104,7 @@ namespace ComponentsWebAssembly_CSharp.Server
             }
 
 #endif
+            app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -124,8 +125,6 @@ namespace ComponentsWebAssembly_CSharp.Server
                 endpoints.MapRazorPages();
 #endif
                 endpoints.MapControllers();
-
-                endpoints.MapBlazorWebAssemblyApplication();
                 endpoints.MapFallbackToFile("index.html");
             });
         }

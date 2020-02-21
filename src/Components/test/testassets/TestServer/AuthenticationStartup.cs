@@ -49,12 +49,12 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
+                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
 
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorWebAssemblyApplication();
                     endpoints.MapControllers();
                     endpoints.MapRazorPages();
                     endpoints.MapBlazorHub();

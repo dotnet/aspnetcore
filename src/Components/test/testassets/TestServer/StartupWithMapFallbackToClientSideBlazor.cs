@@ -33,12 +33,8 @@ namespace TestServer
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
             app.Map("/subdir", app =>
             {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapBlazorWebAssemblyApplication();
-                });
+                app.UseBlazorFrameworkFiles();
+                app.UseStaticFiles();
             });
 
             // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
