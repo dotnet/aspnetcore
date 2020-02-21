@@ -24,7 +24,7 @@ export const monoPlatform: Platform = {
       // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
         window['Module'] = createEmscriptenModuleInstance(resourceLoader, resolve, reject);
-        addScriptTagsToDocument();
+        addScriptTagsToDocument(resourceLoader);
       });
     });
   },
@@ -112,15 +112,26 @@ export const monoPlatform: Platform = {
   },
 };
 
-function addScriptTagsToDocument() {
+function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
     throw new Error('This browser does not support WebAssembly.');
   }
 
+  const dotnetJsResourceName = 'dotnet.js';
+  const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
   const scriptElem = document.createElement('script');
-  scriptElem.src = '_framework/wasm/dotnet.js';
+
+  // To ensure we're fetching fresh content even for servers that don't put cache-control:no-cache
+  // on the response, we add our own cache-busting parameter
+  scriptElem.src = `_framework/wasm/${dotnetJsResourceName}?v=${encodeURIComponent(contentHash)}`;
   scriptElem.defer = true;
+
+  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
+  if (resourceLoader.bootConfig.cacheBootResources) {
+    scriptElem.integrity = contentHash;
+  }
+
   document.body.appendChild(scriptElem);
 }
 
