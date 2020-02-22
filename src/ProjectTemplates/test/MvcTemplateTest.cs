@@ -221,7 +221,8 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("razor compilation restore no worky")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("mvc_rc", Output);
