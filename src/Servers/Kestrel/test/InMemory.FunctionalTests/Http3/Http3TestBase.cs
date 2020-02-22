@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.QPack;
 using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application)
         {
             await InitializeConnectionAsync(application);
- 
+
             var controlStream1 = await CreateControlStream(0);
             var controlStream2 = await CreateControlStream(2);
             var controlStream3 = await CreateControlStream(3);
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async ValueTask<Http3ControlStream> CreateControlStream(int id)
         {
             var stream = new Http3ControlStream(this, _connection);
-             _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
+            _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
         }
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
-            private QPackDecoder _qpackDecoder = new QPackDecoder(10000, 10000);
+            private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             private long _bytesReceived;
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                    
+
                 ConnectionContext = new DefaultConnectionContext();
                 ConnectionContext.Transport = _pair.Transport;
                 ConnectionContext.Features.Set<IQuicStreamFeature>(this);
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
             {
                 var outputWriter = _pair.Application.Output;
-                var frame = new Http3Frame();
+                var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
@@ -261,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             internal async Task SendDataAsync(Memory<byte> data)
             {
                 var outputWriter = _pair.Application.Output;
-                var frame = new Http3Frame();
+                var frame = new Http3RawFrame();
                 frame.PrepareData();
                 frame.Length = data.Length;
                 Http3FrameWriter.WriteHeader(frame, outputWriter);
@@ -321,6 +322,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             }
 
+            internal async Task ExpectReceiveEndOfStream()
+            {
+                var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+                Assert.True(result.IsCompleted);
+            }
+
             public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
             {
                 _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
@@ -329,9 +336,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public void OnHeadersComplete(bool endHeaders)
             {
             }
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                var knownHeader = H3StaticTable.Instance[index];
+                _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(knownHeader.Value);
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+            }
         }
 
-        internal class Http3FrameWithPayload : Http3Frame
+        internal class Http3FrameWithPayload : Http3RawFrame
         {
             public Http3FrameWithPayload() : base()
             {

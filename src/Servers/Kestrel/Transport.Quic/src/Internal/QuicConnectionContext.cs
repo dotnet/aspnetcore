@@ -74,6 +74,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public async ValueTask<ConnectionContext> AcceptAsync()
         {
             var stream = await _connection.AcceptStreamAsync();
+            try
+            {
+                // Because the stream is wrapped with a quic connection provider,
+                // we need to check a property to check if this is null
+                // Will be removed once the provider abstraction is removed.
+                _ = stream.CanRead;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
             return new QuicStreamContext(stream, this, _context);
         }
     }

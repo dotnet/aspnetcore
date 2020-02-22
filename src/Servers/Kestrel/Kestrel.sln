@@ -90,7 +90,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleClient", "samples\QuicSampleClient\QuicSampleClient.csproj", "{F39A942B-85A8-4C1B-A5BC-435555E79F20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http3SampleApp", "samples\Http3SampleApp\Http3SampleApp.csproj", "{B3CDC83A-A9C5-45DF-9828-6BC419C24308}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Http3SampleApp", "samples\Http3SampleApp\Http3SampleApp.csproj", "{B3CDC83A-A9C5-45DF-9828-6BC419C24308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

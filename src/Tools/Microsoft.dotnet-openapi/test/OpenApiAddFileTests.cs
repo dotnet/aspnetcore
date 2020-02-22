@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public void OpenApi_NoProjectExists()
         {
             var app = GetApplication();
@@ -40,7 +39,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public void OpenApi_ExplicitProject_Missing()
         {
             var app = GetApplication();
@@ -75,7 +73,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_ReuseItemGroup()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -105,7 +102,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public void OpenApi_Add_File_EquivilentPaths()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -131,7 +127,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -152,7 +147,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_FromJson()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -173,7 +167,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_File_UseProjectOption()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -194,7 +187,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task OpenApi_Add_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: true);

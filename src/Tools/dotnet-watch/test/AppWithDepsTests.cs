@@ -19,7 +19,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new AppWithDeps(logger);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();

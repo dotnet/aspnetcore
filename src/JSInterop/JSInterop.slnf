@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "..\\..\\Extensions.sln",
+    "projects": [
+      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\JSInterop\\Microsoft.JSInterop\\test\\Microsoft.JSInterop.Tests.csproj"
+    ]
+  }
+}

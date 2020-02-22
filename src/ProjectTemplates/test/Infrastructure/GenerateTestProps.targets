@@ -4,7 +4,7 @@
       DependsOnTargets="PrepareForTest"
       Condition="$(DesignTimeBuild) != true">
     <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
-    <!-- If we aren' building the targeting pack, use the baseline version -->
+    <!-- If we aren't building the targeting pack, use the baseline version -->
     <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false"
@@ -15,7 +15,7 @@
     <!-- Targeting pack version should be the one we just built, if we're building it. Otherwise we use the baseline version -->
     <PropertyGroup>
       <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">%(_TargetingPackVersionInfo.PackageVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
-      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
+      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(TargetingPackVersionPrefix)</MicrosoftAspNetCoreAppRefPackageVersion>
     </PropertyGroup>
 
     <!-- Runtime and Ref packs may have separate versions. -->

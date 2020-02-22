@@ -161,7 +161,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                     else
                     {
-                        factory = _transportFactories.Last();
+                        foreach (var transportFactory in _transportFactories)
+                        {
+                            if (!(transportFactory is IMultiplexedConnectionListenerFactory))
+                            {
+                                factory = transportFactory;
+                            }
+                        }
                     }
 
                     var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);

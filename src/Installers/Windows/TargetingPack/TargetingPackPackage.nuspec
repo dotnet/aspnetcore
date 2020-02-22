@@ -6,14 +6,15 @@
         <title>VS.Redist.Common.AspNetCore.TargetingPack.$ARCH$.$MAJOR$.$MINOR$</title>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
-        <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
+        <license type="expression">$PackageLicenseExpression$</license>
         <projectUrl>https://github.com/dotnet/aspnetcore</projectUrl>
+        <icon>$PackageIcon$</icon>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>$MAJOR$.$MINOR$ ASP.NET Core TargetingPack ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
         <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />
-        <file src="$PACKAGE_ICON_PATH$" target="" />
+        <file src="$PackageIconFullPath$" target="$PackageIcon$" />
     </files>
 </package>

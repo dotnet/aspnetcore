@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http2Cat
     internal class Http2Utilities : IHttpHeadersHandler
     {
         public static ReadOnlySpan<byte> ClientPreface => new byte[24] { (byte)'P', (byte)'R', (byte)'I', (byte)' ', (byte)'*', (byte)' ', (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'2', (byte)'.', (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n', (byte)'S', (byte)'M', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-        public static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
+        public const int MaxRequestHeaderFieldSize = 16 * 1024;
         public static readonly string FourKHeaderValue = new string('a', 4096);
         private static readonly Encoding HeaderValueEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
@@ -1015,6 +1015,16 @@ namespace Microsoft.AspNetCore.Http2Cat
             Assert.Equal(0, frame.Flags);
             Assert.Equal(expectedStreamId, frame.StreamId);
             Assert.Equal(expectedErrorCode, frame.RstStreamErrorCode);
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
         }
 
         internal class Http2FrameWithPayload : Http2Frame

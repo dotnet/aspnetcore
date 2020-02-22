@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Product>Microsoft .NET Extensions</Product>
+    <Description>Abstractions of application localization services.
+Commonly used types:
+Microsoft.Extensions.Localization.IStringLocalizer
+Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>localization</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+  </PropertyGroup>
+
+</Project>

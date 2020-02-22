@@ -79,6 +79,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
         }
 
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
+        }
+
         private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
         {
             public HttpParserBenchmark RequestHandler;
@@ -96,6 +106,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
