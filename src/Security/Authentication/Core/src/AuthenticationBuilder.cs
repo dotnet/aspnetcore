@@ -25,25 +25,31 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public virtual IServiceCollection Services { get; }
 
-        private AuthenticationBuilder AddSchemeHelper<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+        private AuthenticationBuilder AddSchemeHelper<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions, IServiceProvider> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : class, IAuthenticationHandler
         {
             Services.Configure<AuthenticationOptions>(o =>
             {
-                o.AddScheme(authenticationScheme, scheme => {
+                o.AddScheme(authenticationScheme, scheme =>
+                {
                     scheme.HandlerType = typeof(THandler);
                     scheme.DisplayName = displayName;
                 });
             });
+
+            var optionsBuilder = Services.AddOptions<TOptions>(authenticationScheme)
+                .Validate(o =>
+                {
+                    o.Validate(authenticationScheme);
+                    return true;
+                });
+
             if (configureOptions != null)
             {
-                Services.Configure(authenticationScheme, configureOptions);
+                optionsBuilder.Configure(configureOptions);
             }
-            Services.AddOptions<TOptions>(authenticationScheme).Validate(o => {
-                o.Validate(authenticationScheme);
-                return true;
-            });
+
             Services.AddTransient<THandler>();
             return this;
         }
@@ -58,6 +64,20 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="configureOptions">Used to configure the scheme options.</param>
         /// <returns>The builder.</returns>
         public virtual AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+            => AddSchemeHelper<TOptions, THandler>(authenticationScheme, displayName, MapConfiguration(configureOptions));
+
+        /// <summary>
+        /// Adds a <see cref="AuthenticationScheme"/> which can be used by <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The <see cref="AuthenticationSchemeOptions"/> type to configure the handler."/>.</typeparam>
+        /// <typeparam name="THandler">The <see cref="AuthenticationHandler{TOptions}"/> used to handle this scheme.</typeparam>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="displayName">The display name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions, IServiceProvider> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
             => AddSchemeHelper<TOptions, THandler>(authenticationScheme, displayName, configureOptions);
@@ -102,7 +122,30 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="configureOptions">Used to configure the scheme options.</param>
         /// <returns>The builder.</returns>
         public virtual AuthenticationBuilder AddPolicyScheme(string authenticationScheme, string displayName, Action<PolicySchemeOptions> configureOptions)
+            => AddSchemeHelper<PolicySchemeOptions, PolicySchemeHandler>(authenticationScheme, displayName, MapConfiguration(configureOptions));
+
+        /// <summary>
+        /// Adds a <see cref="PolicySchemeHandler"/> based authentication handler which can be used to 
+        /// redirect to other authentication schemes.
+        /// </summary>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="displayName">The display name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddPolicyScheme(string authenticationScheme, string displayName, Action<PolicySchemeOptions, IServiceProvider> configureOptions)
             => AddSchemeHelper<PolicySchemeOptions, PolicySchemeHandler>(authenticationScheme, displayName, configureOptions);
+
+        private Action<TOptions, IServiceProvider> MapConfiguration<TOptions>(Action<TOptions> configureOptions)
+        {
+            if (configureOptions == null)
+            {
+                return null;
+            }
+            else
+            {
+                return (options, _) => configureOptions(options);
+            }
+        }
 
         // Used to ensure that there's always a default sign in scheme that's not itself
         private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions

@@ -15,15 +15,36 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme)
-            => builder.AddCookie(authenticationScheme, configureOptions: null);
+            => builder.AddCookie(authenticationScheme, configureOptions: (Action<CookieAuthenticationOptions, IServiceProvider>)null);
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions> configureOptions) 
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions> configureOptions)
             => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions)
             => builder.AddCookie(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
+            => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
+
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
+            => builder.AddCookie(authenticationScheme, displayName: null, configureOptions: configureOptions);
+
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions> configureOptions)
+        {
+            Action<CookieAuthenticationOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddCookie(authenticationScheme, displayName, configureOptionsWithServices);
+        }
+
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureCookieAuthenticationOptions>());
             builder.Services.AddOptions<CookieAuthenticationOptions>(authenticationScheme).Validate(o => o.Cookie.Expiration == null, "Cookie.Expiration is ignored, use ExpireTimeSpan instead.");
