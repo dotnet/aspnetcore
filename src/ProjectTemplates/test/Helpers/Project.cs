@@ -304,8 +304,6 @@ namespace Templates.Test.Helpers
             }
         }
 
-        
-        
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
             var args = $"\"{DotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
