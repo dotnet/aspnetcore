@@ -45,5 +45,5 @@ Get-ChildItem -Path ".\tmpRuntime" -Recurse
 
 Write-Host "Copying managed files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\lib\$Framework\*" $InstallDir
-Write-Host "Todo: Copying native files to $InstallDir"
-# Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\native\*" $InstallDir
+Write-Host "Copying native files to $InstallDir"
+Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\native\*" $InstallDir
