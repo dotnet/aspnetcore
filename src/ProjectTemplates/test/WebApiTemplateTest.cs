@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,7 +26,8 @@ namespace Templates.Test
         [Fact]
         public async Task WebApiTemplateFSharp() => await WebApiTemplateCore(languageOverride: "F#");
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task WebApiTemplateCSharp() => await WebApiTemplateCore(languageOverride: null);
 
         private async Task WebApiTemplateCore(string languageOverride)
