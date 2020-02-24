@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _aborted;
         private Exception _abortException;
 
+        private readonly object _abortLock = new object();
         private readonly Action _abortRequest;
         private readonly Action _readComplete;
         private readonly Pipe _pipe;
@@ -124,16 +125,24 @@ namespace Microsoft.AspNetCore.TestHost
         internal void Abort(Exception innerException)
         {
             Contract.Requires(innerException != null);
-            _abortException = innerException;
-            _aborted = true;
+
+            lock (_abortLock)
+            {
+                _abortException = innerException;
+                _aborted = true;
+            }
+
             _pipe.Reader.CancelPendingRead();
         }
 
         private void CheckAborted()
         {
-            if (_aborted)
+            lock (_abortLock)
             {
-                throw new IOException(string.Empty, _abortException);
+                if (_aborted)
+                {
+                    throw new IOException(string.Empty, _abortException);
+                }
             }
         }
 
