@@ -1,7 +1,7 @@
 name: AspNetCore-Runtime Code Sync
 on:
   # Test this script using on: push
-  push:
+  # push:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
@@ -17,8 +17,7 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        repository: 'tratcher/aspnetcore'
-        # repository: 'dotnet/aspnetcore'
+        repository: 'dotnet/aspnetcore'
         path: aspnetcore
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
@@ -50,13 +49,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Test this script using an issue in the local forked repo
-        $issue = 'https://api.github.com/repos/tratcher/aspnetcore/issues/1'
-        # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
+        $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         $changed = .\aspnetcore\.github\workflows\ReportDiff.ps1
         echo "::set-output name=changed::$changed"
-    - name: Check outputs
-      run: |
-        echo "Changed? ${{ steps.check.outputs.changed }}"
     - name: Send PR
       if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
@@ -64,9 +59,9 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: .\aspnetcore
-        commit-message: 'Sync changes from runtime'
-        title: 'Sync changes from runtime'
-        body: 'This PR was automatically generated to sync changes from runtime. Fixes #1'
+        commit-message: 'Sync shared code from runtime'
+        title: 'Sync shared code from runtime'
+        body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
         labels: area-servers
         branch: github-action/sync-runtime
         branch-suffix: timestamp
