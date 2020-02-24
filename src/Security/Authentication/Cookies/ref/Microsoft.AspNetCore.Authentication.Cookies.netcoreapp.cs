@@ -122,9 +122,12 @@ namespace Microsoft.Extensions.DependencyInjection
     public static partial class CookieExtensions
     {
         public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) { throw null; }
+        public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions, System.IServiceProvider> configureOptions) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> configureOptions) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme) { throw null; }
+        public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions, System.IServiceProvider> configureOptions) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> configureOptions) { throw null; }
+        public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions, System.IServiceProvider> configureOptions) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> configureOptions) { throw null; }
     }
 }
