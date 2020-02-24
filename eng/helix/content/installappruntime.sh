@@ -6,6 +6,7 @@ set -e
 appRuntimePath=$1
 output_dir=$2
 framework=$3
+rid=$4
 tmpDir=./tmpRuntime
 
 echo "Installing shared framework from $appRuntimePath"
@@ -15,5 +16,5 @@ mkdir -p $tmpDir
 unzip sharedFx.zip -d $tmpDir
 mkdir -p $output_dir
 echo "Copying to $output_dir"
-cp $tmpDir/runtimes/win-x64/lib/$framework/* $output_dir
-cp $tmpDir/runtimes/win-x64/native/* $output_dir
+cp $tmpDir/runtimes/$rid/lib/$framework/* $output_dir
+cp $tmpDir/runtimes/$rid/native/* $output_dir
