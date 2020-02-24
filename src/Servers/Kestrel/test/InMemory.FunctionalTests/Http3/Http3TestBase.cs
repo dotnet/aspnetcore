@@ -195,11 +195,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return new ValueTask<Http3RequestStream>(stream);
         }
 
-        public ValueTask<StreamContext> StartBidirectionalStreamAsync()
+        public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
         {
             var stream = new Http3RequestStream(this, _connection);
             // TODO put these somewhere to be read.
-            return new ValueTask<StreamContext>(stream.StreamContext);
+            return new ValueTask<ConnectionContext>(stream.StreamContext);
         }
 
         internal class Http3StreamBase
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IProtocolErrorCodeFeature
         {
-            internal StreamContext StreamContext { get; }
+            internal ConnectionContext StreamContext { get; }
 
             public bool CanRead => true;
             public bool CanWrite => true;
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal class Http3ControlStream : Http3StreamBase, IProtocolErrorCodeFeature
         {
-            internal StreamContext StreamContext { get; }
+            internal ConnectionContext StreamContext { get; }
 
             public bool CanRead => true;
             public bool CanWrite => false;
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestMultiplexedConnectionContext : MultiplexedConnectionContext
         {
-            public readonly Channel<StreamContext> AcceptQueue = Channel.CreateUnbounded<StreamContext>(new UnboundedChannelOptions
+            public readonly Channel<ConnectionContext> AcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
             {
                 SingleReader = true,
                 SingleWriter = true
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
             }
 
-            public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)
+            public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
             {
                 while (await AcceptQueue.Reader.WaitToReadAsync())
                 {
@@ -471,15 +471,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return null;
             }
 
-            public override ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+            public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
             {
                 var stream = new Http3ControlStream(_testBase);
                 // TODO put these somewhere to be read.
-                return new ValueTask<StreamContext>(stream.StreamContext);
+                return new ValueTask<ConnectionContext>(stream.StreamContext);
             }
         }
 
-        private class TestStreamContext : StreamContext, IStreamDirectionFeature, IStreamIdFeature
+        private class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature
         {
             private DuplexPipePair _pair;
             public TestStreamContext(bool canRead, bool canWrite, DuplexPipePair pair, IProtocolErrorCodeFeature feature)
@@ -487,14 +487,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _pair = pair;
                 Features = new FeatureCollection();
                 Features.Set<IStreamDirectionFeature>(this);
+                Features.Set<IStreamIdFeature>(this);
+                Features.Set(feature);
+
                 CanRead = canRead;
                 CanWrite = canWrite;
-                Features.Set<IProtocolErrorCodeFeature>(feature);
             }
 
-            public override string StreamId { get; }
-
             public override string ConnectionId { get; set; }
+
+            public long StreamId { get; }
 
             public override IFeatureCollection Features { get; }
 
@@ -515,8 +517,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool CanRead { get; }
 
             public bool CanWrite { get; }
-
-            long IStreamIdFeature.StreamId { get; }
 
             public override void Abort(ConnectionAbortedException abortReason)
             {

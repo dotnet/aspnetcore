@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _gracefulCloseInitiator;
         private readonly Http3StreamContext _context;
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
+        private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _context = context;
 
             _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>();
+            _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>();
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -297,7 +299,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void OnInputOrOutputCompleted()
         {
-            Log.LogTrace("On input or output completed");
             TryClose();
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
         }
@@ -353,7 +354,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
-                //errorCode = ex.ErrorCode;
                 Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
             }
             catch (Exception ex)
@@ -366,10 +366,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
 
-                // Input has completed.
-
                 Input.Complete();
-                _context.Transport.Input.CancelPendingRead();
+
                 await RequestBodyPipe.Writer.CompleteAsync();
 
                 // Make sure application func is completed before completing writer.
@@ -386,6 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    _http3Connection.RemoveStream(_streamIdFeature.StreamId);
                 }
             }
         }
@@ -726,7 +725,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Headers,
             Trailers
         }
-
 
         [Flags]
         private enum PseudoHeaderFields

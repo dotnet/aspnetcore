@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     // sockets for it to successfully listen. It also seems racy.
                     if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
-                        if (_multiplexedTransportFactories == null)
+                        if (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0)
                         {
                             throw new InvalidOperationException("Cannot start HTTP/3 server if no MultiplexedTransportFactories are registered.");
                         }
@@ -213,19 +213,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var transportCount = _transports.Count;
+                var connectionTransportCount = _transports.Count;
                 var totalTransportCount = _transports.Count + _multiplexedTransports.Count;
                 var tasks = new Task[totalTransportCount];
 
-                for (int i = 0; i < transportCount; i++)
+                for (int i = 0; i < connectionTransportCount; i++)
                 {
                     (IConnectionListener listener, Task acceptLoop) = _transports[i];
                     tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
                 }
 
-                for (int i = transportCount; i < totalTransportCount; i++)
+                for (int i = connectionTransportCount; i < totalTransportCount; i++)
                 {
-                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - transportCount];
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
                     tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
                 }
 
@@ -241,15 +241,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                 }
 
-                for (int i = 0; i < _transports.Count; i++)
+                for (int i = 0; i < connectionTransportCount; i++)
                 {
                     (IConnectionListener listener, Task acceptLoop) = _transports[i];
                     tasks[i] = listener.DisposeAsync().AsTask();
                 }
 
-                for (int i = _transports.Count; i < totalTransportCount; i++)
+                for (int i = connectionTransportCount; i < totalTransportCount; i++)
                 {
-                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - transportCount];
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
                     tasks[i] = listener.DisposeAsync().AsTask();
                 }
 

@@ -33,16 +33,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _log.NewConnection(ConnectionId);
         }
 
-        public ValueTask<StreamContext> StartUnidirectionalStreamAsync()
+        public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
         {
             var stream = _connection.OpenUnidirectionalStream();
-            return new ValueTask<StreamContext>(new QuicStreamContext(stream, this, _context));
+            return new ValueTask<ConnectionContext>(new QuicStreamContext(stream, this, _context));
         }
 
-        public ValueTask<StreamContext> StartBidirectionalStreamAsync()
+        public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
         {
             var stream = _connection.OpenBidirectionalStream();
-            return new ValueTask<StreamContext>(new QuicStreamContext(stream, this, _context));
+            return new ValueTask<ConnectionContext>(new QuicStreamContext(stream, this, _context));
         }
 
         public override async ValueTask DisposeAsync()
@@ -74,21 +74,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _closeTask = _connection.CloseAsync(errorCode: Error);
         }
 
-        public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            var stream = await _connection.AcceptStreamAsync(cancellationToken);
             try
             {
-                _ = stream.CanRead;
+                var stream = await _connection.AcceptStreamAsync(cancellationToken);
+                return new QuicStreamContext(stream, this, _context);
             }
-            catch (Exception)
+            catch (QuicException ex)
             {
-                return null;
+                // Accept on graceful close throws an aborted exception rather than returning null.
+                _log.LogDebug($"Accept loop ended with exception: {ex.Message}");
             }
-            return new QuicStreamContext(stream, this, _context);
+
+            return null;
         }
 
-        public override ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             QuicStream quicStream;
 
@@ -109,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 quicStream = _connection.OpenBidirectionalStream();
             }
 
-            return new ValueTask<StreamContext>(new QuicStreamContext(quicStream, this, _context));
+            return new ValueTask<ConnectionContext>(new QuicStreamContext(quicStream, this, _context));
         }
     }
 }

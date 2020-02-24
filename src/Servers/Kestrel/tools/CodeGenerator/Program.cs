@@ -27,26 +27,21 @@ namespace CodeGenerator
             }
             else if (args.Length < 4)
             {
-                Console.Error.WriteLine("Missing path to TransportMultiplexedConnection.Generated.cs");
+                Console.Error.WriteLine("Missing path to Http2Connection.Generated.cs");
                 return 1;
             }
             else if (args.Length < 5)
             {
-                Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
+                Console.Error.WriteLine("Missing path to TransportMultiplexedConnection.Generated.cs");
                 return 1;
             }
             else if (args.Length < 6)
             {
-                Console.Error.WriteLine("Missing path to Http2Connection.Generated.cs");
-                return 1;
-            }
-            else if (args.Length < 7)
-            {
-                Console.Error.WriteLine("Missing path to TransportStream.Generated.cs");
+                Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
                 return 1;
             }
 
-            Run(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            Run(args[0], args[1], args[2], args[3], args[4], args[5]);
 
             return 0;
         }
@@ -57,8 +52,7 @@ namespace CodeGenerator
             string httpUtilitiesPath,
             string http2ConnectionPath,
             string transportMultiplexedConnectionFeatureCollectionPath,
-            string transportConnectionFeatureCollectionPath,
-            string transportStreamFeatureCollectionPath)
+            string transportConnectionFeatureCollectionPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
             var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GenerateFile();
@@ -66,7 +60,6 @@ namespace CodeGenerator
             var transportMultiplexedConnectionFeatureCollectionContent = TransportMultiplexedConnectionFeatureCollection.GenerateFile();
             var transportConnectionFeatureCollectionContent = TransportConnectionFeatureCollection.GenerateFile();
             var http2ConnectionContent = Http2Connection.GenerateFile();
-            var transportStreamFeatureCollectionContent = TransportStreamFeatureCollection.GenerateFile();
 
             UpdateFile(knownHeadersPath, knownHeadersContent);
             UpdateFile(httpProtocolFeatureCollectionPath, httpProtocolFeatureCollectionContent);
@@ -74,7 +67,6 @@ namespace CodeGenerator
             UpdateFile(http2ConnectionPath, http2ConnectionContent);
             UpdateFile(transportMultiplexedConnectionFeatureCollectionPath, transportMultiplexedConnectionFeatureCollectionContent);
             UpdateFile(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
-            UpdateFile(transportStreamFeatureCollectionPath, transportStreamFeatureCollectionContent);
         }
 
         public static void UpdateFile(string path, string content)

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    public abstract class BaseConnectionContext
+    public abstract class BaseConnectionContext : IAsyncDisposable
     {
         /// <summary>
         /// Gets or sets a unique identifier to represent this connection in trace logs.

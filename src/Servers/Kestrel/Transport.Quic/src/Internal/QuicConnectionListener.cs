@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
@@ -39,17 +40,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         public async ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
-            var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
             try
             {
-                _ = quicConnection.LocalEndPoint;
+                var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
+                return new QuicConnectionContext(quicConnection, _context);
             }
-            catch (Exception)
+            catch (QuicOperationAbortedException ex)
             {
-                return null;
+                _log.LogDebug($"Listener has aborted with exception: {ex.Message}");
             }
-
-            return new QuicConnectionContext(quicConnection, _context);
+            return null;
         }
 
         public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)

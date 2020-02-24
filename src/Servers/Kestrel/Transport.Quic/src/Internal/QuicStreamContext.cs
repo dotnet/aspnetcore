@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicStreamContext : TransportStream, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
+    internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
         private readonly Task _processingTask;
         private readonly QuicStream _stream;
@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             Features.Set<IStreamDirectionFeature>(this);
             Features.Set<IProtocolErrorCodeFeature>(this);
+            Features.Set<IStreamIdFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs).
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
@@ -67,19 +68,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         public bool CanRead { get; }
         public bool CanWrite { get; }
 
-        long IStreamIdFeature.StreamId
+        public long StreamId
         {
             get
             {
                 return _stream.StreamId;
-            }
-        }
-
-        public override string StreamId
-        {
-            get
-            {
-                return _stream.StreamId.ToString();
             }
         }
 

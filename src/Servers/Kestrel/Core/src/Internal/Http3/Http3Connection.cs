@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public Http3ControlStream EncoderStream { get; set; }
         public Http3ControlStream DecoderStream { get; set; }
 
-        private readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
+        internal readonly Dictionary<long, Http3Stream> _streams = new Dictionary<long, Http3Stream>();
 
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     var httpConnectionContext = new Http3StreamContext
                     {
-                        ConnectionId = streamContext.StreamId,
+                        ConnectionId = streamContext.ConnectionId,
                         StreamContext = streamContext,
                         // TODO connection context is null here. Should we set it to anything?
                         ServiceContext = _context.ServiceContext,
@@ -238,7 +239,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
                         var stream = http3Stream;
-                        _streams[streamId] = http3Stream;
+                        lock (_streams)
+                        {
+                            _streams[streamId] = http3Stream;
+                        }
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                 }
@@ -246,9 +250,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             finally
             {
                 // Abort all streams as connection has shutdown.
-                foreach (var stream in _streams.Values)
+                lock (_streams)
                 {
-                    stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                    foreach (var stream in _streams.Values)
+                    {
+                        stream.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                    }
                 }
 
                 ControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
@@ -335,10 +342,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _haveSentGoAway = true;
 
             // Abort currently active streams
-            foreach (var stream in _streams.Values)
+            lock (_streams)
             {
-                stream.Abort(new ConnectionAbortedException("The Http3Connection has been aborted"), Http3ErrorCode.UnexpectedFrame);
+                foreach (var stream in _streams.Values)
+                {
+                    stream.Abort(new ConnectionAbortedException("The Http3Connection has been aborted"), Http3ErrorCode.UnexpectedFrame);
+                }
             }
+
             // TODO need to figure out if there is server initiated connection close rather than stream close?
         }
 
@@ -355,6 +366,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             // TODO make sure this works
             //_maxDynamicTableSize = value;
+        }
+
+        internal void RemoveStream(long streamId)
+        {
+            lock(_streams)
+            {
+                _streams.Remove(streamId);
+            }
         }
     }
 }
