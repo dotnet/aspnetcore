@@ -53,7 +53,7 @@ jobs:
         # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         .\aspnetcore\.github\workflows\ReportDiff.ps1
     - name: Send PR
-      if: ${{ steps.check.outputs.changed == 'true' }}
+      if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
       uses: peter-evans/create-pull-request@v2
       with:
