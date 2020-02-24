@@ -13,17 +13,17 @@ using System.Threading.Tasks;
 using System.Threading;
 
 namespace WebAssembly.Net.Debugging {
-	internal class BreakPointRequest {
+	internal class BreakpointRequest {
 		public string Assembly { get; private set; }
 		public string File { get; private set; }
 		public int Line { get; private set; }
 		public int Column { get; private set; }
 
 		public override string ToString () {
-			return $"BreakPointRequest Assembly: {Assembly} File: {File} Line: {Line} Column: {Column}";
+			return $"BreakpointRequest Assembly: {Assembly} File: {File} Line: {Line} Column: {Column}";
 		}
 
-		public static BreakPointRequest Parse (JObject args, DebugStore store)
+		public static BreakpointRequest Parse (JObject args, DebugStore store)
 		{
 			// Events can potentially come out of order, so DebugStore may not be initialized
 			// The BP being set in these cases are JS ones, which we can safely ignore
@@ -38,7 +38,7 @@ namespace WebAssembly.Net.Debugging {
 				url = sourceFile?.DotNetUrl;
 			}
 
-			if (url != null && !url.StartsWith ("dotnet://", StringComparison.InvariantCulture)) {
+			if (url != null && !url.StartsWith ("dotnet://", StringComparison.Ordinal)) {
 				var sourceFile = store.GetFileByUrl (url);
 				url = sourceFile?.DotNetUrl;
 			}
@@ -55,7 +55,7 @@ namespace WebAssembly.Net.Debugging {
 			if (line == null || column == null)
 				return null;
 
-			return new BreakPointRequest () {
+			return new BreakpointRequest () {
 				Assembly = parts.Assembly,
 				File = parts.DocumentPath,
 				Line = line.Value,
@@ -68,7 +68,7 @@ namespace WebAssembly.Net.Debugging {
 			if (Uri.TryCreate (url, UriKind.Absolute, out var docUri) && docUri.Scheme == "dotnet") {
 				return (
 					docUri.Host,
-					docUri.PathAndQuery.Substring (1)
+					docUri.PathAndQuery
 				);
 			} else {
 				return (null, null);
@@ -147,7 +147,9 @@ namespace WebAssembly.Net.Debugging {
 			if (obj == null)
 				return null;
 
-			var id = SourceId.TryParse (obj ["scriptId"]?.Value<string> ());
+			if (!SourceId.TryParse (obj ["scriptId"]?.Value<string> (), out var id))
+				return null;
+
 			var line = obj ["lineNumber"]?.Value<int> ();
 			var column = obj ["columnNumber"]?.Value<int> ();
 			if (id == null || line == null || column == null)
@@ -156,18 +158,17 @@ namespace WebAssembly.Net.Debugging {
 			return new SourceLocation (id, line.Value, column.Value);
 		}
 
-		internal JObject ToJObject ()
-		{
-			return JObject.FromObject (new {
+		internal object AsLocation ()
+			=> new {
 				scriptId = id.ToString (),
 				lineNumber = line,
 				columnNumber = column
-			});
-		}
-
+			};
 	}
 
 	internal class SourceId {
+		const string Scheme = "dotnet://";
+
 		readonly int assembly, document;
 
 		public int Assembly => assembly;
@@ -179,25 +180,27 @@ namespace WebAssembly.Net.Debugging {
 			this.document = document;
 		}
 
-
 		public SourceId (string id)
 		{
-			id = id.Substring ("dotnet://".Length);
+			id = id.Substring (Scheme.Length);
 			var sp = id.Split ('_');
 			this.assembly = int.Parse (sp [0]);
 			this.document = int.Parse (sp [1]);
 		}
 
-		public static SourceId TryParse (string id)
+		public static bool TryParse (string id, out SourceId script)
 		{
-			if (!id.StartsWith ("dotnet://", StringComparison.InvariantCulture))
-				return null;
-			return new SourceId (id);
+			script = null;
+			if (id == null || !id.StartsWith (Scheme, StringComparison.Ordinal))
+				return false;
 
+			script = new SourceId (id);
+			return true;
 		}
+
 		public override string ToString ()
 		{
-			return $"dotnet://{assembly}_{document}";
+			return $"{Scheme}{assembly}_{document}";
 		}
 
 		public override bool Equals (object obj)
@@ -296,9 +299,7 @@ namespace WebAssembly.Net.Debugging {
 
 		public AssemblyInfo (string url, byte[] assembly, byte[] pdb)
 		{
-			lock (typeof (AssemblyInfo)) {
-				this.id = ++next_id;
-			}
+			this.id = Interlocked.Increment (ref next_id);
 
 			try {
 				Url = url;
@@ -360,7 +361,7 @@ namespace WebAssembly.Net.Debugging {
 			foreach (var m in image.GetTypes().SelectMany(t => t.Methods)) {
 				Document first_doc = null;
 				foreach (var sp in m.DebugInformation.SequencePoints) {
-					if (first_doc == null && !sp.Document.Url.EndsWith (".g.cs")) {
+					if (first_doc == null && !sp.Document.Url.EndsWith (".g.cs", StringComparison.OrdinalIgnoreCase)) {
 						first_doc = sp.Document;
 					}
 					//  else if (first_doc != sp.Document) {
@@ -473,27 +474,54 @@ namespace WebAssembly.Net.Debugging {
 			} else {
 				this.Url = DotNetUrl;
 			}
-
 		}
 
 		internal void AddMethod (MethodInfo mi)
 		{
 			this.methods.Add (mi);
 		}
+
 		public string DebuggerFileName { get; }
 		public string Url { get; }
 		public string AssemblyName => assembly.Name;
-		public string DotNetUrl => $"dotnet://{assembly.Name}/{DebuggerFileName}";
-		public string DocHashCode => "abcdee" + id;
+		public string DotNetUrl => $"dotnet://{assembly.Name}{DebuggerFileName}";
+
 		public SourceId SourceId => new SourceId (assembly.Id, this.id);
 		public Uri SourceLinkUri { get; }
 		public Uri SourceUri { get; }
 
 		public IEnumerable<MethodInfo> Methods => this.methods;
+		public byte[] EmbeddedSource => doc.EmbeddedSource;
+
+		public (int startLine, int startColumn, int endLine, int endColumn) GetExtents ()
+		{
+			var start = methods.OrderBy (m => m.StartLocation.Line).ThenBy (m => m.StartLocation.Column).First ();
+			var end = methods.OrderByDescending (m => m.EndLocation.Line).ThenByDescending (m => m.EndLocation.Column).First ();
+			return (start.StartLocation.Line, start.StartLocation.Column, end.EndLocation.Line, end.EndLocation.Column);
+		}
+
+		public async Task<byte[]> LoadSource ()
+		{
+			if (EmbeddedSource.Length > 0)
+				return await Task.FromResult (EmbeddedSource);
+
+			return null;
+		}
+
+		public object ToScriptSource (int executionContextId, object executionContextAuxData)
+		{
+			return new {
+				scriptId = SourceId.ToString (),
+				url = Url,
+				executionContextId,
+				executionContextAuxData,
+				//hash = "abcdee" + id,
+				dotNetUrl = DotNetUrl,
+			};
+		}
 	}
 
 	internal class DebugStore {
-        // MonoProxy proxy;  - commenting out because never gets assigned
 		List<AssemblyInfo> assemblies = new List<AssemblyInfo> ();
 		HttpClient client = new HttpClient ();
 
@@ -527,15 +555,6 @@ namespace WebAssembly.Net.Debugging {
 						});
 				} catch (Exception e) {
 					Console.WriteLine ($"Failed to read {url} ({e.Message})");
-					var o = JObject.FromObject (new {
-						entry = new {
-							source = "other",
-							level = "warning",
-							text = $"Failed to read {url} ({e.Message})"
-						}
-					});
-					// proxy.SendEvent (sessionId, "Log.entryAdded", o, token); - commenting out because `proxy` would always be null
-
 				}
 			}
 
@@ -630,7 +649,7 @@ namespace WebAssembly.Net.Debugging {
 			return true;
 		}
 
-		public SourceLocation FindBestBreakpoint (BreakPointRequest req)
+		public SourceLocation FindBestBreakpoint (BreakpointRequest req)
 		{
 			var asm = assemblies.FirstOrDefault (a => a.Name.Equals (req.Assembly, StringComparison.OrdinalIgnoreCase));
 			var src = asm?.Sources?.FirstOrDefault (s => s.DebuggerFileName.Equals (req.File, StringComparison.OrdinalIgnoreCase));

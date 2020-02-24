@@ -8,18 +8,17 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
-	internal class SessionId {
+	public class SessionId {
 		public string sessionId;
 	}
 
-	internal class MessageId : SessionId {
+	public class MessageId : SessionId {
 		public int id;
 	}
 
-	internal struct Result {
+	public struct Result {
 		public JObject Value { get; private set; }
 		public JObject Error { get; private set; }
 
@@ -39,14 +38,16 @@ namespace WebAssembly.Net.Debugging {
 		}
 
 		public static Result Ok (JObject ok)
-		{
-			return new Result (ok, null);
-		}
+			=> new Result (ok, null);
+
+		public static Result OkFromObject (object ok)
+			=> Ok (JObject.FromObject(ok));
 
 		public static Result Err (JObject err)
-		{
-			return new Result (null, err);
-		}
+			=> new Result (null, err);
+
+		public static Result Exception (Exception e)
+			=> new Result (null, JObject.FromObject (new { message = e.Message }));
 
 		public JObject ToJObject (MessageId target) {
 			if (IsOk) {
@@ -98,7 +99,7 @@ namespace WebAssembly.Net.Debugging {
 			if (pending.Count > 0) {
 				if (current_send != null)
 					throw new Exception ("current_send MUST BE NULL IF THERE'S no pending send");
-				//Console.WriteLine ("sending more {0} bytes", pending[0].Length);
+
 				current_send = Ws.SendAsync (new ArraySegment<byte> (pending [0]), WebSocketMessageType.Text, true, token);
 				return current_send;
 			}
@@ -106,7 +107,7 @@ namespace WebAssembly.Net.Debugging {
 		}
 	}
 
-	internal class DevToolsProxy {
+	public class DevToolsProxy {
 		TaskCompletionSource<bool> side_exception = new TaskCompletionSource<bool> ();
 		TaskCompletionSource<bool> client_initiated_close = new TaskCompletionSource<bool> ();
 		List<(MessageId, TaskCompletionSource<Result>)> pending_cmds = new List<(MessageId, TaskCompletionSource<Result>)> ();
@@ -115,12 +116,6 @@ namespace WebAssembly.Net.Debugging {
 		int next_cmd_id;
 		List<Task> pending_ops = new List<Task> ();
 		List<DevToolsQueue> queues = new List<DevToolsQueue> ();
-        readonly ILogger logger;
-
-        public DevToolsProxy(ILoggerFactory loggerFactory)
-        {
-            logger = loggerFactory.CreateLogger<DevToolsProxy>();
-        }
 
 		protected virtual Task<bool> AcceptEvent (SessionId sessionId, string method, JObject args, CancellationToken token)
 		{
@@ -242,7 +237,7 @@ namespace WebAssembly.Net.Debugging {
 
 		Task<Result> SendCommandInternal (SessionId sessionId, string method, JObject args, CancellationToken token)
 		{
-			int id = ++next_cmd_id;
+			int id = Interlocked.Increment (ref next_cmd_id);
 
 			var o = JObject.FromObject (new {
 				sessionId.sessionId,
@@ -251,7 +246,6 @@ namespace WebAssembly.Net.Debugging {
 				@params = args
 			});
 			var tcs = new TaskCompletionSource<Result> ();
-
 
 			var msgId = new MessageId { id = id, sessionId = sessionId.sessionId };
 			//Log ("verbose", $"add cmd id {sessionId}-{id}");
@@ -360,23 +354,17 @@ namespace WebAssembly.Net.Debugging {
 		{
 			switch (priority) {
 			case "protocol":
-                logger.LogTrace (msg);
+				//Console.WriteLine (msg);
 				break;
 			case "verbose":
-				logger.LogDebug (msg);
+				//Console.WriteLine (msg);
 				break;
 			case "info":
-                logger.LogInformation(msg);
-                break;
 			case "warning":
-                logger.LogWarning(msg);
-                break;
-            case "error":
-                logger.LogError (msg);
-                break;
+			case "error":
 			default:
-                logger.LogError(msg);
-                break;
+				Console.WriteLine (msg);
+				break;
 			}
 		}
 	}
