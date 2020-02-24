@@ -317,8 +317,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
+                const int MaxPathBufferStackAllocSize = 256;
+
                 // The decoder operates only on raw bytes
-                Span<byte> pathBuffer = stackalloc byte[pathSegment.Length];
+                Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
+                    // A constant size plus slice generates better code
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+                    ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
+                    : new byte[pathSegment.Length];
+
                 for (var i = 0; i < pathSegment.Length; i++)
                 {
                     var ch = pathSegment[i];
