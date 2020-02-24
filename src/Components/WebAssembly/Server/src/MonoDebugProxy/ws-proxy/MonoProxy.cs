@@ -625,6 +625,11 @@ namespace WebAssembly.Net.Debugging {
 			if (context.RuntimeReady)
 				return;
 
+			var clear_result = await SendMonoCommand (sessionId, MonoCommands.ClearAllBreakpoints (), token);
+			if (clear_result.IsErr) {
+				Log ("verbose", $"Failed to clear breakpoints due to {clear_result}");
+			}
+
 			context.RuntimeReady = true;
 			var store = await LoadStore (sessionId, token);
 
@@ -632,11 +637,6 @@ namespace WebAssembly.Net.Debugging {
 				var scriptSource = JObject.FromObject (s.ToScriptSource (context.Id, context.AuxData));
 				Log ("verbose", $"\tsending {s.Url} {context.Id} {sessionId.sessionId}");
 				SendEvent (sessionId, "Debugger.scriptParsed", scriptSource, token);
-			}
-
-			var clear_result = await SendMonoCommand (sessionId, MonoCommands.ClearAllBreakpoints (), token);
-			if (clear_result.IsErr) {
-				Log ("verbose", $"Failed to clear breakpoints due to {clear_result}");
 			}
 
 			foreach (var bp in context.Breakpoints) {
@@ -724,11 +724,7 @@ namespace WebAssembly.Net.Debugging {
 			var ok = new {
 				breakpointId = bp.StackId,
 				locations = new [] {
-					new {
-						scriptId = bp_loc.Id.ToString (),
-						lineNumber = bp_loc.Line,
-						columnNumber = bp_loc.Column
-					}
+					bp_loc.AsLocation ()
 				},
 			};
 

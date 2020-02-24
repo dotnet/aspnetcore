@@ -27,8 +27,17 @@ namespace WebAssembly.Net.Debugging {
 
 		Result (JObject result, JObject error)
 		{
-			this.Value = result;
-			this.Error = error;
+                       if (result != null && error != null)
+                               throw new ArgumentException ($"Both {nameof(result)} and {nameof(error)} arguments cannot be non-null.");
+
+                       bool resultHasError = String.Compare ((result? ["result"] as JObject)? ["subtype"]?. Value<string> (), "error") == 0;
+                       if (result != null && resultHasError) {
+                               this.Value = null;
+                               this.Error = result;
+                       } else {
+                               this.Value = result;
+                               this.Error = error;
+                       }
 		}
 
 		public static Result FromJson (JObject obj)
