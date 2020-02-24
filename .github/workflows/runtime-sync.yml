@@ -17,7 +17,8 @@ jobs:
       uses: actions/checkout@v2.0.0
       with:
         # Test this script using changes in a fork 
-        repository: 'dotnet/aspnetcore'
+        repository: 'tratcher/aspnetcore'
+        # repository: 'dotnet/aspnetcore'
         path: aspnetcore
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
