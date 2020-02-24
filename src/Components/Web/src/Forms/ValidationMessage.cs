@@ -74,7 +74,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 builder.OpenElement(0, "div");
                 builder.AddMultipleAttributes(1, AdditionalAttributes);
-                builder.AddAttribute(2, "class", "validation-message");
+
+                if (!AdditionalAttributes.ContainsKey("class"))
+                {
+                    builder.AddAttribute(2, "class", "validation-message");
+                }
+
                 builder.AddContent(3, message);
                 builder.CloseElement();
             }
