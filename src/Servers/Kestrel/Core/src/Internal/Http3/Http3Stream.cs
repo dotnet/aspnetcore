@@ -378,7 +378,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 await RequestBodyPipe.Writer.CompleteAsync();
 
                 // Make sure application func is completed before completing writer.
-                await _appCompleted.Task;
+                if (_appCompleted != null)
+                {
+                    await _appCompleted.Task;
+                }
 
                 try
                 {
