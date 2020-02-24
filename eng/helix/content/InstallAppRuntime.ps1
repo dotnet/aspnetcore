@@ -9,6 +9,8 @@
      The directory to install the shared framework to.     
  .PARAMETER Framework
      The framework directory to copy the shared framework from.
+ .PARAMETER RuntimeIdentifier
+     The runtime identifier for the shared framework.
  #> 
 param(
     [Parameter(Mandatory = $true)]
@@ -16,9 +18,12 @@ param(
     
     [Parameter(Mandatory = $true)]
     $InstallDir,
+
+    [Parameter(Mandatory = $true)]
+    $Framework,
     
     [Parameter(Mandatory = $true)]
-    $Framework)
+    $RuntimeIdentifier)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
@@ -44,6 +49,6 @@ else {
 Get-ChildItem -Path ".\tmpRuntime" -Recurse
 
 Write-Host "Copying managed files to $InstallDir"
-Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\lib\$Framework\*" $InstallDir
+Copy-Item -Path ".\tmpRuntime\runtimes\$RuntimeIdentifier\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
-Copy-Item -Path ".\tmpRuntime\runtimes\win-x64\native\*" $InstallDir
+Copy-Item -Path ".\tmpRuntime\runtimes\$RuntimeIdentifier\native\*" $InstallDir
