@@ -52,6 +52,9 @@ jobs:
         $issue = 'https://api.github.com/repos/tratcher/aspnetcore/issues/1'
         # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         .\aspnetcore\.github\workflows\ReportDiff.ps1
+    - name: Check outputs
+      run: |
+        echo "Changed? ${{ steps.check.outputs.changed }}"
     - name: Send PR
       if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
