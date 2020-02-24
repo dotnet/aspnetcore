@@ -1,6 +1,8 @@
 # Check the code is in sync
 $changed = (select-string "nothing to commit" artifacts\status.txt).count -eq 0
 if (-not $changed) { exit }
+# Set an output variable so we can conditonally run additional steps.
+echo "::set-output name=changed::true"
 # Check if tracking issue is open/closed
 $Headers = @{ Authorization = 'token {0}' -f $ENV:GITHUB_TOKEN; };
 $result = Invoke-RestMethod -Uri $issue
