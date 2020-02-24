@@ -57,7 +57,7 @@ jobs:
       run: |
         echo "Changed? ${{ steps.check.outputs.changed }}"
     - name: Send PR
-      if: steps.check.outputs.changed == 'true'
+      # if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
       uses: peter-evans/create-pull-request@v2
       with:
