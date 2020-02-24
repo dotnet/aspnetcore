@@ -1,7 +1,7 @@
 name: AspNetCore-Runtime Code Sync
 on:
   # Test this script using on: push
-  # push
+  push:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
@@ -43,10 +43,25 @@ jobs:
         name: results
         path: artifacts
     - name: Check and Notify
+      id: check
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Test this script using an issue in the local forked repo
-        $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
+        $issue = 'https://api.github.com/repos/tratcher/aspnetcore/issues/1'
+        # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         .\aspnetcore\.github\workflows\ReportDiff.ps1
+    - name: Send PR
+      if: ${{ steps.check.outputs.changed == 'true' }}
+      # https://github.com/marketplace/actions/create-pull-request
+      uses: peter-evans/create-pull-request@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: .\aspnetcore
+        commit-message: 'Sync changes from runtime'
+        title: 'Sync changes from runtime'
+        body: 'This PR was automatically generated to sync changes from runtime. Fixes #1'
+        labels: area-servers
+        branch: github-action/sync-runtime
+        branch-suffix: timestamp
