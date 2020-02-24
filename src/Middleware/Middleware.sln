@@ -293,6 +293,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{D0CB733B-4CE8-4F6C-BBB9-548EA1A96966}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.Microbenchmarks", "perf\Microbenchmarks\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj", "{C4D624B3-749E-41D8-A43B-B304BC3885EA}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Tests", "SpaServices\test\Microsoft.AspNetCore.SpaServices.Tests.csproj", "{8A9C1F6C-3A47-4868-AA95-3EBE0260F5A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Perf", "Perf", "{4623F52E-2070-4631-8DEE-7D2F48733FFD}"
