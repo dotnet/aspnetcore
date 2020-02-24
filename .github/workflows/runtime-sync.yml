@@ -52,6 +52,7 @@ jobs:
         $issue = 'https://api.github.com/repos/tratcher/aspnetcore/issues/1'
         # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         .\aspnetcore\.github\workflows\ReportDiff.ps1
+        echo "::set-output name=changed::" + $changed
     - name: Check outputs
       run: |
         echo "Changed? ${{ steps.check.outputs.changed }}"
