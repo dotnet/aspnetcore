@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Connections
         public AddressInUseException(string message) { }
         public AddressInUseException(string message, System.Exception inner) { }
     }
-    public abstract partial class BaseConnectionContext
+    public abstract partial class BaseConnectionContext : System.IAsyncDisposable
     {
         protected BaseConnectionContext() { }
         public virtual System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -159,15 +159,10 @@ namespace Microsoft.AspNetCore.Connections
     public abstract partial class MultiplexedConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable
     {
         protected MultiplexedConnectionContext() { }
-        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.StreamContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.StreamContext> ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public delegate System.Threading.Tasks.Task MultiplexedConnectionDelegate(Microsoft.AspNetCore.Connections.MultiplexedConnectionContext connection);
-    public abstract partial class StreamContext : Microsoft.AspNetCore.Connections.ConnectionContext
-    {
-        protected StreamContext() { }
-        public abstract string StreamId { get; }
-    }
     [System.FlagsAttribute]
     public enum TransferFormat
     {

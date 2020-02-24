@@ -40,13 +40,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
         private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
-        private RequestHeaderParsingState _requestHeaderParsingState;
+        protected RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
         private bool _isMethodConnect;
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
-        private Task _appTask = Task.CompletedTask;
+        private TaskCompletionSource<object> _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
@@ -303,6 +303,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
         }
 
+        protected override void OnRequestProcessingEnded()
+        {
+            Debug.Assert(_appCompleted != null);
+
+            _appCompleted.SetResult(new object());
+        }
+
         private bool TryClose()
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
@@ -371,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 await RequestBodyPipe.Writer.CompleteAsync();
 
                 // Make sure application func is completed before completing writer.
-                await _appTask;
+                await _appCompleted.Task;
 
                 try
                 {
@@ -447,7 +454,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _receivedHeaders = true;
             InputRemaining = HttpRequestHeaders.ContentLength;
 
-            _appTask = Task.Run(() => base.ProcessRequestsAsync(application));
+            _appCompleted = new TaskCompletionSource<object>();
+
+            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+
             return Task.CompletedTask;
         }
 
@@ -718,7 +728,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         /// </summary>
         public abstract void Execute();
 
-        private enum RequestHeaderParsingState
+        protected enum RequestHeaderParsingState
         {
             Ready,
             PseudoHeaderFields,

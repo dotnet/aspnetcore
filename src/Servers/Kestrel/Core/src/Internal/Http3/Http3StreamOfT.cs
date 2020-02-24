@@ -17,7 +17,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void Execute()
         {
-            _ = ProcessRequestAsync(_application);
+            if (_requestHeaderParsingState == Http3Stream.RequestHeaderParsingState.Ready)
+            {
+                _ = ProcessRequestAsync(_application);
+            }
+            else
+            {
+                _ = base.ProcessRequestsAsync(_application);
+            }
         }
 
         // Pooled Host context
