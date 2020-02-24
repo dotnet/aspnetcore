@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
         /// <returns>The <see cref="IApplicationBuilder"/></returns>
-        public static IApplicationBuilder MapBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
+        public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
         {
             if (builder is null)
             {
@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 subBuilder.Use(async (ctx, next) =>
                 {
-                    // At this point we mapped something from the /_framework
-                    ctx.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
                     // This will invoke the static files middleware plugged-in below.
                     NegotiateEncoding(ctx, webHostEnvironment);
                     await next();
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
         /// <returns>The <see cref="IApplicationBuilder"/></returns>
         public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder applicationBuilder) =>
-            MapBlazorFrameworkFiles(applicationBuilder, default);
+            UseBlazorFrameworkFiles(applicationBuilder, default);
 
         private static StaticFileOptions CreateStaticFilesOptions(IFileProvider webRootFileProvider)
         {
@@ -92,6 +90,9 @@ namespace Microsoft.AspNetCore.Builder
             // sending the file.
             options.OnPrepareResponse = fileContext =>
             {
+                // At this point we mapped something from the /_framework
+                fileContext.Context.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
+
                 var requestPath = fileContext.Context.Request.Path;
                 if (string.Equals(Path.GetExtension(requestPath.Value), ".gz"))
                 {
