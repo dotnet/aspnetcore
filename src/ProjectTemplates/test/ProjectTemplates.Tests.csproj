@@ -10,8 +10,8 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <BuildHelixPayload Condition="'$(RunTemplateTests)' != 'true'">false</BuildHelixPayload>
-
+    <SkipHelixArm>true</SkipHelixArm>
+    
     <!-- Some tests still do not work on Helix, so continue running these on azdo for now-->
     <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
