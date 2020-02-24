@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -26,6 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>());
             services.TryAddSingleton<HttpConnectionDispatcher>();
             services.TryAddSingleton<HttpConnectionManager>();
+            services.TryAddSingleton<ISystemClock, SystemClock>();
             return services;
         }
 

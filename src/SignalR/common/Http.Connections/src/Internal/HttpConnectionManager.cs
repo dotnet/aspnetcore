@@ -33,11 +33,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimeSpan _disconnectTimeout;
         private readonly ISystemClock _systemClock;
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
-            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }), new SystemClock())
-        {
-        }
-
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, ISystemClock systemClock)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
