@@ -86,14 +86,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                Assert.StartsWith("Microsoft SignalR/", userAgent);
-
                 var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
                 var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
 
-                Assert.Contains($"{majorVersion}.{minorVersion}", userAgent);
-
-                Assert.Contains(assemblyVersion.InformationalVersion, userAgent);
+                Assert.StartsWith($"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; ", userAgent);
             }
         }
 

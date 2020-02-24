@@ -3289,8 +3289,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
-                    await client.Connected.OrTimeout();
-
                     await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
                     await connectionHandlerTask.OrTimeout();
                 }

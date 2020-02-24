@@ -36,10 +36,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             _webSocket = new ClientWebSocket();
 
-            // Full Framework will throw when trying to set this
+            // Full Framework will throw when trying to set the User-Agent header
             // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
 #if !NETSTANDARD2_0
             _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+#else
+            // Set an alternative user agent header on Full framework
+            _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
 #endif
 
             if (httpConnectionOptions != null)
