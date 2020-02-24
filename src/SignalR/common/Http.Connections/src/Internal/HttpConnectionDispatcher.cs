@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
@@ -216,7 +216,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         connection.Transport.Output.Complete(connection.ApplicationTask.Exception);
 
                         // Wait for the transport to run
-                        await connection.TransportTask;
+                        // Ignore exceptions, it has been logged if there is one and the application has finished
+                        // So there is no one to give the exception to
+                        await connection.TransportTask.NoThrow();
 
                         // If the status code is a 204 it means the connection is done
                         if (context.Response.StatusCode == StatusCodes.Status204NoContent)
@@ -234,12 +236,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             connection.MarkInactive();
                         }
                     }
-                    else if (resultTask.IsFaulted)
+                    else if (resultTask.IsFaulted || resultTask.IsCanceled)
                     {
                         // Cancel current request to release any waiting poll and let dispose acquire the lock
                         currentRequestTcs.TrySetCanceled();
-
-                        // transport task was faulted, we should remove the connection
+                        // We should be able to safely dispose because there's no more data being written
+                        // We don't need to wait for close here since we've already waited for both sides
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
                     }
                     else
@@ -434,6 +436,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
                         context.Response.ContentType = "text/plain";
+
+                        // There are no writes anymore (since this is the write "loop")
+                        // So it is safe to complete the writer
+                        // We complete the writer here because we already have the WriteLock acquired
+                        // and it's unsafe to complete outside of the lock
+                        // Other code isn't guaranteed to be able to acquire the lock before another write
+                        // even if CancelPendingFlush is called, and the other write could hang if there is backpressure
+                        connection.Application.Output.Complete();
                         return;
                     }
                     catch (IOException ex)
@@ -481,11 +491,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             Log.TerminatingConection(_logger);
 
-            // Complete the receiving end of the pipe
-            connection.Application.Output.Complete();
-
-            // Dispose the connection gracefully, but don't wait for it. We assign it here so we can wait in tests
-            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
+            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
 
             context.Response.StatusCode = StatusCodes.Status202Accepted;
             context.Response.ContentType = "text/plain";

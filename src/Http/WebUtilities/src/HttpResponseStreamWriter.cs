@@ -135,20 +135,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            var written = 0;
-            while (written < value.Length)
+            var remaining = value.Length;
+            while (remaining > 0)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     FlushInternal(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(value);
-
-                if (written < value.Length)
-                {
-                    value = value.Slice(written);
-                }
+                var written = CopyToCharBuffer(value);
+                
+                remaining -= written;
+                value = value.Slice(written);
             };
         }
 
@@ -339,20 +337,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             Debug.Assert(value.Length > 0);
             Debug.Assert(_charBufferSize - _charBufferCount < value.Length);
 
-            int written = 0;
-            while (written < value.Length)
+            var remaining = value.Length;
+            while (remaining > 0)
             {
                 if (_charBufferCount == _charBufferSize)
                 {
                     await FlushInternalAsync(flushEncoder: false);
                 }
 
-                written = CopyToCharBuffer(value.Span);
-
-                if (written < value.Length)
-                {
-                    value = value.Slice(written);
-                }
+                var written = CopyToCharBuffer(value.Span);
+                
+                remaining -= written;
+                value = value.Slice(written);
             };
         }
 
@@ -389,8 +385,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> value)
         {
-            await WriteAsyncAwaited(value);
-            await WriteAsyncAwaited(NewLine);
+            await WriteAsync(value);
+            await WriteAsync(NewLine);
         }
 
         // We want to flush the stream when Flush/FlushAsync is explicitly

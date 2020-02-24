@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;proxy;headers;xforwarded</PackageTags>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

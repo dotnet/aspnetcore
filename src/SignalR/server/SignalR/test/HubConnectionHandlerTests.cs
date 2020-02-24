@@ -6,9 +6,11 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
@@ -16,7 +18,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Testing;
@@ -2792,6 +2793,127 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     }
 
                     Assert.False(connectionHandlerTask.IsCompleted);
+                }
+            }
+        }
+
+        internal class PipeReaderWrapper : PipeReader
+        {
+            private readonly PipeReader _originalPipeReader;
+            private TaskCompletionSource<object> _waitForRead;
+            private object _lock = new object();
+
+            public PipeReaderWrapper(PipeReader pipeReader)
+            {
+                _originalPipeReader = pipeReader;
+                _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+
+            public override void AdvanceTo(SequencePosition consumed) =>
+                _originalPipeReader.AdvanceTo(consumed);
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) =>
+                _originalPipeReader.AdvanceTo(consumed, examined);
+
+            public override void CancelPendingRead() =>
+                _originalPipeReader.CancelPendingRead();
+
+            public override void Complete(Exception exception = null) =>
+                _originalPipeReader.Complete(exception);
+
+            public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+            {
+                lock (_lock)
+                {
+                    _waitForRead.SetResult(null);
+                }
+
+                try
+                {
+                    return await _originalPipeReader.ReadAsync(cancellationToken);
+                }
+                finally
+                {
+                    lock (_lock)
+                    {
+                        _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    }
+                }
+            }
+
+            public override bool TryRead(out ReadResult result) =>
+                _originalPipeReader.TryRead(out result);
+
+            public Task WaitForReadStart()
+            {
+                lock (_lock)
+                {
+                    return _waitForRead.Task;
+                }
+            }
+        }
+
+        internal class CustomDuplex : IDuplexPipe
+        {
+            private readonly IDuplexPipe _originalDuplexPipe;
+            public readonly PipeReaderWrapper WrappedPipeReader;
+
+            public CustomDuplex(IDuplexPipe duplexPipe)
+            {
+                _originalDuplexPipe = duplexPipe;
+                WrappedPipeReader = new PipeReaderWrapper(_originalDuplexPipe.Input);
+            }
+
+            public PipeReader Input => WrappedPipeReader;
+
+            public PipeWriter Output => _originalDuplexPipe.Output;
+        }
+
+        [Fact]
+        public async Task HubMethodInvokeDoesNotCountTowardsClientTimeout()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.Configure<HubOptions>(options =>
+                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0));
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient(new JsonHubProtocol()))
+                {
+                    var customDuplex = new CustomDuplex(client.Connection.Transport);
+                    client.Connection.Transport = customDuplex;
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    // This starts the timeout logic
+                    await client.SendHubMessageAsync(PingMessage.Instance);
+
+                    // Call long running hub method
+                    var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Tick heartbeat while hub method is running to show that close isn't triggered
+                    client.TickHeartbeat();
+
+                    // Unblock long running hub method
+                    tcsService.EndMethod.SetResult(null);
+
+                    await hubMethodTask.OrTimeout();
+
+                    // There is a small window when the hub method finishes and the timer starts again
+                    // So we need to delay a little before ticking the heart beat.
+                    // We do this by waiting until we know the HubConnectionHandler code is in pipe.ReadAsync()
+                    await customDuplex.WrappedPipeReader.WaitForReadStart().OrTimeout();
+
+                    // Tick heartbeat again now that we're outside of the hub method
+                    client.TickHeartbeat();
+
+                    // Connection is closed
+                    await connectionHandlerTask.OrTimeout();
                 }
             }
         }

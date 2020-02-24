@@ -67,6 +67,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
+            => LoadAsync(actionDescriptor, EndpointMetadataCollection.Empty);
+
+        internal Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
         {
             if (actionDescriptor == null)
             {
@@ -79,10 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 return compiledDescriptorTask;
             }
 
-            return cache.GetOrAdd(actionDescriptor, LoadAsyncCore(actionDescriptor));
+            return cache.GetOrAdd(actionDescriptor, LoadAsyncCore(actionDescriptor, endpointMetadata));
         }
 
-        private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor)
+        private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
         {
             var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
             var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
@@ -110,7 +113,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
                 action: compiled,
                 routes: Array.Empty<ConventionalRouteEntry>(),
-                conventions: Array.Empty<Action<EndpointBuilder>>(),
+                conventions: new Action<EndpointBuilder>[]
+                {
+                    b =>
+                    {
+                        // Metadata from PageActionDescriptor is less significant than the one discovered from the compiled type.
+                        // Consequently, we'll insert it at the beginning.
+                        for (var i = endpointMetadata.Count - 1; i >=0; i--)
+                        {
+                            b.Metadata.Insert(0, endpointMetadata[i]);
+                        }
+                    },
+                },
                 createInertEndpoints: false);
 
             // In some test scenarios there's no route so the endpoint isn't created. This is fine because

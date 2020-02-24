@@ -5,7 +5,7 @@
     <TargetFrameworks>netstandard2.1;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;entityframeworkcore;identity;membership</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
