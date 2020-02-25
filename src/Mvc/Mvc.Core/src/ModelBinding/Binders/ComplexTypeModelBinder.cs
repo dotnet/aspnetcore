@@ -403,7 +403,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 // Otherwise, check whether the (perhaps filtered) value providers have a match.
                 var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
-                var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
+
+                Type valueProviderType
+                    = ((System.Collections.ObjectModel.Collection<IValueProvider>)
+                            bindingContext.ValueProvider)[0].GetType();
+                string modelName;
+                if ( valueProviderType == "QueryStringValueProvider" )
+                {
+                    modelName = ModelNames.CreateIndexModelName(bindingContext.ModelName, fieldName);
+                }
+                else
+                {
+                    modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
+                }
                 using (bindingContext.EnterNestedScope(
                     modelMetadata: propertyMetadata,
                     fieldName: fieldName,
