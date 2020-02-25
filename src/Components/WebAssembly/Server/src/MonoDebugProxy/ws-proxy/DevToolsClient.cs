@@ -6,6 +6,7 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
 	internal class DevToolsClient: IDisposable {
@@ -14,8 +15,10 @@ namespace WebAssembly.Net.Debugging {
 		TaskCompletionSource<bool> side_exit = new TaskCompletionSource<bool> ();
 		List<byte []> pending_writes = new List<byte []> ();
 		Task current_write;
+		readonly ILogger logger;
 
-		public DevToolsClient () {
+		public DevToolsClient (ILogger logger) {
+			this.logger = logger;
 		}
 
 		~DevToolsClient() {
@@ -99,7 +102,7 @@ namespace WebAssembly.Net.Debugging {
 			Func<CancellationToken, Task> send,
 			CancellationToken token) {
 
-			Console.WriteLine ("connecting to {0}", uri);
+			logger.LogDebug ("connecting to {0}", uri);
 			this.socket = new ClientWebSocket ();
 			this.socket.Options.KeepAliveInterval = Timeout.InfiniteTimeSpan;
 
