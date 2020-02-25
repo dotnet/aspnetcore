@@ -572,12 +572,26 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
         {
-            if (oldContext.User.Identity is WindowsIdentity)
+            if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
             {
-                newContext.User = new ClaimsPrincipal();
+                var skipFirstIdentity = false;
+                if (oldContext.User is WindowsPrincipal)
+                {
+                    newContext.User = new WindowsPrincipal((WindowsIdentity)(windowsIdentity.Clone()));
+                    skipFirstIdentity = true;
+                }
+                else
+                {
+                    newContext.User = new ClaimsPrincipal();
+                }
 
                 foreach (var identity in oldContext.User.Identities)
                 {
+                    if (skipFirstIdentity)
+                    {
+                        skipFirstIdentity = false;
+                        continue;
+                    }
                     newContext.User.AddIdentity(identity.Clone());
                 }
             }
