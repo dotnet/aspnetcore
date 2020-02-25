@@ -51,7 +51,7 @@ namespace WebAssembly.Net.Debugging {
 			=> new MonoCommands ($"MONO.mono_wasm_remove_breakpoint({breakpointId})");
 	}
 
-	public enum MonoErrorCodes {
+	internal enum MonoErrorCodes {
 		BpNotFound = 100000,
 	}
 
@@ -134,7 +134,7 @@ namespace WebAssembly.Net.Debugging {
 		}
 	}
 
-	public class MonoProxy : DevToolsProxy {
+	internal class MonoProxy : DevToolsProxy {
 		Dictionary<string, ExecutionContext> contexts = new Dictionary<string, ExecutionContext> ();
 
 		public MonoProxy () { }
