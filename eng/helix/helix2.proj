@@ -39,6 +39,7 @@
   
   <ItemGroup>
     <XUnitProject Include="$(RepoRoot)src/**/test/**/*.csproj"/>
+    <XUnitProject Remove="$(RepoRoot)/src/**/testassets/**/*.csproj"/>
   </ItemGroup>
 
   <PropertyGroup>
