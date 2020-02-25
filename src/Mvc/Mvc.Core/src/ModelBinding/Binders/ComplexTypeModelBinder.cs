@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     = ((System.Collections.ObjectModel.Collection<IValueProvider>)
                             bindingContext.ValueProvider)[0].GetType();
                 string modelName;
-                if ( valueProviderType == "QueryStringValueProvider" )
+                if ( valueProviderType.Name == "QueryStringValueProvider" )
                 {
                     modelName = ModelNames.CreateIndexModelName(bindingContext.ModelName, fieldName);
                 }
