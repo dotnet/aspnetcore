@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             {
                 throw new Exception($"No BootManifestResourceName was specified for item '{item.ItemSpec}'");
             }
-            
+
             return name.Replace('\\', '/');
         }
 
