@@ -402,7 +402,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
-            return ReadAsync(buffer.ToArray()).GetAwaiter().GetResult();
+            return ReadAsync(buffer.ToArray()).AsTask().GetAwaiter().GetResult();
         }
 
         internal override void Write(ReadOnlySpan<byte> buffer)
@@ -410,7 +410,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             ThrowIfDisposed();
 
             // TODO: optimize this.
-            WriteAsync(buffer.ToArray()).GetAwaiter().GetResult();
+            WriteAsync(buffer.ToArray()).AsTask().GetAwaiter().GetResult();
         }
 
         // MsQuic doesn't support explicit flushing
