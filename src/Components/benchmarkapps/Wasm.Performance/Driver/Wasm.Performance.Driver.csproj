@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,8 +15,6 @@
     <Reference Include="Selenium.WebDriver" />
     <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
-
-    <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
