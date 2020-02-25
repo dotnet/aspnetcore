@@ -691,9 +691,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             try
             {
+                const int MaxPathBufferStackAllocSize = 256;
+
                 // The decoder operates only on raw bytes
-                var pathBuffer = new byte[pathSegment.Length].AsSpan();
-                for (int i = 0; i < pathSegment.Length; i++)
+                Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
+                    // A constant size plus slice generates better code
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+                    ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
+                    // TODO - Consider pool here for less than 4096
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
+                    : new byte[pathSegment.Length];
+
+                for (var i = 0; i < pathSegment.Length; i++)
                 {
                     var ch = pathSegment[i];
                     // The header parser should already be checking this
