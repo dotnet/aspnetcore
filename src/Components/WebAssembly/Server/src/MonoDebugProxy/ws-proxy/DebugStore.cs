@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
 	internal class BreakpointRequest {
@@ -292,6 +293,7 @@ namespace WebAssembly.Net.Debugging {
 		static int next_id;
 		ModuleDefinition image;
 		readonly int id;
+		readonly ILogger logger;
 		Dictionary<int, MethodInfo> methods = new Dictionary<int, MethodInfo> ();
 		Dictionary<string, string> sourceLinkMappings = new Dictionary<string, string>();
 		readonly List<SourceFile> sources = new List<SourceFile>();
@@ -314,7 +316,7 @@ namespace WebAssembly.Net.Debugging {
 
 				this.image = ModuleDefinition.ReadModule (new MemoryStream (assembly), rp);
 			} catch (BadImageFormatException ex) {
-				Console.WriteLine ($"Failed to read assembly as portable PDB: {ex.Message}");
+				logger.LogWarning ($"Failed to read assembly as portable PDB: {ex.Message}");
 			} catch (ArgumentNullException) {
 				if (pdb != null)
 					throw;
@@ -337,8 +339,9 @@ namespace WebAssembly.Net.Debugging {
 			Populate ();
 		}
 
-		public AssemblyInfo ()
+		public AssemblyInfo (ILogger logger)
 		{
+			this.logger = logger;
 		}
 
 		void Populate ()
@@ -524,6 +527,11 @@ namespace WebAssembly.Net.Debugging {
 	internal class DebugStore {
 		List<AssemblyInfo> assemblies = new List<AssemblyInfo> ();
 		HttpClient client = new HttpClient ();
+		readonly ILogger logger;
+
+		public DebugStore (ILogger logger) {
+			this.logger = logger;
+		}
 
 		class DebugItem {
 			public string Url { get; set; }
@@ -554,7 +562,7 @@ namespace WebAssembly.Net.Debugging {
 								Data = Task.WhenAll (client.GetByteArrayAsync (url), pdb != null ? client.GetByteArrayAsync (pdb) : Task.FromResult<byte []> (null))
 						});
 				} catch (Exception e) {
-					Console.WriteLine ($"Failed to read {url} ({e.Message})");
+					logger.LogDebug ($"Failed to read {url} ({e.Message})");
 				}
 			}
 
@@ -563,7 +571,7 @@ namespace WebAssembly.Net.Debugging {
 					var bytes = await step.Data;
 					assemblies.Add (new AssemblyInfo (step.Url, bytes[0], bytes[1]));
 				} catch (Exception e) {
-					Console.WriteLine ($"Failed to Load {step.Url} ({e.Message})");
+					logger.LogDebug ($"Failed to Load {step.Url} ({e.Message})");
 				}
 			}
 		}
@@ -611,8 +619,7 @@ namespace WebAssembly.Net.Debugging {
 
 			var res = new List<SourceLocation> ();
 			if (doc == null) {
-				//FIXME we need to write up logging here
-				Console.WriteLine ($"Could not find document {src_id}");
+				logger.LogDebug ($"Could not find document {src_id}");
 				return res;
 			}
 

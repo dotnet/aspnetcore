@@ -601,7 +601,7 @@ namespace WebAssembly.Net.Debugging {
 		{
 			var context = GetContext (sessionId);
 
-			if (Interlocked.CompareExchange (ref context.store, new DebugStore (), null) != null) {
+			if (Interlocked.CompareExchange (ref context.store, new DebugStore (logger), null) != null) {
 				return await context.Source.Task;
 			}
 

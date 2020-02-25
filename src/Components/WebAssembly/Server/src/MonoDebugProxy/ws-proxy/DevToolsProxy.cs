@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -126,7 +126,7 @@ namespace WebAssembly.Net.Debugging {
 		int next_cmd_id;
 		List<Task> pending_ops = new List<Task> ();
 		List<DevToolsQueue> queues = new List<DevToolsQueue> ();
-		readonly ILogger logger;
+		protected readonly ILogger logger;
 
 		public DevToolsProxy (ILoggerFactory loggerFactory)
 		{
@@ -195,7 +195,7 @@ namespace WebAssembly.Net.Debugging {
 		{
 			try {
 				if (!await AcceptEvent (sessionId, method, args, token)) {
-					//logger.LogTrace ("proxy browser: {0}::{1}",method, args);
+					//logger.LogDebug ("proxy browser: {0}::{1}",method, args);
 					SendEventInternal (sessionId, method, args, token);
 				}
 			} catch (Exception e) {
@@ -379,7 +379,7 @@ namespace WebAssembly.Net.Debugging {
 			case "warning":
 			case "error":
 			default:
-				logger.LogTrace (msg);
+				logger.LogDebug (msg);
 				break;
 			}
 		}
