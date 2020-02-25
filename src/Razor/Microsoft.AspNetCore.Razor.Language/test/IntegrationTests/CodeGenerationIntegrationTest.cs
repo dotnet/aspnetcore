@@ -1001,6 +1001,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(codeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
             AssertSourceMappingsMatchBaseline(codeDocument);
             AssertLinePragmas(codeDocument, designTime: true);
