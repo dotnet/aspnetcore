@@ -6,6 +6,7 @@
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+    <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
     
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
