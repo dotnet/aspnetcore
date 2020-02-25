@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -81,13 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ServerOptions = ServiceContext.ServerOptions;
 
-            HttpRequestHeaders = new HttpRequestHeaders(
-                reuseHeaderValues: !ServerOptions.DisableStringReuse,
-                useLatin1: ServerOptions.Latin1RequestHeaders);
-
             Reset();
-
-            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
 
             HttpResponseControl = this;
         }
@@ -371,6 +366,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
+            HttpRequestHeaders.UseLatin1 = ServerOptions.Latin1RequestHeaders;
+            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
