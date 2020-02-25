@@ -15,7 +15,7 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddStackPolicy(options =>
+            services.AddConcurrencyLimiterStackPolicy(options =>
             {
                 options.MaxConcurrentRequests = 2; 
                 options.RequestQueueLimit = 25;
