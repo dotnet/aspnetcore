@@ -24,26 +24,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 {
                     CreateResourceTaskItem(
                         ResourceType.assembly,
-                        itemSpec: Path.Combine("dir", "My.Assembly1.ext"), // Can specify item spec
-                        relativeOutputPath: null,
+                        name: "My.Assembly1.ext", // Can specify filename with no dir
                         fileHash: "abcdefghikjlmnopqrstuvwxyz"),
 
                     CreateResourceTaskItem(
                         ResourceType.assembly,
-                        itemSpec: "Ignored",
-                        relativeOutputPath: Path.Combine("dir", "My.Assembly2.ext2"), // Can specify relative path
+                        name: "dir\\My.Assembly2.ext2", // Can specify Windows-style path
                         fileHash: "012345678901234567890123456789"),
 
                     CreateResourceTaskItem(
                         ResourceType.pdb,
-                        itemSpec: "SomePdb.pdb",
-                        relativeOutputPath: null,
+                        name: "otherdir/SomePdb.pdb", // Can specify Linux-style path
                         fileHash: "pdbhashpdbhashpdbhash"),
 
                     CreateResourceTaskItem(
                         ResourceType.runtime,
-                        itemSpec: "some-runtime-file",
-                        relativeOutputPath: null,
+                        name: "some-runtime-file", // Can specify path with no extension
                         fileHash: "runtimehashruntimehash")
                 }
             };
@@ -63,14 +59,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     Assert.Equal(ResourceType.assembly, resourceListKey);
                     Assert.Equal(2, resources.Count);
                     Assert.Equal("sha256-abcdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.ext"]);
-                    Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // For relative paths, we preserve the whole relative path, but use URL-style separators
+                    Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // Paths are converted to use URL-style separators
                 },
                 resourceListKey =>
                 {
                     var resources = parsedContent.resources[resourceListKey];
                     Assert.Equal(ResourceType.pdb, resourceListKey);
                     Assert.Single(resources);
-                    Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["SomePdb.pdb"]);
+                    Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["otherdir/SomePdb.pdb"]);
                 },
                 resourceListKey =>
                 {
@@ -141,13 +137,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             return (BootJsonData)serializer.ReadObject(stream);
         }
 
-        private static ITaskItem CreateResourceTaskItem(ResourceType type, string itemSpec, string relativeOutputPath, string fileHash)
+        private static ITaskItem CreateResourceTaskItem(ResourceType type, string name, string fileHash)
         {
             var mock = new Mock<ITaskItem>();
-            mock.Setup(m => m.ItemSpec).Returns(itemSpec);
-            mock.Setup(m => m.GetMetadata("TargetOutputPath")).Returns(itemSpec);
-            mock.Setup(m => m.GetMetadata("BootResourceType")).Returns(type.ToString());
-            mock.Setup(m => m.GetMetadata("RelativeOutputPath")).Returns(relativeOutputPath);
+            mock.Setup(m => m.GetMetadata("BootManifestResourceType")).Returns(type.ToString());
+            mock.Setup(m => m.GetMetadata("BootManifestResourceName")).Returns(name);
             mock.Setup(m => m.GetMetadata("FileHash")).Returns(fileHash);
             return mock.Object;
         }
