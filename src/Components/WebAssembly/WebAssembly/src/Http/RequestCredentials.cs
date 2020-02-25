@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Http
+namespace System.Net.Http
 {
     /// <summary>
     /// Specifies a value for the 'credentials' option on outbound HTTP requests.
     /// </summary>
-    public enum FetchCredentialsOption
+    public enum RequestCredentials
     {
         /// <summary>
         /// Advises the browser never to send credentials (such as cookies or HTTP auth headers).
