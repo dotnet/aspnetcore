@@ -68,7 +68,7 @@ namespace WebAssembly.Net.Debugging {
 			if (Uri.TryCreate (url, UriKind.Absolute, out var docUri) && docUri.Scheme == "dotnet") {
 				return (
 					docUri.Host,
-					docUri.PathAndQuery
+					docUri.PathAndQuery.Substring (1)
 				);
 			} else {
 				return (null, null);
@@ -484,7 +484,7 @@ namespace WebAssembly.Net.Debugging {
 		public string DebuggerFileName { get; }
 		public string Url { get; }
 		public string AssemblyName => assembly.Name;
-		public string DotNetUrl => $"dotnet://{assembly.Name}{DebuggerFileName}";
+		public string DotNetUrl => $"dotnet://{assembly.Name}/{DebuggerFileName}";
 
 		public SourceId SourceId => new SourceId (assembly.Id, this.id);
 		public Uri SourceLinkUri { get; }
