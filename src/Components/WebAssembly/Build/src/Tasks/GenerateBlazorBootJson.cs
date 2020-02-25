@@ -70,10 +70,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             {
                 foreach (var resource in Resources)
                 {
-                    var resourceTypeMetadata = resource.GetMetadata("BootResourceType");
+                    var resourceTypeMetadata = resource.GetMetadata("BootManifestResourceType");
                     if (!Enum.TryParse<ResourceType>(resourceTypeMetadata, out var resourceType))
                     {
-                        throw new NotSupportedException($"Unsupported BootResourceType metadata value: {resourceTypeMetadata}");
+                        throw new NotSupportedException($"Unsupported BootManifestResourceType metadata value: {resourceTypeMetadata}");
                     }
 
                     if (!result.resources.TryGetValue(resourceType, out var resourceList))
@@ -82,10 +82,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                         result.resources.Add(resourceType, resourceList);
                     }
 
-                    var resourceFileRelativePath = GetResourceFileRelativePath(resource);
-                    if (!resourceList.ContainsKey(resourceFileRelativePath))
+                    var resourceName = GetResourceName(resource);
+                    if (!resourceList.ContainsKey(resourceName))
                     {
-                        resourceList.Add(resourceFileRelativePath, $"sha256-{resource.GetMetadata("FileHash")}");
+                        resourceList.Add(resourceName, $"sha256-{resource.GetMetadata("FileHash")}");
                     }
                 }
             }
@@ -99,21 +99,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             serializer.WriteObject(writer, result);
         }
 
-        private static string GetResourceFileRelativePath(ITaskItem item)
+        private static string GetResourceName(ITaskItem item)
         {
-            // The build targets use RelativeOutputPath in the case of satellite assemblies, which
-            // will have relative paths like "fr\\SomeAssembly.resources.dll". If RelativeOutputPath
-            // is specified, we want to use all of it.
-            var outputPath = item.GetMetadata("RelativeOutputPath");
+            var name = item.GetMetadata("BootManifestResourceName");
 
-            if (string.IsNullOrEmpty(outputPath))
+            if (string.IsNullOrEmpty(name))
             {
-                // If RelativeOutputPath was not specified, we assume the item will be placed at the
-                // root of whatever directory is used for its resource type (e.g., assemblies go in _bin)
-                outputPath = Path.GetFileName(item.GetMetadata("TargetOutputPath"));
+                throw new Exception($"No BootManifestResourceName was specified for item '{item.ItemSpec}'");
             }
 
-            return outputPath.Replace('\\', '/');
+            return name.Replace('\\', '/');
         }
 
 #pragma warning disable IDE1006 // Naming Styles
