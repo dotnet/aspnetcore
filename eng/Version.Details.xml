@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview2.20124.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview2.20125.1">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>6f342be911ffeaa80d41ffe6eaea0d70be33f69f</Sha>
+      <Sha>544a01a4647a4adfeb6fc29a12b659c91e979f75</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.1.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
