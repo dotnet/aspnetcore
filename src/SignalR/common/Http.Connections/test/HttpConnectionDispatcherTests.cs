@@ -1668,6 +1668,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var windowsIdentity = WindowsIdentity.GetAnonymous();
                 context.User = new WindowsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
@@ -1682,6 +1683,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
                 Assert.IsType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
@@ -1718,6 +1720,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var windowsIdentity = WindowsIdentity.GetAnonymous();
                 context.User = new ClaimsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
@@ -1732,6 +1735,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
                 Assert.IsNotType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
