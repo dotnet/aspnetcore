@@ -7,6 +7,7 @@ using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
 
@@ -137,7 +138,7 @@ namespace WebAssembly.Net.Debugging {
 	internal class MonoProxy : DevToolsProxy {
 		Dictionary<string, ExecutionContext> contexts = new Dictionary<string, ExecutionContext> ();
 
-		public MonoProxy () { }
+		public MonoProxy (ILoggerFactory loggerFactory) : base(loggerFactory) { }
 
 		ExecutionContext GetContext (SessionId sessionId)
 		{
