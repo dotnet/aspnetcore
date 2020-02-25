@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            Log.TerminatingConection(_logger);
+            Log.TerminatingConnection(_logger);
 
             // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
             connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
