@@ -81,13 +81,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ServerOptions = ServiceContext.ServerOptions;
 
-            HttpRequestHeaders = new HttpRequestHeaders(
-                reuseHeaderValues: !ServerOptions.DisableStringReuse,
-                useLatin1: ServerOptions.Latin1RequestHeaders);
-
             Reset();
 
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
+            HttpRequestHeaders.UseLatin1 = ServerOptions.Latin1RequestHeaders;
 
             HttpResponseControl = this;
         }
