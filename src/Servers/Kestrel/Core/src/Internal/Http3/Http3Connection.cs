@@ -225,6 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
                     };
 
+                    // TODO check if all unidirectional streams have been opened before accepting requests?
                     if (!quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
