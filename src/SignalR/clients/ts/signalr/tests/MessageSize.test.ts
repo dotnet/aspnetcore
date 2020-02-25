@@ -3,7 +3,7 @@
 
 import { HubConnection } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
-import { IHubProtocol } from "../src/IHubProtocol";
+import { IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger } from "../src/ILogger";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { NullLogger } from "../src/Loggers";
@@ -34,6 +34,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
+                expect(connection.parsedSentData[0].type).toEqual(MessageType.Invocation);
                 expect((connection.sentData[0] as string).length).toEqual(44);
             } finally {
                 // Close the connection
@@ -55,6 +56,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
+                expect(connection.parsedSentData[0].type).toEqual(MessageType.Invocation);
                 expect((connection.sentData[0] as string).length).toEqual(63);
             } finally {
                 // Close the connection
@@ -73,6 +75,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
+                expect(connection.parsedSentData[0].type).toEqual(MessageType.StreamInvocation);
                 expect((connection.sentData[0] as string).length).toEqual(63);
             } finally {
                 // Close the connection
@@ -94,6 +97,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
+                expect(connection.parsedSentData[0].type).toEqual(MessageType.Invocation);
                 expect((connection.sentData[0] as string).length).toEqual(81);
             } finally {
                 // Close the connection
@@ -112,6 +116,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
+                expect(connection.parsedSentData[0].type).toEqual(MessageType.StreamInvocation);
                 expect((connection.sentData[0] as string).length).toEqual(81);
             } finally {
                 // Close the connection
@@ -134,6 +139,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(2);
+                expect(connection.parsedSentData[1].type).toEqual(MessageType.Completion);
                 expect((connection.sentData[1] as string).length).toEqual(29);
             } finally {
                 // Close the connection
@@ -158,6 +164,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(2);
+                expect(connection.parsedSentData[1].type).toEqual(MessageType.CancelInvocation);
                 expect((connection.sentData[1] as string).length).toEqual(29);
             } finally {
                 // Close the connection
