@@ -3,16 +3,16 @@
 
 using System;
 using System.Net.Quic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
-    internal class QuicConnectionContext : TransportConnection, IQuicStreamListenerFeature, IQuicCreateStreamFeature
+    internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
     {
         private QuicConnection _connection;
         private readonly QuicTransportContext _context;
@@ -20,14 +20,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
         private ValueTask _closeTask;
 
+        public long Error { get; set; }
+
         public QuicConnectionContext(QuicConnection connection, QuicTransportContext context)
         {
             _log = context.Log;
             _context = context;
             _connection = connection;
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            Features.Set<IQuicStreamListenerFeature>(this);
-            Features.Set<IQuicCreateStreamFeature>(this);
+            Features.Set<IProtocolErrorCodeFeature>(this);
 
             _log.NewConnection(ConnectionId);
         }
@@ -66,27 +67,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _connection.Dispose();
         }
 
+        public override void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via MultiplexedConnectionContext.Abort()."));
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _closeTask = _connection.CloseAsync(errorCode: _context.Options.AbortErrorCode);
+            _closeTask = _connection.CloseAsync(errorCode: Error);
         }
 
-        public async ValueTask<ConnectionContext> AcceptAsync()
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            var stream = await _connection.AcceptStreamAsync();
             try
             {
-                // Because the stream is wrapped with a quic connection provider,
-                // we need to check a property to check if this is null
-                // Will be removed once the provider abstraction is removed.
-                _ = stream.CanRead;
+                var stream = await _connection.AcceptStreamAsync(cancellationToken);
+                return new QuicStreamContext(stream, this, _context);
             }
-            catch (Exception)
+            catch (QuicException ex)
             {
-                return null;
+                // Accept on graceful close throws an aborted exception rather than returning null.
+                _log.LogDebug($"Accept loop ended with exception: {ex.Message}");
             }
 
-            return new QuicStreamContext(stream, this, _context);
+            return null;
+        }
+
+        public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        {
+            QuicStream quicStream;
+
+            if (features != null)
+            {
+                var streamDirectionFeature = features.Get<IStreamDirectionFeature>();
+                if (streamDirectionFeature.CanRead)
+                {
+                    quicStream = _connection.OpenBidirectionalStream();
+                }
+                else
+                {
+                    quicStream = _connection.OpenUnidirectionalStream();
+                }
+            }
+            else
+            {
+                quicStream = _connection.OpenBidirectionalStream();
+            }
+
+            return new ValueTask<ConnectionContext>(new QuicStreamContext(quicStream, this, _context));
         }
     }
 }

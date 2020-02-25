@@ -1,12 +1,9 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -26,13 +23,12 @@ namespace QuicSampleClient
                })
                .ConfigureServices(services =>
                {
-                   services.AddSingleton<IConnectionFactory, QuicConnectionFactory>();
+                   services.AddSingleton<IMultiplexedConnectionFactory, QuicConnectionFactory>();
                    services.AddSingleton<QuicClientService>();
                    services.AddOptions<QuicTransportOptions>();
                    services.Configure<QuicTransportOptions>((options) =>
                    {
                        options.Alpn = "QuicTest";
-                       options.RegistrationName = "Quic-AspNetCore-client";
                        options.Certificate = null;
                        options.IdleTimeout = TimeSpan.FromHours(1);
                    });
@@ -43,9 +39,9 @@ namespace QuicSampleClient
 
         private class QuicClientService
         {
-            private readonly IConnectionFactory _connectionFactory;
+            private readonly IMultiplexedConnectionFactory _connectionFactory;
             private readonly ILogger<QuicClientService> _logger;
-            public QuicClientService(IConnectionFactory connectionFactory, ILogger<QuicClientService> logger)
+            public QuicClientService(IMultiplexedConnectionFactory connectionFactory, ILogger<QuicClientService> logger)
             {
                 _connectionFactory = connectionFactory;
                 _logger = logger;
@@ -55,8 +51,7 @@ namespace QuicSampleClient
             {
                 Console.WriteLine("Starting");
                 var connectionContext = await _connectionFactory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
-                var createStreamFeature = connectionContext.Features.Get<IQuicCreateStreamFeature>();
-                var streamContext = await createStreamFeature.StartBidirectionalStreamAsync();
+                var streamContext = await connectionContext.ConnectAsync();
 
                 Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
                 {

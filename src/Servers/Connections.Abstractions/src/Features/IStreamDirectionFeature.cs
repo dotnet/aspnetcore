@@ -3,10 +3,9 @@
 
 namespace Microsoft.AspNetCore.Connections.Features
 {
-    public interface IQuicStreamFeature
+    public interface IStreamDirectionFeature
     {
         bool CanRead { get; }
         bool CanWrite { get; }
-        long StreamId { get; }
     }
 }

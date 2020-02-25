@@ -10,15 +10,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConnectionDispatcher
+    internal class MultiplexedConnectionDispatcher
     {
         private static long _lastConnectionId = long.MinValue;
 
         private readonly ServiceContext _serviceContext;
-        private readonly ConnectionDelegate _connectionDelegate;
+        private readonly MultiplexedConnectionDelegate _connectionDelegate;
         private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
+        public MultiplexedConnectionDispatcher(ServiceContext serviceContext, MultiplexedConnectionDelegate connectionDelegate)
         {
             _serviceContext = serviceContext;
             _connectionDelegate = connectionDelegate;
@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public Task StartAcceptingConnections(IConnectionListener listener)
+        public Task StartAcceptingConnections(IMultiplexedConnectionListener listener)
         {
             ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
             return _acceptLoopTcs.Task;
         }
 
-        private void StartAcceptingConnectionsCore(IConnectionListener listener)
+        private void StartAcceptingConnectionsCore(IMultiplexedConnectionListener listener)
         {
             // REVIEW: Multiple accept loops in parallel?
             _ = AcceptConnectionsAsync();
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                         // Add the connection to the connection manager before we queue it for execution
                         var id = Interlocked.Increment(ref _lastConnectionId);
-                        var kestrelConnection = new KestrelConnection<ConnectionContext>(id, _serviceContext, c => _connectionDelegate(c), connection, Log);
+                        var kestrelConnection = new KestrelConnection<MultiplexedConnectionContext>(id, _serviceContext, c => _connectionDelegate(c), connection, Log);
 
                         _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
 

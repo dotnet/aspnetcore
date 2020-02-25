@@ -15,9 +15,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions : IConnectionBuilder
+    public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+        internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
         {
@@ -123,6 +124,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return this;
         }
 
+        IMultiplexedConnectionBuilder IMultiplexedConnectionBuilder.Use(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
+        {
+            _multiplexedMiddleware.Add(middleware);
+            return this;
+        }
+
         public ConnectionDelegate Build()
         {
             ConnectionDelegate app = context =>
@@ -133,6 +140,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             for (int i = _middleware.Count - 1; i >= 0; i--)
             {
                 var component = _middleware[i];
+                app = component(app);
+            }
+
+            return app;
+        }
+
+        MultiplexedConnectionDelegate IMultiplexedConnectionBuilder.Build()
+        {
+            MultiplexedConnectionDelegate app = context =>
+            {
+                return Task.CompletedTask;
+            };
+
+            for (int i = _multiplexedMiddleware.Count - 1; i >= 0; i--)
+            {
+                var component = _multiplexedMiddleware[i];
                 app = component(app);
             }
 
