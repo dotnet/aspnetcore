@@ -42,8 +42,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <XUnitPublishTargetFramework>netcoreapp3.1</XUnitPublishTargetFramework>
-    <XUnitRuntimeTargetFramework>netcoreapp2.0</XUnitRuntimeTargetFramework>
+    <XUnitPublishTargetFramework>netcoreapp5.0</XUnitPublishTargetFramework>
+    <XUnitRuntimeTargetFramework>netcoreapp5.0</XUnitRuntimeTargetFramework>
     <XUnitRunnerVersion>2.4.1</XUnitRunnerVersion>
     <XUnitArguments></XUnitArguments>
     <XUnitWorkItemTimeout>00:30:00</XUnitWorkItemTimeout>
