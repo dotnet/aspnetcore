@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <PropertyGroup>
+    <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
+    <IsExternal>true</IsExternal>
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+    <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+    
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+    <DotNetCliVersion>3.1.100</DotNetCliVersion>
+
+    <HelixType>dev</HelixType>
+    <!-- Creator is not valid for internal queues -->
+    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnTestFailure>true</FailOnTestFailure>
+    <EnableXUnitReporter>true</EnableXUnitReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+  </PropertyGroup>
+
+  <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
+  <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
+  <ItemGroup>
+    <HelixProperties Include="buildNumber" Value="$(BUILD_BUILDNUMBER)" Condition="'$(BUILD_BUILDNUMBER)' != ''" />
+    <HelixProperties Include="buildId" Value="$(BUILD_BUILDID)" Condition="'$(BUILD_BUILDID)' != ''" />
+    <HelixProperties Include="azdoProject" Value="$(SYSTEM_TEAMPROJECT)" Condition="'$(SYSTEM_TEAMPROJECT)' != ''" />
+    <HelixProperties Include="buildDefinition" Value="$(BUILD_DEFINITIONNAME)" Condition="'$(BUILD_DEFINITIONNAME)' != ''" />
+    <HelixProperties Include="commitSha" Value="$(BUILD_SOURCEVERSION)" Condition="'$(BUILD_SOURCEVERSION)' != ''" />
+    <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" Condition="'$(BUILD_SOURCEBRANCH)' != ''" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
+    <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <XUnitProject Include="$(RepoRoot)src/**/test/**/*.csproj"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <XUnitPublishTargetFramework>netcoreapp3.1</XUnitPublishTargetFramework>
+    <XUnitRuntimeTargetFramework>netcoreapp2.0</XUnitRuntimeTargetFramework>
+    <XUnitRunnerVersion>2.4.1</XUnitRunnerVersion>
+    <XUnitArguments></XUnitArguments>
+    <XUnitWorkItemTimeout>00:30:00</XUnitWorkItemTimeout>
+  </PropertyGroup>
+</Project>
