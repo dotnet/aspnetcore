@@ -65,10 +65,6 @@
   </Target>
 
   <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
-    <Error
-      Text="Unrecongnized value for BlazorWebAssemblyEnableLinking: '$(BlazorWebAssemblyEnableLinking)'. Valid values are 'true' or 'false'."
-      Condition="'$(BlazorWebAssemblyEnableLinking)' != 'true' AND '$(BlazorWebAssemblyEnableLinking)' != 'false'" />
-
     <!--
       These are the items calculated as the closure of the runtime assemblies, either by calling the linker
       or by calling our custom ResolveBlazorRuntimeDependencies task if the linker was disabled. Other than
