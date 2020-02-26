@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         private readonly object _writeLock = new object();
         private readonly QPackEncoder _qpackEncoder = new QPackEncoder();
-
+        private readonly Http3Connection _connection;
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
@@ -43,8 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(Http3Connection connection, PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
         {
+            _connection = connection;
             _outputWriter = output;
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
@@ -68,18 +69,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        // TODO actually write settings here.
-        internal Task WriteSettingsAsync(IList<Http3PeerSettings> settings)
+        internal Task WriteSettingsAsync(IList<Http3PeerSetting> settings)
         {
             _outgoingFrame.PrepareSettings();
-            var buffer = _outputWriter.GetSpan(2);
 
-            buffer[0] = (byte)_outgoingFrame.Type;
-            buffer[1] = 0;
+            var settingsLength = GetSettingsLength(settings);
+            _outgoingFrame.Length = settingsLength;
+            WriteHeader(_outgoingFrame, _outputWriter);
 
-            _outputWriter.Advance(2);
+            var settingsSpan = _outputWriter.GetSpan((int)settingsLength);
+
+            WriteSettings(settings, settingsSpan);
+
+            _outputWriter.Advance((int)settingsLength);
 
             return _outputWriter.FlushAsync().AsTask();
+        }
+
+        internal static long GetSettingsLength(IList<Http3PeerSetting> settings)
+        {
+            var totalLength = 0;
+            foreach (var setting in settings)
+            {
+                totalLength += VariableLengthIntegerHelper.GetByteCount((long)setting.Parameter);
+                totalLength += VariableLengthIntegerHelper.GetByteCount(setting.Value);
+            }
+
+            return totalLength;
+        }
+
+        internal static void WriteSettings(IList<Http3PeerSetting> settings, Span<byte> destination)
+        {
+            foreach (var setting in settings)
+            {
+                var length = VariableLengthIntegerHelper.WriteInteger(destination, (long)setting.Parameter);
+                length += VariableLengthIntegerHelper.WriteInteger(destination.Slice(length), (long)setting.Value);
+                destination = destination.Slice(length);
+            }
         }
 
         internal Task WriteStreamIdAsync(long id)
@@ -270,6 +296,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
                     var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+
+                    // TODO this check is against the compressed byte count rather than uncompressed.
+                    // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
+                    if (payloadLength > _connection.GetMaxHeaderListSize())
+                    {
+                        throw new Http3StreamErrorException("Exceeded header list size", Http3ErrorCode.FrameError);
+                    }
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException hex)

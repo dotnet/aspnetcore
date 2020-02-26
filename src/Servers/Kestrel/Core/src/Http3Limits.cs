@@ -7,47 +7,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class Http3Limits
     {
-        private int _headerTableSize = 4096;
-        private int _maxRequestHeaderFieldSize = 8192;
+        private long _headerTableSize = 0;
+        private long _blockedStreams = 0;
 
         /// <summary>
-        /// Limits the size of the header compression table, in octets, the HPACK decoder on the server can use.
+        /// Limits the size of the header compression table, in octets, the QPACK decoder on the server can use.
         /// <para>
-        /// Value must be greater than 0, defaults to 4096
+        /// Defaults to 0.
         /// </para>
         /// </summary>
-        public int HeaderTableSize
+        public long HeaderTableSize
         {
             get => _headerTableSize;
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.GreaterThanZeroRequired);
-                }
-
-                _headerTableSize = value;
-            }
+            set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");
         }
 
         /// <summary>
-        /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
+        /// Limits the number of blocked streams for a connection that are waiting for a dynamic table update.
         /// <para>
-        /// Value must be greater than 0, defaults to 8192
+        /// Defaults to 0.
         /// </para>
         /// </summary>
-        public int MaxRequestHeaderFieldSize
+        public long BlockedStreams
         {
-            get => _maxRequestHeaderFieldSize;
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.GreaterThanZeroRequired);
-                }
-
-                _maxRequestHeaderFieldSize = value;
-            }
+            get => _blockedStreams;
+            set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");
         }
     }
 }

@@ -107,7 +107,7 @@ namespace System.Net.Http.QPack
 
         private const int DefaultStringBufferSize = 64;
 
-        private readonly int _maxHeadersLength;
+        private readonly long _maxHeadersLength;
         private State _state = State.RequiredInsertCount;
 
         private byte[] _stringOctets;
@@ -136,7 +136,7 @@ namespace System.Net.Http.QPack
             buffer = Pool.Rent(newSize);
         }
 
-        public QPackDecoder(int maxHeadersLength)
+        public QPackDecoder(long maxHeadersLength)
         {
             _maxHeadersLength = maxHeadersLength;
 

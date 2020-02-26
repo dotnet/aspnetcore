@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _context = context;
 
             _frameWriter = new Http3FrameWriter(
+                _http3Connection,
                 context.Transport.Output,
                 context.ConnectionContext,
                 context.TimeoutControl,
@@ -131,9 +132,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             await _frameWriter.WriteGoAway(id);
         }
 
-        internal async ValueTask SendSettingsFrameAsync()
+        internal async ValueTask SendSettingsFrameAsync(IList<Http3PeerSetting> settings)
         {
-            await _frameWriter.WriteSettingsAsync(null);
+            await _frameWriter.WriteSettingsAsync(settings);
         }
 
         private async ValueTask<long> TryReadStreamIdAsync()
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (!readableBuffer.IsEmpty)
                     {
                         // need to kick off httpprotocol process request async here.
-                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
                         {
                             //Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                             consumed = examined = framePayload.End;
@@ -312,14 +313,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // These are client settings, for outbound traffic.
             switch (id)
             {
-                case (long)Http3SettingType.QPackMaxTableCapacity:
-                    _http3Connection.ApplyMaxTableCapacity(value);
+                case (long)Http3SettingsParameter.QPackMaxTableCapacity:
                     break;
-                case (long)Http3SettingType.MaxHeaderListSize:
+                case (long)Http3SettingsParameter.MaxHeaderListSize:
                     _http3Connection.ApplyMaxHeaderListSize(value);
                     break;
-                case (long)Http3SettingType.QPackBlockedStreams:
-                    _http3Connection.ApplyBlockedStream(value);
+                case (long)Http3SettingsParameter.QPackBlockedStreams:
                     break;
                 default:
                     // Ignore all unknown settings.

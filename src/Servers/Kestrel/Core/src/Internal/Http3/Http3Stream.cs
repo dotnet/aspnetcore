@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>();
 
             _frameWriter = new Http3FrameWriter(
+                _http3Connection,
                 context.Transport.Output,
                 context.StreamContext,
                 context.TimeoutControl,
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ServiceContext.Log);
             RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
             Output = _http3Output;
-            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize);
+            QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize);
         }
 
         public long? InputRemaining { get; internal set; }
@@ -338,7 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         if (!readableBuffer.IsEmpty)
                         {
-                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
                             {
                                 consumed = examined = framePayload.End;
                                 await ProcessHttp3Stream(application, framePayload);

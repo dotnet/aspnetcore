@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoApplication = async context =>
             {
-                var buffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
+                var buffer = new byte[10000]; // TODO 
                 var received = 0;
 
                 while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -242,9 +242,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return WaitForConnectionErrorAsync<Exception>(expectedLastStreamId, Http3ErrorCode.NoError, expectedErrorMessage: null);
         }
 
-        protected async Task ReadSettings()
+        protected async Task<Dictionary<long, long>> ReadSettings()
         {
-            await _inboundControlStream.ReceiveSettingsFrame();
+            return await _inboundControlStream.ReceiveSettingsFrame();
         }
 
         internal async Task WaitForConnectionErrorAsync<TException>(long expectedLastStreamId, Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
@@ -311,12 +311,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return bufferSize ?? 0;
         }
 
+
         internal async ValueTask<Http3ControlStream> CreateOutboundControlStream(long id)
         {
             var stream = new Http3ControlStream(this, canRead: false, canWrite: true);
+            if (id == ControlStreamId)
+            {
+                _outboundControlStream = stream;
+            }
+            else if (id == EncoderStreamId)
+            {
+                _outboundEncoderStream = stream;
+            }
+            else if (id == DecoderStreamId)
+            {
+                _outboundDecoderStream = stream;
+            }
+
             _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
+        }
+
+        internal async Task WriteSettings(IList<Http3PeerSetting> settings)
+        {
+            await _outboundControlStream.WriteSettings(settings);
         }
 
         internal ValueTask<Http3RequestStream> CreateRequestStream()
@@ -347,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http3PeerSettings.DefaultMaxFrameSize)
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync()
             {
                 var frame = new Http3FrameWithPayload();
 
@@ -363,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     {
                         Assert.True(buffer.Length > 0);
 
-                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
+                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, out var framePayload))
                         {
                             consumed = examined = framePayload.End;
                             frame.Payload = framePayload.ToArray();
@@ -397,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public long StreamId => 0;
 
-            private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
+            private readonly byte[] _headerEncodingBuffer = new byte[4096]; // TODO fill with limit values.
             private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -546,14 +565,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _application = context.Transport;
             }
 
-            internal async ValueTask ReceiveSettingsFrame()
+            internal async ValueTask<Dictionary<long, long>> ReceiveSettingsFrame()
             {
                 var frame = await ReceiveFrameAsync();
                 var payload = frame.PayloadSequence;
 
                 while (true)
                 {
-                    var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examinded);
+                    var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examined);
                     if (id == -1)
                     {
                         break;
@@ -561,7 +580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     payload = payload.Slice(consumed);
 
-                    var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examinded);
+                    var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examined);
                     if (id == -1)
                     {
                         break;
@@ -570,6 +589,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     payload = payload.Slice(consumed);
                     SettingsDictionary[id] = value;
                 }
+
+                return SettingsDictionary;
             }
 
             public async ValueTask WriteStreamIdAsync(long id)
@@ -592,6 +613,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 // Make sure stream has ended first.
                 //Assert.True(_hasReceivedGoAway);
+            }
+
+            internal Task WriteSettings(IList<Http3PeerSetting> settings)
+            {
+                var frame = new Http3RawFrame();
+                frame.PrepareSettings();
+
+                frame.Length = Http3FrameWriter.GetSettingsLength(settings);
+                Http3FrameWriter.WriteHeader(frame, _application.Output);
+                var settingsBuffer = _application.Output.GetSpan((int)frame.Length);
+                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
+                Http3FrameWriter.WriteSettings(settings, settingsBuffer);
+                _application.Output.Advance((int)frame.Length);
+
+                return FlushAsync(_application.Output);
             }
         }
 

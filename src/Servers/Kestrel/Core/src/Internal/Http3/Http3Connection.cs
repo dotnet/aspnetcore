@@ -39,6 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _aborted;
         private object _protocolSelectionLock = new object();
 
+        private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
+        private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
+
         public Http3Connection(Http3ConnectionContext context)
         {
             _multiplexedContext = context.ConnectionContext;
@@ -47,6 +50,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
+
+            var httpLimits = context.ServiceContext.ServerOptions.Limits;
+            var http3Limits = httpLimits.Http3;
+
+            _serverSettings.MaxHeaderListSize = httpLimits.MaxRequestHeadersTotalSize;
+            _serverSettings.QPackBlockedStreams = http3Limits.BlockedStreams;
+            _serverSettings.QPackMaxTableCapacity = http3Limits.HeaderTableSize;
         }
 
         internal long HighestStreamId
@@ -274,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             ControlStream = stream;
             await stream.SendStreamIdAsync(id: 0);
-            await stream.SendSettingsFrameAsync();
+            await stream.SendSettingsFrameAsync(_serverSettings.GetNonProtocolDefaults());
         }
 
         private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application)
@@ -354,24 +364,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // TODO need to figure out if there is server initiated connection close rather than stream close?
         }
 
+        public long GetMaxHeaderListSize()
+        {
+            lock (_sync)
+            {
+                return _clientSettings.MaxHeaderListSize;
+            }
+        }
+
         public void ApplyMaxHeaderListSize(long value)
         {
-            // TODO something here to call OnHeader?
-        }
-
-        internal void ApplyBlockedStream(long value)
-        {
-        }
-
-        internal void ApplyMaxTableCapacity(long value)
-        {
-            // TODO make sure this works
-            //_maxDynamicTableSize = value;
+            lock (_sync)
+            {
+                _clientSettings.MaxHeaderListSize = Math.Min(value, _serverSettings.MaxHeaderListSize);
+            }
         }
 
         internal void RemoveStream(long streamId)
         {
-            lock(_streams)
+            lock (_streams)
             {
                 _streams.Remove(streamId);
             }
