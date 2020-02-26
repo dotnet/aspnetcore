@@ -25,6 +25,10 @@ namespace ComponentsWebAssembly_CSharp
     #else
             builder.Services.AddOidcAuthentication(options =>
             {
+                #if(MissingAuthority)
+                // Configure your authentication provider options here.
+                // For more information, see https://aka.ms/blazor-standalone-auth
+                #endif
                 options.ProviderOptions.Authority = "https://login.microsoftonline.com/";
                 options.ProviderOptions.ClientId = "33333333-3333-3333-33333333333333333";
             });

@@ -22,6 +22,5 @@ namespace ComponentsWebAssembly_CSharp.Server
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-
     }
 }
