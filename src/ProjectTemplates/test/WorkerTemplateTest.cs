@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
@@ -20,7 +21,8 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("restore no worky")]        
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);
