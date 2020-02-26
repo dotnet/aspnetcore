@@ -199,15 +199,6 @@ export class HttpConnection implements IConnection {
             // This exception is returned to the user as a rejected Promise from the start method.
         }
 
-        if (this.sendQueue) {
-            try {
-                await this.sendQueue.stop();
-            } catch (e) {
-                this.logger.log(LogLevel.Error, `TransportSendQueue.stop() threw error '${e}'.`);
-            }
-            this.sendQueue = undefined;
-        }
-
         // The transport's onclose will trigger stopConnection which will run our onclose event.
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
@@ -497,14 +488,22 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Information, "Connection disconnected.");
         }
 
+        if (this.sendQueue) {
+            this.sendQueue.stop().catch((e) => {
+                this.logger.log(LogLevel.Error, `TransportSendQueue.stop() threw error '${e}'.`);
+            });
+            this.sendQueue = undefined;
+        }
+
         this.connectionId = undefined;
         this.connectionState = ConnectionState.Disconnected;
 
-        if (this.onclose && this.connectionStarted) {
+        if (this.connectionStarted) {
             this.connectionStarted = false;
-
             try {
-                this.onclose(error);
+                if (this.onclose) {
+                    this.onclose(error);
+                }
             } catch (e) {
                 this.logger.log(LogLevel.Error, `HttpConnection.onclose(${error}) threw error '${e}'.`);
             }

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_options.UrlPrefixes.Count > 0)
                 {
-                    _logger.LogWarning($"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
+                    _logger.LogWarning(LoggerEventIds.ClearedPrefixes, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
                         $" Binding to address(es) '{string.Join(", ", _serverAddresses.Addresses)}' instead. ");
 
                     Listener.Options.UrlPrefixes.Clear();
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (hostingUrlsPresent)
                 {
-                    _logger.LogWarning($"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
+                    _logger.LogWarning(LoggerEventIds.ClearedAddresses, $"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
                         $"Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.");
 
                     _serverAddresses.Addresses.Clear();
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             else if (Listener.RequestQueue.Created)
             {
-                _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
+                _logger.LogDebug(LoggerEventIds.BindingToDefault, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
@@ -171,11 +171,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Contract.Assert(Stopping);
                     if (Stopping)
                     {
-                        _logger.LogDebug(0, exception, "ListenForNextRequestAsync-Stopping");
+                        _logger.LogDebug(LoggerEventIds.AcceptErrorStopping, exception, "Failed to accept a request, the server is stopping.");
                     }
                     else
                     {
-                        _logger.LogError(0, exception, "ListenForNextRequestAsync");
+                        _logger.LogError(LoggerEventIds.AcceptError, exception, "Failed to accept a request.");
                     }
                     continue;
                 }
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
-                    _logger.LogError(0, ex, "ProcessRequestAsync");
+                    _logger.LogError(LoggerEventIds.RequestListenerProcessError, ex, "ProcessRequestAsync");
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(0, ex, "ProcessRequestAsync");
+                    _logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
                     _application.DisposeContext(context, ex);
                     if (requestContext.Response.HasStarted)
                     {
@@ -247,14 +247,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
                     {
-                        _logger.LogInformation("All requests drained.");
+                        _logger.LogInformation(LoggerEventIds.RequestsDrained, "All requests drained.");
                         _shutdownSignal.TrySetResult(0);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "ProcessRequestAsync");
+                _logger.LogError(LoggerEventIds.RequestError, ex, "ProcessRequestAsync");
                 requestContext.Abort();
             }
         }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
                     {
-                        _logger.LogInformation("Canceled, terminating " + _outstandingRequests + " request(s).");
+                        _logger.LogInformation(LoggerEventIds.StopCancelled, "Canceled, terminating " + _outstandingRequests + " request(s).");
                         _shutdownSignal.TrySetResult(null);
                     }
                 });
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Wait for active requests to drain
                 if (_outstandingRequests > 0)
                 {
-                    _logger.LogInformation("Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
+                    _logger.LogInformation(LoggerEventIds.WaitingForRequestsToDrain, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
                     RegisterCancelation();
                 }
                 else

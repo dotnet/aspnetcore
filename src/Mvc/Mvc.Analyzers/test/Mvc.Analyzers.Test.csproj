@@ -4,13 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Analyzers</RootNamespace>
-
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/dotnet/aspnetcore/issues/9431 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-    <BaseOutputPath />
-    <OutputPath />
-
    </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
-    <ProjectReference Include="..\..\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>

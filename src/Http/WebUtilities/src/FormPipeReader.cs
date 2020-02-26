@@ -93,7 +93,15 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!buffer.IsEmpty)
                 {
-                    ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
+                    try
+                    {
+                        ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
+                    }
+                    catch
+                    {
+                        _pipeReader.AdvanceTo(buffer.Start);
+                        throw;
+                    }
                 }
 
                 if (readResult.IsCompleted)
@@ -121,7 +129,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (buffer.IsSingleSegment)
             {
-                ParseFormValuesFast(buffer.First.Span,
+                ParseFormValuesFast(buffer.FirstSpan,
                     ref accumulator,
                     isFinalBlock,
                     out var consumed);
@@ -318,7 +326,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (ros.IsSingleSegment)
             {
-                return GetDecodedString(ros.First.Span);
+                return GetDecodedString(ros.FirstSpan);
             }
 
             if (ros.Length < StackAllocThreshold)

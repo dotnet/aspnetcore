@@ -30,6 +30,9 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
+
+    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
@@ -63,7 +66,7 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
     <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
     <NoWarn>$(NoWarn);NU5131</NoWarn>
-    <!-- Needed until we resolve https://github.com/aspnet/AspNetCore-Internal/issues/3103 -->
+    <!-- Needed until we resolve https://github.com/dotnet/aspnetcore-internal/issues/3103 -->
     <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 
@@ -88,8 +91,11 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
+    <!-- Produce targeting pack installers/packages once per major.minor. -->
+    <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
@@ -172,11 +178,11 @@
 
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
+    <ChecksumExtension>.sha512</ChecksumExtension>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
   <Import Project="eng\Dependencies.props" />
-  <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />
   <Import Project="eng\SharedFramework.External.props" />
@@ -184,5 +190,6 @@
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\Helix.props" Condition="'$(IsTestProject)' == 'true'" />
 
 </Project>

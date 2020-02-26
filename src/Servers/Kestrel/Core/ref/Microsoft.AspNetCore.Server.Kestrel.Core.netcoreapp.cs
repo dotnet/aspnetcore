@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public partial class KestrelServer : Microsoft.AspNetCore.Hosting.Server.IServer, System.IDisposable
     {
         public KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions> options, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Connections.IConnectionListenerFactory> transportFactories, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions> options, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Connections.IConnectionListenerFactory> transportFactories, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory> multiplexedFactories, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions Options { get { throw null; } }
         public void Dispose() { }
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public void ListenUnixSocket(string socketPath) { }
         public void ListenUnixSocket(string socketPath, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configure) { }
     }
-    public partial class ListenOptions : Microsoft.AspNetCore.Connections.IConnectionBuilder
+    public partial class ListenOptions : Microsoft.AspNetCore.Connections.IConnectionBuilder, Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder
     {
         internal ListenOptions() { }
         public System.IServiceProvider ApplicationServices { get { throw null; } }
@@ -159,6 +160,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols Protocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string SocketPath { get { throw null; } }
         public Microsoft.AspNetCore.Connections.ConnectionDelegate Build() { throw null; }
+        Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder.Build() { throw null; }
+        Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder.Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate> middleware) { throw null; }
         public override string ToString() { throw null; }
         public Microsoft.AspNetCore.Connections.IConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate> middleware) { throw null; }
     }
@@ -239,6 +242,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         void OnHeader(System.ReadOnlySpan<byte> name, System.ReadOnlySpan<byte> value);
         void OnHeadersComplete(bool endStream);
+        void OnStaticIndexedHeader(int index);
+        void OnStaticIndexedHeader(int index, System.ReadOnlySpan<byte> value);
     }
     public partial interface IHttpRequestLineHandler
     {

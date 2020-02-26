@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             try
             {
                 var serverOptions = CreateServerOptions();
-                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "aspnetdevcert", X509KeyStorageFlags.Exportable);
+                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
                 var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
                 var path = GetCertificatePath();
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             try
             {
                 var serverOptions = CreateServerOptions();
-                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "aspnetdevcert", X509KeyStorageFlags.Exportable);
+                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
                 var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
                 var path = GetCertificatePath();
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -454,6 +454,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
             Assert.True(ran2);
             Assert.True(ran3);
+        }
+
+        [Fact]
+        public void Latin1RequestHeadersReadFromConfig()
+        {
+            var options = CreateServerOptions();
+            var config =  new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+            Assert.False(options.Latin1RequestHeaders);
+            options.Configure(config).Load();
+            Assert.False(options.Latin1RequestHeaders);
+
+            options = CreateServerOptions();
+            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Latin1RequestHeaders", "true"),
+            }).Build();
+
+            Assert.False(options.Latin1RequestHeaders);
+            options.Configure(config).Load();
+            Assert.True(options.Latin1RequestHeaders);
         }
 
         private static string GetCertificatePath()

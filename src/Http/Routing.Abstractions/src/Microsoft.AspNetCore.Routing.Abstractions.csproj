@@ -10,7 +10,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -81,6 +81,14 @@ namespace Microsoft.AspNetCore.Identity
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
+            if (UserManager.SupportsUserEmail)
+            {
+                var email = await UserManager.GetEmailAsync(user);
+                if (!string.IsNullOrEmpty(email))
+                {
+                    id.AddClaim(new Claim(Options.ClaimsIdentity.EmailClaimType, email));
+                }
+            }
             if (UserManager.SupportsUserSecurityStamp)
             {
                 id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType,

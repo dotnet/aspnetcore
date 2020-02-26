@@ -345,6 +345,35 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
 
+        [Fact]
+        public void ActivityBaggageValuesAreUrlDecodedFromHeaders()
+        {
+            var diagnosticListener = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
+
+            diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair => { }),
+                s =>
+                {
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"Request-Id", "ParentId1"},
+                    {"Correlation-Context", "Key1=value1%2F1"}
+                }
+            });
+            hostingApplication.CreateContext(features);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
+            Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1/1");
+        }
+
 
         [Fact]
         public void ActivityTraceParentAndTraceStateFromHeaders()

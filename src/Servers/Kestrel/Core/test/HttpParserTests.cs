@@ -523,6 +523,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Query = query.GetAsciiStringNonNullCharacters();
                 PathEncoded = pathEncoded;
             }
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         // Doesn't put empty blocks in between every byte

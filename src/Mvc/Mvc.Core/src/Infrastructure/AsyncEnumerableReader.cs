@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <summary>
-        /// Attempts to produces a delagate that reads a <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
+        /// Attempts to produces a delegate that reads an <see cref="IAsyncEnumerable{T}"/> into an <see cref="ICollection{T}"/>.
         /// </summary>
         /// <param name="type">The type to read.</param>
         /// <param name="reader">A delegate that when awaited reads the <see cref="IAsyncEnumerable{T}"/>.</param>

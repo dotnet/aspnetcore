@@ -86,11 +86,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http2cat", "samples\http2ca
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleApp", "samples\QuicSampleApp\QuicSampleApp.csproj", "{53A8634C-DFC5-4A5B-8864-9EF1707E3F18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic", "Transport.MsQuic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.csproj", "{62CFF861-807E-43F6-9403-22AA7F06C9A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic", "Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj", "{62CFF861-807E-43F6-9403-22AA7F06C9A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleClient", "samples\QuicSampleClient\QuicSampleClient.csproj", "{F39A942B-85A8-4C1B-A5BC-435555E79F20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http3SampleApp", "samples\Http3SampleApp\Http3SampleApp.csproj", "{B3CDC83A-A9C5-45DF-9828-6BC419C24308}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Http3SampleApp", "samples\Http3SampleApp\Http3SampleApp.csproj", "{B3CDC83A-A9C5-45DF-9828-6BC419C24308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

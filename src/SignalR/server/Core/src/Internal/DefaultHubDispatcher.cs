@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             {
                                 if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
                                 {
-                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
+                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                                     arguments[parameterPointer] = cts.Token;
                                 }
                                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             return;
                         }
 
-                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
+                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                         connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
                         var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 

@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private Task<Compilation> GetCompilationAsync(string test = "SymbolApiConventionMatcherTestFile")
         {
             var testSource = MvcTestSource.Read(GetType().Name, test);
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();
         }

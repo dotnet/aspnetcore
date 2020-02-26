@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2267", FlakyOn.All)]
         public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;

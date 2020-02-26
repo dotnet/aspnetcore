@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -17,10 +19,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private const int ControlStream = 0;
         private const int EncoderStream = 2;
         private const int DecoderStream = 3;
+
         private Http3FrameWriter _frameWriter;
         private readonly Http3Connection _http3Connection;
         private HttpConnectionContext _context;
-        private readonly Http3Frame _incomingFrame = new Http3Frame();
+        private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;
 
@@ -53,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex)
         {
+
         }
 
         public void HandleReadDataRateTimeout()
@@ -80,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return true;
             }
 
-            // TODO make this actually close the Http3Stream by telling msquic to close the stream.
+            // TODO make this actually close the Http3Stream by telling quic to close the stream.
             return false;
         }
 
@@ -117,9 +121,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        internal async ValueTask SendStreamIdAsync(int id)
+        internal async ValueTask SendStreamIdAsync(long id)
         {
             await _frameWriter.WriteStreamIdAsync(id);
+        }
+
+        internal async ValueTask SendGoAway(long id)
+        {
+            await _frameWriter.WriteGoAway(id);
         }
 
         internal async ValueTask SendSettingsFrameAsync()
@@ -172,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (streamType == ControlStream)
             {
-                if (_http3Connection.SettingsStream != null)
+                if (_http3Connection.ControlStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
@@ -255,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case Http3FrameType.Settings:
                     return ProcessSettingsFrameAsync(payload);
                 case Http3FrameType.GoAway:
-                    return ProcessGoAwayFrameAsync();
+                    return ProcessGoAwayFrameAsync(payload);
                 case Http3FrameType.CancelPush:
                     return ProcessCancelPushFrameAsync();
                 case Http3FrameType.MaxPushId:
@@ -318,14 +327,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private ValueTask ProcessGoAwayFrameAsync()
+        private ValueTask ProcessGoAwayFrameAsync(ReadOnlySequence<byte> payload)
         {
-            if (!_haveReceivedSettingsFrame)
-            {
-                throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
-            }
-            // Get highest stream id and write that to the response.
-            return default;
+             throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
         }
 
         private ValueTask ProcessCancelPushFrameAsync()
@@ -334,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            // This should just noop.
+
             return default;
         }
 
@@ -344,6 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
+
             return default;
         }
 
@@ -353,6 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
+
             return default;
         }
 
@@ -367,10 +373,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 Input.CancelPendingRead();
             }
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
         }
 
         /// <summary>

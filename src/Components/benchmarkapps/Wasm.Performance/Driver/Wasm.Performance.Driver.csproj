@@ -1,17 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Intentionally pinned this to .NET Core 3.1 since that's the supported version in the docker image -->
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-
-    <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
+
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
     <ProjectReference Include="..\..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />

@@ -304,6 +304,12 @@
       "defaultValue": "false",
       "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
     },
+    "RazorRuntimeCompilation": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Determines if the project is configured to use Razor runtime compilation in Debug builds."
+    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",

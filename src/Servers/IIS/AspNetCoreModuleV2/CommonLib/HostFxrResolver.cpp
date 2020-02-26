@@ -95,11 +95,11 @@ HostFxrResolver::GetHostFxrParameters(
             if (!is_regular_file(applicationDllPath))
             {
                 errorContext.subStatusCode = 38;
-                errorContext.errorReason = "Application DLL not found. Confirm the application dll is present. Single-file deployments are not supported in IIS.";
-                errorContext.generalErrorType = "ANCM Application DLL Not Found";
-                errorContext.detailedErrorContent = format("Application DLL was not found at %s.", to_multi_byte_string(applicationDllPath, CP_UTF8).c_str());
+                errorContext.errorReason = "The app couldn't be found. Confirm the app's main DLL is present. Single-file deployments are not supported in IIS.";
+                errorContext.generalErrorType = "Failed to locate ASP.NET Core app";
+                errorContext.detailedErrorContent = format("Application was not found at %s.", to_multi_byte_string(applicationDllPath, CP_UTF8).c_str());
                 throw InvalidOperationException(
-                    format(L"Application DLL was not found at %s. Confirm the application dll is present. Single-file deployments are not supported in IIS.",
+                    format(L"The app couldn't be found at %s. Confirm the app's main DLL is present. Single-file deployments are not supported in IIS.",
                         applicationDllPath.c_str()));
             }
 

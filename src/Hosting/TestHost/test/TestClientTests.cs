@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -428,6 +427,53 @@ namespace Microsoft.AspNetCore.TestHost
                 var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
             });
             Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
+
+            // Unblock request
+            requestStreamTcs.TrySetResult(null);
+        }
+
+        [Fact]
+        public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
+        {
+            // Arrange
+            var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            RequestDelegate appDelegate = ctx =>
+            {
+                ctx.Response.Headers["test-header"] = "true";
+                return Task.CompletedTask;
+            };
+
+            Stream requestStream = null;
+
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
+            httpRequest.Version = new Version(2, 0);
+            httpRequest.Content = new PushContent(async stream =>
+            {
+                requestStream = stream;
+                await requestStreamTcs.Task;
+            });
+
+            // Act
+            var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
+
+            var responseContent = await response.Content.ReadAsStreamAsync().WithTimeout();
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("true", response.Headers.GetValues("test-header").Single());
+
+            // Read response
+            byte[] buffer = new byte[1024];
+            var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
+            Assert.Equal(0, length);
+
+            // Writing to request stream will fail because server is complete
+            await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
 
             // Unblock request
             requestStreamTcs.TrySetResult(null);

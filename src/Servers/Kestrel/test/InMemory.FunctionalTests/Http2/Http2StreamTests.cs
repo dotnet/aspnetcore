@@ -1867,6 +1867,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ResponseTrailers_WorksAcrossMultipleStreams_Cleared()
+        {
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.True(context.Response.SupportsTrailers(), "SupportsTrailers");
+
+                var trailers = context.Features.Get<IHttpResponseTrailersFeature>().Trailers;
+                Assert.False(trailers.IsReadOnly);
+
+                context.Response.AppendTrailer("CustomName", "Custom Value");
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var headersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            var trailersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            var headersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 3);
+
+            var trailersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(trailersFrame1.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame2.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             await InitializeConnectionAsync(async context =>
@@ -4529,6 +4581,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Single(_decodedHeaders);
             Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_Latin1_AcceptedWhenLatin1OptionIsConfigured()
+        {
+            _serviceContext.ServerOptions.Latin1RequestHeaders = true;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                // The HPackEncoder will encode £ as 0xA3 aka Latin1 encoding.
+                new KeyValuePair<string, string>("X-Test", "£"),
+            };
+
+            await InitializeConnectionAsync(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders["content-length"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_Latin1_RejectedWhenLatin1OptionIsNotConfigured()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                // The HPackEncoder will encode £ as 0xA3 aka Latin1 encoding.
+                new KeyValuePair<string, string>("X-Test", "£"),
+            };
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+                expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
         }
     }
 }

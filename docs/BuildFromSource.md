@@ -20,7 +20,7 @@ Building ASP.NET Core on Windows requires:
     ```
 
     However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
-    and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements.
+    and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements. By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:

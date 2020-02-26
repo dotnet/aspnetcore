@@ -12,7 +12,8 @@
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>
 
 </Project>

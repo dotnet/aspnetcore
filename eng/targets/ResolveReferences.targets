@@ -119,7 +119,7 @@
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
 
-    <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0"
+    <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
            Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
@@ -210,6 +210,24 @@
            Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
   </Target>
 
+  <PropertyGroup>
+    <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
+    <_CompileTfmUsingReferenceAssemblies
+        Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
+  </PropertyGroup>
+  <!--
+    If we have a ref/ assembly from Extensions for a package, use that when compiling. The build-only reference to
+    Microsoft.Internal.Extensions.Refs ensures package is installed and $(MicrosoftInternalExtensionsRefsPath) is set.
+  -->
+  <ItemGroup
+      Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
+    <PackageReference Include="Microsoft.Internal.Extensions.Refs"
+        Version="$(MicrosoftInternalExtensionsRefsPackageVersion)"
+        IsImplicitlyDefined="true"
+        IncludeAssets="Build"
+        PrivateAssets="All" />
+  </ItemGroup>
+
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
@@ -237,7 +255,7 @@
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
-        <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
+        <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
         <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>

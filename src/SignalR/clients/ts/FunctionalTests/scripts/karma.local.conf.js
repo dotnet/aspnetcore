@@ -43,17 +43,17 @@ try {
     }
 
     // We use the launchers themselves to figure out if the browser exists. It's a bit sneaky, but it works.
-    tryAddBrowser("ChromeHeadlessNoSandbox", new ChromeHeadlessBrowser(() => { }, {}));
-    tryAddBrowser("ChromiumHeadlessIgnoreCert", new ChromiumHeadlessBrowser(() => { }, {}));
-    if (!tryAddBrowser("FirefoxHeadless", new FirefoxHeadlessBrowser(0, () => { }, {}))) {
-      tryAddBrowser("FirefoxDeveloperHeadless", new FirefoxDeveloperHeadlessBrowser(0, () => { }, {}));
+    tryAddBrowser("ChromeHeadlessNoSandbox", ChromeHeadlessBrowser.prototype);
+    tryAddBrowser("ChromiumHeadlessIgnoreCert", ChromiumHeadlessBrowser.prototype);
+    if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
+      tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
     }
 
     // We need to receive an argument from the caller, but globals don't seem to work, so we use an environment variable.
     if (process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS === "true") {
-      tryAddBrowser("Edge", new EdgeBrowser(() => { }, { create() { } }));
-      tryAddBrowser("IE", new IEBrowser(() => { }, { create() { } }, {}));
-      tryAddBrowser("Safari", new SafariBrowser(() => { }, {}));
+      tryAddBrowser("Edge", EdgeBrowser.prototype);
+      tryAddBrowser("IE", IEBrowser.prototype);
+      tryAddBrowser("Safari", SafariBrowser.prototype);
     }
 
     module.exports = createKarmaConfig({

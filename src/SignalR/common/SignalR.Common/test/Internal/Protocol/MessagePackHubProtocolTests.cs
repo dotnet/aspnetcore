@@ -26,15 +26,20 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(new byte[] { ArrayBytes(5), 3, 0x80, StringBytes(1), (byte)'0', 0x03, ArrayBytes(1), 42 }, result);
         }
 
-        [Fact]
-        public void WriteAndParseDateTimeConvertsToUTC()
+        [Theory]
+        [InlineData(DateTimeKind.Utc)]
+        [InlineData(DateTimeKind.Local)]
+        [InlineData(DateTimeKind.Unspecified)]
+        public void WriteAndParseDateTimeConvertsToUTC(DateTimeKind dateTimeKind)
         {
-            var dateTime = new DateTime(2018, 4, 9);
+            // The messagepack Timestamp format always converts input DateTime to Utc if they are passed as "DateTimeKind.Local" :
+            // https://github.com/neuecc/MessagePack-CSharp/pull/520/files#diff-ed970b3daebc708ce49f55d418075979
+            var originalDateTime = new DateTime(2018, 4, 9, 0, 0, 0, dateTimeKind);
             var writer = MemoryBufferWriter.Get();
 
             try
             {
-                HubProtocol.WriteMessage(CompletionMessage.WithResult("xyz", dateTime), writer);
+                HubProtocol.WriteMessage(CompletionMessage.WithResult("xyz", originalDateTime), writer);
                 var bytes = new ReadOnlySequence<byte>(writer.ToArray());
                 HubProtocol.TryParseMessage(ref bytes, new TestBinder(typeof(DateTime)), out var hubMessage);
 
@@ -44,7 +49,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 // The messagepack Timestamp format specifies that time is stored as seconds since 1970-01-01 UTC
                 // so the library has no choice but to store the time as UTC
                 // https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
-                Assert.Equal(dateTime.ToUniversalTime(), resultDateTime);
+                // So If the original DateTiem was a "Local" one, we create a new DateTime equivalent to the original one but converted to Utc
+                var expectedUtcDateTime = (originalDateTime.Kind == DateTimeKind.Local) ? originalDateTime.ToUniversalTime() : originalDateTime;
+
+                Assert.Equal(expectedUtcDateTime, resultDateTime);
             }
             finally
             {
@@ -194,56 +202,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var testData = TestData[testDataName];
 
             TestWriteMessages(testData);
-        }
-
-        public static IDictionary<string, MessageSizeTestData> MessageSizeData => new[]
-        {
-            new MessageSizeTestData("InvocationMessage_WithoutInvocationId", new InvocationMessage("Target", new object[] { 1 }), 15),
-            new MessageSizeTestData("InvocationMessage_WithInvocationId", new InvocationMessage("1", "Target", new object[] { 1 }), 16),
-            new MessageSizeTestData("InvocationMessage_WithInvocationIdAndStreamId", new InvocationMessage("1", "Target", new object[] { 1 }, new string[] { "2" }), 18),
-
-            new MessageSizeTestData("CloseMessage_Empty", CloseMessage.Empty, 5),
-            new MessageSizeTestData("CloseMessage_WithError", new CloseMessage("error"), 10),
-
-            new MessageSizeTestData("StreamItemMessage_WithNullItem", new StreamItemMessage("1", null), 7),
-            new MessageSizeTestData("StreamItemMessage_WithItem", new StreamItemMessage("1", 1), 7),
-
-            new MessageSizeTestData("CompletionMessage_Empty", CompletionMessage.Empty("1"), 7),
-            new MessageSizeTestData("CompletionMessage_WithResult", CompletionMessage.WithResult("1", 1), 8),
-            new MessageSizeTestData("CompletionMessage_WithError", CompletionMessage.WithError("1", "error"), 13),
-
-            new MessageSizeTestData("StreamInvocationMessage", new StreamInvocationMessage("1", "target", Array.Empty<object>()), 15),
-            new MessageSizeTestData("StreamInvocationMessage_WithStreamId", new StreamInvocationMessage("1", "target", Array.Empty<object>(), new [] { "2" }), 17),
-
-            new MessageSizeTestData("CancelInvocationMessage", new CancelInvocationMessage("1"), 6),
-
-            new MessageSizeTestData("PingMessage", PingMessage.Instance, 3),
-        }.ToDictionary(t => t.Name);
-
-        public static IEnumerable<object[]> MessageSizeDataNames => MessageSizeData.Keys.Select(name => new object[] { name });
-
-        [Theory]
-        [MemberData(nameof(MessageSizeDataNames))]
-        public void VerifyMessageSize(string testDataName)
-        {
-            var testData = MessageSizeData[testDataName];
-            Assert.Equal(testData.Size, Write(testData.Message).Length);
-        }
-
-        public class MessageSizeTestData
-        {
-            public string Name { get; }
-            public HubMessage Message { get; }
-            public int Size { get; }
-
-            public MessageSizeTestData(string name, HubMessage message, int size)
-            {
-                Name = name;
-                Message = message;
-                Size = size;
-            }
-
-            public override string ToString() => Name;
         }
     }
 }

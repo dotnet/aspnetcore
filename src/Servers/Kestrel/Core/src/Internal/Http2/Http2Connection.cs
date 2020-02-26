@@ -8,13 +8,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -23,7 +22,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -67,6 +65,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
+        private Http2StreamStack _streamPool;
+
+        internal const int InitialStreamPoolSize = 5;
+        internal const int MaxStreamPoolSize = 40;
+
         public Http2Connection(HttpConnectionContext context)
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
@@ -106,6 +109,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+
+            // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
+            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+
             _inputTask = ReadInputAsync();
         }
 
@@ -554,29 +561,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // Start a new stream
-                _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
-                {
-                    ConnectionId = ConnectionId,
-                    StreamId = _incomingFrame.StreamId,
-                    ServiceContext = _context.ServiceContext,
-                    ConnectionFeatures = _context.ConnectionFeatures,
-                    MemoryPool = _context.MemoryPool,
-                    LocalEndPoint = _context.LocalEndPoint,
-                    RemoteEndPoint = _context.RemoteEndPoint,
-                    StreamLifetimeHandler = this,
-                    ClientPeerSettings = _clientSettings,
-                    ServerPeerSettings = _serverSettings,
-                    FrameWriter = _frameWriter,
-                    ConnectionInputFlowControl = _inputFlowControl,
-                    ConnectionOutputFlowControl = _outputFlowControl,
-                    TimeoutControl = TimeoutControl,
-                });
+                _currentHeadersStream = GetStream(application);
 
-                _currentHeadersStream.Reset();
                 _headerFlags = _incomingFrame.HeadersFlags;
 
                 var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
                 return DecodeHeadersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
+            }
+        }
+
+        private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application)
+        {
+            if (_streamPool.TryPop(out var stream))
+            {
+                stream.InitializeWithExistingContext(_incomingFrame.StreamId);
+                return stream;
+            }
+
+            return new Http2Stream<TContext>(
+                application,
+                CreateHttp2StreamContext());
+        }
+
+        private Http2StreamContext CreateHttp2StreamContext()
+        {
+            return new Http2StreamContext
+            {
+                ConnectionId = ConnectionId,
+                StreamId = _incomingFrame.StreamId,
+                ServiceContext = _context.ServiceContext,
+                ConnectionFeatures = _context.ConnectionFeatures,
+                MemoryPool = _context.MemoryPool,
+                LocalEndPoint = _context.LocalEndPoint,
+                RemoteEndPoint = _context.RemoteEndPoint,
+                StreamLifetimeHandler = this,
+                ClientPeerSettings = _clientSettings,
+                ServerPeerSettings = _serverSettings,
+                FrameWriter = _frameWriter,
+                ConnectionInputFlowControl = _inputFlowControl,
+                ConnectionOutputFlowControl = _outputFlowControl,
+                TimeoutControl = TimeoutControl,
+            };
+        }
+
+        private void ReturnStream(Http2Stream stream)
+        {
+            if (_streamPool.Count < MaxStreamPoolSize)
+            {
+                _streamPool.Push(stream);
             }
         }
 
@@ -1028,6 +1060,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     _streams.Remove(stream.StreamId);
+                    ReturnStream(stream);
                 }
                 else
                 {
@@ -1054,6 +1087,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _streams.Remove(stream.StreamId);
+                ReturnStream(stream);
             }
         }
 
@@ -1342,6 +1376,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
+        }
+
         private class StreamCloseAwaitable : ICriticalNotifyCompletion
         {
             private static readonly Action _callbackCompleted = () => { };
@@ -1399,6 +1443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Status = 0x10,
             Unknown = 0x40000000
         }
+
 
         private static class GracefulCloseInitiator
         {

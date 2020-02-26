@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {

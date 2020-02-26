@@ -21,7 +21,7 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2225", FlakyOn.Helix.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2225", FlakyOn.Helix.All)]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()

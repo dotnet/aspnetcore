@@ -21,9 +21,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new GlobbingApp(logger);
         }
 
-        [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -41,7 +42,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(2, types);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -57,7 +59,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
@@ -73,7 +76,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8987")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -85,8 +89,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted();
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
@@ -99,8 +103,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotSame(restart, finished);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/8267")]
+        [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();

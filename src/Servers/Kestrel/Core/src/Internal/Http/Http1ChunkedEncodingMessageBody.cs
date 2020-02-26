@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (readableBuffer.IsSingleSegment)
             {
-                writableBuffer.Write(readableBuffer.First.Span);
+                writableBuffer.Write(readableBuffer.FirstSpan);
             }
             else
             {

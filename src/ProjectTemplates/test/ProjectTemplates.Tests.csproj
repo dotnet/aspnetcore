@@ -14,6 +14,7 @@
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BaseOutputPath />
     <OutputPath />
 
@@ -22,6 +23,7 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +34,8 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,13 +49,12 @@
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="../BlazorWasm.ProjectTemplates/Microsoft.AspNetCore.Blazor.Templates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/$(DefaultNetCoreTargetFramework)/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
