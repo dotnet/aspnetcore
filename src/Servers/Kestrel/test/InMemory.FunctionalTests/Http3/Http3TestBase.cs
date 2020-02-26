@@ -314,7 +314,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal async ValueTask<Http3ControlStream> CreateOutboundControlStream(long id)
         {
-            var stream = new Http3ControlStream(this, canRead: false, canWrite: true);
+            var inputPipeOptions = GetInputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+            var outputPipeOptions = GetOutputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+
+            var pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
+
+            var remoteStreamContext = new TestStreamContext(canRead: true, canWrite: false, pair.Transport, pair.Application);
+            var localStreamContext = new TestStreamContext(canRead: false, canWrite: true, pair.Application, pair.Transport);
+
+            var stream = new Http3ControlStream(this, localStreamContext);
+
             if (id == ControlStreamId)
             {
                 _outboundControlStream = stream;
@@ -328,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _outboundDecoderStream = stream;
             }
 
-            _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
+            _multiplexedContext.AcceptQueue.Writer.TryWrite(remoteStreamContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
         }
@@ -547,17 +556,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public Dictionary<long, long> SettingsDictionary { get; } = new Dictionary<long, long>();
 
-            public Http3ControlStream(Http3TestBase testBase, bool canRead, bool canWrite)
-            {
-                _testBase = testBase;
-                var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-                var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-                var pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                StreamContext = new TestStreamContext(canRead: false, canWrite: true, pair.Transport, pair.Application);
-                _application = pair.Application; 
-                _transport = pair.Transport;
-            }
-
             public Http3ControlStream(Http3TestBase testBase, ConnectionContext context)
             {
                 _testBase = testBase;
@@ -698,6 +696,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Features = new FeatureCollection();
                 Features.Set<IStreamDirectionFeature>(this);
                 Features.Set<IStreamIdFeature>(this);
+                Features.Set<IProtocolErrorCodeFeature>(this);
                 CanRead = canRead;
                 CanWrite = canWrite;
                 Transport = transport;

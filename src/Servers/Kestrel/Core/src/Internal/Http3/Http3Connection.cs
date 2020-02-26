@@ -23,9 +23,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         public DynamicTable DynamicTable { get; set; }
 
-        public Http3ControlStream ControlStream { get; set; }
-        public Http3ControlStream EncoderStream { get; set; }
-        public Http3ControlStream DecoderStream { get; set; }
+        public Http3ControlStream InboundControlStream { get; set; }
+        public Http3ControlStream InboundEncoderStream { get; set; }
+        public Http3ControlStream InboundDecoderStream { get; set; }
+
+        public Http3ControlStream OutboundControlStream { get; set; }
+        public Http3ControlStream OutboundEncoderStream { get; set; }
+        public Http3ControlStream OutboundDecoderStream { get; set; }
 
         internal readonly Dictionary<long, Http3Stream> _streams = new Dictionary<long, Http3Stream>();
 
@@ -39,8 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _aborted;
         private object _protocolSelectionLock = new object();
 
-        private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
-        private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
+        // For testing
+        internal Http3PeerSettings _serverSettings = new Http3PeerSettings();
+        internal Http3PeerSettings _clientSettings = new Http3PeerSettings();
 
         public Http3Connection(Http3ConnectionContext context)
         {
@@ -54,9 +59,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             var http3Limits = httpLimits.Http3;
 
-            _serverSettings.MaxHeaderListSize = httpLimits.MaxRequestHeadersTotalSize;
-            _serverSettings.QPackBlockedStreams = http3Limits.BlockedStreams;
-            _serverSettings.QPackMaxTableCapacity = http3Limits.HeaderTableSize;
+            _serverSettings.UpdateMaxHeaderListSize(httpLimits.MaxRequestHeadersTotalSize);
+            _serverSettings.UpdateQPackBlockedStreams(http3Limits.BlockedStreams);
+            _serverSettings.UpdateQPackMaxTableCapacity(http3Limits.HeaderTableSize);
         }
 
         internal long HighestStreamId
@@ -221,10 +226,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     Debug.Assert(quicStreamFeature != null);
 
-                    var httpConnectionContext = new Http3StreamContext
+                    var httpConnectionContext = new HttpConnectionContext
                     {
                         ConnectionId = streamContext.ConnectionId,
-                        StreamContext = streamContext,
+                        ConnectionContext = streamContext,
                         // TODO connection context is null here. Should we set it to anything?
                         ServiceContext = _context.ServiceContext,
                         ConnectionFeatures = streamContext.Features,
@@ -269,9 +274,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
 
-                ControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                EncoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
-                DecoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                OutboundControlStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                OutboundEncoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
+                OutboundDecoderStream?.Abort(new ConnectionAbortedException("Connection is shutting down."));
 
                 await controlTask;
                 await encoderTask;
@@ -282,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private async ValueTask CreateControlStream<TContext>(IHttpApplication<TContext> application)
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            ControlStream = stream;
+            OutboundControlStream = stream;
             await stream.SendStreamIdAsync(id: 0);
             await stream.SendSettingsFrameAsync(_serverSettings.GetNonProtocolDefaults());
         }
@@ -290,14 +295,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application)
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            EncoderStream = stream;
+            OutboundEncoderStream = stream;
             await stream.SendStreamIdAsync(id: 2);
         }
 
         private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application)
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
-            DecoderStream = stream;
+            OutboundDecoderStream = stream;
             await stream.SendStreamIdAsync(id: 3);
         }
 
@@ -306,10 +311,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var features = new FeatureCollection();
             features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
             var streamContext = await _multiplexedContext.ConnectAsync(features);
-            var httpConnectionContext = new Http3StreamContext
+            var httpConnectionContext = new HttpConnectionContext
             {
                 //ConnectionId = "", TODO getting stream ID from stream that isn't started throws an exception.
-                StreamContext = streamContext,
+                ConnectionContext = streamContext,
                 Protocols = HttpProtocols.Http3,
                 ServiceContext = _context.ServiceContext,
                 ConnectionFeatures = streamContext.Features,
@@ -343,10 +348,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                if (ControlStream != null)
+                if (OutboundControlStream != null)
                 {
                     // TODO need to await this somewhere or allow this to be called elsewhere?
-                    ControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
+                    OutboundControlStream.SendGoAway(_highestOpenedStreamId).GetAwaiter().GetResult();
                 }
             }
 
@@ -376,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                _clientSettings.MaxHeaderListSize = Math.Min(value, _serverSettings.MaxHeaderListSize);
+                _clientSettings.UpdateMaxHeaderListSize(Math.Min(value, _serverSettings.MaxHeaderListSize));
             }
         }
 

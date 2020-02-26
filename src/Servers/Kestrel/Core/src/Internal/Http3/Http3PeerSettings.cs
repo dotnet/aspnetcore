@@ -11,28 +11,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public const long DefaultQPackMaxTableCapacity = 0;
         public const long DefaultQPackBlockedStreams = 0;
 
-        public long MaxHeaderListSize { get; set; } = DefaultMaxHeaderListSize;
-        public long QPackMaxTableCapacity { get; set; } = DefaultQPackMaxTableCapacity;
-        public long QPackBlockedStreams { get; set; } = DefaultQPackBlockedStreams;
+        public long MaxHeaderListSize { get; private set; } = DefaultMaxHeaderListSize;
+        public long QPackMaxTableCapacity { get; private set; } = DefaultQPackMaxTableCapacity;
+        public long QPackBlockedStreams { get; private set; } = DefaultQPackBlockedStreams;
 
-        public void Update(IList<Http3PeerSetting> settings)
+        public virtual void UpdateMaxHeaderListSize(long size)
         {
-            foreach (var setting in settings)
-            {
-                var value = setting.Value;
-                switch (setting.Parameter)
-                {
-                    case Http3SettingsParameter.MaxHeaderListSize:
-                        MaxHeaderListSize = value;
-                        break;
-                    case Http3SettingsParameter.QPackBlockedStreams:
-                        QPackMaxTableCapacity = value;
-                        break;
-                    case Http3SettingsParameter.QPackMaxTableCapacity:
-                        QPackBlockedStreams = value;
-                        break;
-                }
-            }
+            MaxHeaderListSize = size;
+        }
+
+        public virtual void UpdateQPackMaxTableCapacity(long size)
+        {
+            QPackMaxTableCapacity = size;
+        }
+
+        public virtual void UpdateQPackBlockedStreams(long size)
+        {
+            QPackBlockedStreams = size;
         }
 
         internal IList<Http3PeerSetting> GetNonProtocolDefaults()

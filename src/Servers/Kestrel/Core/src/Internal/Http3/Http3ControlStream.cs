@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _frameWriter = new Http3FrameWriter(
                 _http3Connection,
+                null,
                 context.Transport.Output,
                 context.ConnectionContext,
                 context.TimeoutControl,
@@ -182,28 +183,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (streamType == ControlStream)
             {
-                if (_http3Connection.ControlStream != null)
+                if (_http3Connection.InboundControlStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
+
+                _http3Connection.InboundControlStream = this;
 
                 await HandleControlStream();
             }
             else if (streamType == EncoderStream)
             {
-                if (_http3Connection.EncoderStream != null)
+                if (_http3Connection.InboundEncoderStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
+
+                _http3Connection.InboundEncoderStream = this;
+
                 await HandleEncodingTask();
                 return;
             }
             else if (streamType == DecoderStream)
             {
-                if (_http3Connection.DecoderStream != null)
+                if (_http3Connection.InboundDecoderStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
+
+                _http3Connection.InboundDecoderStream = this;
+
                 await HandleDecodingTask();
             }
             else

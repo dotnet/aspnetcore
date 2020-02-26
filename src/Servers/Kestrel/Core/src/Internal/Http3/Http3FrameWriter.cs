@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly object _writeLock = new object();
         private readonly QPackEncoder _qpackEncoder = new QPackEncoder();
         private readonly Http3Connection _connection;
+        private readonly Http3Stream _stream;
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly ITimeoutControl _timeoutControl;
@@ -43,9 +44,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(Http3Connection connection, PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(Http3Connection connection, Http3Stream stream, PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
         {
             _connection = connection;
+            _stream = stream;
             _outputWriter = output;
             _connectionContext = connectionContext;
             _timeoutControl = timeoutControl;
@@ -301,7 +303,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
                     if (payloadLength > _connection.GetMaxHeaderListSize())
                     {
-                        throw new Http3StreamErrorException("Exceeded header list size", Http3ErrorCode.FrameError);
+                        _stream.Abort(new ConnectionAbortedException("Exceeded client request max header list size."), Http3ErrorCode.ProtocolError);
+                        return;
                     }
                     FinishWritingHeaders(payloadLength, done);
                 }

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Http3OutputProducer _http3Output;
         private int _isClosed;
         private int _gracefulCloseInitiator;
-        private readonly Http3StreamContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
         private readonly IStreamIdFeature _streamIdFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
+        public Http3Stream(Http3Connection http3Connection, HttpConnectionContext context) 
         {
             Initialize(context);
 
@@ -67,8 +67,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _frameWriter = new Http3FrameWriter(
                 _http3Connection,
+                this,
                 context.Transport.Output,
-                context.StreamContext,
+                context.ConnectionContext,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
