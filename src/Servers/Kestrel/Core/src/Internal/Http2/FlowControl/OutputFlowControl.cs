@@ -37,6 +37,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
         }
 
+        public void Reset(uint initialWindowSize)
+        {
+            // When output flow control is reused the client window size needs to be reset.
+            // The client might have changed the window size before the stream is reused.
+            _flow = new FlowControl(initialWindowSize);
+            Debug.Assert((_awaitableQueue?.Count ?? 0) == 0, "Queue should have been emptied by the previous stream.");
+        }
+
         public void Advance(int bytes)
         {
             _flow.Advance(bytes);

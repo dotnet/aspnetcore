@@ -607,7 +607,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ReturnStream(Http2Stream stream)
         {
-            if (StreamPool.Count < MaxStreamPoolSize)
+            // We're conservative about what streams we can reuse.
+            // If there is a chance the stream is still in use then don't attempt to reuse it.
+            if (stream.CanReuse && StreamPool.Count < MaxStreamPoolSize)
             {
                 StreamPool.Push(stream);
             }

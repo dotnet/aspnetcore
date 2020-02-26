@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             base.Initialize(context);
 
+            CanReuse = false;
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
             InputRemaining = null;
@@ -45,27 +46,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _context = context;
 
-            _inputFlowControl = new StreamInputFlowControl(
-                context.StreamId,
-                context.FrameWriter,
-                context.ConnectionInputFlowControl,
-                context.ServerPeerSettings.InitialWindowSize,
-                context.ServerPeerSettings.InitialWindowSize / 2);
+            // First time the stream is used we need to create flow control, producer and pipes.
+            // When a stream is reused these types will be reset and reused.
+            if (_inputFlowControl == null)
+            {
+                _inputFlowControl = new StreamInputFlowControl(
+                    this,
+                    context.FrameWriter,
+                    context.ConnectionInputFlowControl,
+                    context.ServerPeerSettings.InitialWindowSize,
+                    context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(
-                context.ConnectionOutputFlowControl,
-                context.ClientPeerSettings.InitialWindowSize);
+                _outputFlowControl = new StreamOutputFlowControl(
+                    context.ConnectionOutputFlowControl,
+                    context.ClientPeerSettings.InitialWindowSize);
 
-            _http2Output = new Http2OutputProducer(
-                context.StreamId,
-                context.FrameWriter,
-                _outputFlowControl,
-                context.MemoryPool,
-                this,
-                context.ServiceContext.Log);
+                _http2Output = new Http2OutputProducer(this, context, _outputFlowControl);
 
-            RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
-            Output = _http2Output;
+                RequestBodyPipe = CreateRequestBodyPipe();
+
+                Output = _http2Output;
+            }
+            else
+            {
+                _inputFlowControl.Reset();
+                _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
+                _http2Output.StreamReset();
+                RequestBodyPipe.Reset();
+            }
         }
 
         public void InitializeWithExistingContext(int streamId)
@@ -94,6 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
         }
+
+        public bool CanReuse { get; private set; }
 
         protected override void OnReset()
         {
@@ -137,13 +147,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                _http2Output.Dispose();
+                _http2Output.Complete();
 
                 RequestBodyPipe.Reader.Complete();
 
                 // The app can no longer read any more of the request body, so return any bytes that weren't read to the
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
+
+                // We only want to reuse a stream that has completely finished writing.
+                // This is to prevent the situation where Http2OutputProducer.ProcessDataWrites
+                // is still running in the background.
+                CanReuse = !_keepAlive && HasResponseCompleted;
             }
             finally
             {
@@ -543,7 +558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
-        private Pipe CreateRequestBodyPipe(uint windowSize)
+        private Pipe CreateRequestBodyPipe()
             => new Pipe(new PipeOptions
             (
                 pool: _context.MemoryPool,
@@ -551,8 +566,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 writerScheduler: PipeScheduler.Inline,
                 // Never pause within the window range. Flow control will prevent more data from being added.
                 // See the assert in OnDataAsync.
-                pauseWriterThreshold: windowSize + 1,
-                resumeWriterThreshold: windowSize + 1,
+                pauseWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
+                resumeWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
                 useSynchronizationContext: false,
                 minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
