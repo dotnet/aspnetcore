@@ -269,7 +269,7 @@
     },
     "MissingAuthority": {
       "type": "computed",
-      "value": "(Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
+      "value": "(IndividualAuth && !Hosted && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
     },
     "AAdB2CInstance": {
       "type": "parameter",
