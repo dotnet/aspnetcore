@@ -24,22 +24,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             Debug.Assert((long)end >= Vector256<sbyte>.Count);
 
+            // PERF: so the JIT can reuse the zero from a register
+            Vector128<sbyte> zero = Vector128<sbyte>.Zero;
+
             if (Sse2.IsSupported)
             {
                 if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
                 {
-                    Vector256<sbyte> zero = Vector256<sbyte>.Zero;
+                    Vector256<sbyte> avxZero = Vector256<sbyte>.Zero;
 
                     do
                     {
                         var vector = Avx.LoadVector256(input).AsSByte();
-                        if (!CheckBytesInAsciiRange(vector, zero))
+                        if (!CheckBytesInAsciiRange(vector, avxZero))
                         {
                             return false;
                         }
 
-                        var tmp0 = Avx2.UnpackLow(vector, zero);
-                        var tmp1 = Avx2.UnpackHigh(vector, zero);
+                        var tmp0 = Avx2.UnpackLow(vector, avxZero);
+                        var tmp1 = Avx2.UnpackHigh(vector, avxZero);
 
                         // Bring into the right order
                         var out0 = Avx2.Permute2x128(tmp0, tmp1, 0x20);
@@ -60,8 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                 if (input <= end - Vector128<sbyte>.Count)
                 {
-                    Vector128<sbyte> zero = Vector128<sbyte>.Zero;
-
                     do
                     {
                         var vector = Sse2.LoadVector128(input).AsSByte();
@@ -122,11 +123,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    if (Bmi2.X64.IsSupported)
+                    // BMI2 could be used, but this variant is faster on both Intel and AMD.
+                    if (Sse2.X64.IsSupported)
                     {
-                        // BMI2 will work regardless of the processor's endianness.
-                        ((ulong*)output)[0] = Bmi2.X64.ParallelBitDeposit((ulong)value, 0x00FF00FF_00FF00FFul);
-                        ((ulong*)output)[1] = Bmi2.X64.ParallelBitDeposit((ulong)(value >> 32), 0x00FF00FF_00FF00FFul);
+                        Vector128<sbyte> vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
+                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                        Sse2.Store((ulong*)output, vecWide);
                     }
                     else
                     {
@@ -152,19 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    if (Bmi2.IsSupported)
-                    {
-                        // BMI2 will work regardless of the processor's endianness.
-                        ((uint*)output)[0] = Bmi2.ParallelBitDeposit((uint)value, 0x00FF00FFu);
-                        ((uint*)output)[1] = Bmi2.ParallelBitDeposit((uint)(value >> 16), 0x00FF00FFu);
-                    }
-                    else
-                    {
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                    }
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -181,19 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         return false;
                     }
 
-                    if (Bmi2.IsSupported)
-                    {
-                        // BMI2 will work regardless of the processor's endianness.
-                        ((uint*)output)[0] = Bmi2.ParallelBitDeposit((uint)value, 0x00FF00FFu);
-                        ((uint*)output)[1] = Bmi2.ParallelBitDeposit((uint)(value >> 16), 0x00FF00FFu);
-                    }
-                    else
-                    {
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-                        output[2] = (char)input[2];
-                        output[3] = (char)input[3];
-                    }
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
 
                     input += sizeof(int);
                     output += sizeof(int);
@@ -483,6 +461,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
+        {
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.X64.IsSupported)
+            {
+                Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
+            }
+            else
+            {
+                output[0] = (char)input[0];
+                output[1] = (char)input[1];
+                output[2] = (char)input[2];
+                output[3] = (char)input[3];
+            }
+        }
+
         /// <summary>
         /// Given a DWORD which represents a buffer of 4 bytes, widens the buffer into 4 WORDs and
         /// compares them to the WORD buffer with machine endianness.
@@ -495,11 +492,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
-            if (Bmi2.X64.IsSupported)
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.X64.IsSupported)
             {
-                // BMI2 will work regardless of the processor's endianness.
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
                 return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                    Bmi2.X64.ParallelBitDeposit(value, 0x00FF00FF_00FF00FFul);
+                    Sse2.X64.ConvertToUInt64(vecWide);
             }
             else
             {
@@ -532,11 +531,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
-            if (Bmi2.IsSupported)
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.IsSupported)
             {
-                // BMI2 will work regardless of the processor's endianness.
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<uint> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
                 return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                    Bmi2.ParallelBitDeposit(value, 0x00FF00FFu);
+                    Sse2.ConvertToUInt32(vecWide);
             }
             else
             {
@@ -665,12 +666,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return (((check - 0x0101010101010101L) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(int check)
         {
             const int HighBits = unchecked((int)0x80808080);
             return (((check - 0x01010101) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(short check)
         {
             const short HighBits = unchecked((short)0x8080);
