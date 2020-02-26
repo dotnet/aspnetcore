@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal abstract class Http3ControlStream : IThreadPoolWorkItem
     {
-        private const int ControlStream = 0;
-        private const int EncoderStream = 2;
-        private const int DecoderStream = 3;
+        internal const int ControlStreamId = 0;
+        internal const int EncoderStreamId = 2;
+        internal const int DecoderStreamId = 3;
 
         private Http3FrameWriter _frameWriter;
         private readonly Http3Connection _http3Connection;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             _frameWriter = new Http3FrameWriter(
                 _http3Connection,
-                null,
+                stream: null, // TODO consider passing in a shared base class for Request and Control streams.
                 context.Transport.Output,
                 context.ConnectionContext,
                 context.TimeoutControl,
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return;
             }
 
-            if (streamType == ControlStream)
+            if (streamType == ControlStreamId)
             {
                 if (_http3Connection.InboundControlStream != null)
                 {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 await HandleControlStream();
             }
-            else if (streamType == EncoderStream)
+            else if (streamType == EncoderStreamId)
             {
                 if (_http3Connection.InboundEncoderStream != null)
                 {
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 await HandleEncodingTask();
                 return;
             }
-            else if (streamType == DecoderStream)
+            else if (streamType == DecoderStreamId)
             {
                 if (_http3Connection.InboundDecoderStream != null)
                 {

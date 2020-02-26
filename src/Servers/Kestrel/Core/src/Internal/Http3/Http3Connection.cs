@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -230,7 +229,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         ConnectionId = streamContext.ConnectionId,
                         ConnectionContext = streamContext,
-                        // TODO connection context is null here. Should we set it to anything?
                         ServiceContext = _context.ServiceContext,
                         ConnectionFeatures = streamContext.Features,
                         MemoryPool = _context.MemoryPool,
@@ -240,7 +238,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
                     };
 
-                    // TODO check if all unidirectional streams have been opened before accepting requests?
                     if (!quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
@@ -288,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             OutboundControlStream = stream;
-            await stream.SendStreamIdAsync(id: 0);
+            await stream.SendStreamIdAsync(Http3ControlStream.ControlStreamId);
             await stream.SendSettingsFrameAsync(_serverSettings.GetNonProtocolDefaults());
         }
 
@@ -296,14 +293,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             OutboundEncoderStream = stream;
-            await stream.SendStreamIdAsync(id: 2);
+            await stream.SendStreamIdAsync(Http3ControlStream.EncoderStreamId);
         }
 
         private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application)
         {
             var stream = await CreateNewUnidirectionalStreamAsync(application);
             OutboundDecoderStream = stream;
-            await stream.SendStreamIdAsync(id: 3);
+            await stream.SendStreamIdAsync(Http3ControlStream.DecoderStreamId);
         }
 
         private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application)

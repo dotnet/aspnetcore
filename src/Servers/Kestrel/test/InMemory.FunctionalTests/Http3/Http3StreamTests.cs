@@ -1,10 +1,13 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -31,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+            await StopConnectionAsync(expectedLastStreamId: 0);
         }
 
         [Fact]
@@ -106,7 +110,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
 
-            // TODO figure out how to test errors for request streams that would be set on the Quic Stream.
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3HeaderLengthExceeded);
         }
 
@@ -309,6 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [Repeat(1000)]
         public async Task MissingAuthorityFallsBackToHost_200Status()
         {
             var headers = new[]

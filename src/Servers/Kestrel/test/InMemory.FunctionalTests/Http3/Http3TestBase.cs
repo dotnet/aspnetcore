@@ -197,7 +197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             while (true)
             {
-                // TODO think about this
                 var result = await controlStream.StreamContext.Transport.Input.ReadAsync();
                 var readableBuffer = result.Buffer;
                 var consumed = readableBuffer.Start;
