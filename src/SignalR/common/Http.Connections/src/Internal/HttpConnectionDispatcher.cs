@@ -572,12 +572,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
         {
-            if (oldContext.User.Identity is WindowsIdentity)
+            // If the identity is a WindowsIdentity we need to clone the User.
+            // This is because the WindowsIdentity uses SafeHandle's which are disposed at the end of the request
+            // and accessing the identity can happen outside of the request scope.
+            if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
             {
-                newContext.User = new ClaimsPrincipal();
+                var skipFirstIdentity = false;
+                if (oldContext.User is WindowsPrincipal)
+                {
+                    // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
+                    // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
+                    newContext.User = new WindowsPrincipal((WindowsIdentity)(windowsIdentity.Clone()));
+                    skipFirstIdentity = true;
+                }
+                else
+                {
+                    newContext.User = new ClaimsPrincipal();
+                }
 
                 foreach (var identity in oldContext.User.Identities)
                 {
+                    if (skipFirstIdentity)
+                    {
+                        skipFirstIdentity = false;
+                        continue;
+                    }
                     newContext.User.AddIdentity(identity.Clone());
                 }
             }
