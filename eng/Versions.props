@@ -99,14 +99,11 @@
     <!-- Packages from dotnet/extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.2.20126.1</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsConfigurationBinderPackageVersion>
@@ -125,10 +122,8 @@
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
@@ -143,10 +138,7 @@
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftInternalExtensionsRefsPackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-preview.2.20125.8</dotnetefPackageVersion>
