@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // increase size of encoding buffer for this test.
             requestStream.HeaderEncodingBuffer = new byte[_serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize * 2];
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
-            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3HeaderLengthExceeded);
         }
