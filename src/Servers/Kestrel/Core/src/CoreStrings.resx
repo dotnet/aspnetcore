@@ -545,6 +545,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3StreamErrorMoreDataThanLength" xml:space="preserve">
     <value>More data received than specified in the Content-Length header.</value>
   </data>
+  <data name="Http3HeaderLengthExceeded" xml:space="preserve">
+    <value>Headers exceeded maximum header list size.</value>
+  </data>
   <data name="GreaterThanZeroRequired" xml:space="preserve">
     <value>A value greater than zero is required.</value>
   </data>

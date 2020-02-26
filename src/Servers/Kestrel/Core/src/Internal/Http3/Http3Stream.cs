@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
         private TaskCompletionSource<object> _appCompleted;
+        private int _totalHeaderListSize;
 
         public Pipe RequestBodyPipe { get; }
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.MemoryPool,
                 this,
                 context.ServiceContext.Log);
-            RequestBodyPipe = CreateRequestBodyPipe(64 * 1024); // windowSize?
+            RequestBodyPipe = CreateRequestBodyPipe(64 * 1024);
             Output = _http3Output;
             QPackDecoder = new QPackDecoder(_context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize);
         }
@@ -130,7 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            // TODO MaxRequestHeadersTotalSize?
             ValidateHeader(name, value);
             try
             {
@@ -225,6 +225,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             if (IsConnectionSpecificHeaderField(name, value))
             {
                 throw new Http3StreamErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http3ErrorCode.ProtocolError);
+            }
+
+            _totalHeaderListSize += name.Length + value.Length;
+            if (_totalHeaderListSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3HeaderLengthExceeded, Http3ErrorCode.ProtocolError);
             }
 
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2

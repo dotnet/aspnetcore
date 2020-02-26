@@ -97,16 +97,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-                new KeyValuePair<string, string>("test", new string('a', 10000))
+                new KeyValuePair<string, string>("test", new string('a', _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize))
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
-
+            // increase size of encoding buffer for this test.
+            requestStream.HeaderEncodingBuffer = new byte[_serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize * 2];
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
 
             // TODO figure out how to test errors for request streams that would be set on the Quic Stream.
-            await requestStream.ExpectReceiveEndOfStream();
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3HeaderLengthExceeded);
         }
 
         [Fact]
@@ -461,9 +462,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestLineSize_Reset()
         {
-            // Default 8kb limit
-            // This test has to work around the HPack parser limit for incoming field sizes over 4kb. That's going to be a problem for people with long urls.
-            // https://github.com/aspnet/KestrelHttpServer/issues/2872
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET" + new string('a', 1024 * 3)),

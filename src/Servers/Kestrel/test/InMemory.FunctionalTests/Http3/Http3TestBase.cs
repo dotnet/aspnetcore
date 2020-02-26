@@ -1,10 +1,8 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net.Http;
-using System.Net.Http.QPack;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
@@ -14,7 +12,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -23,12 +20,11 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
-using static System.IO.Pipelines.DuplexPipe;
 using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
+    public partial class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
         internal TestServiceContext _serviceContext;
         internal Http3Connection _connection;
@@ -39,14 +35,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
         protected Task _connectionTask;
         private TestMultiplexedConnectionContext _multiplexedContext;
-        private Http3ControlStream _outboundControlStream;
-        private Http3ControlStream _outboundEncoderStream;
-        private Http3ControlStream _outboundDecoderStream;
+        private TestHttp3ControlStream _outboundControlStream;
+        private TestHttp3ControlStream _outboundEncoderStream;
+        private TestHttp3ControlStream _outboundDecoderStream;
 
-        private Http3ControlStream _inboundControlStream;
+        private TestHttp3ControlStream _inboundControlStream;
         private TaskCompletionSource<object> _controlStreamCreated = new TaskCompletionSource<object>();
-        private Http3ControlStream _inboundEncoderStream;
-        private Http3ControlStream _inboundDecoderStream;
+        private TestHttp3ControlStream _inboundEncoderStream;
+        private TestHttp3ControlStream _inboundDecoderStream;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
@@ -131,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await Task.CompletedTask;
         }
 
-        internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application)
+        internal async ValueTask<TestHttp3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application)
         {
             await InitializeConnectionAsync(application);
 
@@ -178,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
 
                 // Always Unidirectional stream
-                var stream = new Http3ControlStream(this, streamContext);
+                var stream = new TestHttp3ControlStream(this, streamContext);
                 var streamType = await TryReadStreamIdAsync(stream);
 
                 if (streamType == ControlStreamId)
@@ -197,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        private async ValueTask<long> TryReadStreamIdAsync(Http3ControlStream controlStream)
+        private async ValueTask<long> TryReadStreamIdAsync(TestHttp3ControlStream controlStream)
         {
             while (true)
             {
@@ -256,8 +252,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async Task WaitForConnectionErrorAsyncDoNotCloseTransport<TException>(long expectedLastStreamId, Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
           where TException : Exception
         {
-            _outboundControlStream.VerifyGoAway(expectedLastStreamId);
-
             VerifyErrorCode(expectedErrorCode);
 
             if (expectedErrorMessage?.Length > 0)
@@ -273,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private void VerifyErrorCode(Http3ErrorCode expectedErrorCode)
         {
-            throw new NotImplementedException();
+            Assert.Equal((long)expectedErrorCode, _multiplexedContext.Features.Get<IProtocolErrorCodeFeature>().Error);
         }
 
         private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
@@ -312,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
 
-        internal async ValueTask<Http3ControlStream> CreateOutboundControlStream(long id)
+        internal async ValueTask<TestHttp3ControlStream> CreateOutboundControlStream(long id)
         {
             var inputPipeOptions = GetInputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
             var outputPipeOptions = GetOutputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
@@ -322,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var remoteStreamContext = new TestStreamContext(canRead: true, canWrite: false, pair.Transport, pair.Application);
             var localStreamContext = new TestStreamContext(canRead: false, canWrite: true, pair.Application, pair.Transport);
 
-            var stream = new Http3ControlStream(this, localStreamContext);
+            var stream = new TestHttp3ControlStream(this, localStreamContext);
 
             if (id == ControlStreamId)
             {
@@ -347,382 +341,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _outboundControlStream.WriteSettings(settings);
         }
 
-        internal ValueTask<Http3RequestStream> CreateRequestStream()
+        internal ValueTask<TestHttp3RequestStream> CreateRequestStream()
         {
-            var stream = new Http3RequestStream(this, _connection);
+            var stream = new TestHttp3RequestStream(this, _connection);
             _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
-            return new ValueTask<Http3RequestStream>(stream);
-        }
-
-        internal class Http3StreamBase
-        {
-            protected IDuplexPipe _application;
-            protected IDuplexPipe _transport;
-
-            protected Http3TestBase _testBase;
-            protected Http3Connection _connection;
-            protected long _bytesReceived;
-
-            protected Task SendAsync(ReadOnlySpan<byte> span)
-            {
-                var writableBuffer = _application.Output;
-                writableBuffer.Write(span);
-                return FlushAsync(writableBuffer);
-            }
-
-            protected static async Task FlushAsync(PipeWriter writableBuffer)
-            {
-                await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
-            }
-
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync()
-            {
-                var frame = new Http3FrameWithPayload();
-
-                while (true)
-                {
-                    var result = await _application.Input.ReadAsync().AsTask().DefaultTimeout();
-                    var buffer = result.Buffer;
-                    var consumed = buffer.Start;
-                    var examined = buffer.Start;
-                    var copyBuffer = buffer;
-
-                    try
-                    {
-                        Assert.True(buffer.Length > 0);
-
-                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, out var framePayload))
-                        {
-                            consumed = examined = framePayload.End;
-                            frame.Payload = framePayload.ToArray();
-                            return frame;
-                        }
-                        else
-                        {
-                            examined = buffer.End;
-                        }
-
-                        if (result.IsCompleted)
-                        {
-                            throw new IOException("The reader completed without returning a frame.");
-                        }
-                    }
-                    finally
-                    {
-                        _bytesReceived += copyBuffer.Slice(copyBuffer.Start, consumed).Length;
-                        _application.Input.AdvanceTo(consumed, examined);
-                    }
-                }
-            }
-        }
-
-        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
-        {
-            internal TestStreamContext StreamContext { get; }
-
-            public bool CanRead => true;
-            public bool CanWrite => true;
-
-            public long StreamId => 0;
-
-            private readonly byte[] _headerEncodingBuffer = new byte[4096]; // TODO fill with limit values.
-            private QPackEncoder _qpackEncoder = new QPackEncoder();
-            private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
-            protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            public Http3RequestStream(Http3TestBase testBase, Http3Connection connection)
-            {
-                _testBase = testBase;
-                _connection = connection;
-                var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-                var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-
-                var pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                _transport = pair.Transport;
-                _application = pair.Application;
-
-                StreamContext = new TestStreamContext(canRead: true, canWrite: true, pair.Transport, pair.Application);
-            }
-
-            public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
-            {
-                var outputWriter = _application.Output;
-                var frame = new Http3RawFrame();
-                frame.PrepareHeaders();
-                var buffer = _headerEncodingBuffer.AsMemory();
-                var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
-                frame.Length = length;
-
-                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
-                Http3FrameWriter.WriteHeader(frame, outputWriter);
-                await SendAsync(buffer.Span.Slice(0, length));
-
-                if (endStream)
-                {
-                    await _application.Output.CompleteAsync();
-                }
-
-                return done;
-            }
-
-            internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)
-            {
-                var outputWriter = _application.Output;
-                var frame = new Http3RawFrame();
-                frame.PrepareData();
-                frame.Length = data.Length;
-                Http3FrameWriter.WriteHeader(frame, outputWriter);
-                await SendAsync(data.Span);
-
-                if (endStream)
-                {
-                    await _application.Output.CompleteAsync();
-                }
-            }
-
-            internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
-            {
-                var http3WithPayload = await ReceiveFrameAsync();
-                _qpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
-                return _decodedHeaders;
-            }
-
-            internal async Task<Memory<byte>> ExpectDataAsync()
-            {
-                var http3WithPayload = await ReceiveFrameAsync();
-                return http3WithPayload.Payload;
-            }
-
-            internal async Task ExpectReceiveEndOfStream()
-            {
-                var result = await _application.Input.ReadAsync().AsTask().DefaultTimeout();
-                Assert.True(result.IsCompleted);
-            }
-
-            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-            {
-                _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
-            }
-
-            public void OnHeadersComplete(bool endHeaders)
-            {
-            }
-
-            public void OnStaticIndexedHeader(int index)
-            {
-                var knownHeader = H3StaticTable.Instance[index];
-                _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(knownHeader.Value);
-            }
-
-            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-            {
-                _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
-            }
-
-            internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string expectedErrorMessage)
-            {
-                var readResult = await _application.Input.ReadAsync();
-                _testBase.Logger.LogTrace("Input is completed");
-
-                Assert.True(readResult.IsCompleted);
-                Assert.Equal((long)protocolError, StreamContext.Error);
-
-                if (expectedErrorMessage != null)
-                {
-                    Assert.Contains(_testBase.TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
-                }
-            }
-        }
-
-        internal class Http3FrameWithPayload : Http3RawFrame
-        {
-            public Http3FrameWithPayload() : base()
-            {
-            }
-
-            // This does not contain extended headers
-            public Memory<byte> Payload { get; set; }
-
-            public ReadOnlySequence<byte> PayloadSequence => new ReadOnlySequence<byte>(Payload);
-        }
-
-        internal class Http3ControlStream : Http3StreamBase
-        {
-            //private bool _hasReceivedGoAway;
-
-            internal ConnectionContext StreamContext { get; }
-
-            public long StreamId => 0;
-
-            public Dictionary<long, long> SettingsDictionary { get; } = new Dictionary<long, long>();
-
-            public Http3ControlStream(Http3TestBase testBase, ConnectionContext context)
-            {
-                _testBase = testBase;
-                StreamContext = context;
-                _application = context.Transport;
-            }
-
-            internal async ValueTask<Dictionary<long, long>> ReceiveSettingsFrame()
-            {
-                var frame = await ReceiveFrameAsync();
-                var payload = frame.PayloadSequence;
-
-                while (true)
-                {
-                    var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examined);
-                    if (id == -1)
-                    {
-                        break;
-                    }
-
-                    payload = payload.Slice(consumed);
-
-                    var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examined);
-                    if (id == -1)
-                    {
-                        break;
-                    }
-
-                    payload = payload.Slice(consumed);
-                    SettingsDictionary[id] = value;
-                }
-
-                return SettingsDictionary;
-            }
-
-            public async ValueTask WriteStreamIdAsync(long id)
-            {
-                var writableBuffer = _application.Output;
-
-                void WriteSpan(PipeWriter pw)
-                {
-                    var buffer = pw.GetSpan(sizeHint: 8);
-                    var lengthWritten = VariableLengthIntegerHelper.WriteInteger(buffer, id);
-                    pw.Advance(lengthWritten);
-                }
-
-                WriteSpan(writableBuffer);
-
-                await FlushAsync(writableBuffer);
-            }
-
-            internal void VerifyGoAway(long expectedLastStreamId)
-            {
-                // Make sure stream has ended first.
-                //Assert.True(_hasReceivedGoAway);
-            }
-
-            internal Task WriteSettings(IList<Http3PeerSetting> settings)
-            {
-                var frame = new Http3RawFrame();
-                frame.PrepareSettings();
-
-                frame.Length = Http3FrameWriter.GetSettingsLength(settings);
-                Http3FrameWriter.WriteHeader(frame, _application.Output);
-                var settingsBuffer = _application.Output.GetSpan((int)frame.Length);
-                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
-                Http3FrameWriter.WriteSettings(settings, settingsBuffer);
-                _application.Output.Advance((int)frame.Length);
-
-                return FlushAsync(_application.Output);
-            }
-        }
-
-        private class TestMultiplexedConnectionContext : MultiplexedConnectionContext
-        {
-            public readonly Channel<ConnectionContext> AcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
-            {
-                SingleReader = true,
-                SingleWriter = true
-            });
-
-            private readonly Http3TestBase _testBase;
-
-            public TestMultiplexedConnectionContext(Http3TestBase testBase)
-            {
-                _testBase = testBase;
-            }
-
-            public override string ConnectionId { get; set; }
-
-            public override IFeatureCollection Features { get; }
-
-            public override IDictionary<object, object> Items { get; set; }
-
-            public override void Abort()
-            {
-            }
-
-            public override void Abort(ConnectionAbortedException abortReason)
-            {
-            }
-
-            public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
-            {
-                while (await AcceptQueue.Reader.WaitToReadAsync())
-                {
-                    while (AcceptQueue.Reader.TryRead(out var connection))
-                    {
-                        return connection;
-                    }
-                }
-
-                return null;
-            }
-
-            public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
-            {
-                var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-                var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
-
-                var pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
-                var remoteStreamContext = new TestStreamContext(canRead: true, canWrite: false, pair.Application, pair.Transport);
-                var localStreamContext = new TestStreamContext(canRead: false, canWrite: true, pair.Transport, pair.Application);
-
-                _testBase.AcceptQueue.Writer.TryWrite(remoteStreamContext);
-
-                return new ValueTask<ConnectionContext>(localStreamContext);
-            }
-        }
-
-        internal class TestStreamContext : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IProtocolErrorCodeFeature
-        {
-            private readonly IDuplexPipe _application;
-
-            public TestStreamContext(bool canRead, bool canWrite, IDuplexPipe transport, IDuplexPipe application)
-            {
-                Features = new FeatureCollection();
-                Features.Set<IStreamDirectionFeature>(this);
-                Features.Set<IStreamIdFeature>(this);
-                Features.Set<IProtocolErrorCodeFeature>(this);
-                CanRead = canRead;
-                CanWrite = canWrite;
-                Transport = transport;
-                _application = application;
-            }
-
-            public long Error { get; set; }
-
-            public override string ConnectionId { get; set; }
-
-            public long StreamId { get; }
-
-            public override IFeatureCollection Features { get; }
-
-            public override IDictionary<object, object> Items { get; set; }
-
-            public override IDuplexPipe Transport { get; set; }
-
-            public bool CanRead { get; }
-
-            public bool CanWrite { get; }
-
-            public override void Abort(ConnectionAbortedException abortReason)
-            {
-                _application.Output.Complete(abortReason);
-            }
+            return new ValueTask<TestHttp3RequestStream>(stream);
         }
     }
 }
