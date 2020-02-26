@@ -104,10 +104,9 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("ef restore no worky")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
