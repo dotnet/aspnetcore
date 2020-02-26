@@ -945,7 +945,7 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAsciiNoValidation(value);
+                            output.WriteAscii(value);
                         }}
                     }}
                 }}
