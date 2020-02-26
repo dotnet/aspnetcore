@@ -66,7 +66,7 @@
 
   <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
     <Error
-      Message="Unrecongnized value for BlazorWebAssemblyEnableLinking: '$(BlazorWebAssemblyEnableLinking)'. Valid values are 'true' or 'false'."
+      Text="Unrecongnized value for BlazorWebAssemblyEnableLinking: '$(BlazorWebAssemblyEnableLinking)'. Valid values are 'true' or 'false'."
       Condition="'$(BlazorWebAssemblyEnableLinking)' != 'true' AND '$(BlazorWebAssemblyEnableLinking)' != 'false'" />
 
     <!--
