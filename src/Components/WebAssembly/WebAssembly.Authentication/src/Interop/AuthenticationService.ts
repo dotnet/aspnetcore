@@ -142,8 +142,7 @@ class OidcAuthorizeService implements AuthorizeService {
                 await this._userManager.signinRedirect(this.createArguments(state));
                 return this.redirect();
             } catch (redirectError) {
-                console.log("Redirect authentication error: ", redirectError);
-                return this.error(redirectError);
+                return this.error(this.getExceptionMessage(redirectError));
             }
         }
     }
@@ -176,7 +175,7 @@ class OidcAuthorizeService implements AuthorizeService {
             await this._userManager.signoutRedirect(this.createArguments(state));
             return this.redirect();
         } catch (redirectSignOutError) {
-            return this.error(redirectSignOutError);
+            return this.error(this.getExceptionMessage(redirectSignOutError));
         }
     }
 
@@ -189,7 +188,25 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
         } catch (error) {
-            return this.error(error);
+            return this.error(this.getExceptionMessage(error));
+        }
+    }
+
+    private getExceptionMessage(error: any) {
+        if (isOidcError(error)) {
+            return error.error_description;
+        } else if (isRegularError(error)) {
+            return error.message;
+        } else {
+            return error.toString();
+        }
+
+        function isOidcError(error: any): error is (Oidc.SigninResponse & Oidc.SignoutResponse) {
+            return error && error.error_description;
+        }
+
+        function isRegularError(error: any): error is Error {
+            return error && error.message;
         }
     }
 
