@@ -340,6 +340,7 @@ namespace System.Net.Http.QPack
             return true;
         }
 
+        // TODO these are fairly hard coded for the first two bytes to be zero.
         public bool BeginEncode(IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
         {
             _enumerator = headers.GetEnumerator();
@@ -350,11 +351,7 @@ namespace System.Net.Http.QPack
             buffer[0] = 0;
             buffer[1] = 0;
 
-            bool doneEncode = Encode(buffer.Slice(2), out length);
-
-            // Add two for the first two bytes.
-            length += 2;
-            return doneEncode;
+            return Encode(buffer.Slice(2), out length);
         }
 
         public bool BeginEncode(int statusCode, IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
