@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BlazorWebAssemblyEnableLinking Condition="$(BlazorWebAssemblyEnableLinking) == ''">true</BlazorWebAssemblyEnableLinking>
+    <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == '' AND '$(Configuration)' != 'Debug'">true</BlazorWebAssemblyEnableLinking>
   </PropertyGroup>
 
   <Target
