@@ -8,6 +8,8 @@ root = true
 indent_style = space
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
+file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 4
