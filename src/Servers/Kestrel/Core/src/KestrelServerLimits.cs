@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Limits only applicable to HTTP/3 connections.
         /// </summary>
-        public Http3Limits Http3 { get; } = new Http3Limits();
+        internal Http3Limits Http3 { get; } = new Http3Limits();
 
         /// <summary>
         /// Gets or sets the request body minimum data rate in bytes/second.

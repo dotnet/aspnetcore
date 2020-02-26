@@ -5,10 +5,10 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public class Http3Limits
+    internal class Http3Limits
     {
-        private long _headerTableSize = 0;
-        private long _blockedStreams = 0;
+        private int _headerTableSize = 0;
+        private int _blockedStreams = 0;
 
         /// <summary>
         /// Limits the size of the header compression table, in octets, the QPACK decoder on the server can use.
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 0.
         /// </para>
         /// </summary>
-        public long HeaderTableSize
+        internal int HeaderTableSize
         {
             get => _headerTableSize;
             set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 0.
         /// </para>
         /// </summary>
-        public long BlockedStreams
+        internal int BlockedStreams
         {
             get => _blockedStreams;
             set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");

@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
-            await StopConnectionAsync(expectedLastStreamId: 0);
         }
 
         [Fact]

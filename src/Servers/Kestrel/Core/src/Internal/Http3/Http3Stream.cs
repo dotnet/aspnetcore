@@ -402,6 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    QPackDecoder.Dispose();
                     _http3Connection.RemoveStream(_streamIdFeature.StreamId);
                 }
             }

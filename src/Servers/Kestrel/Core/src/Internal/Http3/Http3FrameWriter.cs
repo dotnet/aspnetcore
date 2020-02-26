@@ -297,15 +297,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     _outgoingFrame.PrepareHeaders();
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
 
-                    // TODO this check is against the compressed byte count rather than uncompressed.
-                    // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
-                    if (payloadLength > _connection.GetMaxHeaderListSize())
+                    if (CalculateHeaderSize(EnumerateHeaders(headers)) > _connection.GetMaxHeaderListSize())
                     {
                         _stream.Abort(new ConnectionAbortedException("Exceeded client request max header list size."), Http3ErrorCode.ProtocolError);
                         return;
                     }
+
+                    var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+
+                    // TODO this check is against the compressed byte count rather than uncompressed.
+                    // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
+
                     FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException hex)
@@ -315,6 +318,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
                 }
             }
+        }
+
+        private int CalculateHeaderSize(IEnumerable<KeyValuePair<string, string>> enumerable)
+        {
+            var size = 0;
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
+            // The size of a header field list is calculated based on the uncompressed size of header fields,
+            // including the length of the name and value in bytes plus an overhead of 32 bytes for each header field.
+            foreach (var header in enumerable)
+            {
+                size += header.Key.Length + header.Value.Length + 32;
+            }
+
+            return size;
         }
 
         private void FinishWritingHeaders(int payloadLength, bool done)
