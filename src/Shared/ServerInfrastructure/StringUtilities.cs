@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -587,8 +588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
         }
-
-        private static readonly char[] s_encode16Chars = "0123456789ABCDEF".ToCharArray();
+        private static readonly SpanAction<char, (string str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -605,28 +605,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            return string.Create(length, (str, separator, number), (buffer, tuple) =>
+            return string.Create(length, (str, separator, number), s_populateSpanWithHexSuffix);
+        }
+
+        private static void PopulateSpanWithHexSuffix(Span<char> buffer, (string str, char separator, uint number) tuple)
+        {
+            var (tupleStr, tupleSeparator, tupleNumber) = tuple;
+
+            var i = 0;
+            if (tupleStr != null)
             {
-                var (tupleStr, tupleSeparator, tupleNumber) = tuple;
-                char[] encode16Chars = s_encode16Chars;
+                tupleStr.AsSpan().CopyTo(buffer);
+                i = tupleStr.Length;
+            }
 
-                var i = 0;
-                if (tupleStr != null)
+            buffer[i] = tupleSeparator;
+            i++;
+
+            if (Ssse3.IsSupported)
+            {
+                // These must be explicity typed as ReadOnlySpan<byte>
+                // They then become a non-allocating mappings to the data section of the assembly.
+                // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static 
+                ReadOnlySpan<byte> shuffleMaskData = new byte[16]
                 {
-                    tupleStr.AsSpan().CopyTo(buffer);
-                    i = tupleStr.Length;
-                }
+                    0xF, 0xF, 3, 0xF,
+                    0xF, 0xF, 2, 0xF,
+                    0xF, 0xF, 1, 0xF,
+                    0xF, 0xF, 0, 0xF
+                };
 
-                buffer[i + 8] = encode16Chars[tupleNumber & 0xF];
-                buffer[i + 7] = encode16Chars[(tupleNumber >> 4) & 0xF];
-                buffer[i + 6] = encode16Chars[(tupleNumber >> 8) & 0xF];
-                buffer[i + 5] = encode16Chars[(tupleNumber >> 12) & 0xF];
-                buffer[i + 4] = encode16Chars[(tupleNumber >> 16) & 0xF];
-                buffer[i + 3] = encode16Chars[(tupleNumber >> 20) & 0xF];
-                buffer[i + 2] = encode16Chars[(tupleNumber >> 24) & 0xF];
-                buffer[i + 1] = encode16Chars[(tupleNumber >> 28) & 0xF];
-                buffer[i] = tupleSeparator;
-            });
+                ReadOnlySpan<byte> asciiUpperCaseData = new byte[16]
+                {
+                    (byte)'0', (byte)'1', (byte)'2', (byte)'3',
+                    (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+                    (byte)'8', (byte)'9', (byte)'A', (byte)'B',
+                    (byte)'C', (byte)'D', (byte)'E', (byte)'F'
+                };
+
+                // Load from data section memory into Vector128 registers
+                var shuffleMask = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(shuffleMaskData));
+                var asciiUpperCase = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(asciiUpperCaseData));
+
+                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(), shuffleMask);
+                var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
+                var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
+                // Lookup the hex values at the positions of the indices
+                var hex = Ssse3.Shuffle(asciiUpperCase, indices);
+                // The high bytes (0x00) of the chars have also been converted to ascii hex '0', so clear them out.
+                hex = Sse2.And(hex, Vector128.Create((ushort)0xFF).AsByte());
+
+                // This generates much more efficient asm than fixing the buffer and using
+                // Sse2.Store((byte*)(p + i), chars.AsByte());
+                Unsafe.WriteUnaligned(
+                    ref Unsafe.As<char, byte>(
+                        ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), i)),
+                    hex);
+            }
+            else
+            {
+                var number = (int)tupleNumber;
+                // Slice the buffer so we can use constant offsets in a backwards order
+                // and the highest index [7] will eliminate the bounds checks for all the lower indicies.
+                buffer = buffer.Slice(i);
+
+                // This must be explicity typed as ReadOnlySpan<byte>
+                // This then becomes a non-allocating mapping to the data section of the assembly.
+                // If it is a var, Span<byte> or byte[], it allocates the byte array per call.
+                ReadOnlySpan<byte> hexEncodeMap = new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
+                // Note: this only works with byte due to endian ambiguity for other types,
+                // hence the later (char) casts
+
+                buffer[7] = (char)hexEncodeMap[number & 0xF];
+                buffer[6] = (char)hexEncodeMap[(number >> 4) & 0xF];
+                buffer[5] = (char)hexEncodeMap[(number >> 8) & 0xF];
+                buffer[4] = (char)hexEncodeMap[(number >> 12) & 0xF];
+                buffer[3] = (char)hexEncodeMap[(number >> 16) & 0xF];
+                buffer[2] = (char)hexEncodeMap[(number >> 20) & 0xF];
+                buffer[1] = (char)hexEncodeMap[(number >> 24) & 0xF];
+                buffer[0] = (char)hexEncodeMap[(number >> 28) & 0xF];
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
