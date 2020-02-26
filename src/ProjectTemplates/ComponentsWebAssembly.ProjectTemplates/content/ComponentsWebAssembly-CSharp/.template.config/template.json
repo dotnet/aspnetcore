@@ -267,6 +267,10 @@
       "replaces": "https://login.microsoftonline.com/",
       "description": "The authority of the OIDC provider (use with standalone Individual auth)."
     },
+    "MissingAuthority": {
+      "type": "computed",
+      "value": "(authority == \"\")"
+    },
     "AAdB2CInstance": {
       "type": "parameter",
       "datatype": "string",
