@@ -24,7 +24,7 @@ using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public partial class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
+    public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
         internal TestServiceContext _serviceContext;
         internal Http3Connection _connection;
@@ -171,7 +171,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             while (true)
             {
                 var streamContext = await AcceptQueue.Reader.ReadAsync();
-                var quicStreamFeature = streamContext.Features.Get<IStreamDirectionFeature>();
 
                 // Always Unidirectional stream
                 var stream = new TestHttp3ControlStream(this, streamContext);
@@ -269,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal((long)expectedErrorCode, _multiplexedContext.Features.Get<IProtocolErrorCodeFeature>().Error);
         }
 
-        private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
+        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
         (
           pool: memoryPool,
           readerScheduler: serviceContext.Scheduler,
@@ -280,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
           minimumSegmentSize: memoryPool.GetMinimumSegmentSize()
         );
 
-        private static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
+        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
         (
             pool: memoryPool,
             readerScheduler: readerScheduler,

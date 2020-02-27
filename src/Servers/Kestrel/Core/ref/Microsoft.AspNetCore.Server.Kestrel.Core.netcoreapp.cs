@@ -77,12 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public int MaxRequestHeaderFieldSize { get { throw null; } set { } }
         public int MaxStreamsPerConnection { get { throw null; } set { } }
     }
-    public partial class Http3Limits
-    {
-        public Http3Limits() { }
-        public int HeaderTableSize { get { throw null; } set { } }
-        public int MaxRequestHeaderFieldSize { get { throw null; } set { } }
-    }
     [System.FlagsAttribute]
     public enum HttpProtocols
     {
@@ -109,7 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         public KestrelServerLimits() { }
         public Microsoft.AspNetCore.Server.Kestrel.Core.Http2Limits Http2 { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Http3Limits Http3 { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.TimeSpan KeepAliveTimeout { get { throw null; } set { } }
         public long? MaxConcurrentConnections { get { throw null; } set { } }
         public long? MaxConcurrentUpgradedConnections { get { throw null; } set { } }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -26,19 +27,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task VerifyDefaultSettingsAreSent()
+        [Repeat(1000)]
+            public async Task VerifyDefaultSettingsAreSent()
         {
             // It's hard to know if the peer receives any setting updates, as they occur on
             // a separate stream from the request stream.
             // This test currently has to shim the client options to know when the max header list size
             // is modified.
             var clientSettings = new Http3PeerSettings();
-            clientSettings.UpdateMaxHeaderListSize(1);
+            clientSettings.MaxHeaderListSize = 1;
 
             await InitializeConnectionAsync(_echoApplication);
-
-            var mockSettings = new MockHttp3PeerSettings();
-            _connection._clientSettings = mockSettings;
 
             await CreateOutboundControlStream(ControlStreamId);
 
@@ -48,8 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await CreateOutboundControlStream(DecoderStreamId);
 
             await WaitForInboundControlStreamCreated();
-
-            await mockSettings.SettingUpdated.Task;
 
             var requestStream = await CreateRequestStream();
             var headers = new[]
@@ -64,15 +61,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, "Exceeded client request max header list size.");
         }
 
-        private class MockHttp3PeerSettings : Http3PeerSettings
-        {
-            public override void UpdateMaxHeaderListSize(long size)
-            {
-                base.UpdateMaxHeaderListSize(size);
-                SettingUpdated.SetResult(null);
-            }
+        //private class MockHttp3PeerSettings : Http3PeerSettings
+        //{
+        //    public override void UpdateMaxHeaderListSize(long size)
+        //    {
+        //        base.UpdateMaxHeaderListSize(size);
+        //        SettingUpdated.SetResult(null);
+        //    }
 
-            public TaskCompletionSource<object> SettingUpdated = new TaskCompletionSource<object>();
-        }
+        //    public TaskCompletionSource<object> SettingUpdated = new TaskCompletionSource<object>();
+        //}
     }
 }

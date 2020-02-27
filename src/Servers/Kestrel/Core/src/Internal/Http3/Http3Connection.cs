@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             var http3Limits = httpLimits.Http3;
 
-            _serverSettings.UpdateMaxHeaderListSize(httpLimits.MaxRequestHeadersTotalSize);
-            _serverSettings.UpdateQPackBlockedStreams(http3Limits.BlockedStreams);
-            _serverSettings.UpdateQPackMaxTableCapacity(http3Limits.HeaderTableSize);
+            _serverSettings.MaxHeaderListSize = httpLimits.MaxRequestHeadersTotalSize;
+            _serverSettings.QPackBlockedStreams = http3Limits.BlockedStreams;
+            _serverSettings.QPackMaxTableCapacity =http3Limits.HeaderTableSize;
         }
 
         internal long HighestStreamId
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                _clientSettings.UpdateMaxHeaderListSize(Math.Min(value, _serverSettings.MaxHeaderListSize));
+                _clientSettings.MaxHeaderListSize = Math.Min(value, _serverSettings.MaxHeaderListSize);
             }
         }
 
