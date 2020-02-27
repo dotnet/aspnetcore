@@ -126,9 +126,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (razorHtmlObj == null)
             {
                 var razorHtmlDocument = RazorHtmlWriter.GetHtmlDocument(document);
-                document.Items[typeof(RazorHtmlDocument)] = razorHtmlDocument;
-
-                return razorHtmlDocument;
+                if (razorHtmlDocument != null)
+                {
+                    document.Items[typeof(RazorHtmlDocument)] = razorHtmlDocument;
+                    return razorHtmlDocument;
+                }
             }
 
             return (RazorHtmlDocument)razorHtmlObj;
