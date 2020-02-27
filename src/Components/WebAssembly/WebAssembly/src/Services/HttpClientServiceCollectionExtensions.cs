@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// configured to use the application's base address (<seealso cref="NavigationManager.BaseUri" />).
         /// </summary>
         /// <param name="serviceCollection">The <see cref="IServiceCollection" />.</param>
-        /// <param name="httpMessageHandler">Optional <see cref="HttpMessageHandler"/> to configure the </param>
+        /// <param name="httpMessageHandler">An <see cref="HttpMessageHandler"/> to be used when issuing requests.</param>
         /// <returns>The configured <see cref="IServiceCollection" />.</returns>
         public static IServiceCollection AddBaseAddressHttpClient(this IServiceCollection serviceCollection, HttpMessageHandler httpMessageHandler = null)
         {

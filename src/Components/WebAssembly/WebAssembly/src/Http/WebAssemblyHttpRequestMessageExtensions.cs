@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace System.Net.Http
 {
     /// <summary>
-    /// Extension methods for configuring an instance <see cref="HttpRequestMessage"/> with Fetch specific options.
+    /// Extension methods for configuring an instance of <see cref="HttpRequestMessage"/> with browser-specific options.
     /// </summary>
     public static class WebAssemblyHttpRequestMessageExtensions
     {
@@ -14,7 +14,7 @@ namespace System.Net.Http
         /// Configures a value for the 'credentials' option for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="requestCredentials">The <see cref="RequestCredentials"/>.</param>
+        /// <param name="requestCredentials">The <see cref="RequestCredentials"/> option.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
         /// <remarks>
         /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
@@ -41,7 +41,7 @@ namespace System.Net.Http
         /// Configures a value for the 'cache' option for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="requestCache">The <see cref="RequestCache"/>.</param>
+        /// <param name="requestCache">The <see cref="RequestCache"/> option.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>\
         /// <remarks>
         /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
@@ -99,7 +99,7 @@ namespace System.Net.Http
         /// Configures a value for the 'integrity' option for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="integrity">The subresource integrity.</param>
+        /// <param name="integrity">The subresource integrity descriptor.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
         public static HttpRequestMessage SetIntegrity(this HttpRequestMessage requestMessage, string integrity)
             => SetFetchOption(requestMessage, "integrity", integrity);
@@ -108,13 +108,13 @@ namespace System.Net.Http
         /// Configures a value for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="key">The key for the HTTP fetch optin.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="name">The name of the HTTP fetch option.</param>
+        /// <param name="value">The value, which must be JSON-serializable.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
         /// <remarks>
         /// See https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
         /// </remarks>
-        public static HttpRequestMessage SetFetchOption(this HttpRequestMessage requestMessage, string key, object value)
+        public static HttpRequestMessage SetFetchOption(this HttpRequestMessage requestMessage, string name, object value)
         {
             if (requestMessage is null)
             {
@@ -134,7 +134,7 @@ namespace System.Net.Http
                 requestMessage.Properties[FetchRequestOptionsKey] = fetchOptions;
             }
 
-            fetchOptions[key] = value;
+            fetchOptions[name] = value;
 
             return requestMessage;
         }
