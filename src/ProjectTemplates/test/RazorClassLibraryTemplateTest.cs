@@ -41,8 +41,7 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("restore no worky")]
+        [Fact]
         public async Task RazorClassLibraryTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);
