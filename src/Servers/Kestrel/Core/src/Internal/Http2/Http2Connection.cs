@@ -973,8 +973,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (Http2StreamErrorException)
             {
                 MakeSpaceInDrainQueue();
-                // Tracked for draining
-                _completedStreams.Enqueue(_currentHeadersStream);
+
+                // Because this stream isn't being queued, OnRequestProcessingEnded will not be
+                // automatically called and the stream won't be completed.
+                // Manually complete stream to ensure pipes are completed.
+                // Completing the stream will add it to the completed stream queue.
+                _currentHeadersStream.DecrementActiveClientStreamCount();
+                _currentHeadersStream.CompleteStream();
                 throw;
             }
 
@@ -1061,7 +1066,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     _streams.Remove(stream.StreamId);
-                    ReturnStream(stream);
+
+                    // We don't want to return a stream for reuse that could still be draining
+                    if (stream.DrainExpirationTicks >= now)
+                    {
+                        ReturnStream(stream);
+                    }
                 }
                 else
                 {
@@ -1088,7 +1098,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _streams.Remove(stream.StreamId);
-                ReturnStream(stream);
             }
         }
 

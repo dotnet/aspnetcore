@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -152,21 +153,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task StreamPool_StreamErrorsOnStart_ReturnedToPool()
+        public async Task StreamPool_EndedStreamErrorsOnStart_ReturnedToPool()
         {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
-            };
-            await InitializeConnectionAsync(_noopApplication);
+            await InitializeConnectionAsync(_echoApplication);
 
-            // This stream will error because it has a content-length with no data
-            await StartStreamAsync(1, headers, endStream: true);
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
 
-            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            // This stream will error because it exceeds max concurrent streams
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
 
             // Ping will trigger the stream to be returned to the pool so we can assert it
             await SendPingAsync(Http2PingFrameFlags.NONE);
@@ -178,7 +175,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Stream returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+            Assert.True(_connection.StreamPool.TryPop(out var stream));
+
+            // Stream has been completed and reset before being returned
+            Assert.Empty(stream.RequestHeaders);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task StreamPool_UnendedStreamErrorsOnStart_ReturnedToPool()
+        {
+            _serviceContext.ServerOptions.Limits.MinRequestBodyDataRate = null;
+
+            await InitializeConnectionAsync(_echoApplication);
+
+            _connection.ServerSettings.MaxConcurrentStreams = 1;
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            // This stream will error because it exceeds max concurrent streams
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.NO_ERROR, CoreStrings.Http2ErrorMaxStreams);
+            await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
+
+            // Ping will trigger the stream to be returned to the pool so we can assert it
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            AdvanceClock(TimeSpan.FromTicks(Constants.RequestBodyDrainTimeout.Ticks + 1));
+
+            // Ping will trigger the stream to attempt to be returned to the pool
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Stream was not returned to the pool
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
         }
 
         [Fact]

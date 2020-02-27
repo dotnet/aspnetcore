@@ -104,6 +104,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
+            CompleteStream();
+        }
+
+        public void CompleteStream()
+        {
             try
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1
