@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone");
-            var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorLinkOnBuild=false");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorWebAssemblyEnableLinking=false");
 
             Assert.BuildPassed(result);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Assert
             for (var i = 0; i < 3; i++)
             {
-                result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorLinkOnBuild=false");
+                result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorWebAssemblyEnableLinking=false");
                 Assert.BuildPassed(result);
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(project, compressedFilesFolder);

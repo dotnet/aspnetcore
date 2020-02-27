@@ -19,6 +19,7 @@
   <UsingTask TaskName="GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorTasksPath)" />
 
   <Target Name="_WriteServiceWorkerAssetsManifest"
+          Condition="'$(ServiceWorkerAssetsManifest)' != ''"
           Inputs="@(ServiceWorkerAssetsManifestItem)"
           Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
           BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"

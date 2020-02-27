@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BlazorWebAssemblyEnableLinking Condition="$(BlazorWebAssemblyEnableLinking) == ''">true</BlazorWebAssemblyEnableLinking>
+    <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == '' AND '$(Configuration)' != 'Debug'">true</BlazorWebAssemblyEnableLinking>
+    <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == ''">false</BlazorWebAssemblyEnableLinking>
   </PropertyGroup>
 
   <Target
@@ -9,12 +10,8 @@
   </Target>
 
   <Target Name="_ResolveBlazorInputs" DependsOnTargets="ResolveReferences;ResolveRuntimePackAssets">
-    <Warning Text="BlazorLinkOnBuild has been renamed to BlazorWebAssemblyEnableLinking. Please update your project files to use the new property."
-             Condition="'$(BlazorLinkOnBuild)' != ''" />
-
-    <PropertyGroup Condition="'$(BlazorLinkOnBuild)' != ''">
-      <BlazorWebAssemblyEnableLinking>$(BlazorLinkOnBuild)</BlazorWebAssemblyEnableLinking>
-    </PropertyGroup>
+    <Error Text="BlazorLinkOnBuild has been renamed to BlazorWebAssemblyEnableLinking. Please update your project files to use the new property."
+           Condition="'$(BlazorLinkOnBuild)' != ''" />
 
     <PropertyGroup>
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
@@ -65,10 +62,6 @@
   </Target>
 
   <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
-    <Error
-      Message="Unrecongnized value for BlazorWebAssemblyEnableLinking: '$(BlazorWebAssemblyEnableLinking)'. Valid values are 'true' or 'false'."
-      Condition="'$(BlazorWebAssemblyEnableLinking)' != 'true' AND '$(BlazorWebAssemblyEnableLinking)' != 'false'" />
-
     <!--
       These are the items calculated as the closure of the runtime assemblies, either by calling the linker
       or by calling our custom ResolveBlazorRuntimeDependencies task if the linker was disabled. Other than
