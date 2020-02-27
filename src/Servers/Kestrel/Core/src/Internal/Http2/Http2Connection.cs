@@ -1098,6 +1098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _streams.Remove(stream.StreamId);
+                ReturnStream(stream);
             }
         }
 
