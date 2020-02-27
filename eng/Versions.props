@@ -141,13 +141,13 @@
     <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftInternalExtensionsRefsPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>5.0.0-preview.2.20126.1</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.2.20126.1</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>5.0.0-preview.2.20127.2</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.2.20127.2</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from dotnet/aspnetcore-tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.2.20126.1</MicrosoftAspNetCoreRazorLanguagePackageVersion>
