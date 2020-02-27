@@ -214,8 +214,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2PingFrameFlags.ACK,
                 withStreamId: 0);
 
-            // Stream was not returned to the pool
-            Assert.Equal(0, _connection.StreamPool.Count);
+            // Stream was returned to the pool because of the drain timeout
+            Assert.Equal(1, _connection.StreamPool.Count);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
