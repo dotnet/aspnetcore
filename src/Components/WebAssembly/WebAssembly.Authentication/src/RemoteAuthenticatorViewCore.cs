@@ -75,6 +75,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Parameter] public RenderFragment LogOutSucceeded { get; set; } = DefaultLoggedOutFragment;
 
         /// <summary>
+        /// Gets or sets an event callback that will be invoked with the stored authentication state when a log in operation succeeds.
+        /// </summary>
+        [Parameter] public EventCallback<TAuthenticationState> OnLogInSucceeded { get; set; }
+
+        /// <summary>
+        /// Gets or sets an event callback that will be invoked with the stored authentication state when a log out operation succeeds.
+        /// </summary>
+        [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="IJSRuntime"/> to use for performin JavaScript interop.
         /// </summary>
         [Inject] public IJSRuntime JS { get; set; }
@@ -242,6 +252,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
+                    if (OnLogInSucceeded.HasDelegate)
+                    {
+                        await OnLogInSucceeded.InvokeAsync(result.State);
+                    }
                     await NavigateToReturnUrl(GetReturnUrl(result.State));
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
@@ -305,6 +319,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
+                    if (OnLogOutSucceeded.HasDelegate)
+                    {
+                        await OnLogOutSucceeded.InvokeAsync(result.State);
+                    }
                     await NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
