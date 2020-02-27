@@ -30,7 +30,7 @@ export class DefaultHttpClient extends HttpClient {
 
     /** @inheritDoc */
     public send(request: HttpRequest): Promise<HttpResponse> {
-        request.headers = {...this.headers, ...request.headers};
+        request.headers = { ...request.headers, ...this.headers };
         // Check that abort was not signaled before calling send
         if (request.abortSignal && request.abortSignal.aborted) {
             return Promise.reject(new AbortError());
