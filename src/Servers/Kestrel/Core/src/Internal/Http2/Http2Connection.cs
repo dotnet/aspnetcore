@@ -1067,9 +1067,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     _streams.Remove(stream.StreamId);
 
-                    // We don't want to return a stream for reuse that could still be draining
                     if (stream.DrainExpirationTicks >= now)
                     {
+                        // We have either received END_STREAM or RST_STREAM from the client. The stream is safe to be reused.
                         ReturnStream(stream);
                     }
                 }

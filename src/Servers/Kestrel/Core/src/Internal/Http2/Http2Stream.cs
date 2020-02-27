@@ -125,7 +125,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         Debug.Assert(_decrementCalled);
 
-                        // If there is an error then RST_STREAM is written at a higher level stream
+                        // If there was an error starting the stream then we don't want to write RST_STREAM here.
+                        // The connection will handle writing RST_STREAM with the correct error code.
                         if (!errored)
                         {
                             // Don't block on IO. This never faults.
