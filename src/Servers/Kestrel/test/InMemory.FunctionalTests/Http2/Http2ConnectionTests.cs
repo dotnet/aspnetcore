@@ -196,7 +196,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // This stream will error because it exceeds max concurrent streams
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
-            await WaitForStreamErrorAsync(3, Http2ErrorCode.NO_ERROR, CoreStrings.Http2ErrorMaxStreams);
             await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
 
             // Ping will trigger the stream to be returned to the pool so we can assert it

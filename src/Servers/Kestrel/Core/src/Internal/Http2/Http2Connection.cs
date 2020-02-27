@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Manually complete stream to ensure pipes are completed.
                 // Completing the stream will add it to the completed stream queue.
                 _currentHeadersStream.DecrementActiveClientStreamCount();
-                _currentHeadersStream.CompleteStream();
+                _currentHeadersStream.CompleteStream(errored: true);
                 throw;
             }
 

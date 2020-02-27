@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
-            CompleteStream();
+            CompleteStream(errored: false);
         }
 
-        public void CompleteStream()
+        public void CompleteStream(bool errored)
         {
             try
             {
@@ -115,14 +115,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // If the app finished without reading the request body tell the client not to finish sending it.
                 if (!EndStreamReceived && !RstStreamReceived)
                 {
-                    Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    if (!errored)
+                    {
+                        Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    }
 
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
                         Debug.Assert(_decrementCalled);
-                        // Don't block on IO. This never faults.
-                        _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+
+                        // If there is an error then RST_STREAM is written at a higher level stream
+                        if (!errored)
+                        {
+                            // Don't block on IO. This never faults.
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                        }
                         RequestBodyPipe.Writer.Complete();
                     }
                 }
