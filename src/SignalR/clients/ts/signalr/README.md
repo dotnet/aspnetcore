@@ -36,7 +36,7 @@ To use the client in a NodeJS application, install the package to your `node_mod
 
 ### Example (Browser)
 
-```JavaScript
+```javascript
 let connection = new signalR.HubConnectionBuilder()
     .withUrl("/chat")
     .build();
@@ -51,8 +51,7 @@ connection.start()
 
 ### Example (WebWorker)
 
-
-```JavaScript
+```javascript
 importScripts('signalr.js');
 
 let connection = new signalR.HubConnectionBuilder()
@@ -70,13 +69,11 @@ connection.start()
 
 ### Example (NodeJS)
 
-```JavaScript
+```javascript
 const signalR = require("@microsoft/signalr");
 
-const headers = { "X-API-KEY": "SECRET", "X-SIGNATURE": "SIGNATURE" };
-
 let connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chat", { headers })
+    .withUrl("/chat")
     .build();
 
 connection.on("send", data => {
