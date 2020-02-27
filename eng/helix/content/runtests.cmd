@@ -24,6 +24,10 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
+    
+    echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
+    dotnet nuget add %HELIX_WORKITEM_ROOT%
+    dotnet nuget list sources
 )
 
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
