@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         protected readonly Socket _socket;
         protected readonly SocketAwaitableEventArgs _awaitableEventArgs;
 
-        protected SocketSenderReceiverBase(Socket socket, PipeScheduler scheduler)
+        protected SocketSenderReceiverBase(Socket socket)
         {
             _socket = socket;
-            _awaitableEventArgs = new SocketAwaitableEventArgs(scheduler);
+            _awaitableEventArgs = new SocketAwaitableEventArgs();
         }
 
         public void Dispose() => _awaitableEventArgs.Dispose();

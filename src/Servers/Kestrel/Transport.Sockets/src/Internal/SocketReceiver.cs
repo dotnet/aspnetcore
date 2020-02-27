@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal sealed class SocketReceiver : SocketSenderReceiverBase
     {
-        public SocketReceiver(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
+        public SocketReceiver(Socket socket) : base(socket)
         {
         }
 

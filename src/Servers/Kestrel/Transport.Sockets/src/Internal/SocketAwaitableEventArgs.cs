@@ -15,15 +15,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         private static readonly Action _callbackCompleted = () => { };
 
-        private readonly PipeScheduler _ioScheduler;
-
         private Action _callback;
 
-        public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
+        public SocketAwaitableEventArgs()
             : base(unsafeSuppressExecutionContextFlow: true)
-        {
-            _ioScheduler = ioScheduler;
-        }
+        { }
 
         public SocketAwaitableEventArgs GetAwaiter() => this;
         public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
@@ -70,10 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
 
-            if (continuation != null)
-            {
-                _ioScheduler.Schedule(state => ((Action)state)(), continuation);
-            }
+            continuation?.Invoke();
         }
     }
 }
