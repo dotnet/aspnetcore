@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == '' AND '$(Configuration)' != 'Debug'">true</BlazorWebAssemblyEnableLinking>
+    <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == ''">false</BlazorWebAssemblyEnableLinking>
   </PropertyGroup>
 
   <Target
@@ -9,12 +10,8 @@
   </Target>
 
   <Target Name="_ResolveBlazorInputs" DependsOnTargets="ResolveReferences;ResolveRuntimePackAssets">
-    <Warning Text="BlazorLinkOnBuild has been renamed to BlazorWebAssemblyEnableLinking. Please update your project files to use the new property."
-             Condition="'$(BlazorLinkOnBuild)' != ''" />
-
-    <PropertyGroup Condition="'$(BlazorLinkOnBuild)' != ''">
-      <BlazorWebAssemblyEnableLinking>$(BlazorLinkOnBuild)</BlazorWebAssemblyEnableLinking>
-    </PropertyGroup>
+    <Error Text="BlazorLinkOnBuild has been renamed to BlazorWebAssemblyEnableLinking. Please update your project files to use the new property."
+           Condition="'$(BlazorLinkOnBuild)' != ''" />
 
     <PropertyGroup>
       <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
