@@ -17,6 +17,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
 
         /// <summary>
+        /// Wait until there is data available to allocate a buffer. Set this to true to reduce memory used for idle connections.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool WaitForDataBeforeAllocatingBuffer = true;
+
+        /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.
         /// </summary>
         /// <remarks>
