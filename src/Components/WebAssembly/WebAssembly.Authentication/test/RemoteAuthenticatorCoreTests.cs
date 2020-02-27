@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     public class RemoteAuthenticatorCoreTests
     {
         private const string _action = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.Action);
+        private const string _onLogInSucceded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogInSucceeded);        
+        private const string _onLogOutSucceeded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogOutSucceeded);        
 
         [Fact]
         public async Task AuthenticationManager_Throws_ForInvalidAction()
@@ -183,9 +185,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 State = remoteAuthenticator.AuthenticationState
             });
 
+            var loggingSucceededCalled = false;
+
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                [_action] = RemoteAuthenticationActions.LogInCallback
+                [_action] = RemoteAuthenticationActions.LogInCallback,
+                [_onLogInSucceded] = new EventCallbackFactory().Create< RemoteAuthenticationState>(
+                    remoteAuthenticator,
+                    (state) => loggingSucceededCalled = true),
             });
 
             // Act
@@ -193,6 +200,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             // Assert
             Assert.Equal(fetchDataUrl, jsRuntime.LastInvocation.args[0]);
+            Assert.True(loggingSucceededCalled);
 
         }
 
@@ -431,9 +439,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 State = remoteAuthenticator.AuthenticationState
             });
 
+            var loggingOutSucceededCalled = false;
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
             {
-                [_action] = RemoteAuthenticationActions.LogOutCallback
+                [_action] = RemoteAuthenticationActions.LogOutCallback,
+                [_onLogOutSucceeded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
+                    remoteAuthenticator,
+                    (state) => loggingOutSucceededCalled = true),
+
             });
 
             // Act
@@ -441,6 +454,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             // Assert
             Assert.Equal(fetchDataUrl, jsRuntime.LastInvocation.args[0]);
+            Assert.True(loggingOutSucceededCalled);
 
         }
 

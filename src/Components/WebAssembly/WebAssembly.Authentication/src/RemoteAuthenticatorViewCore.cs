@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets an event callback that will be invoked with the stored authentication state when a log in operation succeeds.
         /// </summary>
-        [Parameter] public EventCallback<TAuthenticationState> OnLogInSucceded { get; set; }
+        [Parameter] public EventCallback<TAuthenticationState> OnLogInSucceeded { get; set; }
 
         /// <summary>
         /// Gets or sets an event callback that will be invoked with the stored authentication state when a log out operation succeeds.
         /// </summary>
-        [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceded { get; set; }
+        [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IJSRuntime"/> to use for performin JavaScript interop.
@@ -252,9 +252,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
-                    if (OnLogInSucceded.HasDelegate)
+                    if (OnLogInSucceeded.HasDelegate)
                     {
-                        await OnLogInSucceded.InvokeAsync(result.State);
+                        await OnLogInSucceeded.InvokeAsync(result.State);
                     }
                     await NavigateToReturnUrl(GetReturnUrl(result.State));
                     break;
@@ -319,9 +319,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
-                    if (OnLogOutSucceded.HasDelegate)
+                    if (OnLogOutSucceeded.HasDelegate)
                     {
-                        await OnLogOutSucceded.InvokeAsync(result.State);
+                        await OnLogOutSucceeded.InvokeAsync(result.State);
                     }
                     await NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
                     break;
