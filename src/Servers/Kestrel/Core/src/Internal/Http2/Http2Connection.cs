@@ -65,7 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
-        private Http2StreamStack _streamPool;
+        // Internal for testing
+        internal Http2StreamStack StreamPool;
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 40;
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
-            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+            StreamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
             _inputTask = ReadInputAsync();
         }
@@ -572,7 +573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application)
         {
-            if (_streamPool.TryPop(out var stream))
+            if (StreamPool.TryPop(out var stream))
             {
                 stream.InitializeWithExistingContext(_incomingFrame.StreamId);
                 return stream;
@@ -606,9 +607,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ReturnStream(Http2Stream stream)
         {
-            if (_streamPool.Count < MaxStreamPoolSize)
+            if (StreamPool.Count < MaxStreamPoolSize)
             {
-                _streamPool.Push(stream);
+                StreamPool.Push(stream);
             }
         }
 
@@ -972,8 +973,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (Http2StreamErrorException)
             {
                 MakeSpaceInDrainQueue();
-                // Tracked for draining
-                _completedStreams.Enqueue(_currentHeadersStream);
+
+                // Because this stream isn't being queued, OnRequestProcessingEnded will not be
+                // automatically called and the stream won't be completed.
+                // Manually complete stream to ensure pipes are completed.
+                // Completing the stream will add it to the completed stream queue.
+                _currentHeadersStream.DecrementActiveClientStreamCount();
+                _currentHeadersStream.CompleteStream(errored: true);
                 throw;
             }
 
