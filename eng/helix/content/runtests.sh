@@ -95,6 +95,11 @@ if [ -d "Microsoft.AspNetCore.App" ]
 then
     echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
     cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+    
+    echo "Adding current directory to nuget sources: $DIR"
+    dotnet nuget add $DIR
+    dotnet nuget list sources
+    
 fi
 
 if [ -e /proc/self/coredump_filter ]; then
