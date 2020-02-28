@@ -104,11 +104,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();
-            _app.Start(new [] { "--list" });
+            _app.Start(new[] { "--list" });
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(30));
             var lines = await _app.Process.GetAllOutputLinesAsync(cts.Token);

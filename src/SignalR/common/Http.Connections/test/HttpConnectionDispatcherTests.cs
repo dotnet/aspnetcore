@@ -1295,7 +1295,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
             using (StartVerifiableLog())

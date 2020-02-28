@@ -596,7 +596,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2178", FlakyOn.All)]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
@@ -881,7 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var exception = Assert.Throws<IOException>(() => host.Start());
 
                         var thisAddressString = $"http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}";
-                        var otherAddressString = $"http://{(addressFamily == AddressFamily.InterNetworkV6? "127.0.0.1" : "[::1]")}:{port}";
+                        var otherAddressString = $"http://{(addressFamily == AddressFamily.InterNetworkV6 ? "127.0.0.1" : "[::1]")}:{port}";
 
                         if (exception.Message == CoreStrings.FormatEndpointAlreadyInUse(otherAddressString))
                         {
