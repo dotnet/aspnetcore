@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context) 
         {
-            Initialize(context);
+            InitializePooled(context, reset: true);
             _application = application;
         }
 

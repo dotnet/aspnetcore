@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
         {
-            Initialize(context);
+            Initialize(context, reset: true);
 
             InputRemaining = null;
 

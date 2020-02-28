@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             public TestHttp2Stream(Http2StreamContext context) 
             {
-                Initialize(context);
+                InitializePooled(context, reset: true);
             }
 
             public override void Execute()
