@@ -32,7 +32,7 @@ namespace Templates.Test.Helpers
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value
-            : "ef";//Environment.GetEnvironmentVariable("DotNetEfFullPath");
+            : "";//Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -306,13 +306,23 @@ namespace Templates.Test.Helpers
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
             var args = $"\"{DotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
-
+            
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
             await DotNetNewLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    command = "dotnet-ef"
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        command += ".exe";
+                    }
+                }
+                
+                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return result;
             }
@@ -331,7 +341,17 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    command = "dotnet-ef"
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        command += ".exe";
+                    }
+                }
+                
+                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return result;
             }
