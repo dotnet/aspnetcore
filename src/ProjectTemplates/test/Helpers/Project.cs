@@ -306,7 +306,7 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
+            var args = "--verbose --no-build migrations add {migrationName}";
             
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -317,6 +317,10 @@ namespace Templates.Test.Helpers
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
                     command = "dotnet-ef";
+                }
+                else 
+                {
+                    args = $"\"{DotNetEfFullPath}\" "+args;
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
@@ -331,7 +335,7 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
         {
-            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build database update";
+            var args = "--verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -341,7 +345,17 @@ namespace Templates.Test.Helpers
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
-                    command = "dotnet-ef";
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                        command = Environment.GetEnvironmentVariable("DotNetEfFullPath") + ".exe";
+                    }
+                    else
+                    {
+                        command = "dotnet-ef";
+                    }
+                }
+                else 
+                {
+                    args = $"\"{DotNetEfFullPath}\" "+args;
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
