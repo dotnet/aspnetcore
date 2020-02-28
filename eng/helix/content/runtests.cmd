@@ -27,6 +27,7 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     
     echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
     dotnet nuget add source %HELIX_WORKITEM_ROOT%
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
     dotnet nuget list source
 )
 
