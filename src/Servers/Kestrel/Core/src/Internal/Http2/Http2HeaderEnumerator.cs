@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal struct Http2HeadersEnumerator
+    internal struct Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, string>>
     {
         private bool _isTrailers;
         private HttpResponseHeaders.Enumerator _headersEnumerator;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private StringValues.Enumerator _stringValuesEnumerator;
 
         public KeyValuePair<string, string> Current { get; private set; }
+        object IEnumerator.Current => Current;
 
         public Http2HeadersEnumerator(HttpResponseHeaders headers)
         {
@@ -138,6 +140,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return true;
                 }
             }
+        }
+
+        public void Reset()
+        {
+            if (_genericEnumerator != null)
+            {
+                _genericEnumerator.Reset();
+            }
+            else if (_isTrailers)
+            {
+                _trailersEnumerator.Reset();
+            }
+            else
+            {
+                _headersEnumerator.Reset();
+            }
+            _stringValuesEnumerator = default;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
