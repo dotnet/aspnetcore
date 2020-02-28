@@ -20,8 +20,8 @@ namespace CodeGenerator
             var requestPrimaryHeaders = new[]
             {
                 ":authority",
-                ":path",
                 ":method",
+                ":path",
                 ":scheme",
                 "Accept",
                 "Connection",
@@ -77,8 +77,8 @@ namespace CodeGenerator
             RequestHeaders = commonHeaders.Concat(new[]
             {
                 ":authority",
-                ":path",
                 ":method",
+                ":path",
                 ":scheme",
                 "Accept",
                 "Accept-Charset",
