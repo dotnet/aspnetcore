@@ -28,12 +28,11 @@ namespace Templates.Test.Helpers
             ? GetAssemblyMetadata("ArtifactsLogDir")
             : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "logs");
         
-        // FIGURE OUT EF PATH
-        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath"))) 
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value
-            : Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll");
+            : Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
