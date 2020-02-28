@@ -32,7 +32,7 @@ namespace Templates.Test.Helpers
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value
-            : Environment.GetEnvironmentVariable("DotNetEfFullPath");
+            : "ef";//Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
