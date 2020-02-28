@@ -108,11 +108,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
-            await InitializeConnectionAsync(_echoApplication);
+            TaskCompletionSource<object> appDelegateTcs = null;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await appDelegateTcs.Task;
+            });
 
             Assert.Equal(0, _connection.StreamPool.Count);
 
+            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            appDelegateTcs.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -129,27 +137,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Stream has been returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
 
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
 
             // New stream has been taken from the pool
             Assert.Equal(0, _connection.StreamPool.Count);
 
-            await SendDataAsync(3, _helloBytes, endStream: true);
-            await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 37,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 5,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 3);
+            appDelegateTcs.TrySetResult(null);
 
-            // Yield to let Kestrel finish moving the stream to the completed queue
-            await Task.Yield();
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
 
             // Ping will trigger the stream to be returned to the pool so we can assert it
             await SendPingAsync(Http2PingFrameFlags.NONE);
