@@ -6,6 +6,7 @@ dotnet_runtime_version="$3"
 helix_queue_name="$4"
 target_arch="$5"
 quarantined="$6"
+efVersion="$7"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -33,8 +34,8 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export helix="$helix_queue_name"
 export HELIX_DIR="$DIR"
 export NUGET_FALLBACK_PACKAGES="$DIR"
-export DotNetEfFullPath=$DIR\nugetRestore\dotnet-ef\$DotnetEfPackageVersion\tools\netcoreapp3.1\any\dotnet-ef.dll
-echo "Set DotnetEfPackageVersion: $DotnetEfPackageVersion"
+export DotNetEfFullPath=$DIR\nugetRestore\dotnet-ef\$efVersion\tools\netcoreapp3.1\any\dotnet-ef.dll
+echo "Set DotNetEfFullPath: $DotNetEfFullPath"
 export NUGET_RESTORE="$DIR/nugetRestore"
 echo "Creating nugetRestore directory: $NUGET_RESTORE"
 mkdir $NUGET_RESTORE
