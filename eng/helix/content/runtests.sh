@@ -98,6 +98,7 @@ then
     
     echo "Adding current directory to nuget sources: $DIR"
     dotnet nuget add source $DIR
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
     dotnet nuget list source
     
 fi
