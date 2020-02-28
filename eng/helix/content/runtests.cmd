@@ -9,7 +9,6 @@ set $runtimeVersion=%3
 set $helixQueue=%4
 set $arch=%5
 set $quarantined=%6
-set $DotnetEfPackageVersion=%7
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -37,7 +36,8 @@ set HELIX=%$helixQueue%
 set HELIX_DIR=%HELIX_WORKITEM_ROOT%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
-set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%DotnetEfPackageVersion%\tools\netcoreapp3.1\any\dotnet-ef.dll");
+set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%DotnetEfPackageVersion%\tools\netcoreapp3.1\any\dotnet-ef.dll
+echo "Set DotnetEfPackageVersion: %DotnetEfPackageVersion%"
 echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
