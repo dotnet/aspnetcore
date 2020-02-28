@@ -25,7 +25,8 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -93,9 +94,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
+        [SkipOnHelix("ef restore no worky")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -172,6 +174,7 @@ namespace Templates.Test
                         PageUrls.PrivacyUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
+                        PageUrls.ResendEmailConfirmation,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl }
                 },
@@ -209,7 +212,8 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("runtime compliation restore no worky")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);

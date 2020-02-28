@@ -6,15 +6,15 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AccessDeniedContext : Microsoft.AspNetCore.Authentication.HandleRequestContext<Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions>
     {
         public AccessDeniedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions)) { }
-        public Microsoft.AspNetCore.Http.PathString AccessDeniedPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ReturnUrlParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.PathString AccessDeniedPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ReturnUrlParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class AuthenticationBuilder
     {
         public AuthenticationBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
-        public virtual Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddPolicyScheme(string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.PolicySchemeOptions> configureOptions) { throw null; }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddRemoteScheme<TOptions, THandler>(string authenticationScheme, string displayName, System.Action<TOptions> configureOptions) where TOptions : Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions, new() where THandler : Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions> { throw null; }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, System.Action<TOptions> configureOptions) where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, new() where THandler : Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions> { throw null; }
@@ -24,19 +24,19 @@ namespace Microsoft.AspNetCore.Authentication
     {
         protected AuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions> options, Microsoft.Extensions.Logging.ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder, Microsoft.AspNetCore.Authentication.ISystemClock clock) { }
         protected virtual string ClaimsIssuer { get { throw null; } }
-        protected Microsoft.AspNetCore.Authentication.ISystemClock Clock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected Microsoft.AspNetCore.Authentication.ISystemClock Clock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected string CurrentUri { get { throw null; } }
-        protected virtual object Events { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public TOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected Microsoft.Extensions.Options.IOptionsMonitor<TOptions> OptionsMonitor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected virtual object Events { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public TOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected Microsoft.Extensions.Options.IOptionsMonitor<TOptions> OptionsMonitor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected Microsoft.AspNetCore.Http.PathString OriginalPath { get { throw null; } }
         protected Microsoft.AspNetCore.Http.PathString OriginalPathBase { get { throw null; } }
         protected Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
         protected Microsoft.AspNetCore.Http.HttpResponse Response { get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationScheme Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected System.Text.Encodings.Web.UrlEncoder UrlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationScheme Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected System.Text.Encodings.Web.UrlEncoder UrlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync() { throw null; }
         protected string BuildRedirectUri(string targetPath) { throw null; }
@@ -61,23 +61,23 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationMiddleware
     {
         public AuthenticationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes) { }
-        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class AuthenticationSchemeOptions
     {
         public AuthenticationSchemeOptions() { }
-        public string ClaimsIssuer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public object Events { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Type EventsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardAuthenticate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardDefault { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Http.HttpContext, string> ForwardDefaultSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardForbid { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardSignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardSignOut { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ClaimsIssuer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object Events { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type EventsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardAuthenticate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardDefault { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Http.HttpContext, string> ForwardDefaultSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardForbid { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardSignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardSignOut { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual void Validate() { }
         public virtual void Validate(string scheme) { }
     }
@@ -89,24 +89,24 @@ namespace Microsoft.AspNetCore.Authentication
     public abstract partial class BaseContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected BaseContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options) { }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public TOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public TOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpResponse Response { get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationScheme Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationScheme Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class HandleRequestContext<TOptions> : Microsoft.AspNetCore.Authentication.BaseContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected HandleRequestContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions)) { }
-        public Microsoft.AspNetCore.Authentication.HandleRequestResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public Microsoft.AspNetCore.Authentication.HandleRequestResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public void HandleResponse() { }
         public void SkipHandler() { }
     }
     public partial class HandleRequestResult : Microsoft.AspNetCore.Authentication.AuthenticateResult
     {
         public HandleRequestResult() { }
-        public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool Skipped { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool Skipped { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static new Microsoft.AspNetCore.Authentication.HandleRequestResult Fail(System.Exception failure) { throw null; }
         public static new Microsoft.AspNetCore.Authentication.HandleRequestResult Fail(System.Exception failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         public static new Microsoft.AspNetCore.Authentication.HandleRequestResult Fail(string failureMessage) { throw null; }
@@ -152,12 +152,12 @@ namespace Microsoft.AspNetCore.Authentication
     public abstract partial class PrincipalContext<TOptions> : Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected PrincipalContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public virtual System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class PropertiesContext<TOptions> : Microsoft.AspNetCore.Authentication.BaseContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected PropertiesContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions)) { }
-        public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
     }
     public partial class PropertiesDataFormat : Microsoft.AspNetCore.Authentication.SecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties>
     {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class PropertiesSerializer : Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationProperties>
     {
         public PropertiesSerializer() { }
-        public static Microsoft.AspNetCore.Authentication.PropertiesSerializer Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.AspNetCore.Authentication.PropertiesSerializer Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Deserialize(byte[] data) { throw null; }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Read(System.IO.BinaryReader reader) { throw null; }
         public virtual byte[] Serialize(Microsoft.AspNetCore.Authentication.AuthenticationProperties model) { throw null; }
@@ -175,13 +175,13 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class RedirectContext<TOptions> : Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         public RedirectContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string redirectUri) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class RemoteAuthenticationContext<TOptions> : Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected RemoteAuthenticationContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions)) { }
-        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Fail(System.Exception failure) { }
         public void Fail(string failureMessage) { }
         public void Success() { }
@@ -189,9 +189,9 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class RemoteAuthenticationEvents
     {
         public RemoteAuthenticationEvents() { }
-        public System.Func<Microsoft.AspNetCore.Authentication.AccessDeniedContext, System.Threading.Tasks.Task> OnAccessDenied { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.RemoteFailureContext, System.Threading.Tasks.Task> OnRemoteFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.TicketReceivedContext, System.Threading.Tasks.Task> OnTicketReceived { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.AccessDeniedContext, System.Threading.Tasks.Task> OnAccessDenied { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.RemoteFailureContext, System.Threading.Tasks.Task> OnRemoteFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.TicketReceivedContext, System.Threading.Tasks.Task> OnTicketReceived { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Threading.Tasks.Task AccessDenied(Microsoft.AspNetCore.Authentication.AccessDeniedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task RemoteFailure(Microsoft.AspNetCore.Authentication.RemoteFailureContext context) { throw null; }
         public virtual System.Threading.Tasks.Task TicketReceived(Microsoft.AspNetCore.Authentication.TicketReceivedContext context) { throw null; }
@@ -217,39 +217,39 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class RemoteAuthenticationOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         public RemoteAuthenticationOptions() { }
-        public Microsoft.AspNetCore.Http.PathString AccessDeniedPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Net.Http.HttpClient Backchannel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Net.Http.HttpMessageHandler BackchannelHttpHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan BackchannelTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.PathString CallbackPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.PathString AccessDeniedPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Net.Http.HttpClient Backchannel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Net.Http.HttpMessageHandler BackchannelHttpHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.TimeSpan BackchannelTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.PathString CallbackPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.CookieBuilder CorrelationCookie { get { throw null; } set { } }
-        public Microsoft.AspNetCore.DataProtection.IDataProtectionProvider DataProtectionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.DataProtection.IDataProtectionProvider DataProtectionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public new Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents Events { get { throw null; } set { } }
-        public System.TimeSpan RemoteAuthenticationTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ReturnUrlParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool SaveTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string SignInScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.TimeSpan RemoteAuthenticationTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ReturnUrlParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool SaveTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string SignInScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Validate() { }
         public override void Validate(string scheme) { }
     }
     public partial class RemoteFailureContext : Microsoft.AspNetCore.Authentication.HandleRequestContext<Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions>
     {
         public RemoteFailureContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions options, System.Exception failure) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions)) { }
-        public System.Exception Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Exception Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RequestPathBaseCookieBuilder : Microsoft.AspNetCore.Http.CookieBuilder
     {
         public RequestPathBaseCookieBuilder() { }
-        protected virtual string AdditionalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected virtual string AdditionalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context, System.DateTimeOffset expiresFrom) { throw null; }
     }
     public abstract partial class ResultContext<TOptions> : Microsoft.AspNetCore.Authentication.BaseContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected ResultContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions)) { }
-        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Fail(System.Exception failure) { }
         public void Fail(string failureMessage) { }
         public void NoResult() { }
@@ -287,12 +287,12 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class TicketReceivedContext : Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions>
     {
         public TicketReceivedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions options, Microsoft.AspNetCore.Authentication.AuthenticationTicket ticket) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public string ReturnUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ReturnUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class TicketSerializer : Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationTicket>
     {
         public TicketSerializer() { }
-        public static Microsoft.AspNetCore.Authentication.TicketSerializer Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.AspNetCore.Authentication.TicketSerializer Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationTicket Deserialize(byte[] data) { throw null; }
         public virtual Microsoft.AspNetCore.Authentication.AuthenticationTicket Read(System.IO.BinaryReader reader) { throw null; }
         protected virtual System.Security.Claims.Claim ReadClaim(System.IO.BinaryReader reader, System.Security.Claims.ClaimsIdentity identity) { throw null; }

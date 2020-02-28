@@ -120,7 +120,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         messages.Add(message);
                         return messages;
                     default:
-                        throw new NotSupportedException("TestClient does not support receiving invocations!");
+                        // Message implement ToString so this should be helpful.
+                        throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");
                 }
             }
         }
@@ -153,7 +154,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // Pings are ignored
                         break;
                     default:
-                        throw new NotSupportedException("TestClient does not support receiving invocations!");
+                        // Message implement ToString so this should be helpful.
+                        throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");
                 }
             }
         }

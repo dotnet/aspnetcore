@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987", FlakyOn.AzP.Windows)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1987", FlakyOn.AzP.Windows)]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // up for a bit it doesn't cause typing to lose keystrokes. But when running server-side, this
             // shows that network latency doesn't cause keystrokes to be lost even if:
             // [1] By the time a keystroke event arrives, the event handler ID has since changed
-            // [2] We have the situation described under "the problem" at https://github.com/aspnet/AspNetCore/issues/8204#issuecomment-493986702
+            // [2] We have the situation described under "the problem" at https://github.com/dotnet/aspnetcore/issues/8204#issuecomment-493986702
 
             Browser.MountTestComponent<LaggyTypingComponent>();
 

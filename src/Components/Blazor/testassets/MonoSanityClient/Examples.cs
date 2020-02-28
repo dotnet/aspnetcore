@@ -31,11 +31,6 @@ namespace MonoSanityClient
             throw new InvalidOperationException(message);
         }
 
-        public static void InvokeWipedMethod()
-        {
-            new HttpClientHandler().Dispose();
-        }
-
         public static string EvaluateJavaScript(string expression)
         {
             var result = InternalCalls.InvokeJSUnmarshalled<string, string, object, object>(out var exceptionMessage, "evaluateJsExpression", expression, null, null);

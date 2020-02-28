@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task ProtocolError()
         {
-            return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+            return Clients.Caller.SendAsync("Send",  new SelfRef());
         }
 
         public void InvalidArgument(CancellationToken token)
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Self = this;
             }
 
-            public SelfRef Self;
+            public SelfRef Self { get; set; }
         }
 
         public async Task<string> StreamingConcat(ChannelReader<string> source)
@@ -569,6 +569,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class GenericMethodHub : Hub
+    {
+        public void GenericMethod<T>()
+        {
+        }
+    }
+
     public class DisposeTrackingHub : TestHub
     {
         private readonly TrackDispose _trackDispose;
@@ -660,7 +667,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
         }
 
-        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferredOverChannelReader(int count)
         {
             return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
         }

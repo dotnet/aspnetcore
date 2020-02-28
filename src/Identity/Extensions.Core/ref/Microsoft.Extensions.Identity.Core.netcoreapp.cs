@@ -15,10 +15,11 @@ namespace Microsoft.AspNetCore.Identity
     public partial class ClaimsIdentityOptions
     {
         public ClaimsIdentityOptions() { }
-        public string RoleClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string SecurityStampClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string UserIdClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string UserNameClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string EmailClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RoleClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string SecurityStampClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string UserIdClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string UserNameClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class DefaultPersonalDataProtector : Microsoft.AspNetCore.Identity.IPersonalDataProtector
     {
@@ -44,9 +45,9 @@ namespace Microsoft.AspNetCore.Identity
     {
         public IdentityBuilder(System.Type user, Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
         public IdentityBuilder(System.Type user, System.Type role, Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
-        public System.Type RoleType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Type UserType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type RoleType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type UserType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddClaimsPrincipalFactory<TFactory>() where TFactory : class { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : Microsoft.AspNetCore.Identity.IdentityErrorDescriber { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddPasswordValidator<TValidator>() where TValidator : class { throw null; }
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddRoleValidator<TRole>() where TRole : class { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddTokenProvider(string providerName, System.Type provider) { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddTokenProvider<TProvider>(string providerName) where TProvider : class { throw null; }
+        public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddUserConfirmation<TUserConfirmation>() where TUserConfirmation : class { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddUserStore<TStore>() where TStore : class { throw null; }
         public virtual Microsoft.AspNetCore.Identity.IdentityBuilder AddUserValidator<TValidator>() where TValidator : class { throw null; }
@@ -64,8 +66,8 @@ namespace Microsoft.AspNetCore.Identity
     public partial class IdentityError
     {
         public IdentityError() { }
-        public string Code { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Code { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class IdentityErrorDescriber
     {
@@ -96,19 +98,19 @@ namespace Microsoft.AspNetCore.Identity
     public partial class IdentityOptions
     {
         public IdentityOptions() { }
-        public Microsoft.AspNetCore.Identity.ClaimsIdentityOptions ClaimsIdentity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.LockoutOptions Lockout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.PasswordOptions Password { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.SignInOptions SignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.StoreOptions Stores { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.TokenOptions Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.UserOptions User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.ClaimsIdentityOptions ClaimsIdentity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.LockoutOptions Lockout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.PasswordOptions Password { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.SignInOptions SignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.StoreOptions Stores { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.TokenOptions Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.UserOptions User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class IdentityResult
     {
         public IdentityResult() { }
         public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IdentityError> Errors { get { throw null; } }
-        public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public static Microsoft.AspNetCore.Identity.IdentityResult Success { get { throw null; } }
         public static Microsoft.AspNetCore.Identity.IdentityResult Failed(params Microsoft.AspNetCore.Identity.IdentityError[] errors) { throw null; }
         public override string ToString() { throw null; }
@@ -294,9 +296,9 @@ namespace Microsoft.AspNetCore.Identity
     public partial class LockoutOptions
     {
         public LockoutOptions() { }
-        public bool AllowedForNewUsers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan DefaultLockoutTimeSpan { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MaxFailedAccessAttempts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool AllowedForNewUsers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.TimeSpan DefaultLockoutTimeSpan { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MaxFailedAccessAttempts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public enum PasswordHasherCompatibilityMode
     {
@@ -306,8 +308,8 @@ namespace Microsoft.AspNetCore.Identity
     public partial class PasswordHasherOptions
     {
         public PasswordHasherOptions() { }
-        public Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode CompatibilityMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int IterationCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode CompatibilityMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int IterationCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class PasswordHasher<TUser> : Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> where TUser : class
     {
@@ -318,17 +320,17 @@ namespace Microsoft.AspNetCore.Identity
     public partial class PasswordOptions
     {
         public PasswordOptions() { }
-        public bool RequireDigit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int RequiredLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int RequiredUniqueChars { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireLowercase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireNonAlphanumeric { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireUppercase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RequireDigit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int RequiredLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int RequiredUniqueChars { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireLowercase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireNonAlphanumeric { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireUppercase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class PasswordValidator<TUser> : Microsoft.AspNetCore.Identity.IPasswordValidator<TUser> where TUser : class
     {
         public PasswordValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors = null) { }
-        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber Describer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber Describer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual bool IsDigit(char c) { throw null; }
         public virtual bool IsLetterOrDigit(char c) { throw null; }
         public virtual bool IsLower(char c) { throw null; }
@@ -361,12 +363,12 @@ namespace Microsoft.AspNetCore.Identity
     {
         public RoleManager(Microsoft.AspNetCore.Identity.IRoleStore<TRole> store, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IRoleValidator<TRole>> roleValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.RoleManager<TRole>> logger) { }
         protected virtual System.Threading.CancellationToken CancellationToken { get { throw null; } }
-        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.ILookupNormalizer KeyNormalizer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.ILookupNormalizer KeyNormalizer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Linq.IQueryable<TRole> Roles { get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IRoleValidator<TRole>> RoleValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected Microsoft.AspNetCore.Identity.IRoleStore<TRole> Store { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IRoleValidator<TRole>> RoleValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected Microsoft.AspNetCore.Identity.IRoleStore<TRole> Store { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual bool SupportsQueryableRoles { get { throw null; } }
         public virtual bool SupportsRoleClaims { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -406,20 +408,20 @@ namespace Microsoft.AspNetCore.Identity
     public partial class SignInOptions
     {
         public SignInOptions() { }
-        public bool RequireConfirmedAccount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireConfirmedEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireConfirmedPhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RequireConfirmedAccount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireConfirmedEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireConfirmedPhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class SignInResult
     {
         public SignInResult() { }
         public static Microsoft.AspNetCore.Identity.SignInResult Failed { get { throw null; } }
-        public bool IsLockedOut { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public bool IsNotAllowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public bool IsLockedOut { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public bool IsNotAllowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public static Microsoft.AspNetCore.Identity.SignInResult LockedOut { get { throw null; } }
         public static Microsoft.AspNetCore.Identity.SignInResult NotAllowed { get { throw null; } }
-        public bool RequiresTwoFactor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public bool RequiresTwoFactor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public static Microsoft.AspNetCore.Identity.SignInResult Success { get { throw null; } }
         public static Microsoft.AspNetCore.Identity.SignInResult TwoFactorRequired { get { throw null; } }
         public override string ToString() { throw null; }
@@ -427,8 +429,8 @@ namespace Microsoft.AspNetCore.Identity
     public partial class StoreOptions
     {
         public StoreOptions() { }
-        public int MaxLengthForKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool ProtectPersonalData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int MaxLengthForKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool ProtectPersonalData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class TokenOptions
     {
@@ -437,19 +439,19 @@ namespace Microsoft.AspNetCore.Identity
         public static readonly string DefaultPhoneProvider;
         public static readonly string DefaultProvider;
         public TokenOptions() { }
-        public string AuthenticatorIssuer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string AuthenticatorTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ChangeEmailTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ChangePhoneNumberTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string EmailConfirmationTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string PasswordResetTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Identity.TokenProviderDescriptor> ProviderMap { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AuthenticatorIssuer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string AuthenticatorTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ChangeEmailTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ChangePhoneNumberTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string EmailConfirmationTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string PasswordResetTokenProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Identity.TokenProviderDescriptor> ProviderMap { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class TokenProviderDescriptor
     {
         public TokenProviderDescriptor(System.Type type) { }
-        public object ProviderInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Type ProviderType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object ProviderInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type ProviderType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class TotpSecurityStampBasedTokenProvider<TUser> : Microsoft.AspNetCore.Identity.IUserTwoFactorTokenProvider<TUser> where TUser : class
     {
@@ -471,8 +473,8 @@ namespace Microsoft.AspNetCore.Identity
     public partial class UserClaimsPrincipalFactory<TUser> : Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser> where TUser : class
     {
         public UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser> userManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor) { }
-        public Microsoft.AspNetCore.Identity.IdentityOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Identity.UserManager<TUser> UserManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Identity.IdentityOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Identity.UserManager<TUser> UserManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal> CreateAsync(TUser user) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -481,16 +483,16 @@ namespace Microsoft.AspNetCore.Identity
     public partial class UserClaimsPrincipalFactory<TUser, TRole> : Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser> where TUser : class where TRole : class
     {
         public UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser> userManager, Microsoft.AspNetCore.Identity.RoleManager<TRole> roleManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> options) : base (default(Microsoft.AspNetCore.Identity.UserManager<TUser>), default(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions>)) { }
-        public Microsoft.AspNetCore.Identity.RoleManager<TRole> RoleManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Identity.RoleManager<TRole> RoleManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Security.Claims.ClaimsIdentity> GenerateClaimsAsync(TUser user) { throw null; }
     }
     public partial class UserLoginInfo
     {
         public UserLoginInfo(string loginProvider, string providerKey, string displayName) { }
-        public string LoginProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ProviderDisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ProviderKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string LoginProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ProviderDisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ProviderKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class UserManager<TUser> : System.IDisposable where TUser : class
     {
@@ -499,13 +501,13 @@ namespace Microsoft.AspNetCore.Identity
         public const string ResetPasswordTokenPurpose = "ResetPassword";
         public UserManager(Microsoft.AspNetCore.Identity.IUserStore<TUser> store, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor, Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> passwordHasher, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IUserValidator<TUser>> userValidators, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>> passwordValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors, System.IServiceProvider services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.UserManager<TUser>> logger) { }
         protected virtual System.Threading.CancellationToken CancellationToken { get { throw null; } }
-        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.ILookupNormalizer KeyNormalizer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.IdentityOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> PasswordHasher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>> PasswordValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected internal Microsoft.AspNetCore.Identity.IUserStore<TUser> Store { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.ILookupNormalizer KeyNormalizer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.IdentityOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> PasswordHasher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>> PasswordValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected internal Microsoft.AspNetCore.Identity.IUserStore<TUser> Store { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual bool SupportsQueryableUsers { get { throw null; } }
         public virtual bool SupportsUserAuthenticationTokens { get { throw null; } }
         public virtual bool SupportsUserAuthenticatorKey { get { throw null; } }
@@ -520,7 +522,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool SupportsUserTwoFactor { get { throw null; } }
         public virtual bool SupportsUserTwoFactorRecoveryCodes { get { throw null; } }
         public virtual System.Linq.IQueryable<TUser> Users { get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IUserValidator<TUser>> UserValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IUserValidator<TUser>> UserValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> AccessFailedAsync(TUser user) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> AddClaimAsync(TUser user, System.Security.Claims.Claim claim) { throw null; }
@@ -575,7 +577,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual System.Threading.Tasks.Task<int> GetAccessFailedCountAsync(TUser user) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetAuthenticatorKeyAsync(TUser user) { throw null; }
-        protected static string GetChangeEmailTokenPurpose(string newEmail) { throw null; }
+        public static string GetChangeEmailTokenPurpose(string newEmail) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>> GetClaimsAsync(TUser user) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -679,13 +681,13 @@ namespace Microsoft.AspNetCore.Identity
     public partial class UserOptions
     {
         public UserOptions() { }
-        public string AllowedUserNameCharacters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireUniqueEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AllowedUserNameCharacters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireUniqueEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class UserValidator<TUser> : Microsoft.AspNetCore.Identity.IUserValidator<TUser> where TUser : class
     {
         public UserValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors = null) { }
-        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber Describer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber Describer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> ValidateAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) { throw null; }
     }

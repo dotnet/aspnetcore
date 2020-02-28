@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 2: Re-render the CascadingValue; observe nested component wasn't re-rendered
             providedValue = "Updated value";
-            displayNestedComponent = false; // Remove the nested componet
+            displayNestedComponent = false; // Remove the nested component
             component.TriggerRender();
 
             // Assert: We did not render the nested component now it's been removed

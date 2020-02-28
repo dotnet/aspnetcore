@@ -43,7 +43,9 @@ namespace Microsoft.AspNetCore.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
+#if NETSTANDARD2_0
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+#endif
         private IServiceProvider _services;
 
         /// <summary>
@@ -113,7 +115,7 @@ namespace Microsoft.AspNetCore.Identity
                         RegisterTokenProvider(providerName, provider);
                     }
                 }
-            }                
+            }
 
             if (Options.Stores.ProtectPersonalData)
             {
@@ -161,7 +163,7 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
         /// </summary>
         public ILookupNormalizer KeyNormalizer { get; set; }
-        
+
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
         /// </summary>
@@ -617,7 +619,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
         public virtual string NormalizeEmail(string email)
             =>  (KeyNormalizer == null) ? email : KeyNormalizer.NormalizeEmail(email);
-        
+
         private string ProtectPersonalData(string data)
         {
             if (Options.Stores.ProtectPersonalData)
@@ -861,7 +863,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken);
-            if (stamp == null) 
+            if (stamp == null)
             {
                 Logger.LogWarning(15, "GetSecurityStampAsync for user {userId} failed because stamp was null.", await GetUserIdAsync(user));
                 throw new InvalidOperationException(Resources.NullSecurityStamp);
@@ -1898,7 +1900,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user"/> his locked out,
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is locked out,
         /// as an asynchronous operation.
         /// </summary>
         /// <param name="user">The user whose locked out status should be retrieved.</param>
@@ -2428,7 +2430,11 @@ namespace Microsoft.AspNetCore.Identity
         private static string NewSecurityStamp()
         {
             byte[] bytes = new byte[20];
+#if NETSTANDARD2_0
             _rng.GetBytes(bytes);
+#else
+            RandomNumberGenerator.Fill(bytes);
+#endif
             return Base32.ToBase32(bytes);
         }
 
@@ -2463,16 +2469,12 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-
         /// <summary>
         /// Generates the token purpose used to change email.
         /// </summary>
         /// <param name="newEmail">The new email address.</param>
         /// <returns>The token purpose.</returns>
-        protected static string GetChangeEmailTokenPurpose(string newEmail)
-        {
-            return "ChangeEmail:" + newEmail;
-        }
+        public static string GetChangeEmailTokenPurpose(string newEmail) => "ChangeEmail:" + newEmail;
 
         /// <summary>
         /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is

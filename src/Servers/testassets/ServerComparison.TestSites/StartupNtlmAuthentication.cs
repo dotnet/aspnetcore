@@ -16,7 +16,7 @@ namespace ServerComparison.TestSites
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpContextAccessor();
-            // https://github.com/aspnet/AspNetCore/issues/11462
+            // https://github.com/dotnet/aspnetcore/issues/11462
             // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
 
             // This will deffer to the server implementations when available.
@@ -45,7 +45,7 @@ namespace ServerComparison.TestSites
             });
 
             app.UseAuthentication();
-            app.Use((context, next) => 
+            app.Use((context, next) =>
             {
                 if (context.Request.Path.Equals("/Anonymous"))
                 {

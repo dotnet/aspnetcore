@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels();
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2200", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2200", FlakyOn.All)]
         public async Task CheckUTF8File(TestVariant variant)
         {
             var path = "CheckConsoleFunctions";

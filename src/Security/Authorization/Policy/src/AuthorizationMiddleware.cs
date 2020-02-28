@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Authorization
 
             if (authorizeResult.Challenged)
             {
-                if (policy.AuthenticationSchemes.Any())
+                if (policy.AuthenticationSchemes.Count > 0)
                 {
                     foreach (var scheme in policy.AuthenticationSchemes)
                     {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authorization
             }
             else if (authorizeResult.Forbidden)
             {
-                if (policy.AuthenticationSchemes.Any())
+                if (policy.AuthenticationSchemes.Count > 0)
                 {
                     foreach (var scheme in policy.AuthenticationSchemes)
                     {

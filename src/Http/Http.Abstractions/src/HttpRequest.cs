@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract HostString Host { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestPathBase.
+        /// Gets or sets the base path for the request. The path base should not end with a trailing slash.
         /// </summary>
-        /// <returns>The RequestPathBase.</returns>
+        /// <returns>The base path for the request.</returns>
         public abstract PathString PathBase { get; set; }
 
         /// <summary>

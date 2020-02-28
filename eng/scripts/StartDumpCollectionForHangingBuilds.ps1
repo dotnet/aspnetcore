@@ -54,7 +54,7 @@ Write-Output "Watching processes $($CandidateProcessNames -join ', ')";
 # This script registers as a scheduled job. This scheduled job executes after $WakeTime.
 # When the scheduled job executes, it runs procdump on all alive processes whose name matches $CandidateProcessNames.
 # The dumps are placed in $ProcDumpOutputPath
-# If the build completes sucessfully in less than $WakeTime, a final step unregisters the job.
+# If the build completes successfully in less than $WakeTime, a final step unregisters the job.
 
 # Create a unique identifier for the job name
 $JobName = "CaptureDumps" + (New-Guid).ToString("N");

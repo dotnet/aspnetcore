@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
 #endif
 
-                var process = Process.Start(psi);
+                using var process = Process.Start(psi);
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)

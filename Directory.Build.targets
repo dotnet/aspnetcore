@@ -102,14 +102,16 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
     <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
+  <PropertyGroup Condition="'$(Language)' == 'C#'">
     <!-- Reference assemblies should always use Major.Minor.0.0 for assembly versions even during servicing. Only the package version should be updated. -->
+    <!-- Pinning the implementation assemblies at Major.Minor.0.0 as we figure out compiling against ref assemblies. -->
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
@@ -164,5 +166,6 @@
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" $(HasReferenceAssembly) " />
+  <Import Project="eng\targets\Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
 
 </Project>

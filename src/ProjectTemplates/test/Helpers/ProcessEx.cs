@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -99,6 +100,11 @@ namespace Templates.Test.Helpers
             }
 
             startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
+            
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                startInfo.EnvironmentVariables["NUGET_FALLBACK_PACKAGES"] = Environment.GetEnvironmentVariable("NUGET_FALLBACK_PACKAGES");
+            }
 
             output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
@@ -164,7 +170,7 @@ namespace Templates.Test.Helpers
         {
             if (!_process.HasExited)
             {
-                throw new InvalidOperationException("Process has not finished running.");
+                throw new InvalidOperationException($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
             }
 
             return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
@@ -174,22 +180,27 @@ namespace Templates.Test.Helpers
         {
             if(!timeSpan.HasValue)
             {
-                timeSpan = TimeSpan.FromSeconds(480);
+                timeSpan = TimeSpan.FromSeconds(600);
             }
 
-            Exited.Wait(timeSpan.Value);
-
-            if (assertSuccess && _process.ExitCode != 0)
+            var exited = Exited.Wait(timeSpan.Value);
+            if (!exited)
+            {
+                _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                _process.Dispose();
+            }
+            else if (assertSuccess && _process.ExitCode != 0)
             {
                 throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
             }
         }
 
-        private static string GetNugetPackagesRestorePath() =>
-            typeof(ProcessEx).Assembly
+        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE"))) 
+            ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "TestPackageRestorePath")
-                .Value;
+                .Value
+            : Environment.GetEnvironmentVariable("NUGET_RESTORE");
 
         public void Dispose()
         {

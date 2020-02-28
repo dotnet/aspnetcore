@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -1328,6 +1329,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public void CannotHaveGenericMethodOnHub()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+                var exception = Assert.Throws<NotSupportedException>(() => serviceProvider.GetService<HubConnectionHandler<GenericMethodHub>>());
+
+                Assert.Equal("Method 'GenericMethod' is a generic method which is not supported on a Hub.", exception.Message);
+            }
+        }
+
         [Theory]
         [MemberData(nameof(HubTypes))]
         public async Task BroadcastHubMethodSendsToAllClients(Type hubType)
@@ -2124,7 +2138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     nameof(StreamingHub.CounterAsyncEnumerable),
                     nameof(StreamingHub.CounterAsyncEnumerableAsync),
                     nameof(StreamingHub.CounterAsyncEnumerableImpl),
-                    nameof(StreamingHub.AsyncEnumerableIsPreferedOverChannelReader),
+                    nameof(StreamingHub.AsyncEnumerableIsPreferredOverChannelReader),
                 };
 
                 foreach (var method in methods)
@@ -2216,6 +2230,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 Assert.NotNull(context.Resource);
                 var resource = Assert.IsType<HubInvocationContext>(context.Resource);
+                Assert.Equal(typeof(MethodHub), resource.HubType);
                 Assert.Equal(nameof(MethodHub.MultiParamAuthMethod), resource.HubMethodName);
                 Assert.Equal(2, resource.HubMethodArguments?.Count);
                 Assert.Equal("Hello", resource.HubMethodArguments[0]);
@@ -2499,33 +2514,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             private class StringFormatter<T> : IMessagePackFormatter<T>
             {
-                public T Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+                public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
                 {
                     // this method isn't used in our tests
-                    readSize = 0;
                     return default;
                 }
 
-                public int Serialize(ref byte[] bytes, int offset, T value, IFormatterResolver formatterResolver)
+                public void Serialize(ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)
                 {
-                    // string of size 15
-                    bytes[offset] = 0xAF;
-                    bytes[offset + 1] = (byte)'f';
-                    bytes[offset + 2] = (byte)'o';
-                    bytes[offset + 3] = (byte)'r';
-                    bytes[offset + 4] = (byte)'m';
-                    bytes[offset + 5] = (byte)'a';
-                    bytes[offset + 6] = (byte)'t';
-                    bytes[offset + 7] = (byte)'t';
-                    bytes[offset + 8] = (byte)'e';
-                    bytes[offset + 9] = (byte)'d';
-                    bytes[offset + 10] = (byte)'S';
-                    bytes[offset + 11] = (byte)'t';
-                    bytes[offset + 12] = (byte)'r';
-                    bytes[offset + 13] = (byte)'i';
-                    bytes[offset + 14] = (byte)'n';
-                    bytes[offset + 15] = (byte)'g';
-                    return 16;
+                    writer.Write("formattedString");
                 }
             }
         }
@@ -3212,7 +3209,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Object not supported yet")]
+        [Fact]
         public async Task UploadStreamedObjects()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -3276,7 +3273,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Cyclic parsing is not supported yet")]
+        [Fact]
         public async Task ConnectionAbortedIfSendFailsWithProtocolError()
         {
             using (StartVerifiableLog())
@@ -3292,8 +3289,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
-
-                    await client.Connected.OrTimeout();
                     await connectionHandlerTask.OrTimeout();
                 }
             }
@@ -3861,7 +3856,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         // The usage of TypeNameHandling.All is a security risk.
                         // If you're implementing this in your own application instead use your own 'type' field and a custom JsonConverter
                         // or ensure you're restricting to only known types with a custom SerializationBinder like we are here.
-                        // See https://github.com/aspnet/AspNetCore/issues/11495#issuecomment-505047422
+                        // See https://github.com/dotnet/aspnetcore/issues/11495#issuecomment-505047422
                         TypeNameHandling = TypeNameHandling.All,
                         SerializationBinder = StreamingHub.DerivedParameterKnownTypesBinder.Instance
                     }

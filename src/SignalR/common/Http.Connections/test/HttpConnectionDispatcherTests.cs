@@ -1336,6 +1336,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await request1.OrTimeout();
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+
+                count = 0;
+                // Wait until the second request has started internally
+                while (connection.TransportTask.IsCompleted && count < 50)
+                {
+                    count++;
+                    await Task.Delay(15);
+                }
+                if (count == 50)
+                {
+                    Assert.True(false, "Poll took too long to start");
+                }
                 Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
                 Assert.False(request2.IsCompleted);
@@ -1626,7 +1638,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task LongPollingKeepsWindowsIdentityBetweenRequests()
+        public async Task LongPollingKeepsWindowsPrincipalAndIdentityBetweenRequests()
         {
             using (StartVerifiableLog())
             {
@@ -1655,6 +1667,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var windowsIdentity = WindowsIdentity.GetAnonymous();
                 context.User = new WindowsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
@@ -1668,6 +1681,60 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
+                Assert.IsType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task LongPollingKeepsWindowsIdentityWithoutWindowsPrincipalBetweenRequests()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddLogging();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionToken;
+                values["negotiateVersion"] = "1";
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                var builder = new ConnectionBuilder(sp);
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var windowsIdentity = WindowsIdentity.GetAnonymous();
+                context.User = new ClaimsPrincipal(windowsIdentity);
+                context.User.AddIdentity(new ClaimsIdentity());
+
+                // would get stuck if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                var currentUser = connection.User;
+
+                var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
+                await connectionHandlerTask.OrTimeout();
+
+                // This is the important check
+                Assert.Same(currentUser, connection.User);
+                Assert.IsNotType<WindowsPrincipal>(currentUser);
+                Assert.Equal(2, connection.User.Identities.Count());
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }

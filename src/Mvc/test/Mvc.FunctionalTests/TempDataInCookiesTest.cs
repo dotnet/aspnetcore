@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public void VerifyNewtonsoftJsonTempDataSerializer()
         {
             // Arrange
-            // This test could provide some diagnostics for the test failure reported in https://github.com/aspnet/AspNetCore-Internal/issues/1803.
+            // This test could provide some diagnostics for the test failure reported in https://github.com/dotnet/aspnetcore-internal/issues/1803.
             // AddNewtonsoftJson attempts to replace the DefaultTempDataSerializer. The test failure indicates this failed but it's not clear why.
             // We'll capture the application's ServiceCollection and inspect the instance of ITempDataSerializer instances here. It might give us some
             // clues if the test fails again in the future.

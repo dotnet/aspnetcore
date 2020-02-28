@@ -19,22 +19,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
-        private readonly Http2StreamContext _context;
-        private readonly Http2OutputProducer _http2Output;
-        private readonly StreamInputFlowControl _inputFlowControl;
-        private readonly StreamOutputFlowControl _outputFlowControl;
+        private Http2StreamContext _context;
+        private Http2OutputProducer _http2Output;
+        private StreamInputFlowControl _inputFlowControl;
+        private StreamOutputFlowControl _outputFlowControl;
 
         private bool _decrementCalled;
-        public Pipe RequestBodyPipe { get; }
+
+        public Pipe RequestBodyPipe { get; set; }
 
         internal long DrainExpirationTicks { get; set; }
 
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
 
-        public Http2Stream(Http2StreamContext context)
-            : base(context)
+        public void Initialize(Http2StreamContext context)
         {
+            base.Initialize(context);
+
+            _decrementCalled = false;
+            _completionState = StreamCompletionFlags.None;
+            InputRemaining = null;
+            RequestBodyStarted = false;
+            DrainExpirationTicks = 0;
+
             _context = context;
 
             _inputFlowControl = new StreamInputFlowControl(
@@ -60,6 +68,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Output = _http2Output;
         }
 
+        public void InitializeWithExistingContext(int streamId)
+        {
+            _context.StreamId = streamId;
+            Initialize(_context);
+        }
+
         public int StreamId => _context.StreamId;
 
         public long? InputRemaining { get; internal set; }
@@ -82,10 +96,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnReset()
         {
+            _keepAlive = true;
+            _connectionAborted = false;
+
             ResetHttp2Features();
         }
 
         protected override void OnRequestProcessingEnded()
+        {
+            CompleteStream(errored: false);
+        }
+
+        public void CompleteStream(bool errored)
         {
             try
             {
@@ -93,14 +115,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // If the app finished without reading the request body tell the client not to finish sending it.
                 if (!EndStreamReceived && !RstStreamReceived)
                 {
-                    Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    if (!errored)
+                    {
+                        Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    }
 
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
                         Debug.Assert(_decrementCalled);
-                        // Don't block on IO. This never faults.
-                        _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+
+                        // If there was an error starting the stream then we don't want to write RST_STREAM here.
+                        // The connection will handle writing RST_STREAM with the correct error code.
+                        if (!errored)
+                        {
+                            // Don't block on IO. This never faults.
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                        }
                         RequestBodyPipe.Writer.Complete();
                     }
                 }
@@ -300,9 +331,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
+                const int MaxPathBufferStackAllocSize = 256;
+
                 // The decoder operates only on raw bytes
-                var pathBuffer = new byte[pathSegment.Length].AsSpan();
-                for (int i = 0; i < pathSegment.Length; i++)
+                Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
+                    // A constant size plus slice generates better code
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+                    ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
+                    // TODO - Consider pool here for less than 4096
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
+                    : new byte[pathSegment.Length];
+
+                for (var i = 0; i < pathSegment.Length; i++)
                 {
                     var ch = pathSegment[i];
                     // The header parser should already be checking this

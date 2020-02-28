@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             Walk(connection =>
             {
-                connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
+                connection.GetTransport().Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
                 abortTasks.Add(connection.ExecutionTask);
             });
 

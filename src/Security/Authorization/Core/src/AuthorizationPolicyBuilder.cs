@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Adds a <see cref="ClaimsAuthorizationRequirement"/>
         /// to the current instance.
         /// </summary>
-        /// <param name="claimType">The claim type required, which no restrictions on claim value.</param>
+        /// <param name="claimType">The claim type required, with no restrictions on claim value.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireClaim(string claimType)
         {

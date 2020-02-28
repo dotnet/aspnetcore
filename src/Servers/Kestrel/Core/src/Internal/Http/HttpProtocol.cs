@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private readonly object _abortLock = new object();
-        private volatile bool _connectionAborted;
+        protected volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
@@ -57,13 +58,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
+        // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
+        // how Kestrel processes requests/responses.
+        private string _httpProtocol;
 
         private string _requestId;
         private int _requestHeadersParsed;
 
         private long _responseBytesWritten;
 
-        private readonly HttpConnectionContext _context;
+        private HttpConnectionContext _context;
         private RouteValueDictionary _routeValues;
         private Endpoint _endpoint;
 
@@ -72,15 +76,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
-        public HttpProtocol(HttpConnectionContext context)
+        public void Initialize(HttpConnectionContext context)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
 
-            HttpRequestHeaders = new HttpRequestHeaders(
-                reuseHeaderValues: !ServerOptions.DisableStringReuse,
-                useLatin1: ServerOptions.Latin1RequestHeaders);
+            Reset();
 
             HttpResponseControl = this;
         }
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        protected KestrelServerOptions ServerOptions { get; }
+        protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
@@ -142,17 +144,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                if (_httpVersion == Http.HttpVersion.Http11)
+                if (_httpVersion == Http.HttpVersion.Http3)
                 {
-                    return HttpUtilities.Http11Version;
-                }
-                if (_httpVersion == Http.HttpVersion.Http10)
-                {
-                    return HttpUtilities.Http10Version;
+                    return AspNetCore.Http.HttpProtocol.Http3;
                 }
                 if (_httpVersion == Http.HttpVersion.Http2)
                 {
-                    return HttpUtilities.Http2Version;
+                    return AspNetCore.Http.HttpProtocol.Http2;
+                }
+                if (_httpVersion == Http.HttpVersion.Http11)
+                {
+                    return AspNetCore.Http.HttpProtocol.Http11;
+                }
+                if (_httpVersion == Http.HttpVersion.Http10)
+                {
+                    return AspNetCore.Http.HttpProtocol.Http10;
                 }
 
                 return string.Empty;
@@ -163,17 +169,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // GetKnownVersion returns versions which ReferenceEquals interned string
                 // As most common path, check for this only in fast-path and inline
-                if (ReferenceEquals(value, HttpUtilities.Http11Version))
+                if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http3))
+                {
+                    _httpVersion = Http.HttpVersion.Http3;
+                }
+                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http2))
+                {
+                    _httpVersion = Http.HttpVersion.Http2;
+                }
+                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http11))
                 {
                     _httpVersion = Http.HttpVersion.Http11;
                 }
-                else if (ReferenceEquals(value, HttpUtilities.Http10Version))
+                else if (ReferenceEquals(value, AspNetCore.Http.HttpProtocol.Http10))
                 {
                     _httpVersion = Http.HttpVersion.Http10;
-                }
-                else if (ReferenceEquals(value, HttpUtilities.Http2Version))
-                {
-                    _httpVersion = Http.HttpVersion.Http2;
                 }
                 else
                 {
@@ -185,17 +195,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void HttpVersionSetSlow(string value)
         {
-            if (value == HttpUtilities.Http11Version)
+            if (AspNetCore.Http.HttpProtocol.IsHttp3(value))
+            {
+                _httpVersion = Http.HttpVersion.Http3;
+            }
+            else if (AspNetCore.Http.HttpProtocol.IsHttp2(value))
+            {
+                _httpVersion = Http.HttpVersion.Http2;
+            }
+            else if (AspNetCore.Http.HttpProtocol.IsHttp11(value))
             {
                 _httpVersion = Http.HttpVersion.Http11;
             }
-            else if (value == HttpUtilities.Http10Version)
+            else if (AspNetCore.Http.HttpProtocol.IsHttp10(value))
             {
                 _httpVersion = Http.HttpVersion.Http10;
-            }
-            else if (value == HttpUtilities.Http2Version)
-            {
-                _httpVersion = Http.HttpVersion.Http2;
             }
             else
             {
@@ -290,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; }
+        protected HttpRequestHeaders HttpRequestHeaders { get; set; } = new HttpRequestHeaders();
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -338,13 +352,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RawTarget = null;
             QueryString = null;
             _httpVersion = Http.HttpVersion.Unknown;
+            _httpProtocol = null;
             _statusCode = StatusCodes.Status200OK;
             _reasonPhrase = null;
 
             var remoteEndPoint = RemoteEndPoint;
             RemoteIpAddress = remoteEndPoint?.Address;
             RemotePort = remoteEndPoint?.Port ?? 0;
-
             var localEndPoint = LocalEndPoint;
             LocalIpAddress = localEndPoint?.Address;
             LocalPort = localEndPoint?.Port ?? 0;
@@ -352,10 +366,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
+            HttpRequestHeaders.UseLatin1 = ServerOptions.Latin1RequestHeaders;
+            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
             RequestTrailers.Clear();
+            ResponseTrailers?.Reset();
             RequestTrailersAvailable = false;
 
             _isLeasedMemoryInvalid = true;
@@ -491,7 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
@@ -502,7 +519,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.Append(name, value);
         }
 
-        public void OnTrailer(Span<byte> name, Span<byte> value)
+        public void OnTrailer(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // Trailers still count towards the limit.
             _requestHeadersParsed++;
@@ -1043,7 +1060,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteSuffix()
         {
-            if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
+            if (_autoChunk || _httpVersion >= Http.HttpVersion.Http2)
             {
                 // For the same reason we call CheckLastWrite() in Content-Length responses.
                 PreventRequestAbortedCancellation();
@@ -1159,7 +1176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             responseHeaders.SetReadOnly();
 
-            if (!hasConnection && _httpVersion != Http.HttpVersion.Http2)
+            if (!hasConnection && _httpVersion < Http.HttpVersion.Http2)
             {
                 if (!_keepAlive)
                 {
@@ -1168,6 +1185,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (_httpVersion == Http.HttpVersion.Http10)
                 {
                     responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
+                }
+            }
+
+            // TODO allow customization of this.
+            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
+            {
+                foreach (var option in ServerOptions.ListenOptions)
+                {
+                    if ((option.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
+                    {
+                        responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint.Port}\"; ma=84600";
+                        break;
+                    }
                 }
             }
 

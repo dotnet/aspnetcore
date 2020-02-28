@@ -599,6 +599,10 @@ export class HubConnection {
     }
 
     private resetKeepAliveInterval() {
+        if (this.connection.features.inherentKeepAlive) {
+            return;
+        }
+
         this.cleanupPingTimer();
         this.pingServerHandle = setTimeout(async () => {
             if (this.connectionState === HubConnectionState.Connected) {
@@ -814,23 +818,40 @@ export class HubConnection {
 
     private createInvocation(methodName: string, args: any[], nonblocking: boolean, streamIds: string[]): InvocationMessage {
         if (nonblocking) {
-            return {
-                arguments: args,
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         } else {
             const invocationId = this.invocationId;
             this.invocationId++;
 
-            return {
-                arguments: args,
-                invocationId: invocationId.toString(),
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         }
     }
 
@@ -899,13 +920,22 @@ export class HubConnection {
         const invocationId = this.invocationId;
         this.invocationId++;
 
-        return {
-            arguments: args,
-            invocationId: invocationId.toString(),
-            streamIds,
-            target: methodName,
-            type: MessageType.StreamInvocation,
-        };
+        if (streamIds.length !== 0) {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                streamIds,
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        } else {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        }
     }
 
     private createCancelInvocation(id: string): CancelInvocationMessage {

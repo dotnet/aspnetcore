@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
 
+        internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
         private static HTTPAPI_VERSION version;
 
@@ -106,6 +107,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal static SafeLibraryHandle HttpApiModule { get; private set; }
+        internal static HttpSetRequestPropertyInvoker HttpSetRequestProperty { get; private set; }
+        internal static bool SupportsTrailers { get; private set; }
+        internal static bool SupportsReset { get; private set; }
+
         static HttpApi()
         {
             InitHttpApi(2, 0);
@@ -119,6 +125,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var statusCode = HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
 
             supported = statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+
+            if (supported)
+            {
+                HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
+                HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
+
+                SupportsReset = HttpSetRequestProperty != null;
+                // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
+                SupportsTrailers = SupportsReset;
+            }
         }
 
         private static volatile bool supported;
