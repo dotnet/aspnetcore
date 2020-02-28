@@ -139,6 +139,11 @@ source activate.sh
 code .
 ```
 
+Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
+to the process in WSL.  You can workaround this by explicitly setting the environment variables
+in `~/.vscode-server/server-env-setup`.
+See https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script for details.
+
 ## Building on command-line
 
 You can also build the entire project on command line with the `build.cmd`/`.sh` scripts.
