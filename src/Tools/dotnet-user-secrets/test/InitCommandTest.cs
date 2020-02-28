@@ -57,7 +57,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
         public void AddsEscapedSpecificSecretIdToProject()
         {
             const string SecretId = @"<lots of XML invalid values>&";
