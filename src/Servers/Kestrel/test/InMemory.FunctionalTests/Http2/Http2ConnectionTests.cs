@@ -106,6 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [Flaky("<No longer necessary; tracked in Kusto>", FlakyOn.All)]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             TaskCompletionSource<object> appDelegateTcs = null;
@@ -1128,7 +1129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
         {
-            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1; 
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
             var firstRequestBlock = new TaskCompletionSource<object>();
             var firstRequestReceived = new TaskCompletionSource<object>();
             var makeFirstRequestWait = false;
