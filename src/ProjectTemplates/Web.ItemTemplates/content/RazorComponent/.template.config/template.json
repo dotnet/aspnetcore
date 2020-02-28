@@ -16,7 +16,7 @@
   "precedence": "100",
   "identity": "Microsoft.AspNetCore.Components.RazorComponent",
   "shortname": "razorcomponent",
-  "sourceName": "Component1",
+  "sourceName": "ignoreme",
   "primaryOutputs": [
     {
       "path": "Component1.razor"

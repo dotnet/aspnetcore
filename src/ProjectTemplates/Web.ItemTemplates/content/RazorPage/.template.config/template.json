@@ -13,7 +13,7 @@
   "precedence": "100",
   "identity": "Microsoft.AspNetCore.Mvc.RazorPage",
   "shortName": "page",
-  "sourceName": "Index",
+  "sourceName": "ignoreme",
   "primaryOutputs": [
     { "path": "Index.cshtml" },
     {

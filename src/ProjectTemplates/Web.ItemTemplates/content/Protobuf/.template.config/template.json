@@ -16,7 +16,7 @@
   "precedence": "100",
   "identity": "Microsoft.Web.Grpc.Protobuf",
   "shortname": "proto",
-  "sourceName": "protobuf",
+  "sourceName": "ignoreme",
   "primaryOutputs": [
     {
       "path": "protobuf.proto"
