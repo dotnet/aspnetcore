@@ -38,7 +38,7 @@ set HELIX=%$helixQueue%
 set HELIX_DIR=%HELIX_WORKITEM_ROOT%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
-set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%$efVersion%\tools\netcoreapp3.1\any\dotnet-ef.dll
+set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%$efVersion%\tools\netcoreapp3.1\any\dotnet-ef.exe
 echo "Set DotNetEfFullPath: %DotNetEfFullPath%"
 echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
