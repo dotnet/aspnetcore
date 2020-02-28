@@ -33,6 +33,8 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export helix="$helix_queue_name"
 export HELIX_DIR="$DIR"
 export NUGET_FALLBACK_PACKAGES="$DIR"
+export DotNetEfFullPath=$DIR\nugetRestore\dotnet-ef\$DotnetEfPackageVersion\tools\netcoreapp3.1\any\dotnet-ef.dll
+echo "Set DotnetEfPackageVersion: $DotnetEfPackageVersion"
 export NUGET_RESTORE="$DIR/nugetRestore"
 echo "Creating nugetRestore directory: $NUGET_RESTORE"
 mkdir $NUGET_RESTORE
