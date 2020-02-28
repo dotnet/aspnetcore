@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -116,6 +113,27 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             document.Items[typeof(DocumentIntermediateNode)] = documentNode;
+        }
+
+        internal static RazorHtmlDocument GetHtmlDocument(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            var razorHtmlObj = document.Items[typeof(RazorHtmlDocument)];
+            if (razorHtmlObj == null)
+            {
+                var razorHtmlDocument = RazorHtmlWriter.GetHtmlDocument(document);
+                if (razorHtmlDocument != null)
+                {
+                    document.Items[typeof(RazorHtmlDocument)] = razorHtmlDocument;
+                    return razorHtmlDocument;
+                }
+            }
+
+            return (RazorHtmlDocument)razorHtmlObj;
         }
 
         public static RazorCSharpDocument GetCSharpDocument(this RazorCodeDocument document)

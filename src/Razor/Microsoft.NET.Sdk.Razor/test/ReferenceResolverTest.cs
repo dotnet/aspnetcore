@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Fact]
         public void Resolve_Works_WhenAssemblyReferencesAreRecursive()
         {
-            // Test for https://github.com/aspnet/AspNetCore/issues/12693
+            // Test for https://github.com/dotnet/aspnetcore/issues/12693
             // Arrange
             var resolver = new TestReferencesToMvcResolver(new[]
             {

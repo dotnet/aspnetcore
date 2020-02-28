@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/13303")]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
         public async Task Build_SimpleMvcFSharp_NoopsWithoutFailing()
         {
@@ -639,13 +639,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [Fact(Skip = "Default C# version is 7.3 for netcoreapp3.1 and later https://github.com/aspnet/AspNetCore/issues/13930")]
+        [Fact(Skip = "Default C# version is 7.3 for netcoreapp3.1 and later https://github.com/dotnet/aspnetcore/issues/13930")]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ImplicitCSharp8_NullableEnforcement_WarningsDuringBuild_NoBuildServer()
         {
             var result = await DotnetMSBuild(
                 "Build",
-                "/p:Nullable=enable",
+                // Remove /p:LangVersion=Default once we've picked up a compiler that supports .NET 5.0.
+                // Tracked by https://github.com/dotnet/aspnetcore/issues/13304
+                "/p:Nullable=enable /p:LangVersion=Default",
                 suppressBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 

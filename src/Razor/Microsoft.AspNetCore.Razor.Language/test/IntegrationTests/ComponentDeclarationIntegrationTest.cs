@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Contains(typeof(IDoCoolThings), component.GetType().GetInterfaces());
         }
 
-        [Fact] // Regression test for https://github.com/aspnet/Blazor/issues/453
+        [Fact] // Regression test for https://github.com/dotnet/blazor/issues/453
         public void DeclarationConfiguration_FunctionsBlockHasLineMappings_MappingsApplyToError()
         {
             // Arrange & Act 1

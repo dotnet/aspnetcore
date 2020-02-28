@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             Pass.Engine = Engine;
         }
-        
+
         private DefaultRazorProjectEngine ProjectEngine { get; }
 
         private RazorEngine Engine { get; }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        // See: https://github.com/aspnet/AspNetCore/issues/6480
+        // See: https://github.com/dotnet/aspnetcore/issues/6480
         [Fact]
         public void Execute_RewritesHtml_HtmlAttributePrefix()
         {

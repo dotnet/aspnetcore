@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public ClassifiedSpanVisitor(RazorSourceDocument source)
         {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             _source = source;
             _spans = new List<ClassifiedSpanInternal>();
             _currentBlockKind = BlockKindInternal.Markup;

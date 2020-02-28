@@ -361,6 +361,36 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             IntermediateNodeVerifier.Verify(document, baseline);
         }
 
+        internal void AssertHtmlDocumentMatchesBaseline(RazorHtmlDocument htmlDocument)
+        {
+            if (FileName == null)
+            {
+                var message = $"{nameof(AssertHtmlDocumentMatchesBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
+                throw new InvalidOperationException(message);
+            }
+
+            var baselineFileName = Path.ChangeExtension(FileName, ".codegen.html");
+
+            if (GenerateBaselines)
+            {
+                var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
+                File.WriteAllText(baselineFullPath, htmlDocument.GeneratedHtml);
+                return;
+            }
+
+            var htmlFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
+            if (!htmlFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFileName} was not found.");
+            }
+
+            var baseline = htmlFile.ReadAllText();
+
+            // Normalize newlines to match those in the baseline.
+            var actual = htmlDocument.GeneratedHtml.Replace("\r", "").Replace("\n", "\r\n");
+            Assert.Equal(baseline, actual);
+        }
+
         protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument cSharpDocument)
         {
             if (FileName == null)

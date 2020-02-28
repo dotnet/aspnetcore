@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         private static RazorEngine CreateCore(RazorConfiguration configuration, bool designTime, Action<IRazorEngineBuilder> configure)
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (configuration == null)
             {

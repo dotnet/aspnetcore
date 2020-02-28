@@ -102,8 +102,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return string.Equals(descriptor.Name, typePattern, StringComparison.Ordinal);
         }
 
-        
-
         internal abstract class DirectiveVisitor : SyntaxWalker
         {
             public abstract HashSet<TagHelperDescriptor> Matches { get; }

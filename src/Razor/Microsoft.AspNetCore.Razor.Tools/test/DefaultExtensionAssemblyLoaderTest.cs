@@ -121,7 +121,7 @@ Delta: Gamma: Beta: Test B
 
                 var actual = builder.ToString();
 
-                Assert.Equal(expected, actual);
+                Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
             }
         }
     }

@@ -540,6 +540,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -559,6 +560,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -584,6 +586,7 @@ public class MyService<TModel>
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -620,6 +623,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -655,6 +659,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -674,6 +679,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -693,6 +699,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -712,6 +719,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -728,6 +736,7 @@ public class MyModel
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -753,6 +762,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -769,6 +779,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -792,6 +803,7 @@ public class MyApp
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -824,6 +836,7 @@ public class MyApp
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -857,6 +870,7 @@ public class MyService<TModel>
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -873,6 +887,7 @@ public class MyService<TModel>
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -895,6 +910,7 @@ public class ThisShouldBeGenerated
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -923,6 +939,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -946,6 +963,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -962,6 +980,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -985,6 +1004,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -1001,6 +1021,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -1017,6 +1038,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -1049,6 +1071,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
@@ -1065,6 +1088,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             // Assert
             AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertHtmlDocumentMatchesBaseline(compiled.CodeDocument.GetHtmlDocument());
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
