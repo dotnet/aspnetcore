@@ -317,10 +317,6 @@ namespace Templates.Test.Helpers
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
                     command = "dotnet-ef";
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        command += ".exe";
-                    }
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
@@ -346,10 +342,6 @@ namespace Templates.Test.Helpers
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
                     command = "dotnet-ef";
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        command += ".exe";
-                    }
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
