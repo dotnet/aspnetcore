@@ -29,18 +29,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<IQueuePolicy, StackPolicy>();
             return builder;
         }
-
-        /// <summary>
-        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a LIFO stack as its queueing strategy.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
-        /// <param name="configure">Set the options used by the queue.
-        /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddConcurrencyLimiterStackPolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
-        {
-            services.Configure(configure);
-            return services;
-        }
     }
 }
