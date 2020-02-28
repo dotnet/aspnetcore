@@ -108,11 +108,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
-            await InitializeConnectionAsync(_echoApplication);
+            TaskCompletionSource<object> appDelegateTcs = null;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await appDelegateTcs.Task;
+            });
 
             Assert.Equal(0, _connection.StreamPool.Count);
 
+            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            appDelegateTcs.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
@@ -129,15 +137,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Stream has been returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
 
+            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            // New stream has been taken from the pool
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            appDelegateTcs.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
-
-            // New stream has been taken from the pool
-            Assert.Equal(0, _connection.StreamPool.Count);
 
             // Ping will trigger the stream to be returned to the pool so we can assert it
             await SendPingAsync(Http2PingFrameFlags.NONE);
