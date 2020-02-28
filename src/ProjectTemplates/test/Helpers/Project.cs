@@ -33,7 +33,7 @@ namespace Templates.Test.Helpers
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value
-            : "";//Environment.GetEnvironmentVariable("DotNetEfFullPath");
+            : Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -314,13 +314,13 @@ namespace Templates.Test.Helpers
             try
             {
                 var command = DotNetMuxer.MuxerPathOrDefault();
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    command = "dotnet-ef";
-                }
-                else 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
                 {
                     args = $"\"{DotNetEfFullPath}\" "+args;
+                }
+                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    command = "dotnet-ef";
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
@@ -343,19 +343,13 @@ namespace Templates.Test.Helpers
             try
             {
                 var command = DotNetMuxer.MuxerPathOrDefault();
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                        command = Environment.GetEnvironmentVariable("DotNetEfFullPath") + ".exe";
-                    }
-                    else
-                    {
-                        command = "dotnet-ef";
-                    }
-                }
-                else 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
                 {
                     args = $"\"{DotNetEfFullPath}\" "+args;
+                }
+                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    command = "dotnet-ef";
                 }
                 
                 var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
