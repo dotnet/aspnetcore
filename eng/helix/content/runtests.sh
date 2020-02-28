@@ -105,6 +105,10 @@ then
     dotnet nuget list source
     
     dotnet tool install dotnet-ef --global --version $efVersion
+    
+    # Ensure tools are on on PATH
+    export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
+    
 fi
 
 if [ -e /proc/self/coredump_filter ]; then
