@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public void Error_MissingId(string id)
         {
             var project = Path.Combine(_fixture.CreateProject(id), "TestProject.csproj");
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public void SetSecrets(bool fromCurrentDirectory)
         {
             var secrets = new KeyValuePair<string, string>[]
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public void Remove_Non_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public void List_Flattens_Nested_Objects()
         {
             string secretId;
@@ -270,7 +270,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
-        [Flaky("<No longer needed, tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();

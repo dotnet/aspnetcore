@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();
