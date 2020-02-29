@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _testBase.Logger.LogTrace("Input is completed");
 
             Assert.True(readResult.IsCompleted);
+            Assert.True(readResult.Buffer.IsEmpty);
             Assert.Equal((long)protocolError, StreamContext.Error);
 
             if (expectedErrorMessage != null)

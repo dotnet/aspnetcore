@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Fact]
         [Repeat(1000)]
-            public async Task VerifyDefaultSettingsAreSent()
+        public async Task VerifyDefaultSettingsAreSent()
         {
             // It's hard to know if the peer receives any setting updates, as they occur on
             // a separate stream from the request stream.
@@ -60,16 +60,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, "Exceeded client request max header list size.");
         }
-
-        //private class MockHttp3PeerSettings : Http3PeerSettings
-        //{
-        //    public override void UpdateMaxHeaderListSize(long size)
-        //    {
-        //        base.UpdateMaxHeaderListSize(size);
-        //        SettingUpdated.SetResult(null);
-        //    }
-
-        //    public TaskCompletionSource<object> SettingUpdated = new TaskCompletionSource<object>();
-        //}
     }
 }
