@@ -53,8 +53,8 @@ if %$quarantined%==True (
     set %$quarantined=true
 )
 
-set NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:%HELIX%!=true"
-set QUARANTINE_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:%HELIX%=true"
+set NONQUARANTINE_FILTER="Quarantined!=true"
+set QUARANTINE_FILTER="Quarantined=true"
 if %$quarantined%==true (
     echo Running quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%QUARANTINE_FILTER%
@@ -63,8 +63,6 @@ if %$quarantined%==true (
         REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
     )
 ) else (
-    REM We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
-    REM only puts the explicit filter traits the user provided in
     REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
     echo Running non-quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%NONQUARANTINE_FILTER%
