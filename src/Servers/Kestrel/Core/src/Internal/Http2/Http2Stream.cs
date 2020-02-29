@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // CONNECT - :scheme and :path must be excluded
             if (Method == HttpMethod.Connect)
             {
-                if (!String.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !String.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
+                if (!String.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !String.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
                 {
                     ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
@@ -206,16 +206,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
             // - For now we'll restrict it to http/s and require it match the transport.
             // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(HttpRequestHeaders.HeaderScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 ResetAndAbort(new ConnectionAbortedException(
-                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;
             }
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
-            var path = RequestHeaders[HeaderNames.Path].ToString();
+            var path = HttpRequestHeaders.HeaderPath.ToString();
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool TryValidateMethod()
         {
             // :method
-            _methodText = RequestHeaders[HeaderNames.Method].ToString();
+            _methodText = HttpRequestHeaders.HeaderMethod.ToString();
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == HttpMethod.None)
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // :authority (optional)
             // Prefer this over Host
 
-            var authority = RequestHeaders[HeaderNames.Authority];
+            var authority = HttpRequestHeaders.HeaderAuthority;
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
