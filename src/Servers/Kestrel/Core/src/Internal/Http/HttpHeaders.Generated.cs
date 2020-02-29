@@ -364,29 +364,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._Authority = value; 
             }
         }
-        public StringValues HeaderPath
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100000L) != 0)
-                {
-                    value = _headers._Path;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100000L;
-                _headers._Path = value; 
-            }
-        }
         public StringValues HeaderMethod
         {
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x200000L) != 0)
+                if ((_bits & 0x100000L) != 0)
                 {
                     value = _headers._Method;
                 }
@@ -394,8 +377,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x200000L;
+                _bits |= 0x100000L;
                 _headers._Method = value; 
+            }
+        }
+        public StringValues HeaderPath
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x200000L) != 0)
+                {
+                    value = _headers._Path;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x200000L;
+                _headers._Path = value; 
             }
         }
         public StringValues HeaderScheme
@@ -1079,7 +1079,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Path, key))
                     {
-                        if ((_bits & 0x100000L) != 0)
+                        if ((_bits & 0x200000L) != 0)
                         {
                             value = _headers._Path;
                             return true;
@@ -1107,7 +1107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.Path.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000L) != 0)
+                        if ((_bits & 0x200000L) != 0)
                         {
                             value = _headers._Path;
                             return true;
@@ -1233,7 +1233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Method, key))
                     {
-                        if ((_bits & 0x200000L) != 0)
+                        if ((_bits & 0x100000L) != 0)
                         {
                             value = _headers._Method;
                             return true;
@@ -1297,7 +1297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.Method.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x200000L) != 0)
+                        if ((_bits & 0x100000L) != 0)
                         {
                             value = _headers._Method;
                             return true;
@@ -2124,7 +2124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Path, key))
                     {
-                        _bits |= 0x100000L;
+                        _bits |= 0x200000L;
                         _headers._Path = value;
                         return;
                     }
@@ -2143,7 +2143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.Path.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x100000L;
+                        _bits |= 0x200000L;
                         _headers._Path = value;
                         return;
                     }
@@ -2230,7 +2230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Method, key))
                     {
-                        _bits |= 0x200000L;
+                        _bits |= 0x100000L;
                         _headers._Method = value;
                         return;
                     }
@@ -2273,7 +2273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.Method.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x200000L;
+                        _bits |= 0x100000L;
                         _headers._Method = value;
                         return;
                     }
@@ -2927,9 +2927,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Path, key))
                     {
-                        if ((_bits & 0x100000L) == 0)
+                        if ((_bits & 0x200000L) == 0)
                         {
-                            _bits |= 0x100000L;
+                            _bits |= 0x200000L;
                             _headers._Path = value;
                             return true;
                         }
@@ -2958,9 +2958,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.Path.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000L) == 0)
+                        if ((_bits & 0x200000L) == 0)
                         {
-                            _bits |= 0x100000L;
+                            _bits |= 0x200000L;
                             _headers._Path = value;
                             return true;
                         }
@@ -3097,9 +3097,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Method, key))
                     {
-                        if ((_bits & 0x200000L) == 0)
+                        if ((_bits & 0x100000L) == 0)
                         {
-                            _bits |= 0x200000L;
+                            _bits |= 0x100000L;
                             _headers._Method = value;
                             return true;
                         }
@@ -3168,9 +3168,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.Method.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x200000L) == 0)
+                        if ((_bits & 0x100000L) == 0)
                         {
-                            _bits |= 0x200000L;
+                            _bits |= 0x100000L;
                             _headers._Method = value;
                             return true;
                         }
@@ -4114,9 +4114,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Path, key))
                     {
-                        if ((_bits & 0x100000L) != 0)
+                        if ((_bits & 0x200000L) != 0)
                         {
-                            _bits &= ~0x100000L;
+                            _bits &= ~0x200000L;
                             _headers._Path = default(StringValues);
                             return true;
                         }
@@ -4145,9 +4145,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.Path.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000L) != 0)
+                        if ((_bits & 0x200000L) != 0)
                         {
-                            _bits &= ~0x100000L;
+                            _bits &= ~0x200000L;
                             _headers._Path = default(StringValues);
                             return true;
                         }
@@ -4284,9 +4284,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.Method, key))
                     {
-                        if ((_bits & 0x200000L) != 0)
+                        if ((_bits & 0x100000L) != 0)
                         {
-                            _bits &= ~0x200000L;
+                            _bits &= ~0x100000L;
                             _headers._Method = default(StringValues);
                             return true;
                         }
@@ -4355,9 +4355,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.Method.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x200000L) != 0)
+                        if ((_bits & 0x100000L) != 0)
                         {
-                            _bits &= ~0x200000L;
+                            _bits &= ~0x100000L;
                             _headers._Method = default(StringValues);
                             return true;
                         }
@@ -5183,7 +5183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000L) != 0)
             {
-                _headers._Path = default;
+                _headers._Method = default;
                 if((tempBits & ~0x100000L) == 0)
                 {
                     return;
@@ -5193,7 +5193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200000L) != 0)
             {
-                _headers._Method = default;
+                _headers._Path = default;
                 if((tempBits & ~0x200000L) == 0)
                 {
                     return;
@@ -5886,7 +5886,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Path, _headers._Path);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Method, _headers._Method);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200000L) != 0)
@@ -5895,7 +5895,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Method, _headers._Method);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Path, _headers._Path);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400000L) != 0)
@@ -6242,7 +6242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 5:
                     if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x5441503au) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x48u))
                     {
-                        flag = 0x100000L;
+                        flag = 0x200000L;
                         values = ref _headers._Path;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x4f4c4c41u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x57u))
@@ -6287,7 +6287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 7:
                     if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x54454d3au) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4f48u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x44u))
                     {
-                        flag = 0x200000L;
+                        flag = 0x100000L;
                         values = ref _headers._Method;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x4843533au) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4d45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
@@ -6592,8 +6592,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _Expires;
             public StringValues _LastModified;
             public StringValues _Authority;
-            public StringValues _Path;
             public StringValues _Method;
+            public StringValues _Path;
             public StringValues _Scheme;
             public StringValues _Accept;
             public StringValues _AcceptCharset;
@@ -6676,9 +6676,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     case 19:
                         goto HeaderAuthority;
                     case 20:
-                        goto HeaderPath;
-                    case 21:
                         goto HeaderMethod;
+                    case 21:
+                        goto HeaderPath;
                     case 22:
                         goto HeaderScheme;
                     case 23:
@@ -6887,17 +6887,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = 20;
                         return true;
                     }
-                HeaderPath: // case 20
+                HeaderMethod: // case 20
                     if ((_bits & 0x100000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Path, _collection._headers._Path);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Method, _collection._headers._Method);
                         _next = 21;
                         return true;
                     }
-                HeaderMethod: // case 21
+                HeaderPath: // case 21
                     if ((_bits & 0x200000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Method, _collection._headers._Method);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Path, _collection._headers._Path);
                         _next = 22;
                         return true;
                     }
