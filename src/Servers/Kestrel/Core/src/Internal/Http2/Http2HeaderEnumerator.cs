@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal struct Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, string>>
+    internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, string>>
     {
         private bool _isTrailers;
         private HttpResponseHeaders.Enumerator _headersEnumerator;
@@ -19,7 +19,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
 
-        public Http2HeadersEnumerator(HttpResponseHeaders headers)
+        public Http2HeadersEnumerator()
+        {
+        }
+
+        public void Initialize(HttpResponseHeaders headers)
         {
             _headersEnumerator = headers.GetEnumerator();
             _trailersEnumerator = default;
@@ -30,10 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Current = default;
         }
 
-        public Http2HeadersEnumerator(HttpResponseTrailers trailers)
+        public void Initialize(HttpResponseTrailers headers)
         {
             _headersEnumerator = default;
-            _trailersEnumerator = trailers.GetEnumerator();
+            _trailersEnumerator = headers.GetEnumerator();
             _genericEnumerator = null;
             _isTrailers = true;
 
@@ -41,12 +45,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Current = default;
         }
 
-        public Http2HeadersEnumerator(IDictionary<string, StringValues> headers)
+        public void Initialize(IDictionary<string, StringValues> headers)
         {
             _headersEnumerator = default;
             _trailersEnumerator = default;
             _genericEnumerator = headers.GetEnumerator();
-            _isTrailers = true;
+            _isTrailers = false;
 
             _stringValuesEnumerator = default;
             Current = default;
@@ -85,17 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private bool MoveNextOnStringEnumerator()
         {
-            var e = _stringValuesEnumerator;
-            var result = e.MoveNext();
-            if (result)
-            {
-                Current = new KeyValuePair<string, string>(GetCurrentKey(), e.Current);
-            }
-            else
-            {
-                Current = default;
-            }
-            _stringValuesEnumerator = e;
+            var result = _stringValuesEnumerator.MoveNext();
+            Current = result ? new KeyValuePair<string, string>(GetCurrentKey(), _stringValuesEnumerator.Current) : default;
             return result;
         }
 

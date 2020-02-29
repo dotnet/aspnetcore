@@ -546,7 +546,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .GroupBy(k => k.Key)
                 .ToDictionary(g => g.Key, g => new StringValues(g.Select(gg => gg.Value).ToArray()));
 
-            return new Http2HeadersEnumerator(groupedHeaders);
+            var enumerator = new Http2HeadersEnumerator();
+            enumerator.Initialize(groupedHeaders);
+            return enumerator;
         }
 
         /* https://tools.ietf.org/html/rfc7540#section-6.2
