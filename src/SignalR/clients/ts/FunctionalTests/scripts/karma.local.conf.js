@@ -8,6 +8,7 @@ try {
     const ChromeHeadlessBrowser = require("karma-chrome-launcher")["launcher:ChromeHeadless"][1];
     const ChromiumHeadlessBrowser = require("karma-chrome-launcher")["launcher:ChromiumHeadless"][1];
     const FirefoxHeadlessBrowser = require("karma-firefox-launcher")["launcher:FirefoxHeadless"][1];
+    const FirefoxDeveloperHeadlessBrowser = require("karma-firefox-launcher")["launcher:FirefoxDeveloperHeadless"][1];
     const EdgeBrowser = require("karma-edge-launcher")["launcher:Edge"][1];
     const SafariBrowser = require("karma-safari-launcher")["launcher:Safari"][1];
     const IEBrowser = require("karma-ie-launcher")["launcher:IE"][1];
@@ -33,22 +34,26 @@ try {
       if (path && browserExists(path)) {
         console.log(`Located ${name} at ${path}.`);
         browsers.push(name);
+        return true;
       }
       else {
         console.log(`Unable to locate ${name}. Skipping.`);
+        return false;
       }
     }
 
     // We use the launchers themselves to figure out if the browser exists. It's a bit sneaky, but it works.
-    tryAddBrowser("ChromeHeadlessNoSandbox", new ChromeHeadlessBrowser(() => { }, {}));
-    tryAddBrowser("ChromiumHeadlessIgnoreCert", new ChromiumHeadlessBrowser(() => { }, {}));
-    tryAddBrowser("FirefoxHeadless", new FirefoxHeadlessBrowser(0, () => { }, {}));
+    tryAddBrowser("ChromeHeadlessNoSandbox", ChromeHeadlessBrowser.prototype);
+    tryAddBrowser("ChromiumHeadlessIgnoreCert", ChromiumHeadlessBrowser.prototype);
+    if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
+      tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
+    }
 
     // We need to receive an argument from the caller, but globals don't seem to work, so we use an environment variable.
     if (process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS === "true") {
-      tryAddBrowser("Edge", new EdgeBrowser(() => { }, { create() { } }));
-      tryAddBrowser("IE", new IEBrowser(() => { }, { create() { } }, {}));
-      tryAddBrowser("Safari", new SafariBrowser(() => { }, {}));
+      tryAddBrowser("Edge", EdgeBrowser.prototype);
+      tryAddBrowser("IE", IEBrowser.prototype);
+      tryAddBrowser("Safari", SafariBrowser.prototype);
     }
 
     module.exports = createKarmaConfig({

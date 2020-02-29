@@ -15,17 +15,17 @@ namespace Microsoft.DotNet.Watcher
     public class Program : IDisposable
     {
         private readonly IConsole _console;
-        private readonly string _workingDir;
+        private readonly string _workingDirectory;
         private readonly CancellationTokenSource _cts;
         private IReporter _reporter;
 
-        public Program(IConsole console, string workingDir)
+        public Program(IConsole console, string workingDirectory)
         {
             Ensure.NotNull(console, nameof(console));
-            Ensure.NotNullOrEmpty(workingDir, nameof(workingDir));
+            Ensure.NotNullOrEmpty(workingDirectory, nameof(workingDirectory));
 
             _console = console;
-            _workingDir = workingDir;
+            _workingDirectory = workingDirectory;
             _cts = new CancellationTokenSource();
             _console.CancelKeyPress += OnCancelKeyPress;
             _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Watcher
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, project);
             }
             catch (FileNotFoundException ex)
             {
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Watcher
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, project);
             }
             catch (FileNotFoundException ex)
             {
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Watcher
         }
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
-            => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
+            => new PrefixConsoleReporter("watch : ", console, verbose || CliContext.IsGlobalVerbose(), quiet);
 
         public void Dispose()
         {

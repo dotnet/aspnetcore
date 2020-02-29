@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -14,17 +16,21 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
+        private HashSet<ClaimsPrincipal> _transformCache;
+
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
-        /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
+        /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
         /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
-        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform)
+        /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
+        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform, IOptions<AuthenticationOptions> options)
         {
             Schemes = schemes;
             Handlers = handlers;
             Transform = transform;
+            Options = options.Value;
         }
 
         /// <summary>
@@ -43,6 +49,11 @@ namespace Microsoft.AspNetCore.Authentication
         public IClaimsTransformation Transform { get; }
 
         /// <summary>
+        /// The <see cref="AuthenticationOptions"/>.
+        /// </summary>
+        public AuthenticationOptions Options { get; }
+
+        /// <summary>
         /// Authenticate for the specified authentication scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
@@ -56,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -69,8 +80,20 @@ namespace Microsoft.AspNetCore.Authentication
             var result = await handler.AuthenticateAsync();
             if (result != null && result.Succeeded)
             {
-                var transformed = await Transform.TransformAsync(result.Principal);
-                return AuthenticateResult.Success(new AuthenticationTicket(transformed, result.Properties, result.Ticket.AuthenticationScheme));
+                var principal = result.Principal;
+                var doTransform = true;
+                _transformCache ??= new HashSet<ClaimsPrincipal>();
+                if (_transformCache.Contains(principal))
+                {
+                    doTransform = false;
+                }
+
+                if (doTransform)
+                {
+                    principal = await Transform.TransformAsync(principal);
+                    _transformCache.Add(principal);
+                }
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket.AuthenticationScheme));
             }
             return result;
         }
@@ -90,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultChallengeScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -118,7 +141,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultForbidScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -146,13 +169,25 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(principal));
             }
 
+            if (Options.RequireAuthenticatedSignIn)
+            {
+                if (principal.Identity == null)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity == null is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
+                if (!principal.Identity.IsAuthenticated)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity.IsAuthenticated is false is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
+            }
+
             if (scheme == null)
             {
                 var defaultScheme = await Schemes.GetDefaultSignInSchemeAsync();
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -186,7 +221,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -233,7 +268,7 @@ namespace Microsoft.AspNetCore.Authentication
             var schemes = await GetAllSignInSchemeNames();
 
             // CookieAuth is the only implementation of sign-in.
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -255,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the only implementation of sign-in.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-in schemes are: {schemes}.");
@@ -272,7 +307,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             var schemes = await GetAllSignOutSchemeNames();
 
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -294,7 +329,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-out schemes are: {schemes}.");

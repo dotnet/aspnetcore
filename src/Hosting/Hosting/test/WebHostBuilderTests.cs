@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Fakes;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
@@ -98,34 +97,18 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback(IWebHostBuilder builder)
+        public async Task IHostApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback(IWebHostBuilder builder)
         {
             var server = new TestServer();
             var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (host)
             {
                 await host.StartAsync();
-                var services = host.Services.GetServices<IApplicationLifetime>();
+                var services = host.Services.GetServices<IHostApplicationLifetime>();
                 Assert.NotNull(services);
                 Assert.NotEmpty(services);
 
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        public async Task DefaultObjectPoolProvider_IsRegistered(IWebHostBuilder builder)
-        {
-            var server = new TestServer();
-            var host = builder
-                .UseServer(server)
-                .Configure(app => { })
-                .Build();
-            using (host)
-            {
-                await host.StartAsync();
-                Assert.IsType<DefaultObjectPoolProvider>(host.Services.GetService<ObjectPoolProvider>());
             }
         }
 
@@ -189,7 +172,8 @@ namespace Microsoft.AspNetCore.Hosting
                     options.ValidateScopes = true;
                 });
 
-            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build().Start());
+            using var host = hostBuilder.Build();
+            Assert.Throws<InvalidOperationException>(() => host.Start());
         }
 
         [Theory]
@@ -216,7 +200,8 @@ namespace Microsoft.AspNetCore.Hosting
                     options.ValidateScopes = true;
                 });
 
-            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build().Start());
+            using  var host = hostBuilder.Build();
+            Assert.Throws<InvalidOperationException>(() => host.Start());
             Assert.True(configurationCallbackCalled);
         }
 
@@ -567,11 +552,14 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+                Assert.Equal(expected, host.Services.GetService<IHostEnvironment>().EnvironmentName);
+                Assert.Equal(expected, host.Services.GetService<IWebHostEnvironment>().EnvironmentName);
+#pragma warning disable CS0618 // Type or member is obsolete
+                Assert.Equal(expected, host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().EnvironmentName);
                 Assert.Equal(expected, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().EnvironmentName);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
-
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public void BuildAndDispose(IWebHostBuilder builder)
@@ -612,8 +600,12 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                Assert.Equal("/", host.Services.GetService<IHostEnvironment>().ContentRootPath);
+                Assert.Equal("/", host.Services.GetService<IWebHostEnvironment>().ContentRootPath);
+#pragma warning disable CS0618 // Type or member is obsolete
+                Assert.Equal("/", host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
                 Assert.Equal("/", host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -627,8 +619,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
-                var basePath2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath;
+                var basePath = host.Services.GetRequiredService<IHostEnvironment>().ContentRootPath;
+#pragma warning disable CS0618 // Type or member is obsolete
+                var basePath2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath;
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.True(Path.IsPathRooted(basePath));
                 Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
@@ -648,8 +642,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var appBase = AppContext.BaseDirectory;
-                Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
-                Assert.Equal(appBase, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
+                Assert.Equal(appBase, host.Services.GetService<IHostEnvironment>().ContentRootPath);
+#pragma warning disable CS0618 // Type or member is obsolete
+                Assert.Equal(appBase, host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -657,10 +653,13 @@ namespace Microsoft.AspNetCore.Hosting
         [MemberData(nameof(DefaultWebHostBuilders))]
         public void DefaultWebHostBuilderWithNoStartupThrows(IWebHostBuilder builder)
         {
-            var host = builder
-                .UseServer(new TestServer());
+            builder.UseServer(new TestServer());
 
-            var ex = Assert.Throws<InvalidOperationException>(() => host.Build().Start());
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                using var host = builder.Build();
+                host.Start();
+            });
 
             Assert.Contains("No application configured.", ex.Message);
         }
@@ -674,8 +673,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup(typeof(Startup).Assembly.GetName().Name)
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
+                var hostingEnv2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
@@ -690,8 +691,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup<StartupNoServicesNoInterface>()
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
+                var hostingEnv2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
@@ -701,12 +704,12 @@ namespace Microsoft.AspNetCore.Hosting
         [MemberData(nameof(DefaultWebHostBuilders))]
         public void DefaultApplicationNameWithUseStartupOfType(IWebHostBuilder builder)
         {
-            var host = builder
+            using var host = builder
                 .UseServer(new TestServer())
                 .UseStartup(typeof(StartupNoServicesNoInterface))
                 .Build();
 
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            var hostingEnv = host.Services.GetService<IHostEnvironment>();
             Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv.ApplicationName);
         }
 
@@ -719,7 +722,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
 
                 // Should be the assembly containing this test, because that's where the delegate comes from
                 Assert.Equal(typeof(WebHostBuilderTests).Assembly.GetName().Name, hostingEnv.ApplicationName);
@@ -735,7 +738,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
                 Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             }
         }
@@ -749,7 +752,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(StaticConfigureMethod)
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
                 Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             }
         }
@@ -905,6 +908,22 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal("Building this implementation of IWebHostBuilder is not supported.", exception.Message);
         }
 
+        [Fact]
+        public void GenericWebHostDoesNotSupportBuildingInConfigureServices()
+        {
+            var hostBuilder = new HostBuilder()
+                   .ConfigureWebHost(builder =>
+                   {
+                       builder.UseStartup<StartupWithBuiltConfigureServices>();
+                   });
+            var exception = Assert.Throws<NotSupportedException>(() =>
+            {
+                hostBuilder.Build();
+            });
+
+            Assert.Equal($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.", exception.Message);
+        }
+
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public void Build_HostingStartupAssemblyCanBeExcluded(IWebHostBuilder builder)
@@ -958,6 +977,55 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 var configuration = host.Services.GetRequiredService<IConfiguration>();
                 Assert.Equal("value", configuration["testhostingstartup:config"]);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void Build_AppConfigAvailableEverywhere(IWebHostBuilder builder)
+        {
+            builder = builder
+                .CaptureStartupErrors(false)
+                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                {
+                    configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("appconfig", "appvalue")
+                        });
+                })
+                .ConfigureLogging((context, logging) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseDefaultServiceProvider((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseStartup<StartupCheckConfig>()
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                var configuration = host.Services.GetRequiredService<IConfiguration>();
+                Assert.Equal("appvalue", configuration["appconfig"]);
+            }
+        }
+
+        public class StartupCheckConfig
+        {
+            public StartupCheckConfig(IConfiguration config)
+            {
+                Assert.Equal("value", config["testhostingstartup:config"]);
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
             }
         }
 
@@ -1065,7 +1133,8 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer());
 
-            Assert.Throws<InvalidOperationException>(() => builder.Build().Start());
+            using var host = builder.Build();
+            Assert.Throws<InvalidOperationException>(() => host.Start());
 
             Assert.NotNull(testSink);
             Assert.Contains(testSink.Writes, w => w.Exception?.Message == "Startup exception");
@@ -1113,7 +1182,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var host = hostBuilder.Build();
+                using var host = hostBuilder.Build();
+
                 var filter = (MyStartupFilter)host.Services.GetServices<IStartupFilter>().FirstOrDefault(s => s is MyStartupFilter);
                 Assert.NotNull(filter);
                 try
@@ -1149,10 +1219,129 @@ namespace Microsoft.AspNetCore.Hosting
 
             Assert.Equal("nestedvalue", builder.GetSetting("key"));
 
+            using  var host = builder.Build();
+            var appConfig = host.Services.GetRequiredService<IConfiguration>();
+            Assert.Equal("nestedvalue", appConfig["key"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public async Task ThrowingFromHostedServiceFailsStartAsync(IWebHostBuilder builder)
+        {
+            builder.Configure(app => { })
+                   .ConfigureServices(services =>
+                   {
+                       services.AddHostedService<ThrowingHostedService>();
+                   })
+                   .UseServer(new TestServer());
+
             using (var host = builder.Build())
             {
-                var appConfig = host.Services.GetRequiredService<IConfiguration>();
-                Assert.Equal("nestedvalue", appConfig["key"]);
+                var startEx = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+                Assert.Equal("Hosted Service throws in StartAsync", startEx.Message);
+                var stopEx = await Assert.ThrowsAsync<AggregateException>(() => host.StopAsync());
+                Assert.Single(stopEx.InnerExceptions);
+                Assert.Equal("Hosted Service throws in StopAsync", stopEx.InnerExceptions[0].Message);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public async Task ThrowingFromHostedServiceStopsOtherHostedServicesFromRunningStartAsync(IWebHostBuilder builder)
+        {
+            builder.Configure(app => { })
+                   .ConfigureServices(services =>
+                   {
+                       services.AddHostedService<ThrowingHostedService>();
+                       services.AddHostedService<NonThrowingHostedService>();
+                   })
+                   .UseServer(new TestServer());
+
+            using var host = builder.Build();
+            var service = host.Services.GetServices<IHostedService>().OfType<NonThrowingHostedService>().First();
+            var startEx = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+            Assert.Equal("Hosted Service throws in StartAsync", startEx.Message);
+
+            var stopEx = await Assert.ThrowsAsync<AggregateException>(() => host.StopAsync());
+            Assert.Single(stopEx.InnerExceptions);
+            Assert.Equal("Hosted Service throws in StopAsync", stopEx.InnerExceptions[0].Message);
+
+            // This service is never constructed
+            Assert.False(service.StartCalled);
+            Assert.True(service.StopCalled);
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public async Task HostedServicesStartedBeforeServer(IWebHostBuilder builder)
+        {
+            builder.Configure(app => { })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<StartOrder>();
+                    services.AddHostedService<MustBeStartedFirst>();
+                    services.AddSingleton<IServer, ServerMustBeStartedSecond>();
+                });
+
+            using var host = builder.Build();
+            await host.StartAsync();
+            var ordering = host.Services.GetRequiredService<StartOrder>();
+            Assert.Equal(2, ordering.Order);
+            await host.StopAsync();
+        }
+
+        private class StartOrder
+        {
+            public int Order { get; set; }
+        }
+
+        private class MustBeStartedFirst : IHostedService
+        {
+            public MustBeStartedFirst(StartOrder ordering)
+            {
+                Ordering = ordering;
+            }
+
+            public StartOrder Ordering { get; }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                Assert.Equal(0, Ordering.Order);
+                Ordering.Order++;
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        private class ServerMustBeStartedSecond : IServer
+        {
+            public ServerMustBeStartedSecond(StartOrder ordering)
+            {
+                Ordering = ordering;
+            }
+
+            public StartOrder Ordering { get; }
+
+            public IFeatureCollection Features => null;
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+            {
+                Assert.Equal(1, Ordering.Order);
+                Ordering.Order++;
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+
+            public void Dispose()
+            {
             }
         }
 
@@ -1207,6 +1396,37 @@ namespace Microsoft.AspNetCore.Hosting
             httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
             var bodyText = new StreamReader(httpContext.Response.Body).ReadToEnd();
             Assert.Contains(expectedText, bodyText);
+        }
+
+        private class ThrowingHostedService : IHostedService
+        {
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                throw new InvalidOperationException("Hosted Service throws in StartAsync");
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Hosted Service throws in StopAsync");
+            }
+        }
+
+        private class NonThrowingHostedService : IHostedService
+        {
+            public bool StartCalled { get; set; }
+            public bool StopCalled { get; set; }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                StartCalled = true;
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                StopCalled = true;
+                return Task.CompletedTask;
+            }
         }
 
         private class MyStartupFilter : IStartupFilter
@@ -1331,6 +1551,19 @@ namespace Microsoft.AspNetCore.Hosting
                 var loggerProvider = new TestLoggerProvider();
                 builder.UseSetting("testhostingstartup", "0")
                        .UseSetting("testhostingstartup_chain", builder.GetSetting("testhostingstartup_chain") + "0")
+                       .ConfigureServices(services =>
+                       {
+                           // This check is required because MVC still uses the
+                           // IWebHostEnvironment instance before the container is baked
+#pragma warning disable CS0618 // Type or member is obsolete
+                           var heDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
+                           Assert.NotNull(heDescriptor);
+                           Assert.NotNull(heDescriptor.ImplementationInstance);
+#pragma warning restore CS0618 // Type or member is obsolete
+                           var wheDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
+                           Assert.NotNull(wheDescriptor);
+                           Assert.NotNull(wheDescriptor.ImplementationInstance);
+                       })
                        .ConfigureServices(services => services.AddSingleton<ServiceA>())
                        .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
                        .ConfigureLogging((_, lf) => lf.AddProvider(loggerProvider))

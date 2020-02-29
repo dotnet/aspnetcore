@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -162,11 +162,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
-                var responseHeaders = responseInfo.Headers;
+                var response = httpContext.Response;
+                var responseHeaders = response.Headers;
                 responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
-                return responseInfo.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
+                return response.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
             }))
             {
                 using (HttpClient client = new HttpClient())
@@ -192,15 +192,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
                     httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
-                    var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
-                    var responseHeaders = responseInfo.Headers;
+                    var response = httpContext.Response;
+                    var responseHeaders = response.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
-                    var body = responseInfo.Body;
-                    Assert.False(responseInfo.HasStarted);
+                    var body = response.Body;
+                    Assert.False(response.HasStarted);
                     body.Flush();
-                    Assert.True(responseInfo.HasStarted);
-                    Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
+                    Assert.True(response.HasStarted);
+                    Assert.Throws<InvalidOperationException>(() => response.StatusCode = 404);
                     Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                     return Task.FromResult(0);
                 }))
@@ -223,15 +223,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
                 {
-                    var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
-                    var responseHeaders = responseInfo.Headers;
+                    var response = httpContext.Response;
+                    var responseHeaders = response.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
                     responseHeaders.Add("Custom2", new string[] { "value2a, value2b" });
-                    var body = responseInfo.Body;
-                    Assert.False(responseInfo.HasStarted);
+                    var body = response.Body;
+                    Assert.False(response.HasStarted);
                     await body.FlushAsync();
-                    Assert.True(responseInfo.HasStarted);
-                    Assert.Throws<InvalidOperationException>(() => responseInfo.StatusCode = 404);
+                    Assert.True(response.HasStarted);
+                    Assert.Throws<InvalidOperationException>(() => response.StatusCode = 404);
                     Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                 }))
             {

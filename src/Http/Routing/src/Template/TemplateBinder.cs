@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.ObjectPool;
 
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="template">The <see cref="RouteTemplate"/> to bind values to.</param>
         /// <param name="defaults">The default values for <paramref name="template"/>.</param>
-        public TemplateBinder(
+        internal TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="parameterPolicies">
         /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
         /// </param>
-        public TemplateBinder(
+        internal TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RoutePattern pattern,
@@ -110,6 +109,56 @@ namespace Microsoft.AspNetCore.Routing.Template
             _slots = AssignSlots(_pattern, _filters);
         }
 
+        internal TemplateBinder(
+            UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> pool,
+            RoutePattern pattern,
+            IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
+        {
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (pool == null)
+            {
+                throw new ArgumentNullException(nameof(pool));
+            }
+
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            // Parameter policies can be null.
+
+            _urlEncoder = urlEncoder;
+            _pool = pool;
+            _pattern = pattern;
+            _defaults = new RouteValueDictionary(pattern.Defaults);
+            _requiredKeys = pattern.RequiredValues.Keys.ToArray();
+
+            // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
+            // is provided for that 'filter' it must match the value in defaults.
+            var filters = new RouteValueDictionary(_defaults);
+            for (var i = 0; i < pattern.Parameters.Count; i++)
+            {
+                filters.Remove(pattern.Parameters[i].Name);
+            }
+            _filters = filters.ToArray();
+
+            _constraints = parameterPolicies
+                ?.Where(p => p.policy is IRouteConstraint)
+                .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
+                .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
+            _parameterTransformers = parameterPolicies
+                ?.Where(p => p.policy is IOutboundParameterTransformer)
+                .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
+                .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+
+            _slots = AssignSlots(_pattern, _filters);
+        }
+
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
         public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
@@ -118,10 +167,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             var slots = new KeyValuePair<string, object>[_slots.Length];
             Array.Copy(_slots, 0, slots, 0, slots.Length);
 
-            // Keeping track of the number of 'values' and 'ambient values' we've processed can be used to avoid doing
+            // Keeping track of the number of 'values' we've processed can be used to avoid doing
             // some expensive 'merge' operations later.
             var valueProcessedCount = 0;
-            var ambientValueProcessedCount = 0;
 
             // Start by copying all of the values out of the 'values' and into the slots. There's no success
             // case where we *don't* use all of the 'values' so there's no reason not to do this up front
@@ -168,11 +216,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                     {
                         ambientValue = null;
                     }
-                    else
-                    {
-                        // Track the count of processed ambient values - this allows a fast path later.
-                        ambientValueProcessedCount++;
-                    }
 
                     // For now, only check ambient values with required values that don't have a parameter
                     // Ambient values for parameters are processed below
@@ -184,7 +227,8 @@ namespace Microsoft.AspNetCore.Routing.Template
                             throw new InvalidOperationException($"Unable to find required value '{key}' on route pattern.");
                         }
 
-                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]))
+                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]) &&
+                            !RoutePattern.IsRequiredValueAny(_pattern.RequiredValues[key]))
                         {
                             copyAmbientValues = false;
                             break;
@@ -226,15 +270,10 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                 var parameter = parameters[i];
 
+                // We are copying **all** ambient values
                 if (copyAmbientValues)
                 {
                     hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
-                    if (hasAmbientValue)
-                    {
-                        // Track the count of processed ambient values - this allows a fast path later.
-                        ambientValueProcessedCount++;
-                    }
-
                     if (hasExplicitValue && hasAmbientValue && !RoutePartsEqual(ambientValue, value))
                     {
                         // Stop copying current values when we find one that doesn't match
@@ -255,9 +294,33 @@ namespace Microsoft.AspNetCore.Routing.Template
                         //
                         // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
                         // we can't use it.
-                        // 
+                        //
                         // In the example above we should fall into this block for 'b'.
                         copyAmbientValues = false;
+                    }
+                }
+
+                // This might be an ambient value that matches a required value. We want to use these even if we're
+                // not bulk-copying ambient values.
+                //
+                // This comes up in a case like the following:
+                //  ambient-values: { page = "/DeleteUser", area = "Admin", }
+                //  values: { controller = "Home", action = "Index", }
+                //  pattern: {area}/{controller}/{action}/{id?}
+                //  required-values: { area = "Admin", controller = "Home", action = "Index", page = (string)null, }
+                //
+                // OR in plain English... when linking from a page in an area to an action in the same area, it should
+                // be possible to use the area as an ambient value.
+                if (!copyAmbientValues && !hasExplicitValue && _pattern.RequiredValues.TryGetValue(key, out var requiredValue))
+                {
+                    hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
+                    if (hasAmbientValue &&
+                        (RoutePartsEqual(requiredValue, ambientValue) || RoutePattern.IsRequiredValueAny(requiredValue)))
+                    {
+                        // Treat this an an explicit value to *force it*.
+                        slots[i] = new KeyValuePair<string, object>(key, ambientValue);
+                        hasExplicitValue = true;
+                        value = ambientValue;
                     }
                 }
 
@@ -272,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
                 else if (parameter.IsOptional || parameter.IsCatchAll)
                 {
-                    // Value isn't needed for optional or catchall parameters - wipe out the key, so it 
+                    // Value isn't needed for optional or catchall parameters - wipe out the key, so it
                     // will be omitted from the RVD.
                     slots[i] = default;
                 }
@@ -345,15 +408,13 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             // Currently this copy is required because BindValues will mutate the accepted values :(
             var combinedValues = new RouteValueDictionary(acceptedValues);
-            if (ambientValueProcessedCount < (ambientValues?.Count ?? 0))
-            {
-                // Add any ambient values that don't match parameters - they need to be visible to constraints
-                // but they will ignored by link generation.
-                CopyNonParameterAmbientValues(
-                   ambientValues: ambientValues,
-                   acceptedValues: acceptedValues,
-                   combinedValues: combinedValues);
-            }
+
+            // Add any ambient values that don't match parameters - they need to be visible to constraints
+            // but they will ignored by link generation.
+            CopyNonParameterAmbientValues(
+                ambientValues: ambientValues,
+                acceptedValues: acceptedValues,
+                combinedValues: combinedValues);
 
             return new TemplateValuesResult()
             {
@@ -444,16 +505,20 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
-            for (var i = 0; i < _pattern.PathSegments.Count; i++)
+            var segments = _pattern.PathSegments;
+            // Read interface .Count once rather than per iteration
+            var segmentsCount = segments.Count;
+            for (var i = 0; i < segmentsCount; i++)
             {
                 Debug.Assert(context.BufferState == SegmentState.Beginning);
                 Debug.Assert(context.UriState == SegmentState.Beginning);
 
-                var segment = _pattern.PathSegments[i];
-
-                for (var j = 0; j < segment.Parts.Count; j++)
+                var parts = segments[i].Parts;
+                // Read interface .Count once rather than per iteration
+                var partsCount = parts.Count;
+                for (var j = 0; j < partsCount; j++)
                 {
-                    var part = segment.Parts[j];
+                    var part = parts[j];
 
                     if (part is RoutePatternLiteralPart literalPart)
                     {
@@ -494,17 +559,17 @@ namespace Microsoft.AspNetCore.Routing.Template
                         }
                         else
                         {
-                            // If the value is not accepted, it is null or empty value in the 
+                            // If the value is not accepted, it is null or empty value in the
                             // middle of the segment. We accept this if the parameter is an
                             // optional parameter and it is preceded by an optional seperator.
                             // In this case, we need to remove the optional seperator that we
                             // have added to the URI
                             // Example: template = {id}.{format?}. parameters: id=5
-                            // In this case after we have generated "5.", we wont find any value 
+                            // In this case after we have generated "5.", we wont find any value
                             // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
-                                if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
+                                if (j != 0 && parameterPart.IsOptional && (separatorPart = parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
                                     context.Remove(separatorPart.Content);
                                 }
@@ -665,7 +730,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             return slots;
         }
 
-        // This represents an 'explicit null' in the slots array. 
+        // This represents an 'explicit null' in the slots array.
         [DebuggerDisplay("explicit null")]
         private class SentinullValue
         {

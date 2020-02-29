@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Authentication
         private const string CorrelationMarker = "N";
         private const string AuthSchemeKey = ".AuthScheme";
 
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         protected string SignInScheme => Options.SignInScheme;
 
         /// <summary>
@@ -127,12 +125,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (ticketContext.Result.Handled)
                 {
-                    Logger.SigninHandled();
+                    Logger.SignInHandled();
                     return true;
                 }
                 else if (ticketContext.Result.Skipped)
                 {
-                    Logger.SigninSkipped();
+                    Logger.SignInSkipped();
                     return false;
                 }
             }
@@ -194,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var bytes = new byte[32];
-            CryptoRandom.GetBytes(bytes);
+            RandomNumberGenerator.Fill(bytes);
             var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
             var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
@@ -283,7 +281,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return HandleRequestResult.Handle();
             }
 
-            return HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
+            return HandleRequestResult.NoResult();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             try
             {
-                if (DockerUtils.IsDocker && !DockerUtils.IsVolumeMountedFolder(Directory))
+                if (ContainerUtils.IsContainer && !ContainerUtils.IsVolumeMountedFolder(Directory))
                 {
                     // warn users that keys may be lost when running in docker without a volume mounted folder
                     _logger.UsingEphemeralFileSystemLocationInContainer(Directory.FullName);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
             catch (Exception ex)
             {
-                // Treat exceptions as non-fatal when attempting to detect docker. 
+                // Treat exceptions as non-fatal when attempting to detect docker.
                 // These might occur if fstab is an unrecognized format, or if there are other unusual
                 // file IO errors.
                 _logger.LogTrace(ex, "Failure occurred while attempting to detect docker.");
@@ -143,8 +143,17 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // Renames are atomic operations on the file systems we support.
                 _logger.WritingDataToFile(finalFilename);
 
-                // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
-                File.Copy(tempFilename, finalFilename);
+                try
+                {
+                    // Prefer the atomic move operation to avoid multi-process startup issues
+                    File.Move(tempFilename, finalFilename);
+                }
+                catch (IOException)
+                {
+                    // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
+                    // See https://github.com/dotnet/aspnetcore/issues/2941 for more context
+                    File.Copy(tempFilename, finalFilename);
+                }
             }
             finally
             {

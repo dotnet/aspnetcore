@@ -34,5 +34,19 @@ namespace Microsoft.AspNetCore.TestHost
                     Assert.Equal("Test/Value", request.Content.Headers.ContentType.ToString());
                 });
         }
+
+        [Fact]
+        public void TestServer_PropertyShouldHoldTestServerInstance()
+        {
+            // Arrange
+            var builder = new WebHostBuilder().Configure(app => { });
+            var server = new TestServer(builder);
+
+            // Act
+            var requestBuilder = server.CreateRequest("/");
+
+            // Assert
+            Assert.Equal(server, requestBuilder.TestServer);
+        }
     }
 }

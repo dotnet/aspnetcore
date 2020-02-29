@@ -4,11 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpResponseTests
     {
@@ -59,6 +64,84 @@ namespace Microsoft.AspNetCore.Http.Internal
             Assert.Null(response.ContentType);
         }
 
+        [Fact]
+        public void BodyWriter_CanGet()
+        {
+            var response = new DefaultHttpContext();
+            var bodyPipe = response.Response.BodyWriter;
+
+            Assert.NotNull(bodyPipe);
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSet()
+        {
+            var features = new FeatureCollection();
+            var mock = new Mock<IHttpResponseBodyFeature>();
+            mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSetWithProvidedCancellationToken()
+        {
+            var features = new FeatureCollection();
+
+            var mock = new Mock<IHttpResponseBodyFeature>();
+            var ct = new CancellationToken();
+            mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync(ct);
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_DoesNotCallStartIfHasStartedIsTrue()
+        {
+            var features = new FeatureCollection();
+
+            var startMock = new Mock<IHttpResponseBodyFeature>();
+            startMock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(startMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(true);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            startMock.Verify(m => m.StartAsync(default), Times.Never());
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
+        {
+            var context = new DefaultHttpContext();
+            var mock = new FlushAsyncCheckStream();
+            context.Response.Body = mock;
+
+            await context.Response.StartAsync(default);
+
+            Assert.True(mock.IsCalled);
+        }
+
         private static HttpResponse CreateResponse(IHeaderDictionary headers)
         {
             var context = new DefaultHttpContext();
@@ -85,6 +168,17 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             return CreateResponse(headers);
+        }
+
+        private class FlushAsyncCheckStream : MemoryStream
+        {
+            public bool IsCalled { get; private set; }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                IsCalled = true;
+                return base.FlushAsync(cancellationToken);
+            }
         }
     }
 }

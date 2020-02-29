@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -21,7 +21,9 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(builder =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
                 var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
@@ -41,10 +43,8 @@ namespace Benchmarks
                         displayName: "Plaintext"),
                 });
 
-                builder.DataSources.Add(endpointDataSource);
+                endpoints.DataSources.Add(endpointDataSource);
             });
-
-            app.UseEndpoint();
         }
     }
 }

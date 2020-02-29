@@ -8,12 +8,12 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header.
     /// </summary>
-    public class ResponseCookies : IResponseCookies
+    internal class ResponseCookies : IResponseCookies
     {
         /// <summary>
         /// Create a new wrapper.
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             {
                 Path = options.Path,
                 Domain = options.Domain,
-                Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Expires = DateTimeOffset.UnixEpoch,
                 Secure = options.Secure,
                 HttpOnly = options.HttpOnly,
                 SameSite = options.SameSite

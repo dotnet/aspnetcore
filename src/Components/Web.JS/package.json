@@ -1,0 +1,37 @@
+{
+  "name": "microsoft.aspnetcore.components.web.js",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "preclean": "yarn install --mutex network",
+    "clean": "node node_modules/rimraf/bin.js ./dist/Debug ./dist/Release",
+    "prebuild": "yarn run clean && yarn install --mutex network",
+    "build": "yarn run build:debug && yarn run build:production",
+    "build:debug": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode development --config ./webpack.config.js",
+    "build:production": "cd src && node ../node_modules/webpack-cli/bin/cli.js --mode production --config ./webpack.config.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@microsoft/signalr": "link:../../SignalR/clients/ts/signalr",
+    "@microsoft/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
+    "@microsoft/dotnet-js-interop": "https://dotnet.myget.org/F/aspnetcore-dev/npm/@microsoft/dotnet-js-interop/-/@microsoft/dotnet-js-interop-5.0.0-alpha1.19572.2.tgz",
+    "@types/emscripten": "0.0.31",
+    "@types/jest": "^24.0.6",
+    "@types/jsdom": "11.0.6",
+    "@typescript-eslint/eslint-plugin": "^1.5.0",
+    "@typescript-eslint/parser": "^1.5.0",
+    "eslint": "^5.16.0",
+    "jest": "^24.8.0",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^24.0.0",
+    "ts-loader": "^4.4.1",
+    "typescript": "^3.5.3",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6"
+  },
+  "resolutions": {
+    "**/set-value": "^2.0.1"
+  }
+}

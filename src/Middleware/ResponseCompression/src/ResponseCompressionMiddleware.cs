@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {
@@ -52,32 +51,22 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return;
             }
 
-            var bodyStream = context.Response.Body;
-            var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
-            var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
+            var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context, bodyStream, _provider,
-                originalBufferFeature, originalSendFileFeature);
-            context.Response.Body = bodyWrapperStream;
-            context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
-            if (originalSendFileFeature != null)
-            {
-                context.Features.Set<IHttpSendFileFeature>(bodyWrapperStream);
-            }
+            var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature);
+            context.Features.Set<IHttpResponseBodyFeature>(compressionBody);
+            context.Features.Set<IHttpsCompressionFeature>(compressionBody);
 
             try
             {
                 await _next(context);
-                await bodyWrapperStream.FinishCompressionAsync();
+                await compressionBody.FinishCompressionAsync();
             }
             finally
             {
-                context.Response.Body = bodyStream;
-                context.Features.Set(originalBufferFeature);
-                if (originalSendFileFeature != null)
-                {
-                    context.Features.Set(originalSendFileFeature);
-                }
+                context.Features.Set(originalBodyFeature);
+                context.Features.Set(originalCompressionFeature);
             }
         }
     }

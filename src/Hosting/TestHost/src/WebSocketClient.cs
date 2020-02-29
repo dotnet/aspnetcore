@@ -4,23 +4,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     public class WebSocketClient
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
-        internal WebSocketClient(PathString pathBase, IHttpApplication<Context> application)
+        internal WebSocketClient(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
@@ -46,17 +46,26 @@ namespace Microsoft.AspNetCore.TestHost
             set;
         }
 
+        internal bool AllowSynchronousIO { get; set; }
+        internal bool PreserveExecutionContext { get; set; }
+
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             WebSocketFeature webSocketFeature = null;
-            var contextBuilder = new HttpContextBuilder(_application);
-            contextBuilder.Configure(context =>
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
+            contextBuilder.Configure((context, reader) =>
             {
                 var request = context.Request;
                 var scheme = uri.Scheme;
                 scheme = (scheme == "ws") ? "http" : scheme;
                 scheme = (scheme == "wss") ? "https" : scheme;
                 request.Scheme = scheme;
+                if (!request.Host.HasValue)
+                {
+                    request.Host = uri.IsDefaultPort
+                        ? new HostString(HostString.FromUriComponent(uri).Host)
+                        : HostString.FromUriComponent(uri);
+                }
                 request.Path = PathString.FromUriComponent(uri);
                 request.PathBase = PathString.Empty;
                 if (request.Path.StartsWithSegments(_pathBase, out var remainder))
@@ -65,10 +74,15 @@ namespace Microsoft.AspNetCore.TestHost
                     request.PathBase = _pathBase;
                 }
                 request.QueryString = QueryString.FromUriComponent(uri);
-                request.Headers.Add("Connection", new string[] { "Upgrade" });
-                request.Headers.Add("Upgrade", new string[] { "websocket" });
-                request.Headers.Add("Sec-WebSocket-Version", new string[] { "13" });
-                request.Headers.Add("Sec-WebSocket-Key", new string[] { CreateRequestKey() });
+                request.Headers.Add(HeaderNames.Connection, new string[] { "Upgrade" });
+                request.Headers.Add(HeaderNames.Upgrade, new string[] { "websocket" });
+                request.Headers.Add(HeaderNames.SecWebSocketVersion, new string[] { "13" });
+                request.Headers.Add(HeaderNames.SecWebSocketKey, new string[] { CreateRequestKey() });
+                if (SubProtocols.Any())
+                {
+                    request.Headers.Add(HeaderNames.SecWebSocketProtocol, SubProtocols.ToArray());
+                }
+
                 request.Body = Stream.Null;
 
                 // WebSocket
@@ -95,8 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
         private string CreateRequestKey()
         {
             byte[] data = new byte[16];
-            var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return Convert.ToBase64String(data);
         }
 

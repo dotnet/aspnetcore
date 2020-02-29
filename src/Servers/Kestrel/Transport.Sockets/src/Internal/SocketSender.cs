@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public sealed class SocketSender : SocketSenderReceiverBase
+    internal sealed class SocketSender : SocketSenderReceiverBase
     {
         private List<ArraySegment<byte>> _bufferList;
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
-        public SocketAwaitableEventArgs SendAsync(ReadOnlySequence<byte> buffers)
+        public SocketAwaitableEventArgs SendAsync(in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             return _awaitableEventArgs;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
+        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);

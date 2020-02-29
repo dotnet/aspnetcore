@@ -21,5 +21,6 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string SuppressStatusMessagesKey = "suppressStatusMessages";
 
         public static readonly string ShutdownTimeoutKey = "shutdownTimeoutSeconds";
+        public static readonly string StaticWebAssetsKey = "staticWebAssets";
     }
 }

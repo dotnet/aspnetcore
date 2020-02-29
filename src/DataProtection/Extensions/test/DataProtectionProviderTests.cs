@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -115,6 +115,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
         [ConditionalFact]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
         public void System_UsesProvidedDirectoryAndCertificate()
         {
             var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 var certificateStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
                 certificateStore.Open(OpenFlags.ReadWrite);
                 var certificate = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
-
+                Assert.True(certificate.HasPrivateKey, "Cert should have a private key");
                 try
                 {
                     // Step 1: directory should be completely empty
@@ -164,6 +165,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
         [ConditionalFact]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720")]
         public void System_UsesProvidedCertificateNotFromStore()
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -182,7 +184,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     certificateStore.Open(OpenFlags.ReadWrite);
                     var certInStore = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
                     Assert.NotNull(certInStore);
-                    Assert.False(certInStore.HasPrivateKey);
+                    Assert.False(certInStore.HasPrivateKey, "Cert should not have private key");
 
                     try
                     {

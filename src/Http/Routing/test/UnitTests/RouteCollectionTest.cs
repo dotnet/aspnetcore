@@ -606,7 +606,6 @@ namespace Microsoft.AspNetCore.Routing
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
 
             var services = new ServiceCollection();
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
             if (options != null)
@@ -628,7 +627,6 @@ namespace Microsoft.AspNetCore.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
             if (options != null)

@@ -12,10 +12,11 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpResponseHeaders : HttpHeaders
+    internal sealed partial class HttpResponseHeaders : HttpHeaders
     {
-        private static readonly byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
-        private static readonly byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+        private static ReadOnlySpan<byte> CrLf => new[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> ColonSpace => new[] { (byte)':', (byte)' ' };
 
         public Enumerator GetEnumerator()
         {
@@ -30,18 +31,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal void CopyTo(ref BufferWriter<PipeWriter> buffer)
         {
             CopyToFast(ref buffer);
-            if (MaybeUnknown != null)
+
+            var extraHeaders = MaybeUnknown;
+            if (extraHeaders != null && extraHeaders.Count > 0)
             {
-                foreach (var kv in MaybeUnknown)
+                // Only reserve stack space for the enumartors if there are extra headers
+                CopyExtraHeaders(ref buffer, extraHeaders);
+            }
+
+            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
+            {
+                foreach (var kv in headers)
                 {
                     foreach (var value in kv.Value)
                     {
                         if (value != null)
                         {
-                            buffer.Write(_CrLf);
-                            PipelineExtensions.WriteAsciiNoValidation(ref buffer, kv.Key);
-                            buffer.Write(_colonSpace);
-                            PipelineExtensions.WriteAsciiNoValidation(ref buffer, value);
+                            buffer.Write(CrLf);
+                            buffer.WriteAscii(kv.Key);
+                            buffer.Write(ColonSpace);
+                            buffer.WriteAscii(value);
                         }
                     }
                 }
@@ -58,23 +67,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return parsed;
         }
 
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;
         }
 
-        private static void ThrowInvalidContentLengthException(string value)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
         {
-            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+            ValidateHeaderNameCharacters(key);
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpResponseHeaders _collection;
             private readonly long _bits;
-            private int _state;
+            private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
@@ -83,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _collection = collection;
                 _bits = collection._bits;
-                _state = 0;
+                _next = 0;
                 _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
@@ -101,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _state = 0;
+                _next = 0;
             }
         }
 

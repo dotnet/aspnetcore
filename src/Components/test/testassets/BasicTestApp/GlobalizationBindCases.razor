@@ -1,0 +1,125 @@
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+<h3 id="globalization-cases">Globalization Bind Cases</h3>
+<h3 id="culture-name-display">Culture is: @System.Globalization.CultureInfo.CurrentCulture.Name</h3>
+
+@* There are a mix of cases here using bind and bind-value for coverage *@
+
+<div>
+    <p>Numbers using bind in text fields</p>
+    <div>
+        int: <input type="text" id="input_type_text_int" @bind="inputTypeTextInt" />
+        <span id="input_type_text_int_value">@inputTypeTextInt</span>
+    </div>
+    <div>
+        decimal: <input type="text" id="input_type_text_decimal" @bind-value="inputTypeTextDecimal" />
+        <span id="input_type_text_decimal_value">@inputTypeTextDecimal</span>
+    </div>
+</div>
+
+<div>
+    <p>Dates using bind in text fields</p>
+    <div>
+        DateTime: <input type="text" id="input_type_text_datetime" @bind="inputTypeTextDateTime" />
+        <span id="input_type_text_datetime_value">@inputTypeTextDateTime</span>
+    </div>
+    <div>
+        DateTimeOffset: <input type="text" id="input_type_text_datetimeoffset" @bind-value="inputTypeTextDateTimeOffset" />
+        <span id="input_type_text_datetimeoffset_value">@inputTypeTextDateTimeOffset</span>
+    </div>
+</div>
+
+<div>
+    <p>Numbers using bind in number fields</p>
+    <div>
+        int: <input type="number" id="input_type_number_int" @bind="inputTypeNumberInt" />
+        <span id="input_type_number_int_value">@inputTypeNumberInt</span>
+    </div>
+    <div>
+        decimal: <input type="number" id="input_type_number_decimal" @bind-value="inputTypeNumberDecimal" />
+        <span id="input_type_number_decimal_value">@inputTypeNumberDecimal</span>
+    </div>
+</div>
+
+<div>
+    <p>Dates using bind in date fields</p>
+    <div>
+        DateTime: <input type="text" id="input_type_date_datetime_extrainput" @bind="inputTypeDateDateTime" />
+        <input type="date" id="input_type_date_datetime" @bind="inputTypeDateDateTime" />
+        <span id="input_type_date_datetime_value">@inputTypeDateDateTime</span>
+    </div>
+    <div>
+        DateTimeOffset: <input type="text" id="input_type_date_datetimeoffset_extrainput" @bind-value="inputTypeDateDateTimeOffset" />
+        <input type="date" id="input_type_date_datetimeoffset" @bind="inputTypeDateDateTimeOffset" />
+        <span id="input_type_date_datetimeoffset_value">@inputTypeDateDateTimeOffset</span>
+    </div>
+</div>
+
+<div>
+    <p>Numbers with InputNumber</p>
+    <EditForm Model="this">
+        <div>
+            int: <InputNumber id="inputnumber_int" @bind-Value="inputNumberInt" />
+            <span id="inputnumber_int_value">@inputNumberInt</span>
+        </div>
+        <div>
+            long: <InputNumber id="inputnumber_long" @bind-Value="inputNumberLong" />
+            <span id="inputnumber_long_value">@inputNumberLong</span>
+        </div>
+        <div>
+            short: <InputNumber id="inputnumber_short" @bind-Value="inputNumberShort" />
+            <span id="inputnumber_short_value">@inputNumberShort</span>
+        </div>
+        <div>
+            decimal: <InputNumber id="inputnumber_decimal" @bind-Value="inputNumberDecimal" />
+            <span id="inputnumber_decimal_value">@inputNumberDecimal</span>
+        </div>
+    </EditForm>
+</div>
+
+<div>
+    <p>Dates with InputDate</p>
+    <EditForm Model="this">
+        <div>
+            DateTime: <input type="text" id="inputdate_datetime_extrainput" @bind="inputDateDateTime" />
+            <InputDate id="inputdate_datetime" @bind-Value="inputDateDateTime" />
+            <span id="inputdate_datetime_value">@inputDateDateTime</span>
+        </div>
+        <div>
+            DateTimeOffset: <input type="text" id="inputdate_datetimeoffset_extrainput" @bind="inputDateDateTimeOffset" />
+            <InputDate id="inputdate_datetimeoffset" @bind-Value="inputDateDateTimeOffset" />
+            <span id="inputdate_datetimeoffset_value">@inputDateDateTimeOffset</span>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    int inputTypeTextInt = 42;
+    decimal inputTypeTextDecimal = 4.2m;
+
+    DateTime inputTypeTextDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputTypeTextDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+
+    int inputTypeNumberInt = 42;
+    decimal inputTypeNumberDecimal = 4.2m;
+
+    DateTime inputTypeDateDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputTypeDateDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+
+    int inputNumberInt = 42;
+    long inputNumberLong = 4200;
+    short inputNumberShort = 42;
+    decimal inputNumberDecimal = 4.2m;
+
+    DateTime inputDateDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputDateDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+
+    DateTime inputTypeDateTimeLocalDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputTypeDateTimeLocalDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+
+    DateTime inputTypeMonthDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputTypeMonthDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+
+    DateTime inputTypeTimeDateTime = new DateTime(1985, 3, 4);
+    DateTimeOffset inputTypeTimeDateTimeOffset = new DateTimeOffset(new DateTime(1985, 3, 4));
+}

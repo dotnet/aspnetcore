@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ViewComponent_AmbiguousTypeMatch" xml:space="preserve">
+    <value>The view component name '{0}' matched multiple types:{1}{2}</value>
+    <comment>{1} is the newline character</comment>
+  </data>
+  <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' should be declared to return {2}&lt;T&gt;.</value>
+  </data>
+  <data name="ViewComponent_MustReturnValue" xml:space="preserve">
+    <value>A view component must return a non-null value.</value>
+  </data>
+  <data name="ViewComponent_SyncMethod_ShouldReturnValue" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' should be declared to return a value.</value>
+  </data>
+  <data name="ViewComponent_CannotFindComponent" xml:space="preserve">
+    <value>A view component named '{0}' could not be found. A view component must be a public non-abstract class, not contain any generic parameters, and either be decorated with '{1}' or have a class name ending with the '{2}' suffix. A view component must not be decorated with '{3}'.</value>
+  </data>
+  <data name="ViewComponent_IViewComponentFactory_ReturnedNull" xml:space="preserve">
+    <value>An invoker could not be created for the view component '{0}'.</value>
+  </data>
+  <data name="ViewComponent_CannotFindMethod" xml:space="preserve">
+    <value>Could not find an '{0}' or '{1}' method for the view component '{2}'.</value>
+  </data>
+  <data name="ViewComponent_InvalidReturnValue" xml:space="preserve">
+    <value>View components only support returning {0}, {1} or {2}.</value>
+  </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
+  <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
+    <value>The '{0}' property of '{1}' must not be null.</value>
+  </data>
+  <data name="TypeMethodMustReturnNotNullValue" xml:space="preserve">
+    <value>The '{0}' method of type '{1}' cannot return a null value.</value>
+  </data>
+  <data name="ArgumentPropertyUnexpectedType" xml:space="preserve">
+    <value>Property '{0}' is of type '{1}', but this method requires a value of type '{2}'.</value>
+  </data>
+  <data name="Common_PartialViewNotFound" xml:space="preserve">
+    <value>The partial view '{0}' was not found or no view engine supports the searched locations. The following locations were searched:{1}</value>
+  </data>
+  <data name="Common_TriState_False" xml:space="preserve">
+    <value>False</value>
+  </data>
+  <data name="Common_TriState_NotSet" xml:space="preserve">
+    <value>Not Set</value>
+  </data>
+  <data name="Common_TriState_True" xml:space="preserve">
+    <value>True</value>
+  </data>
+  <data name="DynamicViewData_ViewDataNull" xml:space="preserve">
+    <value>ViewData value must not be null.</value>
+  </data>
+  <data name="ExpressionHelper_InvalidIndexerExpression" xml:space="preserve">
+    <value>The expression compiler was unable to evaluate the indexer expression '{0}' because it references the model parameter '{1}' which is unavailable.</value>
+  </data>
+  <data name="HtmlHelper_NullModelMetadata" xml:space="preserve">
+    <value>The IModelMetadataProvider was unable to provide metadata for expression '{0}'.</value>
+  </data>
+  <data name="HtmlHelper_NotContextualized" xml:space="preserve">
+    <value>Must call 'Contextualize' method before using this HtmlHelper instance.</value>
+  </data>
+  <data name="HtmlHelper_MissingSelectData" xml:space="preserve">
+    <value>There is no ViewData item of type '{0}' that has the key '{1}'.</value>
+  </data>
+  <data name="HtmlHelper_SelectExpressionNotEnumerable" xml:space="preserve">
+    <value>The parameter '{0}' must evaluate to an IEnumerable when multiple selection is allowed.</value>
+  </data>
+  <data name="HtmlHelper_TypeNotSupported_ForGetEnumSelectList" xml:space="preserve">
+    <value>The type '{0}' is not supported. Type must be an {1} that does not have an associated {2}.</value>
+  </data>
+  <data name="HtmlHelper_WrongSelectDataType" xml:space="preserve">
+    <value>The ViewData item that has the key '{0}' is of type '{1}' but must be of type '{2}'.</value>
+  </data>
+  <data name="Templates_TypeMustImplementIEnumerable" xml:space="preserve">
+    <value>The '{0}' template was used with an object of type '{1}', which does not implement '{2}'.</value>
+  </data>
+  <data name="TemplateHelpers_TemplateLimitations" xml:space="preserve">
+    <value>Templates can be used only with field access, property access, single-dimension array index, or single-parameter custom indexer expressions.</value>
+  </data>
+  <data name="TemplateHelpers_NoTemplate" xml:space="preserve">
+    <value>Unable to locate an appropriate template for type {0}.</value>
+  </data>
+  <data name="ViewData_ModelCannotBeNull" xml:space="preserve">
+    <value>The model item passed is null, but this ViewDataDictionary instance requires a non-null model item of type '{0}'.</value>
+  </data>
+  <data name="ViewData_WrongTModelType" xml:space="preserve">
+    <value>The model item passed into the ViewDataDictionary is of type '{0}', but this ViewDataDictionary instance requires a model item of type '{1}'.</value>
+  </data>
+  <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
+    <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
+  </data>
+  <data name="ViewEngine_ViewNotFound" xml:space="preserve">
+    <value>The view '{0}' was not found. The following locations were searched:{1}</value>
+  </data>
+  <data name="HtmlHelper_TextAreaParameterOutOfRange" xml:space="preserve">
+    <value>The value must be greater than or equal to zero.</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationParameterCannotBeEmpty" xml:space="preserve">
+    <value>Validation parameter names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationParameterMustBeLegal" xml:space="preserve">
+    <value>Validation parameter names in unobtrusive client validation rules must start with a lowercase letter and consist of only lowercase letters or digits. Validation parameter name: {0}, client rule type: {1}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeCannotBeEmpty" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules cannot be empty. Client rule type: {0}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeMustBeLegal" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules must consist of only lowercase letters. Invalid name: "{0}", client rule type: {1}</value>
+  </data>
+  <data name="UnobtrusiveJavascript_ValidationTypeMustBeUnique" xml:space="preserve">
+    <value>Validation type names in unobtrusive client validation rules must be unique. The following validation type was seen more than once: {0}</value>
+  </data>
+  <data name="TypeMustDeriveFromType" xml:space="preserve">
+    <value>The type '{0}' must derive from '{1}'.</value>
+  </data>
+  <data name="TemplatedViewLocationExpander_NoReplacementToken" xml:space="preserve">
+    <value>Could not find a replacement for view expansion token '{0}'.</value>
+  </data>
+  <data name="TemplatedExpander_PopulateValuesMustBeInvokedFirst" xml:space="preserve">
+    <value>{0} must be executed before {1} can be invoked.</value>
+  </data>
+  <data name="TemplatedExpander_ValueFactoryCannotReturnNull" xml:space="preserve">
+    <value>The result of value factory cannot be null.</value>
+  </data>
+  <data name="ViewComponent_AmbiguousTypeMatch_Item" xml:space="preserve">
+    <value>Type: '{0}' - Name: '{1}'</value>
+  </data>
+  <data name="Common_PropertyNotFound" xml:space="preserve">
+    <value>The property {0}.{1} could not be found.</value>
+  </data>
+  <data name="RemoteAttribute_NoUrlFound" xml:space="preserve">
+    <value>No URL for remote validation could be found.</value>
+  </data>
+  <data name="RemoteAttribute_RemoteValidationFailed" xml:space="preserve">
+    <value>'{0}' is invalid.</value>
+  </data>
+  <data name="HtmlGenerator_FieldNameCannotBeNullOrEmpty" xml:space="preserve">
+    <value>The name of an HTML field cannot be null or empty. Instead use methods {0}.{1} or {2}.{3} with a non-empty {4} argument value.</value>
+  </data>
+  <data name="ViewComponentResult_NameOrTypeMustBeSet" xml:space="preserve">
+    <value>Either the '{0}' or '{1}' property must be set in order to invoke a view component.</value>
+  </data>
+  <data name="Dictionary_DuplicateKey" xml:space="preserve">
+    <value>The collection already contains an entry with key '{0}'.</value>
+  </data>
+  <data name="ViewComponent_SyncMethod_CannotReturnTask" xml:space="preserve">
+    <value>Method '{0}' of view component '{1}' cannot return a {2}.</value>
+  </data>
+  <data name="ViewComponent_AmbiguousMethods" xml:space="preserve">
+    <value>View component '{0}' must have exactly one public method named '{1}' or '{2}'.</value>
+  </data>
+  <data name="ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated" xml:space="preserve">
+    <value>The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.</value>
+  </data>
+  <data name="CreateModelExpression_NullModelMetadata" xml:space="preserve">
+    <value>The {0} was unable to provide metadata for expression '{1}'.</value>
+  </data>
+  <data name="ViewEnginesAreRequired" xml:space="preserve">
+    <value>'{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.</value>
+  </data>
+  <data name="TempDataProperties_PublicGetterSetter" xml:space="preserve">
+    <value>The '{0}.{1}' property with {2} is invalid. A property using {2} must have a public getter and setter.</value>
+  </data>
+  <data name="TempDataProperties_InvalidType" xml:space="preserve">
+    <value>TempData serializer '{0}' cannot serialize property '{1}.{2}' of type '{3}'.</value>
+  </data>
+  <data name="DeserializingTempData" xml:space="preserve">
+    <value>Deserializing TempDataDictionary</value>
+  </data>
+  <data name="SerializingTempData" xml:space="preserve">
+    <value>Serializing TempDataDictionary</value>
+  </data>
+  <data name="TempData_CannotSerializeType" xml:space="preserve">
+    <value>The '{0}' cannot serialize an object of type '{1}'.</value>
+  </data>
+  <data name="TempData_CannotDeserializeType" xml:space="preserve">
+    <value>Unsupported data type '{0}'.</value>
+  </data>
+  <data name="UnsupportedRenderMode" xml:space="preserve">
+    <value>Unsupported RenderMode '{0}'.</value>
+  </data>
+</root>

@@ -1,0 +1,45 @@
+<!--
+
+The targets in this file resolve References to ANCM into ProjectReferences,
+with the right MSBuild incantations to get output copied to the right place.
+
+-->
+<Project>
+  <Choose>
+    <!-- IIS native projects only build on Windows with MSBuild.exe -->
+    <When Condition="'$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' ">
+      <ItemGroup Condition="@(NativeProjectReference->Count()) != 0 AND '$(BuildNative)' != 'false' ">
+        <!-- TODO: investigate building just one arch at a time. -->
+        <ProjectReference Include="@(NativeProjectReference)">
+          <!-- Set the arch-->
+          <SetPlatform>Platform=%(Platform)</SetPlatform>
+          <SetPlatform Condition="'%(Platform)' == 'x86'">Platform=Win32</SetPlatform>
+          <!-- The base path for the output. -->
+          <LinkBase>%(Platform)\%(HandlerPath)\</LinkBase>
+          <!-- This reference assembly doesn't need -->
+          <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+          <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
+          <OutputItemType>NativeContent</OutputItemType>
+          <!-- This instructs the ProjectRef protocol to collect symbols as well as built output -->
+          <Targets>Build;BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup</Targets>
+          <!-- Optimization. Native projects don't have a .NET TargetFramework -->
+          <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+          <UndefineProperties>TargetFramework</UndefineProperties>
+          <!-- Don't put this reference into generated .nuspec -->
+          <PrivateAssets>All</PrivateAssets>
+          <!-- Publish assets from this reference -->
+          <Publish>true</Publish>
+        </ProjectReference>
+
+        <NativeProjectReference Remove="@(NativeProjectReference)" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <Target Name="_WarnAboutUnbuiltNativeDependencies"
+          BeforeTargets="Build"
+          Condition=" @(NativeProjectReference->Count()) != 0 AND '$(BuildNative)' == 'false' ">
+    <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -native` to build native projects. Run `build.cmd -managed -native` to build both C# and C++." />
+  </Target>
+
+</Project>

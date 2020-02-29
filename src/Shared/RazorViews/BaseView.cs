@@ -57,6 +57,23 @@ namespace Microsoft.Extensions.RazorViews
         /// </summary>
         protected JavaScriptEncoder JavaScriptEncoder { get; set; } = JavaScriptEncoder.Default;
 
+
+        /// <summary>
+        /// Execute an individual request
+        /// </summary>
+        /// <param name="stream">The stream to write to</param>
+        public async Task ExecuteAsync(Stream stream)
+        {
+            // We technically don't need this intermediate buffer if this method accepts a memory stream.
+            var buffer = new MemoryStream();
+            Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
+            await ExecuteAsync();
+            await Output.FlushAsync();
+            Output.Dispose();
+            buffer.Seek(0, SeekOrigin.Begin);
+            await buffer.CopyToAsync(stream);
+        }
+
         /// <summary>
         /// Execute an individual request
         /// </summary>
@@ -66,9 +83,13 @@ namespace Microsoft.Extensions.RazorViews
             Context = context;
             Request = Context.Request;
             Response = Context.Response;
-            Output = new StreamWriter(Response.Body, UTF8NoBOM, 4096, leaveOpen: true);
+            var buffer = new MemoryStream();
+            Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
+            await Output.FlushAsync();
             Output.Dispose();
+            buffer.Seek(0, SeekOrigin.Begin);
+            await buffer.CopyToAsync(Response.Body);
         }
 
         /// <summary>
@@ -128,11 +149,11 @@ namespace Microsoft.Extensions.RazorViews
 
         private string AttributeEnding { get; set; }
 
-        protected void BeginWriteAttribute(string name, string begining, int startPosition, string ending, int endPosition, int thingy)
+        protected void BeginWriteAttribute(string name, string beginning, int startPosition, string ending, int endPosition, int thingy)
         {
             Debug.Assert(string.IsNullOrEmpty(AttributeEnding));
 
-            Output.Write(begining);
+            Output.Write(beginning);
             AttributeEnding = ending;
         }
 

@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -18,16 +17,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// Asynchronously selects an <see cref="Endpoint"/> from the <see cref="CandidateSet"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="context">The <see cref="EndpointSelectorContext"/> associated with the current request.</param>
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <returns>A <see cref="Task"/> that completes asynchronously once endpoint selection is complete.</returns>
         /// <remarks>
-        /// An <see cref="EndpointSelector"/> should assign the <see cref="EndpointSelectorContext.Endpoint"/>
-        /// and <see cref="EndpointSelectorContext.RouteValues"/> properties once an endpoint is selected.
+        /// An <see cref="EndpointSelector"/> should assign the endpoint by calling
+        /// <see cref="EndpointHttpContextExtensions.SetEndpoint(HttpContext, Endpoint)"/>
+        /// and setting <see cref="HttpRequest.RouteValues"/> once an endpoint is selected.
         /// </remarks>
-        public abstract Task SelectAsync(
-            HttpContext httpContext,
-            EndpointSelectorContext context,
-            CandidateSet candidates);
+        public abstract Task SelectAsync(HttpContext httpContext, CandidateSet candidates);
     }
 }

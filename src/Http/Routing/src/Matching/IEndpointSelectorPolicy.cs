@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -31,9 +31,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="httpContext">
         /// The <see cref="HttpContext"/> associated with the current request.
         /// </param>
-        /// <param name="context">
-        /// The <see cref="EndpointSelectorContext"/> associated with the current request.
-        /// </param>
         /// <param name="candidates">The <see cref="CandidateSet"/>.</param>
         /// <remarks>
         /// <para>
@@ -42,10 +39,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <see cref="CandidateSet.SetValidity(int, bool)"/> to <c>false</c> where desired.
         /// </para>
         /// <para>
-        /// To signal an error condition, set <see cref="EndpointSelectorContext.Endpoint"/> to an
+        /// To signal an error condition, the <see cref="IEndpointSelectorPolicy"/> should assign the endpoint by
+        /// calling <see cref="EndpointHttpContextExtensions.SetEndpoint(HttpContext, Endpoint)"/>
+        /// and setting <see cref="HttpRequest.RouteValues"/> to an
         /// <see cref="Endpoint"/> value that will produce the desired error when executed.
         /// </para>
         /// </remarks>
-        Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates);
+        Task ApplyAsync(HttpContext httpContext, CandidateSet candidates);
     }
 }

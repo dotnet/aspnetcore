@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,9 +9,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public static class TransportSelector
     {
-        public static IWebHostBuilder GetWebHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null)
+        public static IWebHostBuilder GetWebHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null,
+                                                        long? maxReadBufferSize = null)
         {
-            return new WebHostBuilder().UseLibuv(options => { options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory; });
+            return new WebHostBuilder().UseLibuv(options =>
+            {
+                options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory;
+                options.MaxReadBufferSize = maxReadBufferSize;
+            });
         }
     }
 }

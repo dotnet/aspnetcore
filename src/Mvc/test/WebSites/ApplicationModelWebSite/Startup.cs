@@ -14,7 +14,7 @@ namespace ApplicationModelWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.Conventions.Add(new ApplicationDescription("Common Application Description"));
                 options.Conventions.Add(new ControllerLicenseConvention());
@@ -23,18 +23,19 @@ namespace ApplicationModelWebSite
                 options.Conventions.Add(new CloneActionConvention());
             })
             .SetCompatibilityVersion(CompatibilityVersion.Latest);
+
+            services.AddRazorPages();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(name: "areaRoute",
-                  template: "{area:exists}/{controller=Home}/{action=Index}");
+                endpoints.MapControllerRoute(name: "areaRoute", pattern: "{area:exists}/{controller=Home}/{action=Index}");
+                endpoints.MapControllerRoute(name: "default", pattern: "{controller}/{action}/{id?}");
 
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
 

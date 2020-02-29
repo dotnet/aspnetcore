@@ -27,11 +27,11 @@ try {
         },
 
         // Mozilla Firefox Latest, any OS
-        sl_firefox: {
-            base: "SauceLabs",
-            browserName: "firefox",
-            version: "latest",
-        },
+        // sl_firefox: {
+        //     base: "SauceLabs",
+        //     browserName: "firefox",
+        //     version: "latest",
+        // },
     }
 
     // Legacy Browsers
@@ -68,8 +68,8 @@ try {
 
     var customLaunchers = {
         ...evergreenBrowsers,
-        ...legacyBrowsers,
-        ...mobileBrowsers,
+        // ...legacyBrowsers,
+        // ...mobileBrowsers,
     };
 
     module.exports = createKarmaConfig({

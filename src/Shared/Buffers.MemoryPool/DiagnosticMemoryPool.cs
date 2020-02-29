@@ -40,7 +40,7 @@ namespace System.Buffers
             _rentTracking = rentTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
-            _allBlocksReturned = new TaskCompletionSource<object>();
+            _allBlocksReturned = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _blockAccessExceptions = new List<Exception>();
         }
 
@@ -119,7 +119,7 @@ namespace System.Buffers
                         MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(_totalBlocks - _blocks.Count, _totalBlocks, _blocks.ToArray());
                     }
 
-                    if (_blockAccessExceptions.Any())
+                    if (_blockAccessExceptions.Count > 0)
                     {
                         throw CreateAccessExceptions();
                     }
@@ -136,7 +136,7 @@ namespace System.Buffers
 
         private void SetAllBlocksReturned()
         {
-            if (_blockAccessExceptions.Any())
+            if (_blockAccessExceptions.Count > 0)
             {
                 _allBlocksReturned.SetException(CreateAccessExceptions());
             }

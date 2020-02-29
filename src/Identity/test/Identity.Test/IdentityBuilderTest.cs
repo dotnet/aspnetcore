@@ -81,6 +81,22 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public void CanOverrideUserConfirmation()
+        {
+            var services = new ServiceCollection()
+                .AddLogging()
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            services.AddIdentity<PocoUser, PocoRole>()
+                .AddClaimsPrincipalFactory<MyClaimsPrincipalFactory>()
+                .AddUserConfirmation<MyUserConfirmation>()
+                .AddUserManager<MyUserManager>()
+                .AddUserStore<NoopUserStore>()
+                .AddRoleStore<NoopRoleStore>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserConfirmation<PocoUser>>() as MyUserConfirmation;
+            Assert.NotNull(thingy);
+        }
+
+        [Fact]
         public void CanOverrideRoleValidator()
         {
             var services = new ServiceCollection()
@@ -333,7 +349,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private class MySignInManager : SignInManager<PocoUser>
         {
-            public MySignInManager(UserManager<PocoUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<PocoUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null) { }
+            public MySignInManager(UserManager<PocoUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<PocoUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null, null) { }
         }
 
         private class MyUserManager : UserManager<PocoUser>
@@ -355,6 +371,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
 
             }
+        }
+
+        private class MyUserConfirmation : DefaultUserConfirmation<PocoUser>
+        {
         }
     }
 }

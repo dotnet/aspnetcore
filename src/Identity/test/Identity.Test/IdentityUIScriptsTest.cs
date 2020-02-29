@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using AngleSharp.Dom.Html;
@@ -9,10 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public IdentityUIScriptsTest(ITestOutputHelper output)
         {
             _output = output;
-            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler() { }));
+            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler() { }, output, TimeSpan.FromSeconds(1), 5));
         }
 
         public static IEnumerable<object[]> ScriptWithIntegrityData
@@ -41,16 +42,27 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
-            var sha256Integrity = await GetShaIntegrity(scriptTag, SHA256.Create(), "sha256");
-            Assert.Equal(scriptTag.Integrity, sha256Integrity);
+            var integrity = await GetShaIntegrity(scriptTag);
+            Assert.Equal(scriptTag.Integrity, integrity);
         }
 
-        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, HashAlgorithm algorithm, string prefix)
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
+            var isSha256 = scriptTag.Integrity.StartsWith("sha256");
+            var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = SHA256.Create())
+            using (var alg256 = SHA256.Create())
+            using (var alg384 = SHA384.Create())
             {
-                var hash = alg.ComputeHash(respStream);
+                byte[] hash;
+                if (isSha256)
+                {
+                    hash = alg256.ComputeHash(respStream);
+                }
+                else
+                {
+                    hash = alg384.ComputeHash(respStream);
+                }
                 return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
@@ -67,14 +79,14 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2267", FlakyOn.AzP.macOS)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var slnDir = GetSolutionDir();
-            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot", scriptTag.Version);
+            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
-                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.TrimStart('~').TrimStart('/')));
+                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.Replace("Identity", "").TrimStart('~').TrimStart('/')));
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
         }
@@ -95,9 +107,8 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var slnDir = GetSolutionDir();
-            var uiDirV3 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V3");
-            var uiDirV4 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V4");
+            var uiDirV3 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V3");
+            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
             var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
 
             var scriptTags = new List<ScriptTag>();
@@ -141,20 +152,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             return scriptTags;
         }
 
-        private static string GetSolutionDir()
-        {
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
-            {
-                if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
-                {
-                    break;
-                }
-                dir = dir.Parent;
-            }
-            return dir.FullName;
-        }
-
         private static string RemoveLineEndings(string originalString)
         {
             return originalString.Replace("\r\n", "").Replace("\n", "");
@@ -165,24 +162,30 @@ namespace Microsoft.AspNetCore.Identity.Test
             _httpClient.Dispose();
         }
 
-        class RetryHandler : DelegatingHandler
+        private static string GetProjectBasePath()
         {
-            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+            var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
+            return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
+        }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private static string FindHelixSlnFileDirectory()
+        {
+            var applicationPath = Path.GetDirectoryName(typeof(IdentityUIScriptsTest).Assembly.Location);
+            var directoryInfo = new DirectoryInfo(applicationPath);
+            do
             {
-                HttpResponseMessage result = null;
-                for (var i = 0; i < 10; i++)
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.sln").FirstOrDefault();
+                if (solutionPath != null)
                 {
-                    result = await base.SendAsync(request, cancellationToken);
-                    if (result.IsSuccessStatusCode)
-                    {
-                        return result;
-                    }
-                    await Task.Delay(1000);
+                    return directoryInfo.FullName;
                 }
-                return result;
+
+                directoryInfo = directoryInfo.Parent;
             }
+            while (directoryInfo.Parent != null);
+
+            throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
         }
     }
 }

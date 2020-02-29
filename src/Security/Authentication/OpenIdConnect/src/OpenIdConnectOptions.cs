@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <para>BackchannelTimeout: 1 minute.</para>
         /// <para>ProtocolValidator: new <see cref="OpenIdConnectProtocolValidator"/>.</para>
         /// <para>RefreshOnIssuerKeyNotFound: true</para>
-        /// <para>ResponseType: <see cref="OpenIdConnectResponseType.CodeIdToken"/></para>
+        /// <para>ResponseType: <see cref="OpenIdConnectResponseType.IdToken"/></para>
         /// <para>Scope: <see cref="OpenIdConnectScope.OpenIdProfile"/>.</para>
         /// <para>TokenValidationParameters: new <see cref="TokenValidationParameters"/> with AuthenticationScheme = authenticationScheme.</para>
         /// <para>UseTokenLifetime: false.</para>
@@ -48,14 +47,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ClaimActions.DeleteClaim("aud");
             ClaimActions.DeleteClaim("azp");
             ClaimActions.DeleteClaim("acr");
-            ClaimActions.DeleteClaim("amr");
             ClaimActions.DeleteClaim("iss");
             ClaimActions.DeleteClaim("iat");
             ClaimActions.DeleteClaim("nbf");
             ClaimActions.DeleteClaim("exp");
             ClaimActions.DeleteClaim("at_hash");
             ClaimActions.DeleteClaim("c_hash");
-            ClaimActions.DeleteClaim("auth_time");
             ClaimActions.DeleteClaim("ipaddr");
             ClaimActions.DeleteClaim("platf");
             ClaimActions.DeleteClaim("ver");
@@ -291,13 +288,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// cookie gets added to the response.
         /// </summary>
         /// <remarks>
-        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <seealso cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
         /// </remarks>
         public CookieBuilder NonceCookie
         {
             get => _nonceCookieBuilder;
             set => _nonceCookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard.
+        /// This only applies when the <see cref="ResponseType"/> is set to <see cref="OpenIdConnectResponseType.Code"/>.
+        /// See https://tools.ietf.org/html/rfc7636.
+        /// The default value is `true`.
+        /// </summary>
+        public bool UsePkce { get; set; } = true;
 
         private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
         {
@@ -322,5 +327,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return cookieOptions;
             }
         }
+
+        /// <summary>
+        /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+        /// </summary>
+        public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
+
+        /// <summary>
+        /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
+        /// </summary>
+        public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
     }
 }

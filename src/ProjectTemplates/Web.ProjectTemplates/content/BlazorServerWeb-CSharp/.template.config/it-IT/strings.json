@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "App server Blazor",
+    "description": "Modello di progetto per la creazione di un'app server Blazor che viene eseguita lato server all'interno di un'app ASP.NET Core e gestisce le interazioni utente in una connessione SignalR. Questo modello può essere usato per app Web con interfacce utente dinamiche."
+  }
+}

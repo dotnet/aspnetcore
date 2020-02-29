@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(plaintextElement));
             }
 
-            _logger?.EncryptingUsingNullEncryptor();
+            _logger.EncryptingUsingNullEncryptor();
 
             // <unencryptedKey>
             //   <!-- This key is not encrypted. -->

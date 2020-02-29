@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
         }
 
         [Fact]
-        public void TestStringProperty_IsSucessful()
+        public void TestStringProperty_IsSuccessful()
         {
             // Arrange
             var targetObject = new

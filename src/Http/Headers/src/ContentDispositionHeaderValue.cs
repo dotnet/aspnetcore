@@ -444,7 +444,7 @@ namespace Microsoft.Net.Http.Headers
                 for (int i = 0; i < result.Length; i++)
                 {
                     var c = result[i];
-                    if ((int)c > 0x7f)
+                    if ((int)c > 0x7f || (int)c < 0x20)
                     {
                         c = '_'; // Replace out-of-range characters
                     }
@@ -472,7 +472,7 @@ namespace Microsoft.Net.Http.Headers
 
             for (int i = 0; i < input.Length; i++)
             {
-                if ((int)input[i] > 0x7f)
+                if ((int)input[i] > 0x7f || (int)input[i] < 0x20)
                 {
                     return true;
                 }

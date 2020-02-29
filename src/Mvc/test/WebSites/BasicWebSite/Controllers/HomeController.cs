@@ -91,7 +91,7 @@ namespace BasicWebSite.Controllers
 
         public IActionResult JsonHelperWithSettingsInView(bool snakeCase)
         {
-            Person person = new Person
+            var person = new Person
             {
                 id = 9000,
                 FullName = "John <b>Smith</b>"
@@ -120,6 +120,11 @@ namespace BasicWebSite.Controllers
         [HttpPost]
         public IActionResult Product(Product product)
         {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem();
+            }
+
             return RedirectToAction();
         }
 

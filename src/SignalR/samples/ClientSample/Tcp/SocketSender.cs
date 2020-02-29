@@ -32,7 +32,7 @@ namespace ClientSample
                 return SendAsync(buffers.First);
             }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
             if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
 #else
             if (_eventArgs.Buffer != null)
@@ -59,7 +59,7 @@ namespace ClientSample
                 _eventArgs.BufferList = null;
             }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
             _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
 #else
             var segment = memory.GetArray();

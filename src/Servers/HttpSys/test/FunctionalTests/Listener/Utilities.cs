@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     internal static class Utilities
     {
         internal static readonly int WriteRetryLimit = 1000;
+        internal static readonly byte[] WriteBuffer = new byte[1024 * 1024];
 
         // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
         // ports during dynamic port allocation.
@@ -19,6 +21,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         private static object PortLock = new object();
 
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+
+        internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress)
+        {
+            var listener = CreateHttpServer(out baseAddress);
+            listener.Options.Authentication.Schemes = authType;
+            listener.Options.Authentication.AllowAnonymous = allowAnonymous;
+            return listener;
+        }
 
         internal static HttpSysListener CreateHttpServer(out string baseAddress)
         {
@@ -42,16 +52,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
-                    var listener = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
-                    listener.Options.UrlPrefixes.Add(prefix);
+                    var options = new HttpSysOptions();
+                    options.UrlPrefixes.Add(prefix);
+                    options.RequestQueueName = prefix.Port; // Convention for use with CreateServerOnExistingQueue
+                    var listener = new HttpSysListener(options, new LoggerFactory());
                     try
                     {
                         listener.Start();
                         return listener;
                     }
-                    catch (HttpSysException)
+                    catch (HttpSysException ex)
                     {
                         listener.Dispose();
+                        if (ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS
+                            && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
+                            && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
+                        {
+                            throw;
+                        }
                     }
                 }
                 NextPort = BasePort;
@@ -68,6 +86,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
             var listener = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
             listener.Options.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            listener.Start();
+            return listener;
+        }
+
+        internal static HttpSysListener CreateServerOnExistingQueue(string requestQueueName)
+        {
+            return CreateServerOnExistingQueue(AuthenticationSchemes.None, true, requestQueueName);
+        }
+
+        internal static HttpSysListener CreateServerOnExistingQueue(AuthenticationSchemes authScheme, bool allowAnonymos, string requestQueueName)
+        {
+            var options = new HttpSysOptions();
+            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueName = requestQueueName;
+            options.Authentication.Schemes = authScheme;
+            options.Authentication.AllowAnonymous = allowAnonymos;
+            var listener = new HttpSysListener(options, new LoggerFactory());
             listener.Start();
             return listener;
         }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class WrappingStream : Stream
+    internal sealed class WrappingStream : Stream
     {
         private Stream _inner;
         private bool _disposed;

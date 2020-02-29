@@ -93,10 +93,8 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == processTask)
                     {
-                        _reporter.Warn("Waiting for a file to change before restarting dotnet...");
-
                         // Now wait for a file to change before restarting process
-                        await fileSetWatcher.GetChangedFileAsync(cancellationToken);
+                        await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
                     }
 
                     if (!string.IsNullOrEmpty(fileSetTask.Result))

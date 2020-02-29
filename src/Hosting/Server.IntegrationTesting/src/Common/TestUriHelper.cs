@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
 {
     public static class TestUriHelper
@@ -31,6 +33,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                     // supported, so the port is only bound on "127.0.0.1" (IPv4).  If a test explicitly requires IPv6,
                     // it should provide a hint URL with "localhost" (IPv4 and IPv6) or "[::1]" (IPv6-only).
                     return new UriBuilder(scheme, "127.0.0.1", 0).Uri;
+                }
+                else if (serverType == ServerType.HttpSys)
+                {
+                    Debug.Assert(scheme == "http", "Https not supported");
+                    return new UriBuilder(scheme, "localhost", 0).Uri;
                 }
                 else
                 {

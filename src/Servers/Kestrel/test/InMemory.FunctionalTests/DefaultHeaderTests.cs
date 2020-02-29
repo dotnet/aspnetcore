@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 ServerOptions = { AddServerHeader = true }
             };
 
-            using (var server = new TestServer(ctx => Task.CompletedTask, testContext))
+            await using (var server = new TestServer(ctx => Task.CompletedTask, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {

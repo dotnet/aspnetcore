@@ -12,7 +12,7 @@ namespace CorsWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(ConfigureMvcOptions)
+            services.AddControllers(ConfigureMvcOptions)
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.Configure<CorsOptions>(options =>
             {
@@ -40,11 +40,11 @@ namespace CorsWebSite
                     });
 
                 options.AddPolicy(
-                    "WithCredentialsAnyOrigin",
+                    "WithCredentialsAndOtherSettings",
                     builder =>
                     {
                         builder.AllowCredentials()
-                               .AllowAnyOrigin()
+                               .WithOrigins("http://example.com")
                                .AllowAnyHeader()
                                .WithMethods("PUT", "POST")
                                .WithExposedHeaders("exposed1", "exposed2");
@@ -54,8 +54,7 @@ namespace CorsWebSite
                     "AllowAll",
                     builder =>
                     {
-                        builder.AllowCredentials()
-                               .AllowAnyMethod()
+                        builder.AllowAnyMethod()
                                .AllowAnyHeader()
                                .AllowAnyOrigin();
                     });
@@ -72,9 +71,14 @@ namespace CorsWebSite
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseRouting();
+            app.UseCors();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
 
         protected virtual void ConfigureMvcOptions(MvcOptions options)

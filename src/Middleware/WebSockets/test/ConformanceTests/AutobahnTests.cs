@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
 
         // Skip if wstest is not installed for now, see https://github.com/aspnet/WebSockets/issues/95
         // We will enable Wstest on every build once we've gotten the necessary infrastructure sorted out :).
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/4350")]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/4350")]
         [SkipIfWsTestNotPresent]
         public async Task AutobahnTestSuite()
         {

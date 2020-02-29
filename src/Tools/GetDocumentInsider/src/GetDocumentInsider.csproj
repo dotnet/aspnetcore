@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GetDocument.Insider</AssemblyName>
+    <Description>GetDocument Command-line Tool inside man</Description>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
+    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
+  </ItemGroup>
+
+  <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
+  </Target>
+</Project>

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Webová aplikace (model-zobrazení-kontroler)",
+    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovými zobrazeními a kontrolery ASP.NET Core MVC. Tato šablona se dá použít i pro služby RESTful HTTP."
+  }
+}

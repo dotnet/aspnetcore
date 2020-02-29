@@ -1,13 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    public class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
@@ -68,6 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             HttpClientSlim = new InMemoryHttpClientSlim(this);
 
             var hostBuilder = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                 .ConfigureServices(services =>
                 {
                     configureServices(services);
@@ -79,18 +82,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     {
                         context.ServerOptions.ApplicationServices = sp;
                         configureKestrel(context.ServerOptions);
-
-                        // Prevent ListenOptions reuse. This is easily done accidentally when trying to debug a test by running it
-                        // in a loop, but will cause problems because only the app func from the first loop will ever be invoked.
-                        Assert.All(context.ServerOptions.ListenOptions, lo =>
-                            Assert.Equal(context.ExpectedConnectionMiddlewareCount, lo._middleware.Count));
-
-                        return new KestrelServer(_transportFactory, context);
+                        return new KestrelServer(new List<IConnectionListenerFactory>() { _transportFactory }, context);
                     });
                 });
 
             _host = hostBuilder.Build();
-
             _host.Start();
         }
 
@@ -102,14 +98,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryConnection CreateConnection()
         {
-            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log);
-            _ = HandleConnection(transportConnection);
+            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
+            _transportFactory.AddConnection(transportConnection);
             return new InMemoryConnection(transportConnection);
         }
 
-        public Task StopAsync()
+        public Task StopAsync(CancellationToken cancellationToken = default)
         {
-            return _host.StopAsync();
+            return _host.StopAsync(cancellationToken);
         }
 
         public void Dispose()
@@ -128,34 +124,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             return services.BuildServiceProvider();
         }
 
-        private async Task HandleConnection(InMemoryTransportConnection transportConnection)
+        public async ValueTask DisposeAsync()
         {
-            try
-            {
-                var middlewareTask =  _transportFactory.ConnectionDispatcher.OnConnection(transportConnection);
-                var transportTask = CancellationTokenAsTask(transportConnection.ConnectionClosed);
-
-                await transportTask;
-                await middlewareTask;
-
-                transportConnection.Dispose();
-            }
-            catch (Exception ex)
-            {
-               Debug.Assert(false, $"Unexpected exception: {ex}.");
-            }
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
+            // The concrete WebHost implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
+            _memoryPool.Dispose();
         }
     }
 }

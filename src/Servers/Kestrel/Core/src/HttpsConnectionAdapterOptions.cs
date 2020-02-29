@@ -55,7 +55,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public ClientCertificateMode ClientCertificateMode { get; set; }
 
         /// <summary>
-        /// Specifies a callback for additional client certificate validation that will be invoked during authentication.
+        /// Specifies a callback for additional client certificate validation that will be invoked during authentication. This will be ignored
+        /// if <see cref="AllowAnyClientCertificate"/> is called after this callback is set.
         /// </summary>
         public Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> ClientCertificateValidation { get; set; }
 
@@ -76,6 +77,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public bool CheckCertificateRevocation { get; set; }
 
         /// <summary>
+        /// Overrides the current <see cref="ClientCertificateValidation"/> callback and allows any client certificate.
+        /// </summary>
+        public void AllowAnyClientCertificate()
+        {
+            ClientCertificateValidation = (_, __, ___) => true;
+        }
+
+        /// <summary>
+        /// Provides direct configuration of the <see cref="SslServerAuthenticationOptions"/> on a per-connection basis.
+        /// This is called after all of the other settings have already been applied.
+        /// </summary>
+        public Action<ConnectionContext, SslServerAuthenticationOptions> OnAuthenticate { get; set; }
+
+        /// <summary>
         /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.
         /// </summary>
         public TimeSpan HandshakeTimeout
@@ -90,8 +105,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 _handshakeTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }
         }
-
-        // For testing
-        internal Action OnHandshakeStarted;
     }
 }

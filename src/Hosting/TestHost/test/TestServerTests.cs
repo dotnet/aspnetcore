@@ -3,21 +3,24 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -25,27 +28,29 @@ namespace Microsoft.AspNetCore.TestHost
     public class TestServerTests
     {
         [Fact]
-        public async Task GenericRawCreate()
+        public async Task GenericRawCreateAndStartHost_GetTestServer()
         {
-            var server = new TestServer();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
-                        .UseServer(server)
+                        .ConfigureServices(services =>
+                        {
+                            services.AddSingleton<IServer>(serviceProvider => new TestServer(serviceProvider));
+                        })
                         .Configure(app => { });
                 })
                 .Build();
             await host.StartAsync();
 
-            var response = await server.CreateClient().GetAsync("/");
+            var response = await host.GetTestServer().CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
         public async Task GenericCreateAndStartHost_GetTestServer()
         {
-            var host = await new HostBuilder()
+            using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task GenericCreateAndStartHost_GetTestClient()
         {
-            var host = await new HostBuilder()
+            using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
@@ -89,7 +94,7 @@ namespace Microsoft.AspNetCore.TestHost
                 .Configure(app => { })
                 .UseTestServer();
 
-            var host = builder.Build();
+            using var host = builder.Build();
             host.Start();
         }
 
@@ -191,6 +196,28 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("RequestServices:True", result);
         }
 
+        [Fact]
+        public async Task DispoingTheRequestBodyDoesNotDisposeClientStreams()
+        {
+            var builder = new WebHostBuilder().Configure(app =>
+            {
+                app.Run(async context =>
+                {
+                    using (var sr = new StreamReader(context.Request.Body))
+                    {
+                        await context.Response.WriteAsync(await sr.ReadToEndAsync());
+                    }
+                });
+            });
+            var server = new TestServer(builder);
+
+            var stream = new ThrowOnDisposeStream();
+            stream.Write(Encoding.ASCII.GetBytes("Hello World"));
+            var response = await server.CreateClient().PostAsync("/", new StreamContent(stream));
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+        }
+
         public class CustomContainerStartup
         {
             public IServiceProvider Services;
@@ -251,6 +278,58 @@ namespace Microsoft.AspNetCore.TestHost
                 .Configure(b => { });
 
             Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
+        }
+
+        [Fact]
+        public void TestServerConstructorShouldProvideServicesFromPassedServiceProvider()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+
+            // Act
+            var testServer = new TestServer(serviceProvider);
+
+            // Assert
+            Assert.Equal(serviceProvider, testServer.Services);
+        }
+
+        [Fact]
+        public void TestServerConstructorShouldProvideServicesFromWebHost()
+        {
+            // Arrange
+            var testService = new TestService();
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(testService))
+                .Configure(_ => { });
+
+            // Act
+            var testServer = new TestServer(builder);
+
+            // Assert
+            Assert.Equal(testService, testServer.Services.GetService<TestService>());
+        }
+
+        [Fact]
+        public async Task TestServerConstructorShouldProvideServicesFromHostBuilder()
+        {
+            // Arrange
+            var testService = new TestService();
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .ConfigureServices(services => services.AddSingleton(testService))
+                        .Configure(_ => { });
+                })
+                .StartAsync();
+
+            // Act
+            // By calling GetTestServer(), a new TestServer instance will be instantiated
+            var testServer = host.GetTestServer();
+
+            // Assert
+            Assert.Equal(testService, testServer.Services.GetService<TestService>());
         }
 
         public class TestService { public string Message { get; set; } }
@@ -660,6 +739,19 @@ namespace Microsoft.AspNetCore.TestHost
             var responseBody = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("otherhost:5678", responseBody);
+        }
+
+        private class ThrowOnDisposeStream : MemoryStream
+        {
+            protected override void Dispose(bool disposing)
+            {
+                throw new InvalidOperationException("Dispose should not happen!");
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                throw new InvalidOperationException("DisposeAsync should not happen!");
+            }
         }
 
         public class TestDiagnosticListener

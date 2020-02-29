@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StartDummyApplication(server);
 
                 Assert.True(server.Options.ListenOptions.Any());
-                Assert.Contains(server.Options.ListenOptions[0].ConnectionAdapters, adapter => adapter.IsHttps);
+                Assert.True(server.Options.ListenOptions[0].IsTls);
             }
         }
 
@@ -203,20 +204,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            new KestrelServer(Options.Create<KestrelServerOptions>(null), Mock.Of<ITransportFactory>(), mockLoggerFactory.Object);
+            new KestrelServer(Options.Create<KestrelServerOptions>(null), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, mockLoggerFactory.Object);
             mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
 
         [Fact]
-        public void StartWithNoTransportFactoryThrows()
+        public void ConstructorWithNullTransportFactoriesThrows()
         {
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            var mockLogger = new Mock<ILogger>();
-            mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new KestrelServer(Options.Create<KestrelServerOptions>(null), null, mockLoggerFactory.Object));
+                new KestrelServer(
+                    Options.Create<KestrelServerOptions>(null),
+                    null,
+                    new LoggerFactory(new[] { new KestrelTestLoggerProvider() })));
 
-            Assert.Equal("transportFactory", exception.ParamName);
+            Assert.Equal("transportFactories", exception.ParamName);
+        }
+
+        [Fact]
+        public void ConstructorWithNoTransportFactoriesThrows()
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                new KestrelServer(
+                    Options.Create<KestrelServerOptions>(null),
+                    new List<IConnectionListenerFactory>(),
+                    new LoggerFactory(new[] { new KestrelTestLoggerProvider() })));
+
+            Assert.Equal(CoreStrings.TransportNotFound, exception.Message);
+        }
+
+        [Fact]
+        public void StartWithMultipleTransportFactoriesDoesNotThrow()
+        {
+            using var server = new KestrelServer(
+                Options.Create(CreateServerOptions()),
+                new List<IConnectionListenerFactory>() { new ThrowingTransportFactory(), new MockTransportFactory() },
+                new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+            StartDummyApplication(server);
         }
 
         [Fact]
@@ -233,31 +257,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var unbind = new SemaphoreSlim(0);
             var stop = new SemaphoreSlim(0);
 
-            var mockTransport = new Mock<ITransport>();
-            mockTransport
-                .Setup(transport => transport.BindAsync())
-                .Returns(Task.CompletedTask);
-            mockTransport
-                .Setup(transport => transport.UnbindAsync())
-                .Returns(async () => await unbind.WaitAsync());
-            mockTransport
-                .Setup(transport => transport.StopAsync())
-                .Returns(async () => await stop.WaitAsync());
-
-            var mockTransportFactory = new Mock<ITransportFactory>();
+            var mockTransport = new Mock<IConnectionListener>();
+            var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionDispatcher>()))
-                .Returns(mockTransport.Object);
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
+                {
+                    mockTransport
+                        .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
+                    mockTransport
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
+                        .Returns(() => new ValueTask(unbind.WaitAsync()));
+                    mockTransport
+                        .Setup(transport => transport.DisposeAsync())
+                        .Returns(() => new ValueTask(stop.WaitAsync()));
+                    mockTransport
+                        .Setup(transport => transport.EndPoint).Returns(e);
+
+                    return new ValueTask<IConnectionListener>(mockTransport.Object);
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
-            var stopTask1 = server.StopAsync(default(CancellationToken));
-            var stopTask2 = server.StopAsync(default(CancellationToken));
-            var stopTask3 = server.StopAsync(default(CancellationToken));
+            var stopTask1 = server.StopAsync(default);
+            var stopTask2 = server.StopAsync(default);
+            var stopTask3 = server.StopAsync(default);
 
             Assert.False(stopTask1.IsCompleted);
             Assert.False(stopTask2.IsCompleted);
@@ -268,8 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).DefaultTimeout();
 
-            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
-            mockTransport.Verify(transport => transport.StopAsync(), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -286,35 +314,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var unbind = new SemaphoreSlim(0);
             var unbindException = new InvalidOperationException();
 
-            var mockTransport = new Mock<ITransport>();
-            mockTransport
-                .Setup(transport => transport.BindAsync())
-                .Returns(Task.CompletedTask);
-            mockTransport
-                .Setup(transport => transport.UnbindAsync())
-                .Returns(async () =>
-                {
-                    await unbind.WaitAsync();
-                    throw unbindException;
-                });
-            mockTransport
-                .Setup(transport => transport.StopAsync())
-                .Returns(Task.CompletedTask);
-
-            var mockTransportFactory = new Mock<ITransportFactory>();
+            var mockTransport = new Mock<IConnectionListener>();
+            var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionDispatcher>()))
-                .Returns(mockTransport.Object);
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
+                {
+                    mockTransport
+                        .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
+                    mockTransport
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
+                        .Returns(async () =>
+                        {
+                            await unbind.WaitAsync();
+                            throw unbindException;
+                        });
+                    mockTransport
+                        .Setup(transport => transport.EndPoint).Returns(e);
+
+                    return new ValueTask<IConnectionListener>(mockTransport.Object);
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
-            var stopTask1 = server.StopAsync(default(CancellationToken));
-            var stopTask2 = server.StopAsync(default(CancellationToken));
-            var stopTask3 = server.StopAsync(default(CancellationToken));
+            var stopTask1 = server.StopAsync(default);
+            var stopTask2 = server.StopAsync(default);
+            var stopTask3 = server.StopAsync(default);
 
             Assert.False(stopTask1.IsCompleted);
             Assert.False(stopTask2.IsCompleted);
@@ -327,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask2.TimeoutAfter(timeout)));
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask3.TimeoutAfter(timeout)));
 
-            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -343,26 +373,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var unbindTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockTransport = new Mock<ITransport>();
-            mockTransport
-                .Setup(transport => transport.BindAsync())
-                .Returns(Task.CompletedTask);
-            mockTransport
-                .Setup(transport => transport.UnbindAsync())
-                .Returns(unbindTcs.Task);
-            mockTransport
-                .Setup(transport => transport.StopAsync())
-                .Returns(Task.CompletedTask);
-
-            var mockTransportFactory = new Mock<ITransportFactory>();
+            var mockTransport = new Mock<IConnectionListener>();
+            var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionDispatcher>()))
-                .Returns(mockTransport.Object);
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
+                {
+                    mockTransport
+                        .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
+                    mockTransport
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask(unbindTcs.Task));
+                    mockTransport
+                        .Setup(transport => transport.EndPoint).Returns(e);
+
+                    return new ValueTask<IConnectionListener>(mockTransport.Object);
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), default);
 
             var stopTask1 = server.StopAsync(default);
@@ -384,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await stopTask2.DefaultTimeout();
             await continuationTask.DefaultTimeout();
 
-            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -408,7 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 DebuggerWrapper.Singleton,
                 testContext.Log);
 
-            using (var server = new KestrelServer(new MockTransportFactory(), testContext))
+            using (var server = new KestrelServer(new List<IConnectionListenerFactory>() { new MockTransportFactory() }, testContext))
             {
                 Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
@@ -425,12 +457,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
+            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, bool throwOnCriticalErrors = true)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
+            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
         }
 
         private static void StartDummyApplication(IServer server)
@@ -438,11 +470,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        private class MockTransportFactory : ITransportFactory
+        private class MockTransportFactory : IConnectionListenerFactory
         {
-            public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher handler)
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
             {
-                return Mock.Of<ITransport>();
+                var mock = new Mock<IConnectionListener>();
+                mock.Setup(m => m.EndPoint).Returns(endpoint);
+                return new ValueTask<IConnectionListener>(mock.Object);
+            }
+        }
+
+        private class ThrowingTransportFactory : IConnectionListenerFactory
+        {
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+            {
+                throw new InvalidOperationException();
             }
         }
     }

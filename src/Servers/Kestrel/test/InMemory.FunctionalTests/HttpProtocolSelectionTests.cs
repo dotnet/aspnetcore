@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Protocols = serverProtocols
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Protocols = serverProtocols
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {

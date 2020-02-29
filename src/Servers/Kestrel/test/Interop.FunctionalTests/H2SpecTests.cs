@@ -11,20 +11,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Interop.FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
-        SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
     public class H2SpecTests : LoggedTest
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2225", FlakyOn.Helix.All)]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()
@@ -46,7 +43,9 @@ namespace Interop.FunctionalTests
             {
                 await host.StartAsync();
 
-                H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
+                await H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
+
+                await host.StopAsync();
             }
         }
 
@@ -56,6 +55,8 @@ namespace Interop.FunctionalTests
             {
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
+
+                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
@@ -73,13 +74,17 @@ namespace Interop.FunctionalTests
                         Skip = skip,
                     });
 
-                    dataset.Add(new H2SpecTestCase
+                    // https://github.com/dotnet/aspnetcore/issues/11301 We should use Skip but it's broken at the moment.
+                    if (supportsAlpn)
                     {
-                        Id = testcase.Item1,
-                        Description = testcase.Item2,
-                        Https = true,
-                        Skip = skip,
-                    });
+                        dataset.Add(new H2SpecTestCase
+                        {
+                            Id = testcase.Item1,
+                            Description = testcase.Item2,
+                            Https = true,
+                            Skip = skip,
+                        });
+                    }
                 }
 
                 return dataset;

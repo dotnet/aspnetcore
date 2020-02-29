@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,9 @@ namespace Microsoft.AspNetCore.Testing
     {
         // Application errors are logged using 13 as the eventId.
         private const int ApplicationErrorEventId = 13;
+
+        private Func<LogMessage, bool> _messageFilter;
+        private TaskCompletionSource<LogMessage> _messageFilterTcs;
 
         public List<Type> IgnoredExceptions { get; } = new List<Type>();
 
@@ -31,6 +35,19 @@ namespace Microsoft.AspNetCore.Testing
         public int CriticalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Critical);
 
         public int ApplicationErrorsLogged => Messages.Count(message => message.EventId.Id == ApplicationErrorEventId);
+
+        public Task<LogMessage> WaitForMessage(Func<LogMessage, bool> messageFilter)
+        {
+            if (_messageFilterTcs != null)
+            {
+                throw new InvalidOperationException($"{nameof(WaitForMessage)} cannot be called concurrently.");
+            }
+
+            _messageFilterTcs = new TaskCompletionSource<LogMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _messageFilter = messageFilter;
+
+            return _messageFilterTcs.Task;
+        }
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -77,13 +94,21 @@ namespace Microsoft.AspNetCore.Testing
                 throw new Exception($"Unexpected connection error. {log}");
             }
 
-            Messages.Enqueue(new LogMessage
+            var logMessage = new LogMessage
             {
                 LogLevel = logLevel,
                 EventId = eventId,
                 Exception = exception,
                 Message = formatter(state, exception)
-            });
+            };
+
+            Messages.Enqueue(logMessage);
+
+            if (_messageFilter?.Invoke(logMessage) == true)
+            {
+                _messageFilterTcs.TrySetResult(logMessage);
+                _messageFilterTcs = null;
+            }
         }
 
         public class LogMessage

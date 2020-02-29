@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal("/\u0041\u030A/B/\u0041\u030A", context.Request.Path.Value);
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
 
@@ -91,13 +91,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData(HttpMethod.Options, "*")]
-        [InlineData(HttpMethod.Connect, "host")]
-        public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
+        [InlineData((int)HttpMethod.Options, "*")]
+        [InlineData((int)HttpMethod.Connect, "host")]
+        public async Task NonPathRequestTargetSetInRawTarget(int intMethod, string requestTarget)
         {
+            var method = (HttpMethod)intMethod;
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
                 Assert.Empty(context.Request.Path.Value);

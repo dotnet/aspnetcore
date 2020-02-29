@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsImplementationProject>false</IsImplementationProject>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
@@ -16,7 +18,7 @@
 
   <PropertyGroup>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\</StartWorkingDirectory>
-    <StartArguments>Core/src/Internal/Http/HttpHeaders.Generated.cs Core/src/Internal/Http/HttpProtocol.Generated.cs Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs Transport.Abstractions/src/Internal/TransportConnection.Generated.cs</StartArguments>
+    <StartArguments>Core/src/Internal/Http/HttpHeaders.Generated.cs Core/src/Internal/Http/HttpProtocol.Generated.cs Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs Core/src/Internal/Http2/Http2Connection.Generated.cs shared/TransportMultiplexedConnection.Generated.cs shared/TransportConnection.Generated.cs</StartArguments>
   </PropertyGroup>
 
 </Project>

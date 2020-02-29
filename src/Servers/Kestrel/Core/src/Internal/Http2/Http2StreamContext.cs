@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2StreamContext : HttpConnectionContext
+    internal sealed class Http2StreamContext : HttpConnectionContext
     {
         public int StreamId { get; set; }
         public IHttp2StreamLifetimeHandler StreamLifetimeHandler { get; set; }

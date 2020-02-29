@@ -1,0 +1,75 @@
+@page "/renderlist"
+@inject IJSRuntime JSRuntime
+
+<h2>Render List</h2>
+
+Number of items: <input id="num-items" type="number" @bind=numItems />
+<button id="show-list" @onclick=Show>Show</button>
+<button id="hide-list" @onclick=Hide>Hide</button>
+
+@if (show)
+{
+    <table class='table'>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in GenerateForecasts(numItems))
+            {
+                <tr>
+                    <td>@forecast.DateFormatted</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    int numItems = 10;
+    bool show = false;
+
+    void Hide()
+    {
+        show = false;
+    }
+
+    void Show()
+    {
+        show = true;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BenchmarkEvent.Send(JSRuntime, "Finished rendering list");
+    }
+
+    static IEnumerable<WeatherForecast> GenerateForecasts(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            yield return new WeatherForecast
+            {
+                DateFormatted = DateTime.Now.AddDays(i).ToShortDateString(),
+                TemperatureC = i % 100,
+                TemperatureF = (int)((i % 100) * 1.8) + 32,
+                Summary = $"Item {i}",
+            };
+        }
+    }
+
+    class WeatherForecast
+    {
+        public string DateFormatted { get; set; }
+        public int TemperatureC { get; set; }
+        public int TemperatureF { get; set; }
+        public string Summary { get; set; }
+    }
+}

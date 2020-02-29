@@ -1,7 +1,0 @@
-﻿<Project>
-  <PropertyGroup>
-    <VersionPrefix>3.0.0</VersionPrefix>
-    <VersionSuffix Condition=" '$(VersionSuffix)' == '' ">dev</VersionSuffix>
-    <JavaPackageVersion>$(VersionPrefix)-$(VersionSuffix)</JavaPackageVersion>
-  </PropertyGroup>
-</Project>

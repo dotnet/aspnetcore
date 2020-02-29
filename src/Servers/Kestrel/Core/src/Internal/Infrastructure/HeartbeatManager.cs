@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class HeartbeatManager : IHeartbeatHandler, ISystemClock
+    internal class HeartbeatManager : IHeartbeatHandler, ISystemClock
     {
         private readonly ConnectionManager _connectionManager;
         private readonly Action<KestrelConnection> _walkCallback;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private void WalkCallback(KestrelConnection connection)
         {
-            connection.TransportConnection.TickHeartbeat();
+            connection.TickHeartbeat();
         }
     }
 }

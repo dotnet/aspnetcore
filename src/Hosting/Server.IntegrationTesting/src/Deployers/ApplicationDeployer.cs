@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,19 +45,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 DeploymentParameters.RuntimeFlavor = GetRuntimeFlavor(DeploymentParameters.TargetFramework);
             }
 
-            if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
+            if (DeploymentParameters.ApplicationPublisher == null)
             {
-                throw new ArgumentException("ApplicationPath cannot be null.");
-            }
+                if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
+                {
+                    throw new ArgumentException("ApplicationPath cannot be null.");
+                }
 
-            if (!Directory.Exists(DeploymentParameters.ApplicationPath))
-            {
-                throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", DeploymentParameters.ApplicationPath));
-            }
+                if (!Directory.Exists(DeploymentParameters.ApplicationPath))
+                {
+                    throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", DeploymentParameters.ApplicationPath));
+                }
 
-            if (string.IsNullOrEmpty(DeploymentParameters.ApplicationName))
-            {
-                DeploymentParameters.ApplicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+                if (string.IsNullOrEmpty(DeploymentParameters.ApplicationName))
+                {
+                    DeploymentParameters.ApplicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+                }
             }
         }
 
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    _publishedApplication.Dispose();
+                    _publishedApplication?.Dispose();
                 }
             }
         }

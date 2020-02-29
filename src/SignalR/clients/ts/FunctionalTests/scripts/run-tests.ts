@@ -12,8 +12,8 @@ import * as _debug from "debug";
 
 const debug = _debug("signalr-functional-tests:run");
 
-const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
-const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "artifacts");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "log");
 
 const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;
 
@@ -194,11 +194,23 @@ if (sauce) {
     }
 }
 
+// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
+function ensureWdInstalled() {
+    return new Promise((resolve, reject) => {
+        exec(`node ${__dirname}/../node_modules/wd/scripts/build-browser-scripts.js`, { timeout: 30000 }, (error: any, stdout, stderr) => {
+            if (error) {
+                console.log(error.message);
+                reject(error);
+            }
+            resolve();
+        });
+    });
+}
+
 function runKarma(karmaConfig) {
-    return new Promise<karma.TestResults>((resolve, reject) => {
-        const server = new karma.Server(karmaConfig);
-        server.on("run_complete", (browsers, results) => {
-            return resolve(results);
+    return new Promise<number>((resolve, reject) => {
+        const server = new karma.Server(karmaConfig, (exitCode: number) => {
+            resolve(exitCode);
         });
         server.start();
     });
@@ -233,7 +245,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp3.0", "FunctionalTests.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "netcoreapp5.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
@@ -243,7 +255,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
             desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
-
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
                 ...process.env,
@@ -287,6 +298,8 @@ function runJest(httpsUrl: string, httpUrl: string) {
         }
 
         debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
+
+        await ensureWdInstalled();
 
         // Start karma server
         const conf = {
@@ -351,12 +364,10 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (config.browsers.length === 0) {
             console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
         } else {
-            karmaExit = (await runKarma(conf)).exitCode;
-        }
-
-        if (karmaExit) {
+            karmaExit = (await runKarma(conf));
             console.log(`karma exit code: ${karmaExit}`);
         }
+
         console.log(`jest exit code: ${jestExit}`);
 
         process.exit(jestExit !== 0 ? jestExit : karmaExit);

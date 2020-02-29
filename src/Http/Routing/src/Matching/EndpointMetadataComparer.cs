@@ -1,12 +1,79 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
+    /// <summary>
+    /// A comparer that can order <see cref="Endpoint"/> instances based on implementations of
+    /// <see cref="IEndpointComparerPolicy" />. The implementation can be retrieved from the service
+    /// provider and provided to <see cref="CandidateSet.ExpandEndpoint(int, IReadOnlyList{Endpoint}, IComparer{Endpoint})"/>.
+    /// </summary>
+    public sealed class EndpointMetadataComparer : IComparer<Endpoint>
+    {
+        private IServiceProvider _services;
+        private IComparer<Endpoint>[] _comparers;
+
+        // This type is **INTENDED** for use in MatcherPolicy instances yet is also needs the MatcherPolicy instances.
+        // using IServiceProvider to break the cycle.
+        internal EndpointMetadataComparer(IServiceProvider services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            _services = services;
+        }
+
+        private IComparer<Endpoint>[] Comparers
+        {
+            get
+            {
+                if (_comparers == null)
+                {
+                    _comparers = _services.GetServices<MatcherPolicy>()
+                        .OrderBy(p => p.Order)
+                        .OfType<IEndpointComparerPolicy>()
+                        .Select(p => p.Comparer)
+                        .ToArray();
+                }
+
+                return _comparers;
+            }
+        }
+
+        int IComparer<Endpoint>.Compare(Endpoint x, Endpoint y)
+        {
+            if (x == null)
+            {
+                throw new ArgumentNullException(nameof(x));
+            }
+
+            if (y == null)
+            {
+                throw new ArgumentNullException(nameof(y));
+            }
+
+            var comparers = Comparers;
+            for (var i = 0; i < comparers.Length; i++)
+            {
+                var compare = comparers[i].Compare(x, y);
+                if (compare != 0)
+                {
+                    return compare;
+                }
+            }
+
+            return 0;
+        }
+    }
+
     /// <summary>
     /// A base class for <see cref="IComparer{Endpoint}"/> implementations that use 
     /// a specific type of metadata from <see cref="Endpoint.Metadata"/> for comparison.

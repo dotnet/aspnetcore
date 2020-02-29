@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Internal;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -91,8 +90,8 @@ namespace Microsoft.AspNetCore.Routing
         /// <remarks>
         /// If the <paramref name="value"/> is a string, it will be converted to a <see cref="RegexRouteConstraint"/>.
         ///
-        /// For example, the string <code>Product[0-9]+</code> will be converted to the regular expression
-        /// <code>^(Product[0-9]+)</code>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
+        /// For example, the string <c>Product[0-9]+</c> will be converted to the regular expression
+        /// <c>^(Product[0-9]+)</c>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
         /// </remarks>
         public void AddConstraint(string key, object value)
         {

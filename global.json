@@ -1,8 +1,31 @@
 {
-    "sdk": {
-        "version": "3.0.100-preview-009750"
+  "sdk": {
+    "version": "5.0.100-preview.2.20120.3"
+  },
+  "tools": {
+    "dotnet": "5.0.100-preview.2.20120.3",
+    "runtimes": {
+      "dotnet/x64": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ],
+      "dotnet/x86": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ]
     },
-    "msbuild-sdks": {
-        "Internal.AspNetCore.Sdk": "3.0.0-build-20181214.1"
+    "Git": "2.22.0",
+    "jdk": "11.0.3",
+    "vs": {
+      "version": "16.3",
+      "components": [
+        "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.Windows10SDK.17134"
+      ]
     }
+  },
+  "msbuild-sdks": {
+    "Yarn.MSBuild": "1.15.2",
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20126.7",
+    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20126.7"
+  }
 }

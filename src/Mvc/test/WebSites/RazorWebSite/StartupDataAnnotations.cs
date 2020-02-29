@@ -32,6 +32,10 @@ namespace RazorWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-US", "en-US"),
@@ -44,10 +48,11 @@ namespace RazorWebSite
                     new CultureInfo("en-US")
                 }
             });
-            app.UseStaticFiles();
 
-            // Add MVC to the request pipeline
-            app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
     }
 }

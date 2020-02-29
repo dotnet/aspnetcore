@@ -2,15 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface IKestrelTrace : ILogger
+    internal interface IKestrelTrace : ILogger
     {
+        void ConnectionAccepted(string connectionId);
+
         void ConnectionStart(string connectionId);
 
         void ConnectionStop(string connectionId);
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void NotAllConnectionsAborted();
 
-        void HeartbeatSlow(TimeSpan interval, DateTimeOffset now);
+        void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now);
 
         void ApplicationNeverCompleted(string connectionId);
 

@@ -4,15 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,30 +22,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly List<ITransport> _transports = new List<ITransport>();
+        private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
+        private readonly List<(IMultiplexedConnectionListener, Task)> _multiplexedTransports = new List<(IMultiplexedConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
-        private readonly ITransportFactory _transportFactory;
+        private readonly List<IConnectionListenerFactory> _transportFactories;
+        private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
 
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
-#pragma warning restore PUB0001
-            : this(transportFactory, CreateServiceContext(options, loggerFactory))
+        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
+            : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
+        {
+        }
+        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ILoggerFactory loggerFactory)
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
         {
         }
 
         // For testing
-        internal KestrelServer(ITransportFactory transportFactory, ServiceContext serviceContext)
+        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, ServiceContext serviceContext)
+            : this(transportFactories, null, serviceContext)
         {
-            if (transportFactory == null)
+        }
+
+        // For testing
+        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ServiceContext serviceContext)
+        {
+            if (transportFactories == null)
             {
-                throw new ArgumentNullException(nameof(transportFactory));
+                throw new ArgumentNullException(nameof(transportFactories));
             }
 
-            _transportFactory = transportFactory;
+            _transportFactories = transportFactories.ToList();
+            _multiplexedTransportFactories = multiplexedFactories?.ToList();
+
+            if (_transportFactories.Count == 0 && (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0))
+            {
+                throw new InvalidOperationException(CoreStrings.TransportNotFound);
+            }
+
             ServiceContext = serviceContext;
 
             Features = new FeatureCollection();
@@ -73,33 +92,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             var heartbeatManager = new HeartbeatManager(connectionManager);
             var dateHeaderValueManager = new DateHeaderValueManager();
+
             var heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
                 new SystemClock(),
                 DebuggerWrapper.Singleton,
                 trace);
 
-            // TODO: This logic will eventually move into the IConnectionHandler<T> and off
-            // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
-            PipeScheduler scheduler = null;
-            switch (serverOptions.ApplicationSchedulingMode)
-            {
-                case SchedulingMode.Default:
-                case SchedulingMode.ThreadPool:
-                    scheduler = PipeScheduler.ThreadPool;
-                    break;
-                case SchedulingMode.Inline:
-                    scheduler = PipeScheduler.Inline;
-                    break;
-                default:
-                    throw new NotSupportedException(CoreStrings.FormatUnknownTransportMode(serverOptions.ApplicationSchedulingMode));
-            }
-
             return new ServiceContext
             {
                 Log = trace,
                 HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
-                Scheduler = scheduler,
+                Scheduler = PipeScheduler.ThreadPool,
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
@@ -138,24 +142,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                async Task OnBind(ListenOptions endpoint)
+                async Task OnBind(ListenOptions options)
                 {
-                    // Add the HTTP middleware as the terminal connection middleware
-                    endpoint.UseHttpServer(endpoint.ConnectionAdapters, ServiceContext, application, endpoint.Protocols);
-
-                    var connectionDelegate = endpoint.Build();
-
-                    // Add the connection limit middleware
-                    if (Options.Limits.MaxConcurrentConnections.HasValue)
+                    // INVESTIGATE: For some reason, MsQuic needs to bind before
+                    // sockets for it to successfully listen. It also seems racy.
+                    if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
-                        connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                        if (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0)
+                        {
+                            throw new InvalidOperationException("Cannot start HTTP/3 server if no MultiplexedTransportFactories are registered.");
+                        }
+
+                        options.UseHttp3Server(ServiceContext, application, options.Protocols);
+                        var multiplxedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
+
+                        var multiplexedConnectionDispatcher = new MultiplexedConnectionDispatcher(ServiceContext, multiplxedConnectionDelegate);
+                        var multiplexedFactory = _multiplexedTransportFactories.Last();
+                        var multiplexedTransport = await multiplexedFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
+
+                        var acceptLoopTask = multiplexedConnectionDispatcher.StartAcceptingConnections(multiplexedTransport);
+                        _multiplexedTransports.Add((multiplexedTransport, acceptLoopTask));
+
+                        options.EndPoint = multiplexedTransport.EndPoint;
                     }
 
-                    var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = _transportFactory.Create(endpoint, connectionDispatcher);
-                    _transports.Add(transport);
+                    // Add the HTTP middleware as the terminal connection middleware
+                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
+                        || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2
+                        || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
+                                                                    // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
+                    {
+                        options.UseHttpServer(ServiceContext, application, options.Protocols);
+                        var connectionDelegate = options.Build();
 
-                    await transport.BindAsync().ConfigureAwait(false);
+                        // Add the connection limit middleware
+                        if (Options.Limits.MaxConcurrentConnections.HasValue)
+                        {
+                            connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                        }
+
+                        var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
+                        var factory = _transportFactories.Last();
+                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
+
+                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
+
+                        _transports.Add((transport, acceptLoopTask));
+                        options.EndPoint = transport.EndPoint;
+                    }
                 }
 
                 await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
@@ -179,11 +213,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var tasks = new Task[_transports.Count];
-                for (int i = 0; i < _transports.Count; i++)
+                var connectionTransportCount = _transports.Count;
+                var totalTransportCount = _transports.Count + _multiplexedTransports.Count;
+                var tasks = new Task[totalTransportCount];
+
+                for (int i = 0; i < connectionTransportCount; i++)
                 {
-                    tasks[i] = _transports[i].UnbindAsync();
+                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
                 }
+
+                for (int i = connectionTransportCount; i < totalTransportCount; i++)
+                {
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
+                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
+                }
+
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
@@ -196,10 +241,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                 }
 
-                for (int i = 0; i < _transports.Count; i++)
+                for (int i = 0; i < connectionTransportCount; i++)
                 {
-                    tasks[i] = _transports[i].StopAsync();
+                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = listener.DisposeAsync().AsTask();
                 }
+
+                for (int i = connectionTransportCount; i < totalTransportCount; i++)
+                {
+                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
+                    tasks[i] = listener.DisposeAsync().AsTask();
+                }
+
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 ServiceContext.Heartbeat?.Dispose();

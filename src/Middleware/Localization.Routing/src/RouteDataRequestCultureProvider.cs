@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,8 +59,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 // Value for culture but not for UI culture so default to culture value for both
                 uiCulture = culture;
             }
-
-            if (culture == null && uiCulture != null)
+            else if (culture == null && uiCulture != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 culture = uiCulture;

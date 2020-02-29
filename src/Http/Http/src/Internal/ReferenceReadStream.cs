@@ -6,12 +6,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// A Stream that wraps another stream starting at a certain offset and reading for the given length.
     /// </summary>
-    internal class ReferenceReadStream : Stream
+    internal sealed class ReferenceReadStream : Stream
     {
         private readonly Stream _inner;
         private readonly long _innerOffset;
@@ -132,7 +132,11 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override void Flush()
         {
-            throw new NotSupportedException();
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

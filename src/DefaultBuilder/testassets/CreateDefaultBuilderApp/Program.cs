@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace CreateDefaultBuilderApp
                     }))
                 .Configure(app => app.Run(context =>
                 {
-                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
                     return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
                 }))
                 .Build().Run();

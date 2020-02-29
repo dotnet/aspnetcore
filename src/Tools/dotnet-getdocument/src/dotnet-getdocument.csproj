@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>dotnet-getdocument</AssemblyName>
+    <Description>GetDocument Command-line Tool outside man</Description>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UseAppHost>false</UseAppHost>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
+    <Compile Include="../../GetDocumentInsider/src/CommandException.cs" />
+    <Compile Include="../../GetDocumentInsider/src/Commands/CommandBase.cs" Link="Commands/CommandBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/Commands/HelpCommandBase.cs" Link="Commands/HelpCommandBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/ProgramBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/ReporterExtensions.cs" />
+
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+</Project>

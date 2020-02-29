@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2135", FlakyOn.All)]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win2008R2, WindowsVersions.Win7, SkipReason = "Content type not required for caching on Win7 and Win2008R2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "Content type not required for caching on Win7.")]
         public async Task Caching_WithoutContentType_NotCached()
         {
             var requestCount = 1;
@@ -85,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2207", FlakyOn.All)]
         public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
         {
             if (Utilities.IsWin8orLater)
@@ -235,6 +237,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [ConditionalTheory]
         [InlineData("0")]
         [InlineData("-1")]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2208", FlakyOn.All)]
         public async Task Caching_InvalidExpires_NotCached(string expiresValue)
         {
             var requestCount = 1;
@@ -307,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
-                httpContext.Response.Body.Flush();
+                httpContext.Response.Body.FlushAsync();
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -375,6 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2209", FlakyOn.All)]
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;

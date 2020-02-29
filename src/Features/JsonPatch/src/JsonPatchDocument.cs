@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Add(string path, object value)
         {
             if (path == null)
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// { "op": "remove", "path": "/a/b/c" }
         /// </summary>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Remove(string path)
         {
             if (path == null)
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Replace(string path, object value)
         {
             if (path == null)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Test(string path, object value)
         {
             if (path == null)
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Move(string from, string path)
         {
             if (from == null)
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument"/> for chaining.</returns>
         public JsonPatchDocument Copy(string from, string path)
         {
             if (from == null)

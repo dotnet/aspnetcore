@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to support the WsFederation authentication workflow.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
-
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />

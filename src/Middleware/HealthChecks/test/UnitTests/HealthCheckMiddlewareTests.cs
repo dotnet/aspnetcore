@@ -19,6 +19,24 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
     public class HealthCheckMiddlewareTests
     {
+        [Fact]
+        public void ThrowFriendlyErrorWhenServicesNotRegistered()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                });
+
+            var ex = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+
+            Assert.Equal(
+                "Unable to find the required services. Please add all the required services by calling " +
+                "'IServiceCollection.AddHealthChecks' inside the call to 'ConfigureServices(...)' " +
+                "in the application startup code.",
+                ex.Message);
+        }
+
         [Fact] // Matches based on '.Map'
         public async Task IgnoresRequestThatDoesNotMatchPath()
         {

@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpRequestTests
     {
@@ -239,6 +241,14 @@ namespace Microsoft.AspNetCore.Http.Internal
             // Can clear feature
             context.Features.Set<IRouteValuesFeature>(null);
             Assert.Empty(request.RouteValues);
+        }
+
+        [Fact]
+        public void BodyReader_CanGet()
+        {
+            var context = new DefaultHttpContext();
+            var bodyPipe = context.Request.BodyReader;
+            Assert.NotNull(bodyPipe);
         }
 
         private class CustomRouteValuesFeature : IRouteValuesFeature

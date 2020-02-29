@@ -33,7 +33,7 @@ namespace SampleStartups
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseFakeServer()
+                .UseKestrel()
                 .UseStartup<StartupBlockingOnStart>()
                 .Build();
 

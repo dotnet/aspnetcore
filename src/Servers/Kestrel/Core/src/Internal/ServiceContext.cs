@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ServiceContext
+    internal class ServiceContext
     {
         public IKestrelTrace Log { get; set; }
 

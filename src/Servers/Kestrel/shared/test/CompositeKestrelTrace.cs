@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class CompositeKestrelTrace: IKestrelTrace
+    internal class CompositeKestrelTrace : IKestrelTrace
     {
         private readonly IKestrelTrace _trace1;
         private readonly IKestrelTrace _trace2;
@@ -32,6 +31,12 @@ namespace Microsoft.AspNetCore.Testing
         public bool IsEnabled(LogLevel logLevel)
         {
             return _trace1.IsEnabled(logLevel) || _trace2.IsEnabled(logLevel);
+        }
+
+        public void ConnectionAccepted(string connectionId)
+        {
+            _trace1.ConnectionAccepted(connectionId);
+            _trace2.ConnectionAccepted(connectionId);
         }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -117,10 +122,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.NotAllConnectionsAborted();
         }
 
-        public void HeartbeatSlow(TimeSpan interval, DateTimeOffset now)
+        public void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _trace1.HeartbeatSlow(interval, now);
-            _trace2.HeartbeatSlow(interval, now);
+            _trace1.HeartbeatSlow(heartbeatDuration, interval, now);
+            _trace2.HeartbeatSlow(heartbeatDuration, interval, now);
         }
 
         public void ApplicationNeverCompleted(string connectionId)

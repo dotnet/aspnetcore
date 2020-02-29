@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -17,23 +17,12 @@ namespace E2ETests
     {
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
                 .WithAllHostingModels();
-
-        // ANCM In-process cannot run on netcoreapp2.1 and below
-        public static TestMatrix TestVariantsWithoutInproc
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions()
-                .WithHostingModels(HostingModel.OutOfProcess)
-                .WithAllArchitectures();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [MemberData(nameof(TestVariantsWithoutInproc))]
         public async Task Smoke_Tests(TestVariant variant)
         {
             var testName = $"SmokeTestSuite_{variant}";

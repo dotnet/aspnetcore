@@ -2,35 +2,33 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class MessageBody
+    internal abstract class MessageBody
     {
-        private static readonly MessageBody _zeroContentLengthClose = new ForZeroContentLength(keepAlive: false);
-        private static readonly MessageBody _zeroContentLengthKeepAlive = new ForZeroContentLength(keepAlive: true);
+        private static readonly MessageBody _zeroContentLengthClose = new ZeroContentLengthMessageBody(keepAlive: false);
+        private static readonly MessageBody _zeroContentLengthKeepAlive = new ZeroContentLengthMessageBody(keepAlive: true);
 
         private readonly HttpProtocol _context;
-        private readonly MinDataRate _minRequestBodyDataRate;
 
         private bool _send100Continue = true;
         private long _consumedBytes;
         private bool _stopped;
 
-        private bool _timingEnabled;
-        private bool _backpressure;
-        private long _alreadyTimedBytes;
+        protected bool _timingEnabled;
+        protected bool _backpressure;
+        protected long _alreadyTimedBytes;
+        protected long _examinedUnconsumedBytes;
 
-        protected MessageBody(HttpProtocol context, MinDataRate minRequestBodyDataRate)
+        protected MessageBody(HttpProtocol context)
         {
             _context = context;
-            _minRequestBodyDataRate = minRequestBodyDataRate;
         }
 
         public static MessageBody ZeroContentLengthClose => _zeroContentLengthClose;
@@ -45,94 +43,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public virtual async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            TryStart();
+        public abstract void AdvanceTo(SequencePosition consumed);
 
-            while (true)
-            {
-                var result = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
+        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
-                var consumed = readableBuffer.End;
-                var actual = 0;
+        public abstract bool TryRead(out ReadResult readResult);
 
-                try
-                {
-                    if (!readableBuffer.IsEmpty)
-                    {
-                        // buffer.Length is int
-                        actual = (int)Math.Min(readableBufferLength, buffer.Length);
+        public abstract void Complete(Exception exception);
 
-                        // Make sure we don't double-count bytes on the next read.
-                        _alreadyTimedBytes = readableBufferLength - actual;
+        public abstract void CancelPendingRead();
 
-                        var slice = readableBuffer.Slice(0, actual);
-                        consumed = readableBuffer.GetPosition(actual);
-                        slice.CopyTo(buffer.Span);
-
-                        return actual;
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        TryStop();
-                        return 0;
-                    }
-                }
-                finally
-                {
-                    _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
-
-                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
-                    // the pipe despite the client being well-behaved.
-                    OnDataRead(actual);
-                }
-            }
-        }
-
-        public virtual async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            TryStart();
-
-            while (true)
-            {
-                var result = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
-
-                try
-                {
-                    if (!readableBuffer.IsEmpty)
-                    {
-                        foreach (var memory in readableBuffer)
-                        {
-                            // REVIEW: This *could* be slower if 2 things are true
-                            // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
-                            // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
-                            await destination.WriteAsync(memory, cancellationToken);
-                        }
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        TryStop();
-                        return;
-                    }
-                }
-                finally
-                {
-                    _context.RequestBodyPipe.Reader.AdvanceTo(readableBuffer.End);
-
-                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
-                    // the pipe despite the client being well-behaved.
-                    OnDataRead(readableBufferLength);
-                }
-            }
-        }
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public virtual Task ConsumeAsync()
         {
@@ -161,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void TryStart()
+        protected void TryStart()
         {
             if (_context.HasStartedConsumingRequestBody)
             {
@@ -173,19 +94,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID.
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
-                if (_minRequestBodyDataRate != null)
+                if (_context.MinRequestBodyDataRate != null)
                 {
                     _timingEnabled = true;
-                    _context.TimeoutControl.StartRequestBody(_minRequestBodyDataRate);
+                    _context.TimeoutControl.StartRequestBody(_context.MinRequestBodyDataRate);
                 }
             }
 
             OnReadStarted();
         }
 
-        private void TryStop()
+        protected void TryStop()
         {
             if (_stopped)
             {
@@ -196,7 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
                 if (_timingEnabled)
                 {
@@ -232,12 +163,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
+        protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
         {
-            var readAwaitable = _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
 
             if (!readAwaitable.IsCompleted && _timingEnabled)
             {
+                TryProduceContinue();
+
                 _backpressure = true;
                 _context.TimeoutControl.StartTimingRead();
             }
@@ -245,10 +177,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return readAwaitable;
         }
 
-        private void StopTimingRead(long bytesRead)
+        protected void CountBytesRead(long bytesInReadResult)
         {
-            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
-            _alreadyTimedBytes = 0;
+            var numFirstSeenBytes = bytesInReadResult - _alreadyTimedBytes;
+
+            if (numFirstSeenBytes > 0)
+            {
+                _context.TimeoutControl.BytesRead(numFirstSeenBytes);
+            }
+        }
+
+        protected void StopTimingRead(long bytesInReadResult)
+        {
+            CountBytesRead(bytesInReadResult);
 
             if (_backpressure)
             {
@@ -257,23 +198,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private class ForZeroContentLength : MessageBody
+        protected long OnAdvance(ReadResult readResult, SequencePosition consumed, SequencePosition examined)
         {
-            public ForZeroContentLength(bool keepAlive)
-                : base(null, null)
+            // This code path is fairly hard to understand so let's break it down with an example
+            // ReadAsync returns a ReadResult of length 50.
+            // Advance(25, 40). The examined length would be 40 and consumed length would be 25.
+            // _totalExaminedInPreviousReadResult starts at 0. newlyExamined is 40.
+            // OnDataRead is called with length 40.
+            // _totalExaminedInPreviousReadResult is now 40 - 25 = 15.
+
+            // The next call to ReadAsync returns 50 again
+            // Advance(5, 5) is called
+            // newlyExamined is 5 - 15, or -10.
+            // Update _totalExaminedInPreviousReadResult to 10 as we consumed 5.
+
+            // The next call to ReadAsync returns 50 again
+            // _totalExaminedInPreviousReadResult is 10
+            // Advance(50, 50) is called
+            // newlyExamined = 50 - 10 = 40
+            // _totalExaminedInPreviousReadResult is now 50
+            // _totalExaminedInPreviousReadResult is finally 0 after subtracting consumedLength.
+
+            long examinedLength, consumedLength, totalLength;
+
+            if (consumed.Equals(examined))
             {
-                RequestKeepAlive = keepAlive;
+                examinedLength = readResult.Buffer.Slice(readResult.Buffer.Start, examined).Length;
+                consumedLength = examinedLength;
+            }
+            else
+            {
+                consumedLength = readResult.Buffer.Slice(readResult.Buffer.Start, consumed).Length;
+                examinedLength = consumedLength + readResult.Buffer.Slice(consumed, examined).Length;
             }
 
-            public override bool IsEmpty => true;
+            if (examined.Equals(readResult.Buffer.End))
+            {
+                totalLength = examinedLength;
+            }
+            else
+            {
+                totalLength = readResult.Buffer.Length;
+            }
 
-            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<int>(0);
+            var newlyExamined = examinedLength - _examinedUnconsumedBytes;
 
-            public override Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken)) => Task.CompletedTask;
+            if (newlyExamined > 0)
+            {
+                OnDataRead(newlyExamined);
+                _examinedUnconsumedBytes += newlyExamined;
+            }
 
-            public override Task ConsumeAsync() => Task.CompletedTask;
+            _examinedUnconsumedBytes -= consumedLength;
+            _alreadyTimedBytes = totalLength - consumedLength;
 
-            public override Task StopAsync() => Task.CompletedTask;
+            return newlyExamined;
         }
     }
 }
