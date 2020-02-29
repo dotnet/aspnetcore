@@ -29,9 +29,9 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
     exit
 }
 
-if (Test-Path "$output_dir\node.exe")
+if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe found at $output_dir"
+    Write-Host "Node.exe found at $InstallDir"
     exit
 }
 

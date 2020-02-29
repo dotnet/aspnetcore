@@ -20,7 +20,7 @@ Building ASP.NET Core on Windows requires:
     ```
 
     However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
-    and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements.
+    and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements. By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:
@@ -138,6 +138,11 @@ On macOS/Linux:
 source activate.sh
 code .
 ```
+
+Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
+to the process in WSL.  You can workaround this by explicitly setting the environment variables
+in `~/.vscode-server/server-env-setup`.
+See https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script for details.
 
 ## Building on command-line
 

@@ -520,7 +520,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task StreamAsyncTest(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];

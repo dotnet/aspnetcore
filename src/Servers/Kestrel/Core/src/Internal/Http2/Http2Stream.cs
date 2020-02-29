@@ -104,20 +104,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnRequestProcessingEnded()
         {
+            CompleteStream(errored: false);
+        }
+
+        public void CompleteStream(bool errored)
+        {
             try
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1
                 // If the app finished without reading the request body tell the client not to finish sending it.
                 if (!EndStreamReceived && !RstStreamReceived)
                 {
-                    Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    if (!errored)
+                    {
+                        Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
+                    }
 
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
                         Debug.Assert(_decrementCalled);
-                        // Don't block on IO. This never faults.
-                        _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+
+                        // If there was an error starting the stream then we don't want to write RST_STREAM here.
+                        // The connection will handle writing RST_STREAM with the correct error code.
+                        if (!errored)
+                        {
+                            // Don't block on IO. This never faults.
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                        }
                         RequestBodyPipe.Writer.Complete();
                     }
                 }
@@ -173,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // CONNECT - :scheme and :path must be excluded
             if (Method == HttpMethod.Connect)
             {
-                if (!String.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !String.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
+                if (!String.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !String.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
                 {
                     ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
@@ -192,16 +206,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
             // - For now we'll restrict it to http/s and require it match the transport.
             // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(RequestHeaders[HeaderNames.Scheme], Scheme, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(HttpRequestHeaders.HeaderScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 ResetAndAbort(new ConnectionAbortedException(
-                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(RequestHeaders[HeaderNames.Scheme], Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
+                    CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;
             }
 
             // :path (and query) - Required
             // Must start with / except may be * for OPTIONS
-            var path = RequestHeaders[HeaderNames.Path].ToString();
+            var path = HttpRequestHeaders.HeaderPath.ToString();
             RawTarget = path;
 
             // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -238,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool TryValidateMethod()
         {
             // :method
-            _methodText = RequestHeaders[HeaderNames.Method].ToString();
+            _methodText = HttpRequestHeaders.HeaderMethod.ToString();
             Method = HttpUtilities.GetKnownMethod(_methodText);
 
             if (Method == HttpMethod.None)
@@ -264,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // :authority (optional)
             // Prefer this over Host
 
-            var authority = RequestHeaders[HeaderNames.Authority];
+            var authority = HttpRequestHeaders.HeaderAuthority;
             var host = HttpRequestHeaders.HeaderHost;
             if (!StringValues.IsNullOrEmpty(authority))
             {
@@ -317,9 +331,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
+                const int MaxPathBufferStackAllocSize = 256;
+
                 // The decoder operates only on raw bytes
-                var pathBuffer = new byte[pathSegment.Length].AsSpan();
-                for (int i = 0; i < pathSegment.Length; i++)
+                Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
+                    // A constant size plus slice generates better code
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+                    ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
+                    // TODO - Consider pool here for less than 4096
+                    // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
+                    : new byte[pathSegment.Length];
+
+                for (var i = 0; i < pathSegment.Length; i++)
                 {
                     var ch = pathSegment[i];
                     // The header parser should already be checking this

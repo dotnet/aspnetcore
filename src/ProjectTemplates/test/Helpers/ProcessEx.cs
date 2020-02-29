@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -99,6 +100,11 @@ namespace Templates.Test.Helpers
             }
 
             startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
+            
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                startInfo.EnvironmentVariables["NUGET_FALLBACK_PACKAGES"] = Environment.GetEnvironmentVariable("NUGET_FALLBACK_PACKAGES");
+            }
 
             output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
@@ -189,11 +195,12 @@ namespace Templates.Test.Helpers
             }
         }
 
-        private static string GetNugetPackagesRestorePath() =>
-            typeof(ProcessEx).Assembly
+        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE"))) 
+            ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "TestPackageRestorePath")
-                .Value;
+                .Value
+            : Environment.GetEnvironmentVariable("NUGET_RESTORE");
 
         public void Dispose()
         {

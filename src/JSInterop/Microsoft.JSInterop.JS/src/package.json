@@ -3,7 +3,7 @@
   "version": "5.0.0-dev",
   "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
   "main": "dist/Microsoft.JSInterop.js",
-  "types": "dist/Microsoft.JSInterop.d.js",
+  "types": "dist/Microsoft.JSInterop.d.ts",
   "scripts": {
     "clean": "node node_modules/rimraf/bin.js ./dist",
     "build": "npm run clean && npm run build:esm",

@@ -1039,7 +1039,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task HubMethodCanBeRenamedWithAttribute()
         {
             using (StartVerifiableLog())
@@ -3210,7 +3209,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Object not supported yet")]
+        [Fact]
         public async Task UploadStreamedObjects()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -3274,7 +3273,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Cyclic parsing is not supported yet")]
+        [Fact]
         public async Task ConnectionAbortedIfSendFailsWithProtocolError()
         {
             using (StartVerifiableLog())
@@ -3290,8 +3289,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
-
-                    await client.Connected.OrTimeout();
                     await connectionHandlerTask.OrTimeout();
                 }
             }

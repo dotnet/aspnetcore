@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +20,8 @@ namespace Templates.Test
             _output = output;
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix("missing files")]
         [InlineData("Web.ProjectTemplates")]
         [InlineData("Web.Spa.ProjectTemplates")]
         public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
@@ -60,7 +62,8 @@ namespace Templates.Test
             Assert.False(filesWithBOMCharactersPresent);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("missing files")]
         public void RazorFilesInWebProjects_ShouldContainBOM()
         {
             var projectName = "Web.ProjectTemplates";

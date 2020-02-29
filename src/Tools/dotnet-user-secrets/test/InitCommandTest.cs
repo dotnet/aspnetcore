@@ -19,19 +19,13 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         private UserSecretsTestFixture _fixture;
         private ITestOutputHelper _output;
         private TestConsole _console;
-        private StringBuilder _textOutput;
 
         public InitCommandTests(UserSecretsTestFixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
             _output = output;
-            _textOutput = new StringBuilder();
 
-            _console = new TestConsole(output)
-            {
-                Error = new StringWriter(_textOutput),
-                Out = new StringWriter(_textOutput),
-            };
+            _console = new TestConsole(output);
         }
 
         private CommandContext MakeCommandContext() => new CommandContext(null, new TestReporter(_output), _console);
@@ -63,7 +57,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
         public void AddsEscapedSpecificSecretIdToProject()
         {
             const string SecretId = @"<lots of XML invalid values>&";

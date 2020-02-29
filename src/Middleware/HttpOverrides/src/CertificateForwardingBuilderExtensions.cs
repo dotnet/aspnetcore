@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for using certificate fowarding.
+    /// Extension methods for using certificate forwarding.
     /// </summary>
     public static class CertificateForwardingBuilderExtensions
     {

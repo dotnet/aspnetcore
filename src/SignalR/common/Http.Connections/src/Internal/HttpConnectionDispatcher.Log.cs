@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 _receivedDeleteRequestForUnsupportedTransport(logger, transportType, null);
             }
 
-            public static void TerminatingConection(ILogger logger)
+            public static void TerminatingConnection(ILogger logger)
             {
                 _terminatingConnection(logger, null);
             }

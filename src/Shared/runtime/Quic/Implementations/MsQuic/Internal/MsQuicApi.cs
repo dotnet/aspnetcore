@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -142,12 +142,6 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
             //   error code mapping when creating exceptions.
 
             OperatingSystem ver = Environment.OSVersion;
-
-            if (ver.Platform == PlatformID.Win32NT && ver.Version < new Version(10, 0, 19041, 0))
-            {
-                IsQuicSupported = false;
-                return;
-            }
 
             // TODO: try to initialize TLS 1.3 in SslStream.
 

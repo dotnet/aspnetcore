@@ -810,6 +810,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var mockLogger = new Mock<IKestrelTrace>();
+                mockLogger
+                    .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                    .Returns(true);
                 input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
@@ -841,6 +844,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockLogger
                     .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
                     .Callback(() => logEvent.SetResult(null));
+                mockLogger
+                    .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                    .Returns(true);
                 input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";

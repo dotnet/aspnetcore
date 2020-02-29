@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -386,7 +385,6 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        [Flaky("<No longer used; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
         {
             // Arrange

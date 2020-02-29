@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
     //
     // Perf: our conversion routines present a regular API surface that allows us to specialize on types to avoid boxing.
     // for instance, many of these types could be cast to IFormattable to do the appropriate formatting, but that's going
-    // to allocate. 
+    // to allocate.
     public static class BindConverter
     {
         private static object BoxedTrue = true;
@@ -149,6 +149,41 @@ namespace Microsoft.AspNetCore.Components
         public static string FormatValue(long? value, CultureInfo culture = null) => FormatNullableLongValueCore(value, culture);
 
         private static string FormatNullableLongValueCore(long? value, CultureInfo culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        public static string FormatValue(short value, CultureInfo culture = null) => FormatShortValueCore(value, culture);
+
+        private static string FormatShortValueCore(short value, CultureInfo culture)
+        {
+            return value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        public static string FormatValue(short? value, CultureInfo culture = null) => FormatNullableShortValueCore(value, culture);
+
+        private static string FormatNullableShortValueCore(short? value, CultureInfo culture)
         {
             if (value == null)
             {
@@ -640,6 +675,71 @@ namespace Microsoft.AspNetCore.Components
             }
 
             if (!long.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToShort(object obj, CultureInfo culture, out short value)
+        {
+            return ConvertToShortCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableShort(object obj, CultureInfo culture, out short? value)
+        {
+            return ConvertToNullableShort(obj, culture, out value);
+        }
+
+        internal static BindParser<short> ConvertToShort = ConvertToShortCore;
+        internal static BindParser<short?> ConvertToNullableShort = ConvertToNullableShortCore;
+
+        private static bool ConvertToShortCore(object obj, CultureInfo culture, out short value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableShortCore(object obj, CultureInfo culture, out short? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -1198,6 +1298,14 @@ namespace Microsoft.AspNetCore.Components
                     {
                         formatter = (BindFormatter<long?>)FormatNullableLongValueCore;
                     }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        formatter = (BindFormatter<short>)FormatShortValueCore;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        formatter = (BindFormatter<short?>)FormatNullableShortValueCore;
+                    }
                     else if (typeof(T) == typeof(float))
                     {
                         formatter = (BindFormatter<float>)FormatFloatValueCore;
@@ -1322,6 +1430,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(long?))
                     {
                         parser = ConvertToNullableLong;
+                    }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        parser = ConvertToShort;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        parser = ConvertToNullableShort;
                     }
                     else if (typeof(T) == typeof(float))
                     {

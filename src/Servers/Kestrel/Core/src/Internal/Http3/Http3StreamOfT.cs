@@ -10,14 +10,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Http3Stream(IHttpApplication<TContext> application, Http3Connection connection, HttpConnectionContext context) : base(connection, context)
+        public Http3Stream(IHttpApplication<TContext> application, Http3Connection connection, Http3StreamContext context) : base(connection, context)
         {
             _application = application;
         }
 
         public override void Execute()
         {
-            _ = ProcessRequestAsync(_application);
+            if (_requestHeaderParsingState == Http3Stream.RequestHeaderParsingState.Ready)
+            {
+                _ = ProcessRequestAsync(_application);
+            }
+            else
+            {
+                _ = base.ProcessRequestsAsync(_application);
+            }
         }
 
         // Pooled Host context

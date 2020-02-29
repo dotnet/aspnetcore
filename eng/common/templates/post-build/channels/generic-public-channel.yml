@@ -83,6 +83,7 @@ stages:
   - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
+    timeoutInMinutes: 120
     variables:
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
@@ -94,6 +95,8 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
       - name: AzDOBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+      - name: ArtifactsCategory
+        value: ${{ coalesce(variables._DotNetArtifactsCategory, '.NETCore') }}
     condition: or(contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} )), eq(dependencies.setupMaestroVars.outputs['setReleaseVars.PromoteToMaestroChannelId'], ${{ parameters.channelId }}))
     pool:
       vmImage: 'windows-2019'
@@ -132,7 +135,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
+            /p:ArtifactsCategory=$(ArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)

@@ -19,6 +19,10 @@ namespace CodeGenerator
         {
             var requestPrimaryHeaders = new[]
             {
+                ":authority",
+                ":method",
+                ":path",
+                ":scheme",
                 "Accept",
                 "Connection",
                 "Host",
@@ -72,6 +76,10 @@ namespace CodeGenerator
             };
             RequestHeaders = commonHeaders.Concat(new[]
             {
+                ":authority",
+                ":method",
+                ":path",
+                ":scheme",
                 "Accept",
                 "Accept-Charset",
                 "Accept-Encoding",
@@ -247,7 +255,7 @@ namespace CodeGenerator
         {
             public string Name { get; set; }
             public int Index { get; set; }
-            public string Identifier => Name.Replace("-", "");
+            public string Identifier => ResolveIdentifier(Name);
 
             public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
             public int BytesOffset { get; set; }
@@ -263,6 +271,21 @@ namespace CodeGenerator
             public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
             public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
             public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
+
+            private string ResolveIdentifier(string name)
+            {
+                var identifer = name.Replace("-", "");
+
+                // Pseudo headers start with a colon. A colon isn't valid in C# names so
+                // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
+                // This identifier will match the names in HeadersNames.cs
+                if (identifer.StartsWith(':'))
+                {
+                    identifer = char.ToUpper(identifer[1]) + identifer.Substring(2);
+                }
+
+                return identifer;
+            }
 
             private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
             {
@@ -945,7 +968,7 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAsciiNoValidation(value);
+                            output.WriteAscii(value);
                         }}
                     }}
                 }}
@@ -986,7 +1009,7 @@ $@"        private void Clear(long bitsToClear)
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -1004,7 +1027,7 @@ $@"        private void Clear(long bitsToClear)
                 // The header was not one of the ""known"" headers.
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
                 // this method with rep stosd, which is slower than necessary.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
                 AppendUnknownHeaders(name, valueStr);
             }}
         }}" : "")}

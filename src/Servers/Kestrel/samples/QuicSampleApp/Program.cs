@@ -1,15 +1,12 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Logging;
 
 namespace QuicSampleApp
 {
@@ -35,7 +32,6 @@ namespace QuicSampleApp
                  .UseQuic(options =>
                  {
                      options.Certificate = null;
-                     options.RegistrationName = "AspNetCore-MsQuic";
                      options.Alpn = "QuicTest";
                      options.IdleTimeout = TimeSpan.FromHours(1);
                  })
@@ -46,54 +42,37 @@ namespace QuicSampleApp
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
                          listenOptions.Protocols = HttpProtocols.Http3;
-                         listenOptions.Use((next) =>
-                         {
-                             return async connection =>
-                             {
-                                 var streamFeature = connection.Features.Get<IQuicStreamListenerFeature>();
-                                 if (streamFeature != null)
-                                 {
-                                     while (true)
-                                     {
-                                         var connectionContext = await streamFeature.AcceptAsync();
-                                         if (connectionContext == null)
-                                         {
-                                             return;
-                                         }
-                                         _ = next(connectionContext);
-                                     }
-                                 }
-                                 else
-                                 {
-                                     await next(connection);
-                                 }
-                             };
-                         });
 
-                         async Task EchoServer(ConnectionContext connection)
+                         async Task EchoServer(MultiplexedConnectionContext connection)
                          {
                              // For graceful shutdown
-                             try
+
+                             while (true)
                              {
+                                 var stream = await connection.AcceptAsync();
                                  while (true)
                                  {
-                                     var result = await connection.Transport.Input.ReadAsync();
+                                     var result = await stream.Transport.Input.ReadAsync();
 
                                      if (result.IsCompleted)
                                      {
                                          break;
                                      }
 
-                                     await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
+                                     await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
 
-                                     connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                                     stream.Transport.Input.AdvanceTo(result.Buffer.End);
                                  }
                              }
-                             catch (OperationCanceledException)
-                             {
-                             }
                          }
-                         listenOptions.Run(EchoServer);
+
+                         ((IMultiplexedConnectionBuilder)listenOptions).Use(next =>
+                         {
+                             return context =>
+                             {
+                                 return EchoServer(context);
+                             };
+                         });
                      });
                  })
                  .UseStartup<Startup>();

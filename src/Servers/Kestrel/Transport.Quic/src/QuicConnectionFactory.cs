@@ -9,13 +9,14 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
-    public class QuicConnectionFactory : IConnectionFactory
+    public class QuicConnectionFactory : IMultiplexedConnectionFactory
     {
         private QuicTransportContext _transportContext;
 
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
             _transportContext = new QuicTransportContext(trace, options.Value);
         }
 
-        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
             if (!(endPoint is IPEndPoint ipEndPoint))
             {
