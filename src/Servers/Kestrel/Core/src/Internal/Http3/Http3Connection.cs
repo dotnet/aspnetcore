@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
-        private object _sync = new object();
+        internal object _sync = new object();
         private MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
             var http3Limits = httpLimits.Http3;
 
-            _serverSettings.MaxHeaderListSize = httpLimits.MaxRequestHeadersTotalSize;
+            _serverSettings.UpdateMaxHeaderListSize(httpLimits.MaxRequestHeadersTotalSize);
             _serverSettings.QPackBlockedStreams = http3Limits.BlockedStreams;
             _serverSettings.QPackMaxTableCapacity =http3Limits.HeaderTableSize;
         }
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             lock (_sync)
             {
-                _clientSettings.MaxHeaderListSize = Math.Min(value, _serverSettings.MaxHeaderListSize);
+                _clientSettings.UpdateMaxHeaderListSize(Math.Min(value, _serverSettings.MaxHeaderListSize));
             }
         }
 

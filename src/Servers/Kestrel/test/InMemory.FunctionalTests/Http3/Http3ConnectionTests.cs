@@ -35,9 +35,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This test currently has to shim the client options to know when the max header list size
             // is modified.
             var clientSettings = new Http3PeerSettings();
-            clientSettings.MaxHeaderListSize = 1;
+            var mockSettings = new MockHttp3PeerSettings();
+
+            clientSettings.UpdateMaxHeaderListSize(1);
 
             await InitializeConnectionAsync(_echoApplication);
+
+            _connection._clientSettings = mockSettings;
 
             await CreateOutboundControlStream(ControlStreamId);
 
@@ -47,6 +51,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await CreateOutboundControlStream(DecoderStreamId);
 
             await WaitForInboundControlStreamCreated();
+
+            await mockSettings.SettingUpdated.Task;
 
             var requestStream = await CreateRequestStream();
             var headers = new[]
@@ -59,6 +65,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, "Exceeded client request max header list size.");
+        }
+
+        private class MockHttp3PeerSettings : Http3PeerSettings
+        {
+            public TaskCompletionSource<object> SettingUpdated { get; } = new TaskCompletionSource<object>();
+
+            public override void UpdateMaxHeaderListSize(long size)
+            {
+                base.UpdateMaxHeaderListSize(size);
+                SettingUpdated.SetResult(null);
+            }
         }
     }
 }

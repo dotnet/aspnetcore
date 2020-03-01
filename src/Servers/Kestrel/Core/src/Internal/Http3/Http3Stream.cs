@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
             _errorCodeFeature.Error = (long)errorCode;
-            // TODO replace with IKestrelTrace log.
             Log.LogWarning(ex, ex.Message);
             _frameWriter.Abort(ex);
         }
