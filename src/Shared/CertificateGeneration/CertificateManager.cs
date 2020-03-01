@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -848,11 +847,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     result.Diagnostics.Error($"Error saving the certificate in the certificate store '{StoreLocation.CurrentUser}\\{StoreName.My}'.", e);
                     result.ResultCode = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                     return result;
-                }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && isInteractive)
-                {
-                    MakeCertificateKeyAccessibleAcrossPartitions(certificate);
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && isInteractive)
