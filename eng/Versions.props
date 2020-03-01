@@ -220,7 +220,7 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.3</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
-    <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.12.0</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.8.0</GoogleProtobufPackageVersion>

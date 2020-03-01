@@ -27,7 +27,7 @@ namespace BenchmarkDotNet.Attributes
 
             Add(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.Core
+            Add(Job.Default
 #if NETCOREAPP2_1
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
 #elif NETCOREAPP3_0

@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     internal class NullPipeWriter : PipeWriter
     {
-        private byte[] _buffer = new byte[1024 * 128];
+        // Should be large enough for any content attempting to write to the buffer
+        private readonly byte[] _buffer = new byte[1024 * 128];
 
         public override void Advance(int bytes)
         {
