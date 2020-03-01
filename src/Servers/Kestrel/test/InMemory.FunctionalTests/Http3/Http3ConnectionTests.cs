@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [Repeat(1000)]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task VerifyDefaultSettingsAreSent()
         {
             // It's hard to know if the peer receives any setting updates, as they occur on
