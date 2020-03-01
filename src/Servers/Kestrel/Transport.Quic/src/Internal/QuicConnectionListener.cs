@@ -29,9 +29,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
+
+            var quicListenerOptions = new QuicListenerOptions();
             var sslConfig = new SslServerAuthenticationOptions();
             sslConfig.ServerCertificate = options.Certificate;
             sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+
+            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
+            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
+            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, endpoint as IPEndPoint, sslConfig);
             _listener.Start();
         }
