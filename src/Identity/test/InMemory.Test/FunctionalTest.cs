@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -425,7 +426,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             }
             if (ajaxRequest)
             {
-                request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+                request.Headers.Add(HeaderNames.XRequestedWith, "XMLHttpRequest");
             }
             var transaction = new Transaction
             {
