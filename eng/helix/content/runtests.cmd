@@ -59,7 +59,7 @@ if %$quarantined%==true (
     echo Running quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%QUARANTINE_FILTER%
     if errorlevel 1 (
-        echo Failure in flaky test 1>&2
+        echo Failure in quarantined test 1>&2
         REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
     )
 ) else (
@@ -67,7 +67,7 @@ if %$quarantined%==true (
     echo Running non-quarantined tests.
     %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%NONQUARANTINE_FILTER%
     if errorlevel 1 (
-        echo Failure in non-flaky test 1>&2
+        echo Failure in non-quarantined test 1>&2
         set exit_code=1
         REM DO NOT EXIT
     )

@@ -35,9 +35,9 @@
     <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
-  <Import Project="eng\FlakyTests.BeforeArcade.props" />
+  <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\FlakyTests.AfterArcade.props" />
+  <Import Project="eng\QuarantinedTests.AfterArcade.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
