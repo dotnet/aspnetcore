@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Testing
     public sealed class QuarantinedTestAttribute : Attribute, ITraitAttribute
     {
         /// <summary>
-        /// Gets a reason for this test being quarantined.
+        /// Gets an optional reason for the quarantining, such as a link to a GitHub issue URL with more details as to why the test is quarantined.
         /// </summary>
         public string Reason { get; }
 
