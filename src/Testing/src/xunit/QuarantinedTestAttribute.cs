@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
         /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class with an optional <see cref="GitHubIssueUrl"/>.
         /// </summary>
         /// <param name="gitHubIssueUrl">A URL to a GitHub issue tracking this quarantined test.</param>
-        public QuarantinedTestAttribute(string gitHubIssueUrl = "")
+        public QuarantinedTestAttribute(string gitHubIssueUrl = null)
         {
             GitHubIssueUrl = gitHubIssueUrl;
         }
