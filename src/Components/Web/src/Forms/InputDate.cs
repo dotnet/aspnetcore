@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(ParsingErrorMessage, FieldIdentifier.FieldName);
+                validationErrorMessage = string.Format(ParsingErrorMessage, FieldDisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }

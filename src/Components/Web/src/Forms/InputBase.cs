@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -54,6 +56,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
         /// </summary>
         protected FieldIdentifier FieldIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets the Name specified via <see cref="DisplayAttribute"/> for the field set in the <see cref="FieldIdentifier"/>
+        /// </summary>
+        protected string FieldDisplayName
+        {
+            get
+            {
+                MemberInfo fieldProperty = FieldIdentifier.Model.GetType().GetProperty(FieldIdentifier.FieldName);
+                return fieldProperty.GetCustomAttribute<DisplayAttribute>()?.Name;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the current value of the input.
