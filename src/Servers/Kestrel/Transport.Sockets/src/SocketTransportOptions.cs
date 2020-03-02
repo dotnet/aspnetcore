@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <remarks>
         /// Defaults to true.
         /// </remarks>
-        public bool WaitForDataBeforeAllocatingBuffer { get; set; } = false;
+        public bool WaitForDataBeforeAllocatingBuffer { get; set; } = true;
 
         /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.
