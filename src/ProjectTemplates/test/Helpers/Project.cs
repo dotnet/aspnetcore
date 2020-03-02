@@ -316,7 +316,7 @@ namespace Templates.Test.Helpers
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
-                    args = $"\"{DotNetEfFullPath}\" " + args
+                    args = $"\"{DotNetEfFullPath}\" " + args;
                 }
                 else
                 {
@@ -345,7 +345,7 @@ namespace Templates.Test.Helpers
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
-                    args = $"\"{DotNetEfFullPath}\" " + args
+                    args = $"\"{DotNetEfFullPath}\" " + args;
                 }
                 else
                 {
