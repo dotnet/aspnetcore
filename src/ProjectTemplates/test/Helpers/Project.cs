@@ -306,7 +306,7 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            var args = "--verbose --no-build migrations add {migrationName}";
+            var args = $"--verbose --no-build migrations add {migrationName}";
             
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
