@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
