@@ -1,5 +1,4 @@
 <Project>
-  <!-- Local Dev Flakiness -->
   <PropertyGroup>
     <_QuarantinedTestRunAdditionalArgs>-trait "Quarantined=true"</_QuarantinedTestRunAdditionalArgs>
     <_NonQuarantinedTestRunAdditionalArgs>-notrait "Quarantined=true"</_NonQuarantinedTestRunAdditionalArgs>

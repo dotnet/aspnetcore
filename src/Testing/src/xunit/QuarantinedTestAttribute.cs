@@ -41,17 +41,17 @@ namespace Microsoft.AspNetCore.Testing
     public sealed class QuarantinedTestAttribute : Attribute, ITraitAttribute
     {
         /// <summary>
-        /// Gets a URL to a GitHub issue tracking this quarantined test.
+        /// Gets a reason for this test being quarantined.
         /// </summary>
-        public string GitHubIssueUrl { get; }
+        public string Reason { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class with an optional <see cref="GitHubIssueUrl"/>.
+        /// Initializes a new instance of the <see cref="QuarantinedTestAttribute"/> class with an optional <see cref="Reason"/>.
         /// </summary>
-        /// <param name="gitHubIssueUrl">A URL to a GitHub issue tracking this quarantined test.</param>
-        public QuarantinedTestAttribute(string gitHubIssueUrl = null)
+        /// <param name="reason">A reason that this test is quarantined.</param>
+        public QuarantinedTestAttribute(string reason = null)
         {
-            GitHubIssueUrl = gitHubIssueUrl;
+            Reason = reason;
         }
     }
 }

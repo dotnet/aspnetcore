@@ -149,19 +149,20 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void SetSecret_Update_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
             var secretManager = CreateProgram();
 
-            secretManager.RunInternal("set", "secret1", "value1", "-p", projectPath);
+            secretManager.RunInternal("set", "secret1", "value1", "-p", projectPath, "--verbose");
             Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
-            secretManager.RunInternal("set", "secret1", "value2", "-p", projectPath);
+            secretManager.RunInternal("set", "secret1", "value2", "-p", projectPath, "--verbose");
             Assert.Contains("Successfully saved secret1 = value2 to the secret store.", _console.GetOutput());
 
             _console.ClearOutput();
 
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
             Assert.Contains("secret1 = value2", _console.GetOutput());
         }
 
@@ -262,11 +263,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void List_Empty_Secrets_File()
         {
             var projectPath = _fixture.GetTempSecretProject();
             var secretManager = CreateProgram();
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
