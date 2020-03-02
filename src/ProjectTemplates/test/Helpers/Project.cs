@@ -314,11 +314,7 @@ namespace Templates.Test.Helpers
             try
             {
                 var command = DotNetMuxer.MuxerPathOrDefault();
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
-                {
-                    args = $"\"{DotNetEfFullPath}\" "+args;
-                }
-                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
                     command = "dotnet-ef";
                 }
