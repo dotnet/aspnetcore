@@ -3,7 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -94,11 +99,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var length = 0;
             if (statusCode.HasValue)
             {
-                Assert.True(encoder.BeginEncode(statusCode.Value, headers, payload, out length));
+                Assert.True(encoder.BeginEncode(statusCode.Value, GetHeadersEnumerator(headers), payload, out length));
             }
             else
             {
-                Assert.True(encoder.BeginEncode(headers, payload, out length));
+                Assert.True(encoder.BeginEncode(GetHeadersEnumerator(headers), payload, out length));
             }
             Assert.Equal(expectedPayload.Length, length);
 
@@ -159,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // When !exactSize, slices are one byte short of fitting the next header
             var sliceLength = expectedStatusCodePayload.Length + (exactSize ? 0 : expectedDateHeaderPayload.Length - 1);
-            Assert.False(encoder.BeginEncode(statusCode, headers, payload.Slice(offset, sliceLength), out var length));
+            Assert.False(encoder.BeginEncode(statusCode, GetHeadersEnumerator(headers), payload.Slice(offset, sliceLength), out var length));
             Assert.Equal(expectedStatusCodePayload.Length, length);
             Assert.Equal(expectedStatusCodePayload, payload.Slice(0, length).ToArray());
 
@@ -183,6 +188,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(encoder.Encode(payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedServerHeaderPayload.Length, length);
             Assert.Equal(expectedServerHeaderPayload, payload.Slice(offset, length).ToArray());
+        }
+
+        private static Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var groupedHeaders = headers
+                .GroupBy(k => k.Key)
+                .ToDictionary(g => g.Key, g => new StringValues(g.Select(gg => gg.Value).ToArray()));
+
+            var enumerator = new Http2HeadersEnumerator();
+            enumerator.Initialize(groupedHeaders);
+            return enumerator;
         }
     }
 }

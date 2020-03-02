@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -504,7 +505,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
             var buffer = _headerEncodingBuffer.AsSpan();
-            var done = _hpackEncoder.BeginEncode(headers, buffer, out var length);
+            var done = _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), buffer, out var length);
             frame.PayloadLength = length;
 
             if (done)
@@ -539,6 +540,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return FlushAsync(writableBuffer);
         }
 
+        private static Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var groupedHeaders = headers
+                .GroupBy(k => k.Key)
+                .ToDictionary(g => g.Key, g => new StringValues(g.Select(gg => gg.Value).ToArray()));
+
+            var enumerator = new Http2HeadersEnumerator();
+            enumerator.Initialize(groupedHeaders);
+            return enumerator;
+        }
+
         /* https://tools.ietf.org/html/rfc7540#section-6.2
             +---------------+
             |Pad Length? (8)|
@@ -565,7 +577,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[0] = padLength;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers, payload, out var length);
+            _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -608,7 +620,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[4] = priority;
             var payload = buffer.Slice(extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers, payload, out var length);
+            _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), payload, out var length);
 
             frame.PayloadLength = extendedHeaderLength + length;
 
@@ -655,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[5] = priority;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers, payload, out var length);
+            _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -776,7 +788,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareHeaders(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+            var done = _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), buffer.Span, out var length);
             frame.PayloadLength = length;
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
@@ -869,7 +881,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareContinuation(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+            var done = _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), buffer.Span, out var length);
             frame.PayloadLength = length;
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
