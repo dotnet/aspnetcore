@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var serviceWorkerAssetsManifest = Assert.FileExists(result, buildOutputDirectory, "wwwroot", "service-worker-assets.js");
             // Trim prefix 'self.assetsManifest = ' and suffix ';'
-            var manifestContents = File.ReadAllText(serviceWorkerAssetsManifest)[22..^3];
+            var manifestContents = File.ReadAllText(serviceWorkerAssetsManifest).TrimEnd()[22..^2];
 
             var manifestContentsJson = JsonDocument.Parse(manifestContents);
             Assert.True(manifestContentsJson.RootElement.TryGetProperty("assets", out var assets));
