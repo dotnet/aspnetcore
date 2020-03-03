@@ -267,6 +267,39 @@ namespace System.Net.Http.HPack
         }
 
         /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
+        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 0 | 0 | 0 |       0       |
+            // +---+---+-----------------------+
+            // | H |     Name Length (7+)      |
+            // +---+---------------------------+
+            // |  Name String (Length octets)  |
+            // +---+---------------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            if ((uint)destination.Length >= 3)
+            {
+                destination[0] = 0;
+                if (EncodeLiteralHeaderName(name, destination.Slice(1), out int nameLength) &&
+                    EncodeStringLiteral(value, destination.Slice(1 + nameLength), out int valueLength))
+                {
+                    bytesWritten = 1 + nameLength + valueLength;
+                    return true;
+                }
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
+        /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
         public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
         {
             // From https://tools.ietf.org/html/rfc7541#section-6.2.2

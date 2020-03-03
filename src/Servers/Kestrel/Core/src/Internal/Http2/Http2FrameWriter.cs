@@ -7,6 +7,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Threading;
 using System.Threading.Tasks;
@@ -173,9 +174,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 try
                 {
                     _headersEnumerator.Initialize(headers);
+                    _headersEnumerator.MoveNext();
                     _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncode(statusCode, _headersEnumerator, buffer, out var payloadLength);
+                    var done = EncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -199,9 +201,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 try
                 {
                     _headersEnumerator.Initialize(headers);
+                    _headersEnumerator.MoveNext();
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncode(_headersEnumerator, buffer, out var payloadLength);
+                    var done = EncodeHeaders(_headersEnumerator, buffer, throwIfNoneEncoded: true, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -211,6 +214,82 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 return TimeFlushUnsynchronizedAsync();
+            }
+        }
+
+        private static int EncodeStatusCode(int statusCode, Span<byte> buffer)
+        {
+            switch (statusCode)
+            {
+                // Status codes which exist in the HTTP/2 StaticTable.
+                case 200:
+                case 204:
+                case 206:
+                case 304:
+                case 400:
+                case 404:
+                case 500:
+                    buffer[0] = (byte)(0x80 | H2StaticTable.StatusIndex[statusCode]);
+                    return 1;
+                default:
+                    // Send as Literal Header Field Without Indexing - Indexed Name
+                    buffer[0] = 0x08;
+
+                    ReadOnlySpan<byte> statusBytes = System.Net.Http.HPack.StatusCodes.ToStatusBytes(statusCode);
+                    buffer[1] = (byte)statusBytes.Length;
+                    statusBytes.CopyTo(buffer.Slice(2));
+
+                    return 2 + statusBytes.Length;
+            }
+        }
+
+        private static bool EncodeHeaders(int statusCode, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+        {
+            var statusCodeLength = EncodeStatusCode(statusCode, buffer);
+            var done = EncodeHeaders(headersEnumerator, buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out var headersLength);
+            length = statusCodeLength + headersLength;
+
+            return done;
+        }
+
+        private static bool EncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
+        {
+            var currentLength = 0;
+            do
+            {
+                if (!EncodeHeader(headersEnumerator.KnownHeaderType, headersEnumerator.Current.Key, headersEnumerator.Current.Value, buffer.Slice(currentLength), out int headerLength))
+                {
+                    // The the header wasn't written and no headers have been written then the header is too large.
+                    // Throw an error to avoid an infinite loop of attempting to write large header.
+                    if (currentLength == 0 && throwIfNoneEncoded)
+                    {
+                        throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+                    }
+
+                    length = currentLength;
+                    return false;
+                }
+
+                currentLength += headerLength;
+            }
+            while (headersEnumerator.MoveNext());
+
+            length = currentLength;
+
+            return true;
+        }
+
+        private static bool EncodeHeader(KnownHeaderType knownHeaderType, string name, string value, Span<byte> buffer, out int length)
+        {
+            var hPackStaticTableId = HPackHeaderMapping.GetResponseHeaderStaticTableId(knownHeaderType);
+
+            if (hPackStaticTableId == -1)
+            {
+                return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out length);
+            }
+            else
+            {
+                return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(hPackStaticTableId, value, buffer, out length);
             }
         }
 
@@ -230,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = _hpackEncoder.Encode(buffer, out payloadLength);
+                done = EncodeHeaders(_headersEnumerator, buffer, throwIfNoneEncoded: true, out payloadLength);
                 _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)

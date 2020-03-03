@@ -562,6 +562,9 @@ namespace CodeGenerator
 
             var responseTrailers = ResponseTrailers;
 
+            var allHeaderNames = RequestHeaders.Concat(ResponseHeaders).Concat(ResponseTrailers)
+                .Select(h => h.Identifier).Distinct().OrderBy(n => n).ToArray();
+
             var loops = new[]
             {
                 new
@@ -612,6 +615,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
+    internal enum KnownHeaderType
+    {{
+        Unknown,{Each(allHeaderNames, n => @"
+        " + n + ",")}
+    }}
 {Each(loops, loop => $@"
     internal partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
@@ -1058,6 +1066,7 @@ $@"        private void Clear(long bitsToClear)
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
+                        _currentKnownType = KnownHeaderType.{header.Identifier};
                         _next = {header.Index + 1};
                         return true;
                     }}")}
@@ -1065,6 +1074,7 @@ $@"        private void Clear(long bitsToClear)
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _currentKnownType = KnownHeaderType.ContentLength;
                         _next = {loop.Headers.Count()};
                         return true;
                     }}" : "")}
@@ -1072,9 +1082,11 @@ $@"        private void Clear(long bitsToClear)
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);
+                        _currentKnownType = default;
                         return false;
                     }}
                     _current = _unknownEnumerator.Current;
+                    _currentKnownType = KnownHeaderType.Unknown;
                     return true;
             }}
         }}
