@@ -246,7 +246,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
                     createConfigStatus = SecConfigCreateDelegate(
                         _registrationContext,
                         (uint)QUIC_SEC_CONFIG_FLAG.CERT_FILE,
-                        certificate.Handle,
+                        unmanagedAddr,
                         null,
                         IntPtr.Zero,
                         SecCfgCreateCallbackHandler);
