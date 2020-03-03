@@ -217,35 +217,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private static int EncodeStatusCode(int statusCode, Span<byte> buffer)
-        {
-            switch (statusCode)
-            {
-                // Status codes which exist in the HTTP/2 StaticTable.
-                case 200:
-                case 204:
-                case 206:
-                case 304:
-                case 400:
-                case 404:
-                case 500:
-                    buffer[0] = (byte)(0x80 | H2StaticTable.StatusIndex[statusCode]);
-                    return 1;
-                default:
-                    // Send as Literal Header Field Without Indexing - Indexed Name
-                    buffer[0] = 0x08;
-
-                    ReadOnlySpan<byte> statusBytes = System.Net.Http.HPack.StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
-                    statusBytes.CopyTo(buffer.Slice(2));
-
-                    return 2 + statusBytes.Length;
-            }
-        }
-
         private static bool EncodeHeaders(int statusCode, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
         {
-            var statusCodeLength = EncodeStatusCode(statusCode, buffer);
+            HPackEncoder.EncodeIndexedStatusHeader(statusCode, buffer, out var statusCodeLength);
+
+            // We're ok with not throwing if no headers were encoded because we've already encoded the status.
+            // There is a small chance that the header will encode if there is no other content in the next frame.
             var done = EncodeHeaders(headersEnumerator, buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out var headersLength);
             length = statusCodeLength + headersLength;
 
