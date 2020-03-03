@@ -200,6 +200,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string WebSocketSubProtocols;
         public static readonly string WWWAuthenticate;
         public static readonly string XFrameOptions;
+        public static readonly string XRequestedWith;
     }
     public static partial class HeaderQuality
     {

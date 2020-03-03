@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
-                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
+                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes(HeaderNames.XRequestedWith));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
