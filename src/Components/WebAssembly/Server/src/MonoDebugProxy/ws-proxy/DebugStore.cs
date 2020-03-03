@@ -183,19 +183,36 @@ namespace WebAssembly.Net.Debugging {
 
 		public SourceId (string id)
 		{
-			id = id.Substring (Scheme.Length);
-			var sp = id.Split ('_');
-			this.assembly = int.Parse (sp [0]);
-			this.document = int.Parse (sp [1]);
+			if (!TryParse (id, out assembly, out document))
+				throw new ArgumentException ("invalid source identifier", nameof (id));
 		}
 
-		public static bool TryParse (string id, out SourceId script)
+		public static bool TryParse (string id, out SourceId source)
 		{
-			script = null;
+			source = null;
+			if (!TryParse (id, out var assembly, out var document))
+				return false;
+
+			source = new SourceId (assembly, document);
+			return true;
+		}
+
+		static bool TryParse (string id, out int assembly, out int document)
+		{
+			assembly = document = 0;
 			if (id == null || !id.StartsWith (Scheme, StringComparison.Ordinal))
 				return false;
 
-			script = new SourceId (id);
+			var sp = id.Substring (Scheme.Length).Split ('_');
+			if (sp.Length != 2)
+				return false;
+
+			if (!int.TryParse (sp [0], out assembly))
+				return false;
+
+			if (!int.TryParse (sp [1], out document))
+				return false;
+
 			return true;
 		}
 
@@ -495,6 +512,7 @@ namespace WebAssembly.Net.Debugging {
 
 		public IEnumerable<MethodInfo> Methods => this.methods;
 		public byte[] EmbeddedSource => doc.EmbeddedSource;
+		public string DocUrl => doc.Url;
 
 		public (int startLine, int startColumn, int endLine, int endColumn) GetExtents ()
 		{
@@ -681,7 +699,7 @@ namespace WebAssembly.Net.Debugging {
 		public SourceFile GetFileByUrlRegex (string urlRegex)
 		{
 			var regex = new Regex (urlRegex);
-			return AllSources ().FirstOrDefault (file => regex.IsMatch (file.Url.ToString()));
+			return AllSources ().FirstOrDefault (file => regex.IsMatch (file.Url.ToString()) || regex.IsMatch (file.DocUrl));
 		}
 
 		public SourceFile GetFileByUrl (string url)
