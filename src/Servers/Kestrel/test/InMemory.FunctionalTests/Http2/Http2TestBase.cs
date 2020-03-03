@@ -839,8 +839,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
         {
+            var dictionary = headers
+                .GroupBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => new StringValues(g.Select(values => values.Value).ToArray()));
+
             var headersEnumerator = new Http2HeadersEnumerator();
-            headersEnumerator.Initialize(headers.ToDictionary(h => h.Key, h => new StringValues(h.Value)));
+            headersEnumerator.Initialize(dictionary);
             return headersEnumerator;
         }
 
