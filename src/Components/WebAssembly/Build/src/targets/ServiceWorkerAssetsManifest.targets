@@ -39,9 +39,12 @@
   <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes">
 
     <ItemGroup>
-      <ServiceWorkerAssetsManifestItem Include="%(StaticWebAsset.Identity)" Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)'">
+      <ServiceWorkerAssetsManifestItem
+        Include="%(StaticWebAsset.Identity)"
+        Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)'">
         <AssetUrl>$([System.String]::Copy('$([System.String]::Copy('%(StaticWebAsset.BasePath)').TrimEnd('/'))/%(StaticWebAsset.RelativePath)').Replace('\','/').TrimStart('/'))</AssetUrl>
       </ServiceWorkerAssetsManifestItem>
+      <ServiceWorkerAssetsManifestItem Remove="@(_CompressedStaticWebAsset->'%(FullPath)')" />
     </ItemGroup>
 
     <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
