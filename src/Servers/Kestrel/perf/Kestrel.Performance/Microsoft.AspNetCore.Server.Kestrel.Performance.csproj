@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestHttp1Connection.cs" />

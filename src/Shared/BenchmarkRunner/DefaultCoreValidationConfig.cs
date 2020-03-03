@@ -4,7 +4,7 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Toolchains.InProcess;
+using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 
 namespace BenchmarkDotNet.Attributes
 {
@@ -14,7 +14,7 @@ namespace BenchmarkDotNet.Attributes
         {
             Add(ConsoleLogger.Default);
 
-            Add(Job.Dry.With(InProcessToolchain.Instance));
+            Add(Job.Dry.With(InProcessNoEmitToolchain.Instance));
         }
     }
 }

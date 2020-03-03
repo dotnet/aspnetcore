@@ -501,54 +501,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            var frame = new Http2Frame();
-            frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
-
-            var buffer = _headerEncodingBuffer.AsSpan();
-            var done = _hpackEncoder.BeginEncode(GetHeadersEnumerator(headers), buffer, out var length);
-            frame.PayloadLength = length;
-
-            if (done)
-            {
-                frame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
-            }
-
-            if (endStream)
-            {
-                frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
-            }
-
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
-            writableBuffer.Write(buffer.Slice(0, length));
-
-            while (!done)
-            {
-                frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-
-                done = _hpackEncoder.Encode(buffer, out length);
-                frame.PayloadLength = length;
-
-                if (done)
-                {
-                    frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
-                }
-
-                Http2FrameWriter.WriteHeader(frame, writableBuffer);
-                writableBuffer.Write(buffer.Slice(0, length));
-            }
-
+            PipeWriterHttp2FrameExtensions.WriteStartStream(writableBuffer, streamId, GetHeadersEnumerator(headers), _hpackEncoder, _headerEncodingBuffer, endStream);
             return FlushAsync(writableBuffer);
-        }
-
-        private static Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
-        {
-            var groupedHeaders = headers
-                .GroupBy(k => k.Key)
-                .ToDictionary(g => g.Key, g => new StringValues(g.Select(gg => gg.Value).ToArray()));
-
-            var enumerator = new Http2HeadersEnumerator();
-            enumerator.Initialize(groupedHeaders);
-            return enumerator;
         }
 
         /* https://tools.ietf.org/html/rfc7540#section-6.2
@@ -704,15 +658,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task SendSettingsAsync()
         {
-            var writableBuffer = _pair.Application.Output;
-            var frame = new Http2Frame();
-            frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
-            var settings = _clientSettings.GetNonProtocolDefaults();
-            var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
-            frame.PayloadLength = payload.Length;
-            Http2FrameWriter.WriteSettings(settings, payload);
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
-            await SendAsync(payload);
+            PipeWriterHttp2FrameExtensions.WriteSettings(_pair.Application.Output, _clientSettings);
+            await FlushAsync(_pair.Application.Output);
         }
 
         protected async Task SendSettingsAckWithInvalidLengthAsync(int length)
@@ -890,6 +837,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return done;
         }
 
+        private Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var dictionary = headers
+                .GroupBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => new StringValues(g.Select(values => values.Value).ToArray()));
+
+            var headersEnumerator = new Http2HeadersEnumerator();
+            headersEnumerator.Initialize(dictionary);
+            return headersEnumerator;
+        }
+
         internal Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)
         {
             var outputWriter = _pair.Application.Output;
@@ -923,14 +881,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream)
         {
             var outputWriter = _pair.Application.Output;
-            var frame = new Http2Frame();
-
-            frame.PrepareData(streamId);
-            frame.PayloadLength = data.Length;
-            frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
-
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
-            return SendAsync(data.Span);
+            PipeWriterHttp2FrameExtensions.WriteData(outputWriter, streamId, data, endStream);
+            return FlushAsync(outputWriter);
         }
 
         protected async Task SendDataWithPaddingAsync(int streamId, Memory<byte> data, byte padLength, bool endStream)

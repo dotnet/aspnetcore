@@ -22,10 +22,7 @@ namespace BenchmarkDotNet.Attributes
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
             Add(new ParamsSummaryColumn());
-            Add(DefaultColumnProviders.Statistics, DefaultColumnProviders.Diagnosers, DefaultColumnProviders.Target);
-
-            // TODO: When upgrading to BDN 0.11.1, use Add(DefaultColumnProviders.Descriptor); 
-            // DefaultColumnProviders.Target is deprecated
+            Add(DefaultColumnProviders.Statistics, DefaultColumnProviders.Metrics, DefaultColumnProviders.Descriptor);
 
             Add(JitOptimizationsValidator.FailOnError);
 
@@ -36,13 +33,7 @@ namespace BenchmarkDotNet.Attributes
 
             Add(new CsvExporter(
                 CsvSeparator.Comma,
-                new Reports.SummaryStyle
-                {
-                    PrintUnitsInHeader = true,
-                    PrintUnitsInContent = false,
-                    TimeUnit = Horology.TimeUnit.Microsecond,
-                    SizeUnit = SizeUnit.KB
-                }));
+                new Reports.SummaryStyle(printUnitsInHeader: true, printUnitsInContent: false, timeUnit: Horology.TimeUnit.Microsecond, sizeUnit: SizeUnit.KB)));
         }
     }
 }

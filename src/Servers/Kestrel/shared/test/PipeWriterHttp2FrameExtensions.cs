@@ -1,0 +1,78 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.IO.Pipelines;
+using System.Net.Http.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+
+namespace Microsoft.AspNetCore.Testing
+{
+    internal static class PipeWriterHttp2FrameExtensions
+    {
+        public static void WriteSettings(this PipeWriter writer, Http2PeerSettings clientSettings)
+        {
+            var frame = new Http2Frame();
+            frame.PrepareSettings(Http2SettingsFrameFlags.NONE);
+            var settings = clientSettings.GetNonProtocolDefaults();
+            var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
+            frame.PayloadLength = payload.Length;
+            Http2FrameWriter.WriteSettings(settings, payload);
+            Http2FrameWriter.WriteHeader(frame, writer);
+            writer.Write(payload);
+        }
+
+        public static void WriteStartStream(this PipeWriter writer, int streamId, Http2HeadersEnumerator headers, HPackEncoder hpackEncoder, byte[] headerEncodingBuffer, bool endStream)
+        {
+            var frame = new Http2Frame();
+            frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
+
+            var buffer = headerEncodingBuffer.AsSpan();
+            var done = hpackEncoder.BeginEncode(headers, buffer, out var length);
+            frame.PayloadLength = length;
+
+            if (done)
+            {
+                frame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
+            }
+
+            if (endStream)
+            {
+                frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
+            }
+
+            Http2FrameWriter.WriteHeader(frame, writer);
+            writer.Write(buffer.Slice(0, length));
+
+            while (!done)
+            {
+                frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
+
+                done = hpackEncoder.Encode(buffer, out length);
+                frame.PayloadLength = length;
+
+                if (done)
+                {
+                    frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                }
+
+                Http2FrameWriter.WriteHeader(frame, writer);
+                writer.Write(buffer.Slice(0, length));
+            }
+        }
+
+        public static void WriteData(this PipeWriter writer, int streamId, Memory<byte> data, bool endStream)
+        {
+            var frame = new Http2Frame();
+
+            frame.PrepareData(streamId);
+            frame.PayloadLength = data.Length;
+            frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
+
+            Http2FrameWriter.WriteHeader(frame, writer);
+            writer.Write(data.Span);
+        }
+    }
+}

@@ -27,10 +27,10 @@ namespace BenchmarkDotNet.Attributes
 
             Add(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.Core
+            Add(Job.Default
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
                 .With(new GcMode { Server = true })
-                .WithTargetCount(10)
+                .WithIterationCount(10)
                 .WithInvocationCount(1)
                 .WithUnrollFactor(1)
                 .With(RunStrategy.ColdStart));
