@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -117,8 +118,9 @@ namespace Templates.Test
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
+        [SkipOnHelix("ef restore no worky")]
         public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
         {
             Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);

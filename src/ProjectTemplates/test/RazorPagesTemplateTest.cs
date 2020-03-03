@@ -94,9 +94,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
+        [SkipOnHelix("ef restore no worky")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -211,7 +212,8 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("runtime compliation restore no worky")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);
