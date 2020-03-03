@@ -108,6 +108,7 @@ namespace System.Net.Http.HPack
         public const int PathSlash = 4;
         public const int SchemeHttp = 6;
         public const int SchemeHttps = 7;
+        public const int Status200 = 8;
         public const int AcceptCharset = 15;
         public const int AcceptEncoding = 16;
         public const int AcceptLanguage = 17;

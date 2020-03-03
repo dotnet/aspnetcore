@@ -4583,19 +4583,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
         }
 
+        // :method = GET
+        // :path = /
+        // :scheme = http
+        // X-Test = £
+        private static readonly byte[] LatinHeaderData = new byte[]
+            {
+                0, 7, 58, 109, 101, 116, 104, 111, 100, 3, 71, 69, 84, 0, 5, 58, 112, 97, 116,
+                104, 1, 47, 0, 7, 58, 115, 99, 104, 101, 109, 101, 4, 104, 116, 116, 112, 0,
+                6, 120, 45, 116, 101, 115, 116, 1, 163
+            };
+
         [Fact]
         public async Task HEADERS_Received_Latin1_AcceptedWhenLatin1OptionIsConfigured()
         {
             _serviceContext.ServerOptions.Latin1RequestHeaders = true;
-
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                // The HPackEncoder will encode £ as 0xA3 aka Latin1 encoding.
-                new KeyValuePair<string, string>("X-Test", "£"),
-            };
 
             await InitializeConnectionAsync(context =>
             {
@@ -4603,7 +4605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return Task.CompletedTask;
             });
 
-            await StartStreamAsync(1, headers, endStream: true);
+            await StartStreamAsync(1, LatinHeaderData, endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
@@ -4623,18 +4625,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task HEADERS_Received_Latin1_RejectedWhenLatin1OptionIsNotConfigured()
         {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                // The HPackEncoder will encode £ as 0xA3 aka Latin1 encoding.
-                new KeyValuePair<string, string>("X-Test", "£"),
-            };
-
             await InitializeConnectionAsync(_noopApplication);
 
-            await StartStreamAsync(1, headers, endStream: true);
+            await StartStreamAsync(1, LatinHeaderData, endStream: true);
 
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,

@@ -122,7 +122,6 @@ namespace Microsoft.AspNetCore.Http2Cat
         public static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
-        internal readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         internal readonly HPackDecoder _hpackDecoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
@@ -236,7 +235,8 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
             var buffer = _headerEncodingBuffer.AsSpan();
-            var done = _hpackEncoder.BeginEncode(headers.GetEnumerator(), buffer, out var length);
+            var headersEnumerator = headers.GetEnumerator();
+            var done = HPackHeaderWriter.EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out var length);
             frame.PayloadLength = length;
 
             if (done)
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             {
                 frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = _hpackEncoder.Encode(buffer, out length);
+                done = HPackHeaderWriter.EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
                 frame.PayloadLength = length;
 
                 if (done)
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             extendedHeader[0] = padLength;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers.GetEnumerator(), payload, out var length);
+            HPackHeaderWriter.EncodeHeaders(headers.GetEnumerator(), payload, throwIfNoneEncoded: true, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             extendedHeader[4] = priority;
             var payload = buffer.Slice(extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers.GetEnumerator(), payload, out var length);
+            HPackHeaderWriter.EncodeHeaders(headers.GetEnumerator(), payload, throwIfNoneEncoded: true, out var length);
 
             frame.PayloadLength = extendedHeaderLength + length;
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             extendedHeader[5] = priority;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            _hpackEncoder.BeginEncode(headers.GetEnumerator(), payload, out var length);
+            HPackHeaderWriter.EncodeHeaders(headers.GetEnumerator(), payload, throwIfNoneEncoded: true, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
             frame.PrepareHeaders(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = _hpackEncoder.BeginEncode(headers.GetEnumerator(), buffer.Span, out var length);
+            var done = HPackHeaderWriter.EncodeHeaders(headers.GetEnumerator(), buffer.Span, throwIfNoneEncoded: true, out var length);
             frame.PayloadLength = length;
 
             WriteHeader(frame, outputWriter);
@@ -607,14 +607,14 @@ namespace Microsoft.AspNetCore.Http2Cat
             await SendAsync(payload);
         }
 
-        internal async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags)
+        internal async Task<bool> SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, IEnumerator<KeyValuePair<string, string>> headersEnumerator)
         {
             var outputWriter = _pair.Application.Output;
             var frame = new Http2Frame();
 
             frame.PrepareContinuation(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = _hpackEncoder.Encode(buffer.Span, out var length);
+            var done = HPackHeaderWriter.EncodeHeaders(headersEnumerator, buffer.Span, throwIfNoneEncoded: true, out var length);
             frame.PayloadLength = length;
 
             WriteHeader(frame, outputWriter);
@@ -642,7 +642,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
             frame.PrepareContinuation(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = _hpackEncoder.BeginEncode(headers.GetEnumerator(), buffer.Span, out var length);
+            var done = HPackHeaderWriter.EncodeHeaders(headers.GetEnumerator(), buffer.Span, throwIfNoneEncoded: true, out var length);
             frame.PayloadLength = length;
 
             WriteHeader(frame, outputWriter);
