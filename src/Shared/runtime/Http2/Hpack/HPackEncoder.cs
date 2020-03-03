@@ -2,30 +2,26 @@
 // Licensed under the Apache License, Version 2.0.
 // See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
-#if KESTREL
-using HeadersEnumerator = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2HeadersEnumerator;
-#else
-using HeadersEnumerator = System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>>;
-#endif
 
 namespace System.Net.Http.HPack
 {
     internal class HPackEncoder
     {
-        private HeadersEnumerator _enumerator;
+        private IEnumerator<KeyValuePair<string, string>> _enumerator;
 
-        public bool BeginEncode(HeadersEnumerator enumerator, Span<byte> buffer, out int length)
+        public bool BeginEncode(IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
         {
-            _enumerator = enumerator;
+            _enumerator = headers.GetEnumerator();
             _enumerator.MoveNext();
 
             return Encode(buffer, out length);
         }
 
-        public bool BeginEncode(int statusCode, HeadersEnumerator enumerator, Span<byte> buffer, out int length)
+        public bool BeginEncode(int statusCode, IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
         {
-            _enumerator = enumerator;
+            _enumerator = headers.GetEnumerator();
             _enumerator.MoveNext();
 
             int statusCodeLength = EncodeStatusCode(statusCode, buffer);
