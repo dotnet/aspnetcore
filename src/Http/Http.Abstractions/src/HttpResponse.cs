@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Adds a delegate to be invoked just before response headers will be sent to the client.
-        /// Callbacks registered here will be run in reverse order.
+        /// Callbacks registered here run in reverse order.
         /// </summary>
         /// <remarks>
-        /// Callbacks registered here will be run in reverse order (the last one registered will be invoked first).
-        /// This is done to replicate the way middleware works (with the inner-most middleware looking at the response
-        /// first).
+        /// Callbacks registered here run in reverse order. The last one registered is invoked first.
+        /// The reverse order is done to replicate the way middleware works, with the inner-most middleware looking at the
+        /// response first.
         /// </remarks>
         /// <param name="callback">The delegate to execute.</param>
         /// <param name="state">A state object to capture and pass back to the delegate.</param>
@@ -85,13 +85,12 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Adds a delegate to be invoked just before response headers will be sent to the client.
-        /// Callbacks registered here will be run in reverse order.
+        /// Callbacks registered here run in reverse order.
         /// </summary>
         /// <remarks>
-        /// Callbacks registered here will be run in reverse order (the last one registered will be invoked first).
-        /// This is done to replicate the way middleware works (with the inner-most middleware looking at the response
-        /// first).
-        /// </remarks>
+        /// Callbacks registered here run in reverse order. The last one registered is invoked first.
+        /// The reverse order is done to replicate the way middleware works, with the inner-most middleware looking at the
+        /// response first.
         /// <param name="callback">The delegate to execute.</param>
         public virtual void OnStarting(Func<Task> callback) => OnStarting(_callbackDelegate, callback);
 
