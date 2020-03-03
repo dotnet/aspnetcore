@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -29,11 +28,12 @@ namespace Templates.Test.Helpers
             ? GetAssemblyMetadata("ArtifactsLogDir")
             : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "logs");
         
-        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath"))) 
+        // FIGURE OUT EF PATH
+        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
             ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value
-            : Environment.GetEnvironmentVariable("DotNetEfFullPath");
+            : Path.Combine("NuGetPackageRoot", "dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.1/any/dotnet-ef.dll");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -306,24 +306,14 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            var args = $"--verbose --no-build migrations add {migrationName}";
-            
+            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
+
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
             await DotNetNewLock.WaitAsync();
             try
             {
-                var command = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    args = $"\"{DotNetEfFullPath}\" " + args;
-                }
-                else
-                {
-                    command = "dotnet-ef";
-                }
-                
-                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
                 await result.Exited;
                 return result;
             }
@@ -335,24 +325,14 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
         {
-            var args = "--verbose --no-build database update";
+            var args = $"\"{DotNetEfFullPath}\" --verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
             await DotNetNewLock.WaitAsync();
             try
             {
-                var command = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    args = $"\"{DotNetEfFullPath}\" " + args;
-                }
-                else
-                {
-                    command = "dotnet-ef";
-                }
-                
-                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
                 await result.Exited;
                 return result;
             }
