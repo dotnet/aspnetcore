@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Templates.Test.Helpers;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
@@ -104,9 +104,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
