@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
-        internal object _sync = new object();
+        private object _sync = new object();
         private MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;

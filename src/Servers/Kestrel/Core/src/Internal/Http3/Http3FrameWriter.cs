@@ -13,10 +13,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
@@ -296,27 +294,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
+                    _outgoingFrame.PrepareHeaders();
+                    var buffer = _headerEncodingBuffer.AsSpan();
 
-                    lock (_connection._sync)
+                    if (CalculateHeaderSize(EnumerateHeaders(headers)) > _connection.GetMaxHeaderListSize())
                     {
-                        _outgoingFrame.PrepareHeaders();
-                        var buffer = _headerEncodingBuffer.AsSpan();
-                        _log.LogInformation(_connection.GetMaxHeaderListSize().ToString());
-                        _log.LogInformation(CalculateHeaderSize(EnumerateHeaders(headers)).ToString());
-
-                        if (CalculateHeaderSize(EnumerateHeaders(headers)) > _connection.GetMaxHeaderListSize())
-                        {
-                            _stream.Abort(new ConnectionAbortedException("Exceeded client request max header list size."), Http3ErrorCode.ProtocolError);
-                            return;
-                        }
-
-                        var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
-
-                        // TODO this check is against the compressed byte count rather than uncompressed.
-                        // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
-
-                        FinishWritingHeaders(payloadLength, done);
+                        _stream.Abort(new ConnectionAbortedException($"Exceeded client request max header list size."), Http3ErrorCode.InternalError);
+                        return;
                     }
+
+                    var done = _qpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+
+                    // TODO this check is against the compressed byte count rather than uncompressed.
+                    // See https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-header-size-constraints
+
+                    FinishWritingHeaders(payloadLength, done);
                 }
                 catch (QPackEncodingException hex)
                 {

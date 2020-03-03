@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal int HeaderTableSize
         {
             get => _headerTableSize;
-            set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");
         }
 
         /// <summary>
@@ -31,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal int BlockedStreams
         {
             get => _blockedStreams;
-            set => throw new NotImplementedException("Dynamic table is not supported in HTTP/3.");
         }
     }
 }
