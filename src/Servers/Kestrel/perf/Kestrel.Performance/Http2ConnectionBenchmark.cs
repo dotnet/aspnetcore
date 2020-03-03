@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private Pipe _pipe;
         private HttpRequestHeaders _httpRequestHeaders;
         private Http2Connection _connection;
+        private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
         private HPackEncoder _hpackEncoder;
         private byte[] _headersBuffer;
@@ -70,6 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 TimeoutControl = new MockTimeoutControl(),
             });
 
+            _requestHeadersEnumerator = new Http2HeadersEnumerator();
+
             _currentStreamId = 1;
 
             _ = _connection.ProcessRequestsAsync(new DummyApplication());
@@ -82,7 +85,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark]
         public async Task EmptyRequest()
         {
-            PipeWriterHttp2FrameExtensions.WriteStartStream(_pipe.Writer, streamId: _currentStreamId, EnumerateHeaders(_httpRequestHeaders), _hpackEncoder, _headersBuffer, endStream: true);
+            _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
+            PipeWriterHttp2FrameExtensions.WriteStartStream(_pipe.Writer, streamId: _currentStreamId, _requestHeadersEnumerator, _hpackEncoder, _headersBuffer, endStream: true);
             _currentStreamId += 2;
             await _pipe.Writer.FlushAsync();
         }

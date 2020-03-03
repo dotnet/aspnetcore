@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Testing
             writer.Write(payload);
         }
 
-        public static void WriteStartStream(this PipeWriter writer, int streamId, IEnumerable<KeyValuePair<string, string>> headers, HPackEncoder hpackEncoder, byte[] headerEncodingBuffer, bool endStream)
+        public static void WriteStartStream(this PipeWriter writer, int streamId, Http2HeadersEnumerator headers, HPackEncoder hpackEncoder, byte[] headerEncodingBuffer, bool endStream)
         {
             var frame = new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);

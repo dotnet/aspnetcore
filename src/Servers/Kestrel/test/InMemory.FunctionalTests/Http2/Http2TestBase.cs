@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            PipeWriterHttp2FrameExtensions.WriteStartStream(writableBuffer, streamId, headers, _hpackEncoder, _headerEncodingBuffer, endStream);
+            PipeWriterHttp2FrameExtensions.WriteStartStream(writableBuffer, streamId, GetHeadersEnumerator(headers), _hpackEncoder, _headerEncodingBuffer, endStream);
             return FlushAsync(writableBuffer);
         }
 
@@ -835,6 +835,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
+        }
+
+        private Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var headersEnumerator = new Http2HeadersEnumerator();
+            headersEnumerator.Initialize(headers.ToDictionary(h => h.Key, h => new StringValues(h.Value)));
+            return headersEnumerator;
         }
 
         internal Task SendEmptyContinuationFrameAsync(int streamId, Http2ContinuationFrameFlags flags)
