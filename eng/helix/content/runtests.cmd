@@ -9,6 +9,7 @@ set $runtimeVersion=%3
 set $helixQueue=%4
 set $arch=%5
 set $quarantined=%6
+set $efVersion=%7
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -26,6 +27,14 @@ echo "Checking for Microsoft.AspNetCore.App"
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
+    
+    echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
+    dotnet nuget add source %HELIX_WORKITEM_ROOT%
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
+    dotnet nuget list source
+    dotnet tool install dotnet-ef --global --version %$efVersion%
+    
+    set PATH=%PATH%;%DOTNET_CLI_HOME%\.dotnet\tools
 )
 
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
@@ -33,6 +42,8 @@ set HELIX=%$helixQueue%
 set HELIX_DIR=%HELIX_WORKITEM_ROOT%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
+set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%$efVersion%\tools\netcoreapp3.1\any\dotnet-ef.exe
+echo "Set DotNetEfFullPath: %DotNetEfFullPath%"
 echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
