@@ -4,7 +4,7 @@ import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import { Pointer } from './Platform/Platform';
+import { Pointer, Platform, System_String } from './Platform/Platform';
 import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
@@ -39,6 +39,8 @@ async function boot(options?: any): Promise<void> {
 
   // Fetch the resources and prepare the Mono runtime
   const resourceLoader = await WebAssemblyResourceLoader.initAsync();
+  await intiializeConfigAsync(platform, resourceLoader);
+
   try {
     await platform.start(resourceLoader);
   } catch (ex) {
@@ -60,4 +62,20 @@ if (shouldAutoStart()) {
       console.error(error);
     }
   });
+}
+
+async function intiializeConfigAsync(platform: Platform, resourceLoader: WebAssemblyResourceLoader) : Promise<void> {
+  const configFiles = resourceLoader.readConfigFilesAsync();
+  const resolvedFiles = await Promise.all(configFiles.map(async c => {
+    const content = new Uint8Array(await c.contentPromise);
+    return { name: c.name, content: content};
+  }));
+
+
+  window['Blazor']._internal.getApplicationEnvironment = () => platform.toDotNetString(resourceLoader.applicationEnvironment);
+  window['Blazor']._internal.getConfig = (string: System_String) : Pointer | undefined => {
+    const fileName = platform.toJavaScriptString(string);
+    const resolvedFile = resolvedFiles.find(f => f.name == fileName);
+    return resolvedFile ? platform.toDotNetArray(resolvedFile.content) : undefined;
+  };
 }

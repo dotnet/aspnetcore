@@ -58,6 +58,16 @@ export const monoPlatform: Platform = {
     return new Uint8Array(Module.HEAPU8.buffer, dataPtr + 4, length);
   },
 
+  toDotNetString: (string: String): System_String => {
+    const binding = window['BINDING'];
+    return binding.js_string_to_mono_string(string);
+  },
+
+  toDotNetArray: (array: ArrayBuffer): Pointer => {
+    const binding = window['BINDING'];
+    return binding.js_typed_array_to_array(array);
+  },
+
   getArrayLength: function getArrayLength(array: System_Array<any>): number {
     return Module.getValue(getArrayDataPointer(array), 'i32');
   },

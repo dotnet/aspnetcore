@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
 {
@@ -33,6 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
 
                     var inMemoryConfiguration = new Dictionary<string, string>
                     {
+                        [WebHostDefaults.EnvironmentKey] = "Development",
                         ["Logging:LogLevel:Microsoft"] = "Warning",
                         ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
                         [WebHostDefaults.StaticWebAssetsKey] = name,

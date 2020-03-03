@@ -12,14 +12,52 @@ export class WebAssemblyResourceLoader {
       credentials: 'include',
       cache: networkFetchCacheMode
     });
+
+    // While we can expect an ASP.NET Core hosted application to include the environment, other
+    // hosts may not. Assume 'Production' in that case.
+    const environment = bootConfigResponse.headers.get('Blazor_Environment') || 'Production';
     const bootConfig: BootJsonData = await bootConfigResponse.json();
     const cache = await getCacheToUseIfEnabled(bootConfig);
 
-    return new WebAssemblyResourceLoader(bootConfig, cache);
+    return new WebAssemblyResourceLoader(bootConfig, environment, cache);
   }
 
-  constructor (public readonly bootConfig: BootJsonData, private cacheIfUsed: Cache | null)
-  {
+  constructor (public readonly bootConfig: BootJsonData, public readonly applicationEnvironment: string, private cacheIfUsed: Cache | null) {
+  }
+
+  readConfigFilesAsync(): Array<ConfigResult>{
+    let results = new Array<ConfigResult>();
+
+    const configFiles =  this.bootConfig.config;
+    if (!configFiles) {
+      return results;
+    }
+
+    const defaultAppSettingsJson = 'appsettings.json';
+    if (configFiles && configFiles.indexOf(defaultAppSettingsJson) != -1) {
+      results.push({
+        name: defaultAppSettingsJson,
+        contentPromise: getConfig(defaultAppSettingsJson)});
+    }
+
+    const environmentAppSettingsJson = `appsettings.${this.applicationEnvironment}.json`;
+    if (configFiles && configFiles.indexOf(environmentAppSettingsJson) != -1) {
+      results.push({
+        name: environmentAppSettingsJson,
+        contentPromise: getConfig(environmentAppSettingsJson)});
+    }
+
+    return results;
+
+    async function getConfig(file: string) : Promise<ArrayBuffer> {
+      const response = await fetch(file, {
+        method: 'GET',
+        credentials: 'include',
+        cache: networkFetchCacheMode
+      });
+
+      return response.arrayBuffer();
+    }
   }
 
   loadResources(resources: ResourceList, url: (name: string) => string): LoadingResource[] {
@@ -182,6 +220,7 @@ interface BootJsonData {
   readonly debugBuild: boolean;
   readonly linkerEnabled: boolean;
   readonly cacheBootResources: boolean;
+  readonly config: string[];
 }
 
 interface ResourceGroups {
@@ -198,6 +237,11 @@ export interface LoadingResource {
   name: string;
   url: string;
   response: Promise<Response>;
+}
+
+export interface ConfigResult {
+  name: string;
+  contentPromise: Promise<ArrayBuffer>;
 }
 
 type ResourceList = { [name: string]: string };

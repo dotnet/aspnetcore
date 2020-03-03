@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -59,6 +61,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 return Services.BuildServiceProvider();
             };
+
+            InitializeEnvironment();
+        }
+
+        private void InitializeEnvironment()
+        {
+            var applicationEnvironment = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            Services.AddSingleton<IWebAssemblyHostEnvironment>(new WebAssemblyHostEnvironment(applicationEnvironment));
+
+            var appSettingsJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
+                "Blazor._internal.getConfig",
+                "appsettings.json");
+            if (appSettingsJson != null)
+            {
+                Configuration.AddJsonStream(new MemoryStream(appSettingsJson));
+            }
+
+            var appSettingsEnvironmentJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
+                "Blazor._internal.getConfig",
+                $"appsettings.{applicationEnvironment}.json");
+
+            if (appSettingsEnvironmentJson != null)
+            {
+                Configuration.AddJsonStream(new MemoryStream(appSettingsEnvironmentJson));
+            }
         }
 
         /// <summary>

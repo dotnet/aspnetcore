@@ -8,6 +8,9 @@ export interface Platform {
   toJavaScriptString(dotNetString: System_String): string;
   toUint8Array(array: System_Array<any>): Uint8Array;
 
+  toDotNetArray(array: ArrayBuffer): Pointer;
+  toDotNetString(string: String): System_String;
+
   getArrayLength(array: System_Array<any>): number;
   getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr;
 

@@ -51,10 +51,12 @@ namespace Microsoft.AspNetCore.Builder
             !rest.StartsWithSegments("/_framework/blazor.server.js"),
             subBuilder =>
             {
-                subBuilder.Use(async (ctx, next) =>
+                subBuilder.Use(async (context, next) =>
                 {
+                    context.Response.Headers.Append("Blazor_Environment", webHostEnvironment.EnvironmentName);
+
                     // This will invoke the static files middleware plugged-in below.
-                    NegotiateEncoding(ctx, webHostEnvironment);
+                    NegotiateEncoding(context, webHostEnvironment);
                     await next();
                 });
 

@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         [Required]
         public bool CacheBootResources { get; set; }
 
+        public ITaskItem[] ConfigurationFiles { get; set; }
+
         [Required]
         public string OutputPath { get; set; }
 
@@ -59,7 +61,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 cacheBootResources = CacheBootResources,
                 debugBuild = DebugBuild,
                 linkerEnabled = LinkerEnabled,
-                resources = new Dictionary<ResourceType, ResourceHashesByNameDictionary>()
+                resources = new Dictionary<ResourceType, ResourceHashesByNameDictionary>(),
+                config = new List<string>(),
             };
 
             // Build a two-level dictionary of the form:
@@ -87,6 +90,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     {
                         resourceList.Add(resourceName, $"sha256-{resource.GetMetadata("FileHash")}");
                     }
+                }
+            }
+
+            if (ConfigurationFiles != null)
+            {
+                foreach (var configFile in ConfigurationFiles)
+                {
+                    result.config.Add(Path.GetFileName(configFile.ItemSpec));
                 }
             }
 
@@ -148,6 +159,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             /// Gets a value that determines if the linker is enabled.
             /// </summary>
             public bool linkerEnabled { get; set; }
+
+            /// <summary>
+            /// Config files for the application
+            /// </summary>
+            public List<string> config { get; set; }
         }
 
         public enum ResourceType
