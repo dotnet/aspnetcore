@@ -97,16 +97,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _pipe.Writer.Complete();
             _memoryPool?.Dispose();
         }
-
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in headers)
-            {
-                foreach (var value in header.Value)
-                {
-                    yield return new KeyValuePair<string, string>(header.Key, value);
-                }
-            }
-        }
     }
 }
