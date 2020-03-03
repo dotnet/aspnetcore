@@ -39,7 +39,7 @@
   <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes">
 
     <ItemGroup>
-      <ServiceWorkerAssetsManifestItem Include="%(StaticWebAsset.Identity)" Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)'">
+      <ServiceWorkerAssetsManifestItem Include="%(StaticWebAsset.Identity)" Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)' and %(Extension) != '.gz'">
         <AssetUrl>$([System.String]::Copy('$([System.String]::Copy('%(StaticWebAsset.BasePath)').TrimEnd('/'))/%(StaticWebAsset.RelativePath)').Replace('\','/').TrimStart('/'))</AssetUrl>
       </ServiceWorkerAssetsManifestItem>
     </ItemGroup>
