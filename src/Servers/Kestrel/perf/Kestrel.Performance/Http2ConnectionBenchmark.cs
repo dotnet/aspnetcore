@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _ = _connection.ProcessRequestsAsync(new DummyApplication());
 
             _pipe.Writer.Write(Http2Connection.ClientPreface);
-            PipeWriterHttp2FrameExtensions.WriteSettings(_pipe.Writer, new Http2PeerSettings());
+            _pipe.Writer.WriteSettings(new Http2PeerSettings());
             _pipe.Writer.FlushAsync().GetAwaiter().GetResult();
         }
 
@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public async Task EmptyRequest()
         {
             _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
-            PipeWriterHttp2FrameExtensions.WriteStartStream(_pipe.Writer, streamId: _currentStreamId, _requestHeadersEnumerator, _headersBuffer, endStream: true);
+            _requestHeadersEnumerator.MoveNext();
+            _pipe.Writer.WriteStartStream(streamId: _currentStreamId, _requestHeadersEnumerator, _headersBuffer, endStream: true);
             _currentStreamId += 2;
             await _pipe.Writer.FlushAsync();
         }

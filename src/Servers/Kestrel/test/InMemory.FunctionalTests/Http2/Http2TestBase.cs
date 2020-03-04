@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            PipeWriterHttp2FrameExtensions.WriteStartStream(writableBuffer, streamId, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
+            writableBuffer.WriteStartStream(streamId, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
             return FlushAsync(writableBuffer);
         }
 
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            PipeWriterHttp2FrameExtensions.WriteStartStream(writableBuffer, streamId, headerData, endStream);
+            writableBuffer.WriteStartStream(streamId, headerData, endStream);
             return FlushAsync(writableBuffer);
         }
 
@@ -667,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected async Task SendSettingsAsync()
         {
-            PipeWriterHttp2FrameExtensions.WriteSettings(_pair.Application.Output, _clientSettings);
+            _pair.Application.Output.WriteSettings(_clientSettings);
             await FlushAsync(_pair.Application.Output);
         }
 
@@ -896,7 +896,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream)
         {
             var outputWriter = _pair.Application.Output;
-            PipeWriterHttp2FrameExtensions.WriteData(outputWriter, streamId, data, endStream);
+            outputWriter.WriteData(streamId, data, endStream);
             return FlushAsync(outputWriter);
         }
 
