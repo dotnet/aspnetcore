@@ -2769,6 +2769,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ReceivingMessagesPreventsConnectionTimeoutFromOccuring()
         {
             using (StartVerifiableLog())

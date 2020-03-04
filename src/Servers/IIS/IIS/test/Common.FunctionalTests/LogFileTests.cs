@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2200", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2200")]
         public async Task CheckUTF8File(TestVariant variant)
         {
             var path = "CheckConsoleFunctions";

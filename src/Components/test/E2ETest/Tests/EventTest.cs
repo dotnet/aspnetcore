@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1987", FlakyOn.AzP.Windows)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1987")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
