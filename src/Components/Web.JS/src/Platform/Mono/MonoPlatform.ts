@@ -198,11 +198,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     MONO.loaded_files = [];
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
+    // Mono requires the assembly filenames to have a '.dll' extension, so supply such names regardless
+    // of the extensions in the URLs. This allows loading assemblies with arbitrary filenames.
     resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`)
-      .forEach(addResourceAsAssembly);
+      .forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
     if (resources.pdb) {
       resourceLoader.loadResources(resources.pdb, filename => `_framework/_bin/${filename}`)
-        .forEach(addResourceAsAssembly);
+        .forEach(r => addResourceAsAssembly(r, r.name));
     }
   });
 
@@ -222,7 +224,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   return module;
 
-  async function addResourceAsAssembly(dependency: LoadingResource) {
+  async function addResourceAsAssembly(dependency: LoadingResource, loadAsName: string) {
     const runDependencyId = `blazor:${dependency.name}`;
     Module.addRunDependency(runDependencyId);
 
@@ -235,7 +237,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       const heapAddress = Module._malloc(data.length);
       const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress, data.length);
       heapMemory.set(data);
-      mono_wasm_add_assembly(dependency.name, heapAddress, data.length);
+      mono_wasm_add_assembly(loadAsName, heapAddress, data.length);
       MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
     } catch (errorInfo) {
         onError(errorInfo);
@@ -321,4 +323,13 @@ async function compileWasmModule(wasmResource: LoadingResource, imports: any): P
   const arrayBuffer = await wasmResource.response.then(r => r.arrayBuffer());
   const arrayBufferResult = await WebAssembly.instantiate(arrayBuffer, imports);
   return arrayBufferResult.instance;
+}
+
+function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
+  const lastDotIndex = filename.lastIndexOf('.');
+  if (lastDotIndex < 0) {
+    throw new Error(`No extension to replace in '${filename}'`);
+  }
+
+  return filename.substr(0, lastDotIndex) + newExtensionWithLeadingDot;
 }
