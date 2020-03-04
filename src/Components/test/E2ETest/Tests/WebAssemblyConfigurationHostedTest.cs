@@ -10,7 +10,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class WebAssemblyConfigurationHostedTest : ServerTestBase<BasicTestAppServerSiteFixture<TestServer.ClientStartup>>
     {

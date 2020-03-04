@@ -5,11 +5,7 @@ export interface Platform {
 
   callEntryPoint(assemblyName: string): void;
 
-  toJavaScriptString(dotNetString: System_String): string;
   toUint8Array(array: System_Array<any>): Uint8Array;
-
-  toDotNetArray(array: ArrayBuffer): Pointer;
-  toDotNetString(string: String): System_String;
 
   getArrayLength(array: System_Array<any>): number;
   getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr;
@@ -24,11 +20,4 @@ export interface Platform {
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 }
 
-// We don't actually instantiate any of these at runtime. For perf it's preferable to
-// use the original 'number' instances without any boxing. The definitions are just
-// for compile-time checking, since TypeScript doesn't support nominal types.
-export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: any }
-export interface System_Object { System_Object__DO_NOT_IMPLEMENT: any }
-export interface System_String extends System_Object { System_String__DO_NOT_IMPLEMENT: any }
-export interface System_Array<T> extends System_Object { System_Array__DO_NOT_IMPLEMENT: any }
-export interface Pointer { Pointer__DO_NOT_IMPLEMENT: any }
+

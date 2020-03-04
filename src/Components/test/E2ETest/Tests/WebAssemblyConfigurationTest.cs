@@ -11,7 +11,7 @@ using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class WebAssemblyConfigurationTest : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>
     {

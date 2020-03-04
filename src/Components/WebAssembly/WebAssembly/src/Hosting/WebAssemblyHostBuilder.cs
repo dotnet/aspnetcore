@@ -71,27 +71,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
             {
                 // The remainder of this method relies on the ability to make .NET WebAssembly-specific JSInterop calls.
+                // Note that this short-circuit exists as a way for unit tests running in .NET Core without JSInterop to run.
                 return;
             }
 
             var applicationEnvironment = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
             Services.AddSingleton<IWebAssemblyHostEnvironment>(new WebAssemblyHostEnvironment(applicationEnvironment));
 
-            var appSettingsJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
-                "Blazor._internal.getConfig",
-                "appsettings.json");
-            if (appSettingsJson != null)
+            var configFiles = new[]
             {
-                Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
-            }
+                "appsettings.json",
+                $"appsettings.{applicationEnvironment}.json"
+            };
 
-            var appSettingsEnvironmentJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
-                "Blazor._internal.getConfig",
-                $"appsettings.{applicationEnvironment}.json");
-
-            if (appSettingsEnvironmentJson != null)
+            foreach (var configFile in configFiles)
             {
-                Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsEnvironmentJson));
+                var appSettingsJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
+                    "Blazor._internal.getConfig",
+                    configFile);
+
+                if (appSettingsJson != null)
+                {
+                    // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
+                    // for Configuration, of where there are several.
+                    Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
+                }
             }
         }
 

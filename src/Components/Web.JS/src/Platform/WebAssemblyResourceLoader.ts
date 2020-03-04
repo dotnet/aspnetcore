@@ -1,4 +1,5 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
+import { BootJsonData, ResourceList } from './BootConfig';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
@@ -6,58 +7,12 @@ export class WebAssemblyResourceLoader {
   private networkLoads: { [name: string]: LoadLogEntry } = {};
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
-  static async initAsync(): Promise<WebAssemblyResourceLoader> {
-    const bootConfigResponse = await fetch('_framework/blazor.boot.json', {
-      method: 'GET',
-      credentials: 'include',
-      cache: networkFetchCacheMode
-    });
-
-    // While we can expect an ASP.NET Core hosted application to include the environment, other
-    // hosts may not. Assume 'Production' in that case.
-    const environment = bootConfigResponse.headers.get('Blazor_Environment') || 'Production';
-    const bootConfig: BootJsonData = await bootConfigResponse.json();
+  static async initAsync(bootConfig: BootJsonData): Promise<WebAssemblyResourceLoader> {
     const cache = await getCacheToUseIfEnabled(bootConfig);
-
-    return new WebAssemblyResourceLoader(bootConfig, environment, cache);
+    return new WebAssemblyResourceLoader(bootConfig, cache);
   }
 
-  constructor (public readonly bootConfig: BootJsonData, public readonly applicationEnvironment: string, private cacheIfUsed: Cache | null) {
-  }
-
-  readConfigFilesAsync(): Array<ConfigResult>{
-    const results = new Array<ConfigResult>();
-
-    const configFiles =  this.bootConfig.config;
-    if (!configFiles) {
-      return results;
-    }
-
-    const defaultAppSettingsJson = 'appsettings.json';
-    if (configFiles && configFiles.indexOf(defaultAppSettingsJson) != -1) {
-      results.push({
-        name: defaultAppSettingsJson,
-        contentPromise: getConfig(defaultAppSettingsJson)});
-    }
-
-    const environmentAppSettingsJson = `appsettings.${this.applicationEnvironment}.json`;
-    if (configFiles && configFiles.indexOf(environmentAppSettingsJson) != -1) {
-      results.push({
-        name: environmentAppSettingsJson,
-        contentPromise: getConfig(environmentAppSettingsJson)});
-    }
-
-    return results;
-
-    async function getConfig(file: string) : Promise<ArrayBuffer> {
-      const response = await fetch(file, {
-        method: 'GET',
-        credentials: 'include',
-        cache: networkFetchCacheMode
-      });
-
-      return response.arrayBuffer();
-    }
+  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null) {
   }
 
   loadResources(resources: ResourceList, url: (name: string) => string): LoadingResource[] {
@@ -74,7 +29,7 @@ export class WebAssemblyResourceLoader {
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash)
       : fetch(url, { cache: networkFetchCacheMode, integrity: this.bootConfig.cacheBootResources ? contentHash : undefined });
 
-      return { name, url, response };
+    return { name, url, response };
   }
 
   logToConsole() {
@@ -204,29 +159,13 @@ function countTotalBytes(loads: LoadLogEntry[]) {
 }
 
 function toDataSizeString(byteCount: number) {
-  return `${(byteCount / (1024*1024)).toFixed(2)} MB`;
+  return `${(byteCount / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 function getPerformanceEntry(url: string): PerformanceResourceTiming | undefined {
   if (typeof performance !== 'undefined') {
     return performance.getEntriesByName(url)[0] as PerformanceResourceTiming;
   }
-}
-
-// Keep in sync with bootJsonData in Microsoft.AspNetCore.Blazor.Build
-interface BootJsonData {
-  readonly entryAssembly: string;
-  readonly resources: ResourceGroups;
-  readonly debugBuild: boolean;
-  readonly linkerEnabled: boolean;
-  readonly cacheBootResources: boolean;
-  readonly config: string[];
-}
-
-interface ResourceGroups {
-  readonly assembly: ResourceList;
-  readonly pdb?: ResourceList;
-  readonly runtime: ResourceList;
 }
 
 interface LoadLogEntry {
@@ -238,10 +177,3 @@ export interface LoadingResource {
   url: string;
   response: Promise<Response>;
 }
-
-export interface ConfigResult {
-  name: string;
-  contentPromise: Promise<ArrayBuffer>;
-}
-
-type ResourceList = { [name: string]: string };

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 subBuilder.Use(async (context, next) =>
                 {
-                    context.Response.Headers.Append("Blazor_Environment", webHostEnvironment.EnvironmentName);
+                    context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
 
                     // This will invoke the static files middleware plugged-in below.
                     NegotiateEncoding(context, webHostEnvironment);
