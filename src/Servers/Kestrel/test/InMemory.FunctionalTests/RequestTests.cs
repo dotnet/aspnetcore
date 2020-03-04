@@ -1685,7 +1685,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ReuseRequestString()
+        public async Task ReuseRequestHeaderStrings()
         {
             var testContext = new TestServiceContext(LoggerFactory);
             string customHeaderValue = null;
