@@ -54,6 +54,17 @@ namespace Microsoft.AspNetCore.Components.Forms
                     return false;
                 }
             }
+            else if (typeof(TValue)== typeof(int))
+            {
+                if(int.TryParse(value, out int parsedValue)
+                {
+                    result=parsedValue;
+                    validationErrorMessage = null;
+                    return true;
+                }
+                validationErrorMessage="Impossible to convert value to int";
+                return false;
+            }
 
             throw new InvalidOperationException($"{GetType()} does not support the type '{typeof(TValue)}'.");
         }
