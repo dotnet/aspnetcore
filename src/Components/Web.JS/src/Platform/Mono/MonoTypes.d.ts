@@ -14,7 +14,6 @@ declare namespace Module {
 }
 
 declare namespace Mono {
-  interface DotNetPointer { DotnetPoint__DO_NOT_IMPLMENT: any }
   interface Utf8Ptr { Utf8Ptr__DO_NOT_IMPLEMENT: any }
   interface StackSaveHandle { StackSaveHandle__DO_NOT_IMPLEMENT: any }
 }

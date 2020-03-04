@@ -67,4 +67,3 @@ if (shouldAutoStart()) {
     }
   });
 }
-
