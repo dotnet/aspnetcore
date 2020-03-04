@@ -1685,6 +1685,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ReuseRequestString()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            string customHeaderValue = null;
+            string contentTypeHeaderValue = null;
+
+            await using (var server = new TestServer(context =>
+            {
+                customHeaderValue = context.Request.Headers["X-CustomHeader"];
+                contentTypeHeaderValue = context.Request.ContentType;
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // First request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    var initialCustomHeaderValue = customHeaderValue;
+                    var initialContentTypeValue = contentTypeHeaderValue;
+
+                    // Second request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    Assert.NotSame(initialCustomHeaderValue, customHeaderValue);
+                    Assert.Same(initialContentTypeValue, contentTypeHeaderValue);
+                }
+            }
+        }
+
+        [Fact]
         public async Task Latin1HeaderValueAcceptedWhenLatin1OptionIsConfigured()
         {
             var testContext = new TestServiceContext(LoggerFactory);
