@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore/issues/19413", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19413")]
         public override void CanDispatchAsyncWorkToSyncContext()
             => base.CanDispatchAsyncWorkToSyncContext();
     }
