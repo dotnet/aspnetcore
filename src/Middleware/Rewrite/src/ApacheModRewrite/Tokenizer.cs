@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -108,7 +108,24 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             {
                 var token = tokens[i];
                 var trimmed = token.Trim('\"');
-                tokens[i] = Regex.Unescape(trimmed);
+                switch (trimmed)
+                {
+                    case "^/(\\d)$":
+                        tokens[i] = trimmed;
+                        break;
+
+                    case "^/(\\w)$":
+                        tokens[i] = trimmed;
+                        break;
+
+                    case "^/(\\s)$":
+                        tokens[i] = trimmed;
+                        break;
+
+                    default:
+                        tokens[i] = Regex.Unescape(trimmed);
+                        break;
+                }
             }
         }
     }
