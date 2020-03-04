@@ -14,14 +14,14 @@ dotnet/AspNetCore code paths:
 
 ## Building dotnet/runtime code:
 - https://github.com/dotnet/runtime/tree/master/docs/workflow
-- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -subsetCategory libraries`
+- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -runtimeConfiguration Release  -subsetCategory coreclr-libraries`
 - Build the individual projects:
-- `PS D:\github\dotnet\src\libraries\Common\tests> dotnet msbuild /t:rebuild`
-- `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet msbuild /t:rebuild`
+- `PS D:\github\dotnet\src\libraries\Common\tests> dotnet build`
+- `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet build`
 
 ### Running dotnet/runtime tests:
-- `PS D:\github\runtime\src\libraries\Common\tests> dotnet msbuild /t:rebuildandtest`
-- `PS D:\github\runtime\src\libraries\System.Net.Http\tests\UnitTests> dotnet msbuild /t:rebuildandtest`
+- `PS D:\github\runtime\src\libraries\Common\tests> dotnet build /t:test`
+- `PS D:\github\runtime\src\libraries\System.Net.Http\tests\UnitTests> dotnet build /t:test`
 
 ## Building dotnet/AspNetCore code:
 - https://github.com/dotnet/AspNetCore/blob/master/docs/BuildFromSource.md
