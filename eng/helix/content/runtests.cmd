@@ -1,6 +1,6 @@
 @echo off
-REM Disable "!Foo!" expansions because they break the filter syntax
-setlocal disableextensions
+REM Need delayed expansion !PATH! so parens don't mess up the parens
+setlocal enableddelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
 set $target=%1
@@ -17,7 +17,7 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
-set "PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin"
+set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
 echo "Installing SDK"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
@@ -34,7 +34,7 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     dotnet nuget list source
     dotnet tool install dotnet-ef --global --version %$efVersion%
     
-    set "PATH=%PATH%;%DOTNET_CLI_HOME%\.dotnet\tools"
+    set PATH=!PATH!;%DOTNET_CLI_HOME%\.dotnet\tools
 )
 
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
@@ -66,6 +66,8 @@ if %$quarantined%==True (
     set %$quarantined=true
 )
 
+REM Disable "!Foo!" expansions because they break the filter syntax
+setlocal disableextensions
 set NONQUARANTINE_FILTER="Quarantined!=true"
 set QUARANTINE_FILTER="Quarantined=true"
 if %$quarantined%==true (
