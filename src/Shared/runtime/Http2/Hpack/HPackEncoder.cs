@@ -333,9 +333,6 @@ namespace System.Net.Http.HPack
                         bytesWritten = integerLength + value.Length;
                         return true;
                     }
-
-                    bytesWritten = 0;
-                    return false;
                 }
             }
 
