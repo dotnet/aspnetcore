@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Internal
             if (destination.Length < source.Length)
             {
                 throw new ArgumentException(
-                    "Lenghth of the destination byte span is less then the source.",
+                    "Length of the destination byte span is less then the source.",
                     nameof(destination));
             }
 
