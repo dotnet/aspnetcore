@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 "appsettings.json");
             if (appSettingsJson != null)
             {
-                Configuration.AddJsonStream(new MemoryStream(appSettingsJson));
+                Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
             }
 
             var appSettingsEnvironmentJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             if (appSettingsEnvironmentJson != null)
             {
-                Configuration.AddJsonStream(new MemoryStream(appSettingsEnvironmentJson));
+                Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsEnvironmentJson));
             }
         }
 
