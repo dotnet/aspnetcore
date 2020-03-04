@@ -2,20 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SignalRSamples
 {
+    public class CustomHubPipeline : IHubPipeline
+    {
+        private readonly Random _rand = new Random();
+
+        public object OnAfterIncoming(object result, HubInvocationContext invocationContext)
+        {
+            if (invocationContext.HubMethodName == nameof(Streaming.ObservableCounter))
+            {
+                // modifying a channelreader/iasyncenumberable is difficult, especially without async
+                return null;
+            }
+            return result;
+        }
+
+        public bool OnBeforeIncoming(HubInvocationContext invocationContext)
+        {
+            return (_rand.Next() % 3) != 0;
+        }
+
+        public void OnIncomingError(Exception ex, HubInvocationContext invocationContext)
+        {
+        }
+    }
+
     public class Startup
     {
 
@@ -34,6 +56,8 @@ namespace SignalRSamples
             })
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
+
+            services.AddSingleton<IHubPipeline>(new CustomHubPipeline());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
