@@ -1,6 +1,6 @@
 @echo off
 REM Need delayed expansion !PATH! so parens don't mess up the parens
-setlocal enableddelayedexpansion
+setlocal enabledelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
 set $target=%1
