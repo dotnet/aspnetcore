@@ -173,10 +173,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 try
                 {
                     _headersEnumerator.Initialize(headers);
-                    _headersEnumerator.MoveNext();
                     _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = HPackHeaderWriter.EncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -200,10 +199,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 try
                 {
                     _headersEnumerator.Initialize(headers);
-                    _headersEnumerator.MoveNext();
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = HPackHeaderWriter.EncodeHeaders(_headersEnumerator, buffer, throwIfNoneEncoded: true, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(_headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -232,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = HPackHeaderWriter.EncodeHeaders(_headersEnumerator, buffer, throwIfNoneEncoded: true, out payloadLength);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(_headersEnumerator, buffer, out payloadLength);
                 _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)

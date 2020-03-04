@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Testing
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
             var buffer = headerEncodingBuffer.AsSpan();
-            var done = HPackHeaderWriter.EncodeHeaders(headers, buffer, throwIfNoneEncoded: true, out var length);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(headers, buffer, out var length);
             frame.PayloadLength = length;
 
             if (done)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = HPackHeaderWriter.EncodeHeaders(headers, buffer, throwIfNoneEncoded: true, out length);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(headers, buffer, out length);
                 frame.PayloadLength = length;
 
                 if (done)

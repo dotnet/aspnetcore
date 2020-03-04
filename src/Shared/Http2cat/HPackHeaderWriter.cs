@@ -10,11 +10,20 @@ namespace Microsoft.AspNetCore.Http2Cat
 {
     internal static class HPackHeaderWriter
     {
-        public static bool EncodeHeaders(int statusCode, IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, out int length)
+        /// <summary>
+        /// Begin encoding headers in the first HEADERS frame.
+        /// </summary>
+        public static bool BeginEncodeHeaders(int statusCode, IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, out int length)
         {
             if (!HPackEncoder.EncodeStatusHeader(statusCode, buffer, out var statusCodeLength))
             {
                 throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+            }
+
+            if (!headersEnumerator.MoveNext())
+            {
+                length = statusCodeLength;
+                return true;
             }
 
             // We're ok with not throwing if no headers were encoded because we've already encoded the status.
@@ -25,7 +34,29 @@ namespace Microsoft.AspNetCore.Http2Cat
             return done;
         }
 
-        public static bool EncodeHeaders(IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
+        /// <summary>
+        /// Begin encoding headers in the first HEADERS frame.
+        /// </summary>
+        public static bool BeginEncodeHeaders(IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, out int length)
+        {
+            if (!headersEnumerator.MoveNext())
+            {
+                length = 0;
+                return true;
+            }
+
+            return EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
+        }
+
+        /// <summary>
+        /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
+        /// </summary>
+        public static bool ContinueEncodeHeaders(IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, out int length)
+        {
+            return EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
+        }
+
+        private static bool EncodeHeaders(IEnumerator<KeyValuePair<string, string>> headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
         {
             var currentLength = 0;
             do
