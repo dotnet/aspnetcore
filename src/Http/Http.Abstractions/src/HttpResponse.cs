@@ -91,6 +91,7 @@ namespace Microsoft.AspNetCore.Http
         /// Callbacks registered here run in reverse order. The last one registered is invoked first.
         /// The reverse order is done to replicate the way middleware works, with the inner-most middleware looking at the
         /// response first.
+        /// </remarks>
         /// <param name="callback">The delegate to execute.</param>
         public virtual void OnStarting(Func<Task> callback) => OnStarting(_callbackDelegate, callback);
 
