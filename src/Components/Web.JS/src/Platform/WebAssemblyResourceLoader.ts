@@ -26,7 +26,7 @@ export class WebAssemblyResourceLoader {
   }
 
   readConfigFilesAsync(): Array<ConfigResult>{
-    let results = new Array<ConfigResult>();
+    const results = new Array<ConfigResult>();
 
     const configFiles =  this.bootConfig.config;
     if (!configFiles) {

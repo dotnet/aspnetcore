@@ -39,7 +39,7 @@ async function boot(options?: any): Promise<void> {
 
   // Fetch the resources and prepare the Mono runtime
   const resourceLoader = await WebAssemblyResourceLoader.initAsync();
-  await intiializeConfigAsync(platform, resourceLoader);
+  await initializeConfigAsync(platform, resourceLoader);
 
   try {
     await platform.start(resourceLoader);
@@ -64,18 +64,18 @@ if (shouldAutoStart()) {
   });
 }
 
-async function intiializeConfigAsync(platform: Platform, resourceLoader: WebAssemblyResourceLoader) : Promise<void> {
+async function initializeConfigAsync(platform: Platform, resourceLoader: WebAssemblyResourceLoader) : Promise<void> {
   const configFiles = resourceLoader.readConfigFilesAsync();
   const resolvedFiles = await Promise.all(configFiles.map(async c => {
     const content = new Uint8Array(await c.contentPromise);
-    return { name: c.name, content: content};
+    return { c.name, content };
   }));
 
 
   window['Blazor']._internal.getApplicationEnvironment = () => platform.toDotNetString(resourceLoader.applicationEnvironment);
-  window['Blazor']._internal.getConfig = (string: System_String) : Pointer | undefined => {
+  window['Blazor']._internal.getConfig = (dotNetFileName: System_String) : Pointer | undefined => {
     const fileName = platform.toJavaScriptString(string);
-    const resolvedFile = resolvedFiles.find(f => f.name == fileName);
+    const resolvedFile = resolvedFiles.find(f => f.name === fileName);
     return resolvedFile ? platform.toDotNetArray(resolvedFile.content) : undefined;
   };
 }
