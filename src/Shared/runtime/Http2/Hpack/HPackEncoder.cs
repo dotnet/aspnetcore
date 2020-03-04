@@ -327,11 +327,8 @@ namespace System.Net.Http.HPack
                     destination = destination.Slice(integerLength);
                     if (value.Length <= destination.Length)
                     {
-                        for (int i = 0; i < value.Length; i++)
-                        {
-                            // Note: No validation. Bytes should have already been validation.
-                            destination[i] = value[i];
-                        }
+                        // Note: No validation. Bytes should have already been validated.
+                        value.CopyTo(destination);
 
                         bytesWritten = integerLength + value.Length;
                         return true;
