@@ -115,11 +115,9 @@ fi
 
 exit_code=0
 
-# We need to specify all possible quarantined filters that apply to this environment, because the quarantine attribute
-# only puts the explicit filter traits the user provided in the flaky attribute
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
-QUARANTINE_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
+NONQUARANTINE_FILTER="Quarantined!=true"
+QUARANTINE_FILTER="Quarantined=true"
 if [ "$quarantined" == true ]; then
     echo "Running all tests including quarantined."
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$QUARANTINE_FILTER"

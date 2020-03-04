@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2135", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2135")]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2207", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2207")]
         public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
         {
             if (Utilities.IsWin8orLater)
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [ConditionalTheory]
         [InlineData("0")]
         [InlineData("-1")]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2208", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2208")]
         public async Task Caching_InvalidExpires_NotCached(string expiresValue)
         {
             var requestCount = 1;
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2209", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2209")]
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;
