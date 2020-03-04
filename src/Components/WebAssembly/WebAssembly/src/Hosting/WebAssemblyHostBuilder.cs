@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -67,6 +67,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
         private void InitializeEnvironment()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
+            {
+                // The remainder of this method relies on the ability to make .NET WebAssembly-specific JSInterop calls.
+                return;
+            }
+
             var applicationEnvironment = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
             Services.AddSingleton<IWebAssemblyHostEnvironment>(new WebAssemblyHostEnvironment(applicationEnvironment));
 
@@ -157,7 +163,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());
         }
 
-        private void InitializeDefaultServices()
+        internal void InitializeDefaultServices()
         {
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
