@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                         await NavigateToReturnUrl(uri);
                         break;
                     default:
-                        throw new InvalidOperationException($"Invalid authentication result status '{result.Status ?? "(null)"}'.");
+                        throw new InvalidOperationException($"Invalid authentication result status.");
                 }
             }
             else
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     await NavigateToReturnUrl(uri);
                     break;
                 default:
-                    throw new InvalidOperationException($"Invalid authentication result status '{result.Status ?? "(null)"}'.");
+                    throw new InvalidOperationException($"Invalid authentication result status.");
             }
         }
 

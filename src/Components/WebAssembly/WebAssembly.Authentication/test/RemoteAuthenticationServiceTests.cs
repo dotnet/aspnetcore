@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
                 State = state,
-                Status = RemoteAuthenticationStatus.Success
+                Status = RemoteAuthenticationStatus.Success.ToString()
             };
 
             // Act
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [InlineData(RemoteAuthenticationStatus.Redirect)]
         [InlineData(RemoteAuthenticationStatus.Failure)]
         [InlineData(RemoteAuthenticationStatus.OperationCompleted)]
-        public async Task RemoteAuthenticationService_SignIn_DoesNotUpdateUserOnOtherResult(string value)
+        public async Task RemoteAuthenticationService_SignIn_DoesNotUpdateUserOnOtherResult(RemoteAuthenticationStatus value)
         {
             // Arrange
             var testJsRuntime = new TestJsRuntime();
@@ -57,9 +57,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
-                Status = value
+                Status = value.ToString()
             };
 
             // Act
@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
                 State = state,
-                Status = RemoteAuthenticationStatus.Success
+                Status = RemoteAuthenticationStatus.Success.ToString()
             };
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [InlineData(RemoteAuthenticationStatus.Redirect)]
         [InlineData(RemoteAuthenticationStatus.Failure)]
         [InlineData(RemoteAuthenticationStatus.OperationCompleted)]
-        public async Task RemoteAuthenticationService_CompleteSignInAsync_DoesNotUpdateUserOnOtherResult(string value)
+        public async Task RemoteAuthenticationService_CompleteSignInAsync_DoesNotUpdateUserOnOtherResult(RemoteAuthenticationStatus value)
         {
             // Arrange
             var testJsRuntime = new TestJsRuntime();
@@ -113,9 +113,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
-                Status = value
+                Status = value.ToString().ToString()
             };
 
             // Act
@@ -139,10 +139,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
                 State = state,
-                Status = RemoteAuthenticationStatus.Success
+                Status = RemoteAuthenticationStatus.Success.ToString()
             };
 
             // Act
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [InlineData(RemoteAuthenticationStatus.Redirect)]
         [InlineData(RemoteAuthenticationStatus.Failure)]
         [InlineData(RemoteAuthenticationStatus.OperationCompleted)]
-        public async Task RemoteAuthenticationService_SignOut_DoesNotUpdateUserOnOtherResult(string value)
+        public async Task RemoteAuthenticationService_SignOut_DoesNotUpdateUserOnOtherResult(RemoteAuthenticationStatus value)
         {
             // Arrange
             var testJsRuntime = new TestJsRuntime();
@@ -169,9 +169,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
-                Status = value
+                Status = value.ToString()
             };
 
             // Act
@@ -195,10 +195,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
                 State = state,
-                Status = RemoteAuthenticationStatus.Success
+                Status = RemoteAuthenticationStatus.Success.ToString()
             };
 
             // Act
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [InlineData(RemoteAuthenticationStatus.Redirect)]
         [InlineData(RemoteAuthenticationStatus.Failure)]
         [InlineData(RemoteAuthenticationStatus.OperationCompleted)]
-        public async Task RemoteAuthenticationService_CompleteSignOutAsync_DoesNotUpdateUserOnOtherResult(string value)
+        public async Task RemoteAuthenticationService_CompleteSignOutAsync_DoesNotUpdateUserOnOtherResult(RemoteAuthenticationStatus value)
         {
             // Arrange
             var testJsRuntime = new TestJsRuntime();
@@ -225,9 +225,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 new TestNavigationManager());
 
             var state = new RemoteAuthenticationState();
-            testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
+            testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
             {
-                Status = value
+                Status = value.ToString()
             };
 
             // Act
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
             {
-                Status = AccessTokenResultStatus.Success,
+                Status = "success",
                 Token = new AccessToken
                 {
                     Value = "1234",
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime.PastInvocations.Select(i => i.identifier).ToArray());
 
             Assert.True(result.TryGetToken(out var token));
-            Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
+            Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
             Assert.Equal(result.RedirectUrl, testJsRuntime.GetAccessTokenResult.RedirectUrl);
             Assert.Equal(token, testJsRuntime.GetAccessTokenResult.Token);
         }
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
             {
-                Status = AccessTokenResultStatus.RequiresRedirect,
+                Status = "requiresRedirect",
             };
 
             var tokenOptions = new AccessTokenRequestOptions
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             Assert.False(result.TryGetToken(out var token));
             Assert.Null(token);
-            Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
+            Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
             Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
             Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
         }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
             {
-                Status = AccessTokenResultStatus.RequiresRedirect,
+                Status = "requiresRedirect",
             };
 
             var tokenOptions = new AccessTokenRequestOptions
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             Assert.False(result.TryGetToken(out var token));
             Assert.Null(token);
-            Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
+            Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
             Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
             Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
         }
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             testJsRuntime.GetUserResult = JsonSerializer.Deserialize<IDictionary<string, object>>(serializedUser);
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
             {
-                Status = AccessTokenResultStatus.Success,
+                Status = "success",
                 Token = new AccessToken
                 {
                     Value = "1234",
@@ -499,15 +499,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             public IList<(string identifier, object[] args)> PastInvocations { get; set; } = new List<(string, object[])>();
 
-            public RemoteAuthenticationResult<RemoteAuthenticationState> SignInResult { get; set; }
+            public InternalRemoteAuthenticationResult<RemoteAuthenticationState> SignInResult { get; set; }
 
-            public RemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignInResult { get; set; }
+            public InternalRemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignInResult { get; set; }
 
-            public RemoteAuthenticationResult<RemoteAuthenticationState> SignOutResult { get; set; }
+            public InternalRemoteAuthenticationResult<RemoteAuthenticationState> SignOutResult { get; set; }
 
-            public RemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignOutResult { get; set; }
-
-            public RemoteAuthenticationResult<RemoteAuthenticationState> InitResult { get; set; }
+            public InternalRemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignOutResult { get; set; }
 
             public InternalAccessTokenResult GetAccessTokenResult { get; set; }
 

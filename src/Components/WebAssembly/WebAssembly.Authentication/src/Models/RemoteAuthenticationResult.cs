@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the status of the authentication operation. The status can be one of <see cref="RemoteAuthenticationStatus"/>.
         /// </summary>
-        public string Status { get; set; }
+        public RemoteAuthenticationStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the error message of a failed authentication operation.

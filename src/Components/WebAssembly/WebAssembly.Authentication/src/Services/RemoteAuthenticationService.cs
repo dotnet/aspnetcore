@@ -70,7 +70,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+            var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
                 UpdateUser(GetUser());
@@ -84,7 +85,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
+            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
+            var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
                 UpdateUser(GetUser());
@@ -98,7 +100,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+            var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
                 UpdateUser(GetUser());
@@ -112,7 +115,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
+            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
+            var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
                 UpdateUser(GetUser());
@@ -127,13 +131,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             await EnsureAuthService();
             var result = await _jsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken");
 
-            if (string.Equals(result.Status, AccessTokenResultStatus.RequiresRedirect, StringComparison.OrdinalIgnoreCase))
+            if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
+            {
+                throw new InvalidOperationException($"Invalid access token result status '{result.Status ?? "(null)"}'");
+            }
+
+            if (parsedStatus == AccessTokenResultStatus.RequiresRedirect)
             {
                 var redirectUrl = GetRedirectUrl(null);
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(result.Status, result.Token, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
         }
 
         /// <inheritdoc />
@@ -147,13 +156,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             await EnsureAuthService();
             var result = await _jsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken", options);
 
-            if (string.Equals(result.Status, AccessTokenResultStatus.RequiresRedirect, StringComparison.OrdinalIgnoreCase))
+            if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
+            {
+                throw new InvalidOperationException($"Invalid access token result status '{result.Status ?? "(null)"}'");
+            }
+
+            if (parsedStatus == AccessTokenResultStatus.RequiresRedirect)
             {
                 var redirectUrl = GetRedirectUrl(options.ReturnUrl);
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(result.Status, result.Token, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
         }
 
         private Uri GetRedirectUrl(string customReturnUrl)
@@ -241,5 +255,33 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public string Status { get; set; }
         public AccessToken Token { get; set; }
         public string RedirectUrl { get; set; }
+    }
+
+    // Internal for testing purposes
+    internal struct InternalRemoteAuthenticationResult<TRemoteAuthenticationState> where TRemoteAuthenticationState : RemoteAuthenticationState
+    {
+        public string Status { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public TRemoteAuthenticationState State { get; set; }
+
+        public RemoteAuthenticationResult<TRemoteAuthenticationState> Convert()
+        {
+            var result = new RemoteAuthenticationResult<TRemoteAuthenticationState>();
+            result.ErrorMessage = ErrorMessage;
+            result.State = State;
+
+            if (Status != null && Enum.TryParse<RemoteAuthenticationStatus>(Status, ignoreCase: true, out var status))
+            {
+                result.Status = status;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Can't convert status '${Status ?? "(null)"}'.");
+            }
+
+            return result;
+        }
     }
 }
