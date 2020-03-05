@@ -49,11 +49,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                     _jsRuntime.InvokeVoid("console.warn", formattedMessage);
                     break;
                 case LogLevel.Error:
-                case LogLevel.Critical:
                     _jsRuntime.InvokeVoid("console.error", formattedMessage);
                     break;
+                case LogLevel.Critical:
+                    // Writing to Console.Error is even more severe than calling console.error,
+                    // because it also causes the error UI (gold bar) to appear. We use Console.Error
+                    // as the signal for triggering that because it's what the underlying dotnet.wasm
+                    // runtime will do if it encounters a truly severe error outside the Blazor
+                    // code paths.
+                    Console.Error.WriteLine(formattedMessage);
+                    break;
                 default: // LogLevel.None or invalid enum values
-                    Console.WriteLine($"[{logLevel}] {formattedMessage}");
+                    Console.WriteLine(formattedMessage);
                     break;
             }
         }
