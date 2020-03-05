@@ -24,7 +24,7 @@ namespace Wasm.Performance.Driver
     public class Program
     {
         static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
-        static TaskCompletionSource<List<BenchmarkResult>> benchmarkResult = new TaskCompletionSource<List<BenchmarkResult>>();
+        static TaskCompletionSource<BenchmarkResult> benchmarkResult = new TaskCompletionSource<BenchmarkResult>();
 
         public static async Task<int> Main(string[] args)
         {
@@ -57,42 +57,36 @@ namespace Wasm.Performance.Driver
             browser.Url = launchUrl;
             browser.Navigate();
 
-            var appSize = GetBlazorAppSize();
-            await Task.WhenAll(benchmarkResult.Task, appSize);
-            FormatAsBenchmarksOutput(benchmarkResult.Task.Result, appSize.Result);
+            FormatAsBenchmarksOutput(benchmarkResult.Task.Result);
 
             Console.WriteLine("Done executing benchmark");
             return 0;
         }
 
-        internal static void SetBenchmarkResult(List<BenchmarkResult> result)
+        internal static void SetBenchmarkResult(BenchmarkResult result)
         {
             benchmarkResult.TrySetResult(result);
         }
 
-        private static void FormatAsBenchmarksOutput(List<BenchmarkResult> results, (long publishSize, long compressedSize) sizes)
+        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult)
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
-            foreach (var result in results)
+            output.Metadata.Add(new BenchmarkMetadata
             {
-                var scenarioName = result.Descriptor.Name;
-                output.Metadata.Add(new BenchmarkMetadata
-                {
-                    Source = "BlazorWasm",
-                    Name = scenarioName,
-                    ShortDescription = result.Name,
-                    LongDescription = result.Descriptor.Description,
-                    Format = "n2"
-                });
+                Source = "BlazorWasm",
+                Name = "blazorwasm/download-size",
+                ShortDescription = "Download size (KB)",
+                LongDescription = "Download size (KB)",
+                Format = "n2",
+            });
 
-                output.Measurements.Add(new BenchmarkMeasurement
-                {
-                    Timestamp = DateTime.UtcNow,
-                    Name = scenarioName,
-                    Value = result.Duration,
-                });
-            }
+            output.Measurements.Add(new BenchmarkMeasurement
+            {
+                Timestamp = DateTime.UtcNow,
+                Name = "blazorwasm/download-size",
+                Value = ((float)benchmarkResult.DownloadSize) / 1024,
+            });
 
             // Information about the build that this was produced from
             output.Metadata.Add(new BenchmarkMetadata
@@ -112,38 +106,25 @@ namespace Wasm.Performance.Driver
                     ?.Value,
             });
 
-            // Statistics about publish sizes
-            output.Metadata.Add(new BenchmarkMetadata
+            foreach (var result in benchmarkResult.ScenarioResults)
             {
-                Source = "BlazorWasm",
-                Name = "blazorwasm/publish-size",
-                ShortDescription = "Publish size (KB)",
-                LongDescription = "Publish size (KB)",
-                Format = "n2",
-            });
+                var scenarioName = result.Descriptor.Name;
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = scenarioName,
+                    ShortDescription = result.Name,
+                    LongDescription = result.Descriptor.Description,
+                    Format = "n2"
+                });
 
-            output.Measurements.Add(new BenchmarkMeasurement
-            {
-                Timestamp = DateTime.UtcNow,
-                Name = "blazorwasm/publish-size",
-                Value = sizes.publishSize / 1024,
-            });
-
-            output.Metadata.Add(new BenchmarkMetadata
-            {
-                Source = "BlazorWasm",
-                Name = "blazorwasm/compressed-publish-size",
-                ShortDescription = "Publish size  compressed app (KB)",
-                LongDescription = "Publish size - compressed app (KB)",
-                Format = "n2",
-            });
-
-            output.Measurements.Add(new BenchmarkMeasurement
-            {
-                Timestamp = DateTime.UtcNow,
-                Name = "blazorwasm/compressed-publish-size",
-                Value = sizes.compressedSize / 1024,
-            });
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = scenarioName,
+                    Value = result.Duration,
+                });
+            }
 
             Console.WriteLine("#StartJobStatistics");
             Console.WriteLine(JsonSerializer.Serialize(output));
@@ -156,6 +137,12 @@ namespace Wasm.Performance.Driver
             {
                 "--urls", "http://127.0.0.1:0",
                 "--applicationpath", typeof(TestApp.Program).Assembly.Location,
+#if DEBUG
+                "--contentroot",
+                Path.GetFullPath(typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .First(f => f.Key == "TestAppLocatiion")
+                    .Value)
+#endif
             };
 
             var host = DevHostServerProgram.BuildWebHost(args);
@@ -215,77 +202,6 @@ namespace Wasm.Performance.Driver
                 .Get<IServerAddressesFeature>()
                 .Addresses
                 .First();
-        }
-
-        static async Task<(long size, long compressedSize)> GetBlazorAppSize()
-        {
-            var testAssembly = typeof(TestApp.Program).Assembly;
-            var testAssemblyLocation = new FileInfo(testAssembly.Location);
-            var testApp = new DirectoryInfo(Path.Combine(
-                testAssemblyLocation.Directory.FullName,
-                testAssembly.GetName().Name));
-
-            return (GetDirectorySize(testApp), await GetBrotliCompressedSize(testApp));
-        }
-
-        static long GetDirectorySize(DirectoryInfo directory)
-        {
-            // This can happen if you run the app without publishing it.
-            if (!directory.Exists)
-            {
-                return 0;
-            }
-
-            long size = 0;
-            foreach (var item in directory.EnumerateFileSystemInfos())
-            {
-                if (item is FileInfo fileInfo)
-                {
-                    size += fileInfo.Length;
-                }
-                else if (item is DirectoryInfo directoryInfo)
-                {
-                    size += GetDirectorySize(directoryInfo);
-                }
-            }
-
-            return size;
-        }
-
-        static async Task<long> GetBrotliCompressedSize(DirectoryInfo directory)
-        {
-            if (!directory.Exists)
-            {
-                return 0;
-            }
-
-            var tasks = new List<Task<long>>();
-            foreach (var item in directory.EnumerateFileSystemInfos())
-            {
-                if (item is FileInfo fileInfo)
-                {
-                    tasks.Add(GetCompressedFileSize(fileInfo));
-                }
-                else if (item is DirectoryInfo directoryInfo)
-                {
-                    tasks.Add(GetBrotliCompressedSize(directoryInfo));
-                }
-            }
-
-            return (await Task.WhenAll(tasks)).Sum(s => s);
-
-            async Task<long> GetCompressedFileSize(FileInfo fileInfo)
-            {
-                using var inputStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, useAsync: true);
-                using var outputStream = new MemoryStream();
-
-                using  (var brotliStream = new BrotliStream(outputStream, CompressionLevel.Optimal, leaveOpen: true))
-                {
-                    await inputStream.CopyToAsync(brotliStream);
-                }
-
-                return outputStream.Length;
-            }
         }
     }
 }
