@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -29,6 +30,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var formattedMessage = formatter(state, exception);
+
+            // If we're given an exception, we want to format it in a useful way, including
+            // inner exceptions and stack traces. The default formatter doesn't do that.
+            if (!(exception is null))
+            {
+                formattedMessage += FormatException(exception);
+            }
 
             switch (logLevel)
             {
@@ -62,6 +70,44 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 default: // LogLevel.None or invalid enum values
                     Console.WriteLine(formattedMessage);
                     break;
+            }
+        }
+
+        private static string FormatException(Exception exception)
+        {
+            var stringBuilder = new StringBuilder();
+            AppendException(stringBuilder, exception);
+            return stringBuilder.ToString();
+        }
+
+        private static void AppendException(StringBuilder stringBuilder, Exception exception)
+        {
+            AppendSingleException(stringBuilder, exception);
+
+            if (exception is AggregateException aggregateException)
+            {
+                // If it's an AggregateException, just flatten and append them all, and we're done
+                foreach (var flattenedInnerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    AppendSingleException(stringBuilder, flattenedInnerException);
+                }
+            }
+            else if (exception?.InnerException is Exception innerException)
+            {
+                // Otherwise, if it has an inner exception, recurse into it
+                AppendException(stringBuilder, innerException);
+            }
+        }
+
+        private static void AppendSingleException(StringBuilder stringBuilder, Exception exception)
+        {
+            stringBuilder.AppendLine();
+            stringBuilder.AppendFormat("[{0}]: {1}", exception.GetType().FullName, exception.Message);
+
+            if (exception.StackTrace != null)
+            {
+                stringBuilder.AppendLine();
+                stringBuilder.Append(exception.StackTrace);
             }
         }
 

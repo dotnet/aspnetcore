@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     /// </summary>
     internal class WebAssemblyRenderer : Renderer
     {
+        private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
 
         private bool isDispatchingEvent;
@@ -31,6 +32,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
+
+            // Since this is where generic unhandled errors get routed, we want the category
+            // name to be something generic, not "WebAssemblyRenderer".
+            _logger = loggerFactory.CreateLogger(".NET");
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -101,18 +106,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override void HandleException(Exception exception)
         {
-            Console.Error.WriteLine($"Unhandled exception rendering component:");
-            if (exception is AggregateException aggregateException)
-            {
-                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
-                {
-                    Console.Error.WriteLine(innerException);
-                }
-            }
-            else
-            {
-                Console.Error.WriteLine(exception);
-            }
+            _logger.LogCritical(exception, "Unhandled exception");
         }
 
         /// <inheritdoc />
