@@ -290,13 +290,14 @@ namespace WebAssembly.Net.Debugging {
 
 		internal void SendResponse (MessageId id, Result result, CancellationToken token)
 		{
-			//Log ("verbose", $"sending response: {id}: {result.ToJObject (id)}");
 			SendResponseInternal (id, result, token);
 		}
 
 		void SendResponseInternal (MessageId id, Result result, CancellationToken token)
 		{
 			JObject o = result.ToJObject (id);
+			if (result.IsErr)
+				logger.LogError ("sending error response {result}", result);
 
 			Send (this.ide, o, token);
 		}
