@@ -46,9 +46,13 @@ namespace BasicTestApp
 
             // Replace the default logger with a custom one that wraps it
             var originalLoggerDescriptor = builder.Services.Single(d => d.ServiceType == typeof(ILoggerFactory));
-            var originalLogger = (ILoggerFactory)Activator.CreateInstance(originalLoggerDescriptor.ImplementationType);
-            var customLogger = new PrependMessageLoggerFactory("Custom logger", originalLogger);
-            builder.Services.AddSingleton<ILoggerFactory>(customLogger);
+            builder.Services.AddSingleton<ILoggerFactory>(services =>
+            {
+                var originalLogger = (ILoggerFactory)Activator.CreateInstance(
+                    originalLoggerDescriptor.ImplementationType,
+                    new object[] { services });
+                return new PrependMessageLoggerFactory("Custom logger", originalLogger);
+            });
 
             await builder.Build().RunAsync();
         }
