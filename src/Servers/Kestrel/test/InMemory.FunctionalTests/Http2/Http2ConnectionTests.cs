@@ -213,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
         {
             await InitializeConnectionAsync(async context =>
