@@ -121,32 +121,12 @@
       </_BlazorOutputWithTargetPath>
     </ItemGroup>
 
-    <!--
-      TODO: Instead of dynamically switching the TargetOutputPath for dotnet.js here, actually
-      change the physical filename inside the M.A.C.W.Runtime package so it includes the package's
-      version (e.g., dotnet.3.2.0-preview3.12345.js). Then we can eliminate the following property
-      and recombine the two item groups _DotNetWasmRuntimeFile and _DotNetWasmJsFile below, simply putting all of
-      $(ComponentsWebAssemblyRuntimePath)* into _BlazorOutputWithTargetPath using their physical names.
-
-      The actual value 3.2.0-preview2 is hardcoded here until we update M.A.C.W.Runtime to do this.
-    -->
-    <PropertyGroup>
-      <TemporaryDotNetJsFileVersion>3.2.0-preview2</TemporaryDotNetJsFileVersion>
-    </PropertyGroup>
-
     <ItemGroup>
-      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*.wasm" />
+      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
       <_BlazorOutputWithTargetPath Include="@(_DotNetWasmRuntimeFile)">
         <TargetOutputPath>$(_BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <BootManifestResourceType>runtime</BootManifestResourceType>
         <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
-      </_BlazorOutputWithTargetPath>
-
-      <_DotNetWasmJsFile Include="$(ComponentsWebAssemblyRuntimePath)*.js" />
-      <_BlazorOutputWithTargetPath Include="@(_DotNetWasmJsFile)">
-        <TargetOutputPath>$(_BlazorRuntimeWasmOutputPath)%(FileName).$(TemporaryDotNetJsFileVersion)%(Extension)</TargetOutputPath>
-        <BootManifestResourceType>runtime</BootManifestResourceType>
-        <BootManifestResourceName>%(FileName).$(TemporaryDotNetJsFileVersion)%(Extension)</BootManifestResourceName>
       </_BlazorOutputWithTargetPath>
 
       <_BlazorJSFile Include="$(_BlazorJSPath)" />
