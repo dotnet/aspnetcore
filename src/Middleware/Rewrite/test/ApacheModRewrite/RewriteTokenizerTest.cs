@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -91,5 +91,49 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var ex = Assert.Throws<FormatException>(() => new Tokenizer().Tokenize("\""));
             Assert.Equal("Mismatched number of quotes: \"", ex.Message);
         }
+
+        [Fact]
+        public void Tokenize_CheckRegexDigitDoesNotHitUnescape()
+        {
+            var testString = "RewriteRule ^/(\\d)$ /?num=$1";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteRule");
+            expected.Add(@"^/(\d)$");
+            expected.Add(@"/?num=$1");
+
+            Assert.Equal(expected, tokens);
+        }
+
+        [Fact]
+        public void Tokenize_CheckRegexWordDoesNotHitUnescape()
+        {
+            var testString = "RewriteRule ^/(\\w)$ /?num=$1";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteRule");
+            expected.Add(@"^/(\w)$");
+            expected.Add(@"/?num=$1");
+
+            Assert.Equal(expected, tokens);
+        }
+
+        [Fact]
+        public void Tokenize_CheckRegexShorthandDoesNotHitUnescape()
+        {
+            var testString = "RewriteRule ^/(\\s)$ /?num=$1";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteRule");
+            expected.Add(@"^/(\s)$");
+            expected.Add(@"/?num=$1");
+
+            Assert.Equal(expected, tokens);
+        }
+
+
     }
 }
