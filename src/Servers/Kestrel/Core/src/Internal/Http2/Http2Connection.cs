@@ -607,6 +607,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ReturnStream(Http2Stream stream)
         {
+            // We're conservative about what streams we can reuse.
+            // If there is a chance the stream is still in use then don't attempt to reuse it.
+            Debug.Assert(stream.CanReuse);
+
             if (StreamPool.Count < MaxStreamPoolSize)
             {
                 StreamPool.Push(stream);
@@ -1066,7 +1070,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     _streams.Remove(stream.StreamId);
-                    ReturnStream(stream);
+                    if (stream.CanReuse)
+                    {
+                        ReturnStream(stream);
+                    }
                 }
                 else
                 {
@@ -1093,7 +1100,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _streams.Remove(stream.StreamId);
-                ReturnStream(stream);
+                if (stream.CanReuse)
+                {
+                    ReturnStream(stream);
+                }
             }
         }
 
