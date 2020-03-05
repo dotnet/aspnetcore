@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private IEnumerator<KeyValuePair<string, StringValues>> _genericEnumerator;
         private StringValues.Enumerator _stringValuesEnumerator;
 
+        public KnownHeaderType KnownHeaderType { get; private set; }
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
 
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
+            KnownHeaderType = default;
         }
 
         public void Initialize(HttpResponseTrailers headers)
@@ -43,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
+            KnownHeaderType = default;
         }
 
         public void Initialize(IDictionary<string, StringValues> headers)
@@ -54,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
+            KnownHeaderType = default;
         }
 
         public bool MoveNext()
@@ -106,6 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _genericEnumerator.Current.Value.GetEnumerator();
+                    KnownHeaderType = default;
                     return true;
                 }
             }
@@ -119,6 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _trailersEnumerator.Current.Value.GetEnumerator();
+                    KnownHeaderType = _trailersEnumerator.CurrentKnownType;
                     return true;
                 }
             }
@@ -132,6 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _headersEnumerator.Current.Value.GetEnumerator();
+                    KnownHeaderType = _headersEnumerator.CurrentKnownType;
                     return true;
                 }
             }
@@ -152,6 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _headersEnumerator.Reset();
             }
             _stringValuesEnumerator = default;
+            KnownHeaderType = default;
         }
 
         public void Dispose()

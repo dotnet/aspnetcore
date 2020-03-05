@@ -3,17 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HPackEncoderTests
+    public class HPackHeaderWriterTests
     {
         public static TheoryData<KeyValuePair<string, string>[], byte[], int?> SinglePayloadData
         {
@@ -94,16 +91,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(SinglePayloadData))]
         public void EncodesHeadersInSinglePayloadWhenSpaceAvailable(KeyValuePair<string, string>[] headers, byte[] expectedPayload, int? statusCode)
         {
-            var encoder = new HPackEncoder();
             var payload = new byte[1024];
             var length = 0;
             if (statusCode.HasValue)
             {
-                Assert.True(encoder.BeginEncode(statusCode.Value, GetHeadersEnumerator(headers), payload, out length));
+                Assert.True(HPackHeaderWriter.BeginEncodeHeaders(statusCode.Value, GetHeadersEnumerator(headers), payload, out length));
             }
             else
             {
-                Assert.True(encoder.BeginEncode(GetHeadersEnumerator(headers), payload, out length));
+                Assert.True(HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out length));
             }
             Assert.Equal(expectedPayload.Length, length);
 
@@ -120,10 +116,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(false)]
         public void EncodesHeadersInMultiplePayloadsWhenSpaceNotAvailable(bool exactSize)
         {
-            var encoder = new HPackEncoder();
-
             var statusCode = 200;
-            var headers = new []
+            var headers = new[]
             {
                 new KeyValuePair<string, string>("date", "Mon, 24 Jul 2017 19:22:30 GMT"),
                 new KeyValuePair<string, string>("content-type", "text/html; charset=utf-8"),
@@ -161,31 +155,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Span<byte> payload = new byte[1024];
             var offset = 0;
+            var headerEnumerator = GetHeadersEnumerator(headers);
 
             // When !exactSize, slices are one byte short of fitting the next header
             var sliceLength = expectedStatusCodePayload.Length + (exactSize ? 0 : expectedDateHeaderPayload.Length - 1);
-            Assert.False(encoder.BeginEncode(statusCode, GetHeadersEnumerator(headers), payload.Slice(offset, sliceLength), out var length));
+            Assert.False(HPackHeaderWriter.BeginEncodeHeaders(statusCode, headerEnumerator, payload.Slice(offset, sliceLength), out var length));
             Assert.Equal(expectedStatusCodePayload.Length, length);
             Assert.Equal(expectedStatusCodePayload, payload.Slice(0, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedDateHeaderPayload.Length + (exactSize ? 0 : expectedContentTypeHeaderPayload.Length - 1);
-            Assert.False(encoder.Encode(payload.Slice(offset, sliceLength), out length));
+            Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedDateHeaderPayload.Length, length);
             Assert.Equal(expectedDateHeaderPayload, payload.Slice(offset, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedContentTypeHeaderPayload.Length + (exactSize ? 0 : expectedServerHeaderPayload.Length - 1);
-            Assert.False(encoder.Encode(payload.Slice(offset, sliceLength), out length));
+            Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedContentTypeHeaderPayload.Length, length);
             Assert.Equal(expectedContentTypeHeaderPayload, payload.Slice(offset, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedServerHeaderPayload.Length;
-            Assert.True(encoder.Encode(payload.Slice(offset, sliceLength), out length));
+            Assert.True(HPackHeaderWriter.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedServerHeaderPayload.Length, length);
             Assert.Equal(expectedServerHeaderPayload, payload.Slice(offset, length).ToArray());
         }

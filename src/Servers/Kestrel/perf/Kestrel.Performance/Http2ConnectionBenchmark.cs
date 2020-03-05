@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private Http2Connection _connection;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
-        private HPackEncoder _hpackEncoder;
         private byte[] _headersBuffer;
 
         [GlobalSetup]
@@ -47,7 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _httpRequestHeaders.Append(HeaderNames.Scheme, new StringValues("http"));
             _httpRequestHeaders.Append(HeaderNames.Authority, new StringValues("localhost:80"));
 
-            _hpackEncoder = new HPackEncoder();
             _headersBuffer = new byte[1024 * 16];
 
             var serviceContext = new ServiceContext
@@ -78,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _ = _connection.ProcessRequestsAsync(new DummyApplication());
 
             _pipe.Writer.Write(Http2Connection.ClientPreface);
-            PipeWriterHttp2FrameExtensions.WriteSettings(_pipe.Writer, new Http2PeerSettings());
+            _pipe.Writer.WriteSettings(new Http2PeerSettings());
             _pipe.Writer.FlushAsync().GetAwaiter().GetResult();
         }
 
@@ -86,7 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public async Task EmptyRequest()
         {
             _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
-            PipeWriterHttp2FrameExtensions.WriteStartStream(_pipe.Writer, streamId: _currentStreamId, _requestHeadersEnumerator, _hpackEncoder, _headersBuffer, endStream: true);
+            _requestHeadersEnumerator.MoveNext();
+            _pipe.Writer.WriteStartStream(streamId: _currentStreamId, _requestHeadersEnumerator, _headersBuffer, endStream: true);
             _currentStreamId += 2;
             await _pipe.Writer.FlushAsync();
         }
