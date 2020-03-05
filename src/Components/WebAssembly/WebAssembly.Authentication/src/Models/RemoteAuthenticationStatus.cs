@@ -6,27 +6,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// <summary>
     /// Represents the status of an authentication operation.
     /// </summary>
-    public class RemoteAuthenticationStatus
+    public enum RemoteAuthenticationStatus
     {
         /// <summary>
         /// The application is going to be redirected.
         /// </summary>
-        public const string Redirect = "redirect";
+        Redirect,
 
         /// <summary>
         /// The authentication operation completed successfully.
         /// </summary>
-        public const string Success = "success";
+        Success,
 
         /// <summary>
         /// There was an error performing the authentication operation.
         /// </summary>
-        public const string Failure = "failure";
+        Failure,
 
         /// <summary>
         /// The operation in the current navigation context has completed. This signals that the application running on the
         /// current browser context is about to be shut down and no other work is required.
         /// </summary>
-        public const string OperationCompleted = "operation-completed";
+        OperationCompleted,
     }
 }

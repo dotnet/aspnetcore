@@ -40,5 +40,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// </summary>
         [JsonPropertyName("post_logout_redirect_uri")]
         public string PostLogoutRedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response type to use on the authorization flow. The valid values are specified by the identity provider metadata.
+        /// </summary>
+        [JsonPropertyName("response_type")]
+        public string ResponseType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response mode to use in the authorization flow.
+        /// </summary>
+        [JsonPropertyName("response_mode")]
+        public string ResponseMode { get; set; }
     }
 }

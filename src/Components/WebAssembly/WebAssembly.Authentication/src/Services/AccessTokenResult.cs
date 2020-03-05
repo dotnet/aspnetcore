@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <param name="status">The status of the result.</param>
         /// <param name="token">The <see cref="AccessToken"/> in case it was successful.</param>
         /// <param name="redirectUrl">The redirect uri to go to for provisioning the token.</param>
-        public AccessTokenResult(string status, AccessToken token, string redirectUrl)
+        public AccessTokenResult(AccessTokenResultStatus status, AccessToken token, string redirectUrl)
         {
             Status = status;
             _token = token;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the status of the current operation. See <see cref="AccessTokenResultStatus"/> for a list of statuses.
         /// </summary>
-        public string Status { get; set; }
+        public AccessTokenResultStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <returns><c>true</c> when the token request is successful; <c>false</c> otherwise.</returns>
         public bool TryGetToken(out AccessToken accessToken)
         {
-            if (string.Equals(Status, AccessTokenResultStatus.Success, StringComparison.OrdinalIgnoreCase))
+            if (Status == AccessTokenResultStatus.Success)
             {
                 accessToken = _token;
                 return true;
