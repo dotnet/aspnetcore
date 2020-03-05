@@ -7,9 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.Extensions.Logging.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
     /// Capture the memory dump upon test failure.

@@ -133,7 +133,7 @@
     <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingEventSourcePackageVersion>
     <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingEventLogPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-dev</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.2.20126.1</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>

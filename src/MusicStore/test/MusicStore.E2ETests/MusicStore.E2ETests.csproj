@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" />
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>MusicStore.E2ETests</UserSecretsId>
@@ -33,7 +35,6 @@
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />

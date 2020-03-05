@@ -20,7 +20,7 @@
         <_Parameter2>Microsoft.AspNetCore.Testing</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="Microsoft.Extensions.Logging.Testing.TestFrameworkFileLoggerAttribute">
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
         <_Parameter1>$(PreserveExistingLogsInOutput)</_Parameter1>
         <_Parameter2>$(TargetFramework)</_Parameter2>
         <_Parameter3 Condition="'$(LoggingTestingDisableFileLogging)' != 'true'">$(LoggingTestingFileLoggingDirectory)</_Parameter3>

@@ -5,9 +5,10 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.Logging.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     public interface ILoggedTest : IDisposable
     {

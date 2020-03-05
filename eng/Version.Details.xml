@@ -193,7 +193,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>8fb38ab52b8f873109b6e87b4f04226d6a892ee4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.2.20126.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-dev" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>8fb38ab52b8f873109b6e87b4f04226d6a892ee4</Sha>
     </Dependency>

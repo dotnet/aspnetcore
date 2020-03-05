@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" />
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc</RootNamespace>
@@ -15,6 +17,5 @@
     <ProjectReference Include="..\..\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.ResponseCaching" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

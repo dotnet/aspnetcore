@@ -11,10 +11,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Serilog;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.Logging.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     public class LoggedTestBase : ILoggedTest, ITestMethodLifecycle
     {
@@ -37,7 +39,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public string ResolvedTestMethodName { get; set; }
 
-        public ILogger Logger { get; set; }
+        public Microsoft.Extensions.Logging.ILogger Logger { get; set; }
 
         public ILoggerFactory LoggerFactory { get; set; }
 
