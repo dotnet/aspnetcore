@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         // I think this test is flaky due to freb file not being created quickly enough.
         // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2570", FlakyOn.Helix.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2570")]
         [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFrebDisconnect()

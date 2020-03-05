@@ -13,15 +13,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class GeneratedCodeTests
     {
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2223", FlakyOn.Helix.All)]
         public void GeneratedCodeIsUpToDate()
         {
             var httpHeadersGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "HttpHeaders.Generated.cs");
             var httpProtocolGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "HttpProtocol.Generated.cs");
             var httpUtilitiesGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "HttpUtilities.Generated.cs");
             var http2ConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "Http2Connection.Generated.cs");
-            var transportMultiplexedConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "TransportMultiplexedConnection.Generated.cs");
-            var transportConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "TransportConnection.Generated.cs");
+            var transportMultiplexedConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "TransportMultiplexedConnection.Generated.cs");
+            var transportConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "TransportConnection.Generated.cs");
 
             var testHttpHeadersGeneratedPath = Path.GetTempFileName();
             var testHttpProtocolGeneratedPath = Path.GetTempFileName();

@@ -148,11 +148,49 @@ namespace Microsoft.AspNetCore.Components
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
+            Action<short> setter,
+            short existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<short>(factory, receiver, setter, culture, ConvertToShort);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
             Action<long?> setter,
             long? existingValue,
             CultureInfo culture = null)
         {
             return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short?> setter,
+            short? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
         }
 
         /// <summary>

@@ -1,7 +1,0 @@
-<Project>
-  <!-- Override where xUnit logs and results go if we're doing the flaky run -->
-  <PropertyGroup Condition="'$(RunFlakyTests)' == 'true'">
-    <ArtifactsLogDir>$(ArtifactsDir)log\$(Configuration)\Flaky\</ArtifactsLogDir>
-    <ArtifactsTestResultsDir>$(ArtifactsDir)TestResults\$(Configuration)\Flaky\</ArtifactsTestResultsDir>
-  </PropertyGroup>
-</Project>

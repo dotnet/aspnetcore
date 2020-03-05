@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1817", FlakyOn.AzP.Windows)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1817")]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();

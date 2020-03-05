@@ -127,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private readonly long _bits;
             private int _next;
             private KeyValuePair<string, StringValues> _current;
+            private KnownHeaderType _currentKnownType;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
 
@@ -136,6 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _bits = collection._bits;
                 _next = 0;
                 _current = default;
+                _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
                     ? collection.MaybeUnknown.GetEnumerator()
@@ -143,6 +145,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             public KeyValuePair<string, StringValues> Current => _current;
+
+            internal KnownHeaderType CurrentKnownType => _currentKnownType;
 
             object IEnumerator.Current => _current;
 

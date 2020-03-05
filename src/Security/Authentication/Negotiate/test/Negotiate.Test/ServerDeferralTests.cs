@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
+    [QuarantinedTest]
     public class ServerDeferralTests
     {
         [Fact]

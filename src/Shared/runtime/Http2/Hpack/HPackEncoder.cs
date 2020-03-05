@@ -1,170 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.
-// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace System.Net.Http.HPack
 {
-    internal class HPackEncoder
+    internal static class HPackEncoder
     {
-        private IEnumerator<KeyValuePair<string, string>> _enumerator;
-
-        public bool BeginEncode(IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
-        {
-            _enumerator = headers.GetEnumerator();
-            _enumerator.MoveNext();
-
-            return Encode(buffer, out length);
-        }
-
-        public bool BeginEncode(int statusCode, IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
-        {
-            _enumerator = headers.GetEnumerator();
-            _enumerator.MoveNext();
-
-            int statusCodeLength = EncodeStatusCode(statusCode, buffer);
-            bool done = Encode(buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out int headersLength);
-            length = statusCodeLength + headersLength;
-
-            return done;
-        }
-
-        public bool Encode(Span<byte> buffer, out int length)
-        {
-            return Encode(buffer, throwIfNoneEncoded: true, out length);
-        }
-
-        private bool Encode(Span<byte> buffer, bool throwIfNoneEncoded, out int length)
-        {
-            int currentLength = 0;
-            do
-            {
-                if (!EncodeHeader(_enumerator.Current.Key, _enumerator.Current.Value, buffer.Slice(currentLength), out int headerLength))
-                {
-                    if (currentLength == 0 && throwIfNoneEncoded)
-                    {
-                        throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-                    }
-
-                    length = currentLength;
-                    return false;
-                }
-
-                currentLength += headerLength;
-            }
-            while (_enumerator.MoveNext());
-
-            length = currentLength;
-
-            return true;
-        }
-
-        private int EncodeStatusCode(int statusCode, Span<byte> buffer)
-        {
-            switch (statusCode)
-            {
-                // Status codes which exist in the HTTP/2 StaticTable.
-                case 200:
-                case 204:
-                case 206:
-                case 304:
-                case 400:
-                case 404:
-                case 500:
-                    buffer[0] = (byte)(0x80 | H2StaticTable.StatusIndex[statusCode]);
-                    return 1;
-                default:
-                    // Send as Literal Header Field Without Indexing - Indexed Name
-                    buffer[0] = 0x08;
-
-                    ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
-                    statusBytes.CopyTo(buffer.Slice(2));
-
-                    return 2 + statusBytes.Length;
-            }
-        }
-
-        private bool EncodeHeader(string name, string value, Span<byte> buffer, out int length)
-        {
-            int i = 0;
-            length = 0;
-
-            if (buffer.Length == 0)
-            {
-                return false;
-            }
-
-            buffer[i++] = 0;
-
-            if (i == buffer.Length)
-            {
-                return false;
-            }
-
-            if (!EncodeString(name, buffer.Slice(i), out int nameLength, lowercase: true))
-            {
-                return false;
-            }
-
-            i += nameLength;
-
-            if (i >= buffer.Length)
-            {
-                return false;
-            }
-
-            if (!EncodeString(value, buffer.Slice(i), out int valueLength, lowercase: false))
-            {
-                return false;
-            }
-
-            i += valueLength;
-
-            length = i;
-            return true;
-        }
-
-        private bool EncodeString(string value, Span<byte> destination, out int bytesWritten, bool lowercase)
-        {
-            // From https://tools.ietf.org/html/rfc7541#section-5.2
-            // ------------------------------------------------------
-            //   0   1   2   3   4   5   6   7
-            // +---+---+---+---+---+---+---+---+
-            // | H |    String Length (7+)     |
-            // +---+---------------------------+
-            // |  String Data (Length octets)  |
-            // +-------------------------------+
-            const int toLowerMask = 0x20;
-
-            if (destination.Length != 0)
-            {
-                destination[0] = 0; // TODO: Use Huffman encoding
-                if (IntegerEncoder.Encode(value.Length, 7, destination, out int integerLength))
-                {
-                    Debug.Assert(integerLength >= 1);
-
-                    destination = destination.Slice(integerLength);
-                    if (value.Length <= destination.Length)
-                    {
-                        for (int i = 0; i < value.Length; i++)
-                        {
-                            char c = value[i];
-                            destination[i] = (byte)(lowercase && (uint)(c - 'A') <= ('Z' - 'A') ? c | toLowerMask : c);
-                        }
-
-                        bytesWritten = integerLength + value.Length;
-                        return true;
-                    }
-                }
-            }
-
-            bytesWritten = 0;
-            return false;
-        }
-
         // Things we should add:
         // * Huffman encoding
         //
@@ -193,6 +36,43 @@ namespace System.Net.Http.HPack
 
             bytesWritten = 0;
             return false;
+        }
+
+        /// <summary>Encodes the status code of a response to the :status field.</summary>
+        public static bool EncodeStatusHeader(int statusCode, Span<byte> destination, out int bytesWritten)
+        {
+            // Bytes written depend on whether the status code value maps directly to an index
+            switch (statusCode)
+            {
+                case 200:
+                case 204:
+                case 206:
+                case 304:
+                case 400:
+                case 404:
+                case 500:
+                    // Status codes which exist in the HTTP/2 StaticTable.
+                    return EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], destination, out bytesWritten);
+                default:
+                    // If the status code doesn't have a static index then we need to include the full value.
+                    // Write a status index and then the number bytes as a string literal.
+                    if (!EncodeLiteralHeaderFieldWithoutIndexing(H2StaticTable.Status200, destination, out var nameLength))
+                    {
+                        bytesWritten = 0;
+                        return false;
+                    }
+
+                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+
+                    if (!EncodeStringLiteral(statusBytes, destination.Slice(nameLength), out var valueLength))
+                    {
+                        bytesWritten = 0;
+                        return false;
+                    }
+
+                    bytesWritten = nameLength + valueLength;
+                    return true;
+            }
         }
 
         /// <summary>Encodes a "Literal Header Field without Indexing".</summary>
@@ -229,7 +109,7 @@ namespace System.Net.Http.HPack
 
         /// <summary>
         /// Encodes a "Literal Header Field without Indexing", but only the index portion;
-        /// a subsequent call to <see cref="EncodeStringLiteral"/> must be used to encode the associated value.
+        /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
         public static bool EncodeLiteralHeaderFieldWithoutIndexing(int index, Span<byte> destination, out int bytesWritten)
         {
@@ -254,6 +134,39 @@ namespace System.Net.Http.HPack
                 {
                     Debug.Assert(indexLength >= 1);
                     bytesWritten = indexLength;
+                    return true;
+                }
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
+        /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
+        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 0 | 0 | 0 |       0       |
+            // +---+---+-----------------------+
+            // | H |     Name Length (7+)      |
+            // +---+---------------------------+
+            // |  Name String (Length octets)  |
+            // +---+---------------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            if ((uint)destination.Length >= 3)
+            {
+                destination[0] = 0;
+                if (EncodeLiteralHeaderName(name, destination.Slice(1), out int nameLength) &&
+                    EncodeStringLiteral(value, destination.Slice(1 + nameLength), out int valueLength))
+                {
+                    bytesWritten = 1 + nameLength + valueLength;
                     return true;
                 }
             }
@@ -297,7 +210,7 @@ namespace System.Net.Http.HPack
 
         /// <summary>
         /// Encodes a "Literal Header Field without Indexing - New Name", but only the name portion;
-        /// a subsequent call to <see cref="EncodeStringLiteral"/> must be used to encode the associated value.
+        /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
         public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, Span<byte> destination, out int bytesWritten)
         {
@@ -393,6 +306,40 @@ namespace System.Net.Http.HPack
             return false;
         }
 
+        public static bool EncodeStringLiteral(ReadOnlySpan<byte> value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-5.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | H |    String Length (7+)     |
+            // +---+---------------------------+
+            // |  String Data (Length octets)  |
+            // +-------------------------------+
+
+            if (destination.Length != 0)
+            {
+                destination[0] = 0; // TODO: Use Huffman encoding
+                if (IntegerEncoder.Encode(value.Length, 7, destination, out int integerLength))
+                {
+                    Debug.Assert(integerLength >= 1);
+
+                    destination = destination.Slice(integerLength);
+                    if (value.Length <= destination.Length)
+                    {
+                        // Note: No validation. Bytes should have already been validated.
+                        value.CopyTo(destination);
+
+                        bytesWritten = integerLength + value.Length;
+                        return true;
+                    }
+                }
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
         public static bool EncodeStringLiteral(string value, Span<byte> destination, out int bytesWritten)
         {
             // From https://tools.ietf.org/html/rfc7541#section-5.2
@@ -481,7 +428,7 @@ namespace System.Net.Http.HPack
 
         /// <summary>
         /// Encodes a "Literal Header Field without Indexing" to a new array, but only the index portion;
-        /// a subsequent call to <see cref="EncodeStringLiteral"/> must be used to encode the associated value.
+        /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
         public static byte[] EncodeLiteralHeaderFieldWithoutIndexingToAllocatedArray(int index)
         {
@@ -493,7 +440,7 @@ namespace System.Net.Http.HPack
 
         /// <summary>
         /// Encodes a "Literal Header Field without Indexing - New Name" to a new array, but only the name portion;
-        /// a subsequent call to <see cref="EncodeStringLiteral"/> must be used to encode the associated value.
+        /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
         /// </summary>
         public static byte[] EncodeLiteralHeaderFieldWithoutIndexingNewNameToAllocatedArray(string name)
         {

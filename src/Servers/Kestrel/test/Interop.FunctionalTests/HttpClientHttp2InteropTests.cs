@@ -1024,7 +1024,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
         {
@@ -1118,7 +1118,7 @@ namespace Interop.FunctionalTests
                 Assert.Equal(oneKbString + i, response.Headers.GetValues("header" + i).Single());
             }
 
-            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15636 and flags END_STREAM")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15612 and flags END_STREAM")));
             Assert.Equal(2, TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 15585 and flags NONE")).Count());
             Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 14546 and flags END_HEADERS")));
 
@@ -1189,6 +1189,7 @@ namespace Interop.FunctionalTests
         // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
         {
@@ -1346,7 +1347,7 @@ namespace Interop.FunctionalTests
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
         [Theory]
-        [Flaky("https://github.com/dotnet/runtime/issues/860", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
         {

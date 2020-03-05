@@ -1,6 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.
-// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
 using System.Text;
@@ -108,6 +108,7 @@ namespace System.Net.Http.HPack
         public const int PathSlash = 4;
         public const int SchemeHttp = 6;
         public const int SchemeHttps = 7;
+        public const int Status200 = 8;
         public const int AcceptCharset = 15;
         public const int AcceptEncoding = 16;
         public const int AcceptLanguage = 17;
