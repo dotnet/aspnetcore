@@ -76,16 +76,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
-        public void Initialize(HttpConnectionContext context, bool reset)
+        public void Initialize(HttpConnectionContext context)
         {
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
 
-            if (reset)
-            {
-                Reset();
-            }
+            Reset();
 
             HttpResponseControl = this;
         }

@@ -33,18 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
 
-        /// <summary>
-        /// Initialize the stream with the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="reset">
-        /// A value indicating whether to reset the protocol instance.
-        /// We want to reset when the stream is created, and when the stream is returned to the pool.
-        /// The stream shouldn't be reset when fetched from the pool.
-        /// </param>
-        public void InitializePooled(Http2StreamContext context, bool reset)
+        public void Initialize(Http2StreamContext context)
         {
-            base.Initialize(context, reset);
+            base.Initialize(context);
 
             _decrementCalled = false;
             _completionState = StreamCompletionFlags.None;
@@ -81,9 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _context.StreamId = streamId;
 
-            // The stream was reset when it was completed.
-            // We don't want to reset it twice because reused headers will be discarded.
-            InitializePooled(_context, reset: false);
+            Initialize(_context);
         }
 
         public int StreamId => _context.StreamId;
@@ -155,8 +144,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // The app can no longer read any more of the request body, so return any bytes that weren't read to the
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
-
-                Reset();
             }
             finally
             {

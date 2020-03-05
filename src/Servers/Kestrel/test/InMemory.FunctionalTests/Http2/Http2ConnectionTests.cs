@@ -234,11 +234,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Stream returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
 
-            Assert.True(_connection.StreamPool.TryPop(out var stream));
-
-            // Stream has been completed and reset before being returned
-            Assert.Empty(stream.RequestHeaders);
-
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 

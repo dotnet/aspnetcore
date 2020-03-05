@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Http1Connection(HttpConnectionContext context)
         {
-            Initialize(context, reset: true);
+            Initialize(context);
 
             _context = context;
             _parser = ServiceContext.HttpParser;
