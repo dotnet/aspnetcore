@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2074", FlakyOn.AzP.macOS)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2074")]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2711", FlakyOn.AzP.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2711")]
         public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
             if (!CanBindToEndpoint(endpoint.Address, 443))
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
         [IPv6SupportedCondition]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2711", FlakyOn.AzP.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2711")]
         public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2711", FlakyOn.AzP.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2711")]
         public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 80) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 80))
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2179", FlakyOn.Helix.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2179")]
         [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]

@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task MissingAuthority_200Status()
         {
             var headers = new[]

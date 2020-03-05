@@ -2541,6 +2541,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);

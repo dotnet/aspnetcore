@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();

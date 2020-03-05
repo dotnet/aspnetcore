@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1323", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1323")]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [Flaky("<no longer needed; tracked in Kusto>", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
