@@ -20,12 +20,6 @@
         <TargetCompressionPath>$(_BlazorFilesIntermediateOutputPath)%(RelativePath).gz</TargetCompressionPath>
         <TargetOutputPath>%(RelativePath).gz</TargetOutputPath>
         <RelativePath>%(RelativePath).gz</RelativePath>
-        <InputSource>%(FullPath)</InputSource>
-      </_BlazorFileToCompress>
-
-      <!-- The linker is not incremental, so to support incremental compression in addition to linking we need to compute the hashes of the dlls and
-           pdbs, write them to a file when they change and use that as input for the compression task instead. -->
-      <_BlazorFileToCompress Condition="'$(BlazorWebAssemblyEnableLinking)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
         <InputSource>$([MSBuild]::NormalizePath('$(_BlazorFilesIntermediateOutputPath)%(RelativePath).hash'))</InputSource>
       </_BlazorFileToCompress>
 
@@ -36,7 +30,7 @@
 
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorFileToCompress)" Condition="'$(BlazorWebAssemblyEnableLinking)' == 'true' and ('%(Extension)' == '.dll' or '%(Extension)' == '.pdb')">
+    <GetFileHash Files="@(_BlazorFileToCompress)">
       <Output TaskParameter="Items" ItemName="_LinkerOutputHashes" />
     </GetFileHash>
 
