@@ -4,6 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
+using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
-            Assert.FileCountEquals(result, 1, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "wasm"), "dotnet.*.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
-            Assert.FileCountEquals(result, 1, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "wasm"), "dotnet.*.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
         }
