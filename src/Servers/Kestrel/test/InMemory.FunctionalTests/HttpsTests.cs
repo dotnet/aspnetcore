@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [Flaky("<No longer needed; tracked in Kusto>", FlakyOn.All)]
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
