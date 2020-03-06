@@ -6,8 +6,6 @@ import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { TestLogger } from "./TestLogger";
 
 import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
-import { NodeHttpClient } from "@microsoft/signalr/dist/esm/NodeHttpClient";
-import { Platform } from "@microsoft/signalr/dist/esm/Utils";
 import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
 
 // On slower CI machines, these tests sometimes take longer than 5s
@@ -120,12 +118,7 @@ export function getHttpClients(): HttpClient[] {
     if (typeof XMLHttpRequest !== "undefined") {
         httpClients.push(new XhrHttpClient(TestLogger.instance));
     }
-    if (typeof fetch !== "undefined") {
-        httpClients.push(new FetchHttpClient(TestLogger.instance));
-    }
-    if (Platform.isNode) {
-        httpClients.push(new NodeHttpClient(TestLogger.instance));
-    }
+    httpClients.push(new FetchHttpClient(TestLogger.instance));
     return httpClients;
 }
 

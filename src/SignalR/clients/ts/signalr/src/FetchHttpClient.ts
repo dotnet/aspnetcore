@@ -1,9 +1,29 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+// @ts-ignore: This will be removed from built files and is here to make the types available during dev work
+import * as tough from "@types/tough-cookie";
+
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
+import { Platform } from "./Utils";
+
+let abortControllerType: { prototype: AbortController, new(): AbortController };
+let fetchType: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+let jar: tough.CookieJar;
+if (typeof fetch === "undefined") {
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    jar = new (requireFunc("tough-cookie")).CookieJar();
+    fetchType = requireFunc("node-fetch");
+    fetchType = requireFunc("fetch-cookie")(fetchType, jar);
+    abortControllerType = requireFunc("abort-controller");
+} else {
+    fetchType = fetch;
+    abortControllerType = AbortController;
+}
 
 export class FetchHttpClient extends HttpClient {
     private readonly logger: ILogger;
@@ -27,7 +47,7 @@ export class FetchHttpClient extends HttpClient {
             throw new Error("No url defined.");
         }
 
-        const abortController = new AbortController();
+        const abortController = new abortControllerType();
 
         let error: any;
         // Hook our abortSignal into the abort controller
@@ -52,7 +72,7 @@ export class FetchHttpClient extends HttpClient {
 
         let response: Response;
         try {
-            response = await fetch(request.url!, {
+            response = await fetchType(request.url!, {
                 body: request.content!,
                 cache: "no-cache",
                 credentials: request.withCredentials === true ? "include" : "same-origin",
@@ -96,6 +116,15 @@ export class FetchHttpClient extends HttpClient {
             response.statusText,
             payload,
         );
+    }
+
+    public getCookieString(url: string): string {
+        let cookies: string = "";
+        if (Platform.isNode) {
+            // @ts-ignore: unused variable
+            jar.getCookies(url, (e, c) => cookies = c.join("; "));
+        }
+        return cookies;
     }
 }
 
