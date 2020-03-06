@@ -77,14 +77,17 @@ namespace Wasm.Performance.Driver
                 }
 
                 var results = await BenchmarkResultTask.Task;
-                FormatAsBenchmarksOutput(results, includeStressRunDelimiter: !stressRunCancellation.IsCancellationRequested);
+
+                FormatAsBenchmarksOutput(results,
+                    includeMetadata: isFirst,
+                    includeStressRunDelimiter: !stressRunCancellation.IsCancellationRequested);
             } while (!stressRunCancellation.IsCancellationRequested);
 
             Console.WriteLine("Done executing benchmark");
             return 0;
         }
 
-        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult, bool includeStressRunDelimiter)
+        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult, bool includeMetadata, bool includeStressRunDelimiter)
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
@@ -140,6 +143,11 @@ namespace Wasm.Performance.Driver
                     Name = scenarioName,
                     Value = result.Duration,
                 });
+            }
+
+            if (!includeMetadata)
+            {
+                output.Metadata.Clear();
             }
 
             if (includeStressRunDelimiter)
