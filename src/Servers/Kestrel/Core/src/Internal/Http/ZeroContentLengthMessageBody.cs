@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal sealed class ZeroContentLengthMessageBody : MessageBody
     {
         public ZeroContentLengthMessageBody(bool keepAlive)
-            : base(null)
         {
+            Reset(null);
             RequestKeepAlive = keepAlive;
         }
 

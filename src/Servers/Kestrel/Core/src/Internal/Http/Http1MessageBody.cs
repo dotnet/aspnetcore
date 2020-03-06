@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected bool _completed;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context)
         {
+            Reset(context);
             _context = context;
         }
 

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly MessageBody _zeroContentLengthClose = new ZeroContentLengthMessageBody(keepAlive: false);
         private static readonly MessageBody _zeroContentLengthKeepAlive = new ZeroContentLengthMessageBody(keepAlive: true);
 
-        private readonly HttpProtocol _context;
+        private HttpProtocol _context;
 
         private bool _send100Continue = true;
         private long _consumedBytes;
@@ -25,11 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected bool _backpressure;
         protected long _alreadyTimedBytes;
         protected long _examinedUnconsumedBytes;
-
-        protected MessageBody(HttpProtocol context)
-        {
-            _context = context;
-        }
 
         public static MessageBody ZeroContentLengthClose => _zeroContentLengthClose;
 
@@ -72,6 +67,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
         protected virtual Task OnStopAsync() => Task.CompletedTask;
+
+        protected void Reset(HttpProtocol context)
+        {
+            _context = context;
+            _send100Continue = true;
+            _consumedBytes = 0;
+            _stopped = false;
+            _timingEnabled = false;
+            _backpressure = false;
+            _alreadyTimedBytes = 0;
+            _examinedUnconsumedBytes = 0;
+        }
 
         protected void TryProduceContinue()
         {

@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private ReadResult _readResult;
 
         private Http3MessageBody(Http3Stream context)
-            : base(context)
         {
+            Reset(context);
             _context = context;
         }
         protected override void OnReadStarting()
