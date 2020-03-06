@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -25,7 +26,9 @@ namespace Microsoft.AspNetCore.Components
 
         public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
         {
-            var instance = Activator.CreateInstance(componentType);
+            var activator = serviceProvider.GetRequiredService<IComponentActivator>();
+
+            var instance = activator.CreateInstance(componentType);
             if (!(instance is IComponent component))
             {
                 throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
