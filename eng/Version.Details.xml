@@ -81,7 +81,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>6ae4b22a059858eba7b3d9068f812ada92df8e24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.2.20154.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.2.20154.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>6ae4b22a059858eba7b3d9068f812ada92df8e24</Sha>
     </Dependency>
