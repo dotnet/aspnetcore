@@ -148,7 +148,7 @@
   <Target
     Name="_ResolveBlazorOutputsWhenLinked"
     Condition="'$(BlazorWebAssemblyEnableLinking)' == 'true'"
-    DependsOnTargets="_PrepareBlazorLinkerInputs;_Generate_BlazorLinkerDescriptor;_GenerateTypeGranularLinkerDescriptor;_LinkBlazorApplication">
+    DependsOnTargets="_PrepareBlazorLinkerInputs;_GenerateBlazorLinkerDescriptor;_GenerateTypeGranularLinkerDescriptor;_LinkBlazorApplication">
 
     <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
     <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
@@ -179,10 +179,10 @@
   </Target>
 
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(_BlazorTasksPath)" />
-  <Target Name="_Generate_BlazorLinkerDescriptor"
+  <Target Name="_GenerateBlazorLinkerDescriptor"
           Inputs="@(IntermediateAssembly)"
           Outputs="$(_GeneratedBlazorLinkerDescriptor)"
-          Condition="'@(_BlazorLinkerDescriptor)' == ''">
+          Condition="'@(BlazorLinkerDescriptor)' == ''">
 
     <!-- Generate linker descriptors if the project doesn't explicitly provide one. -->
 
@@ -192,8 +192,8 @@
 
     <ItemGroup>
       <FileWrites Include="$(_GeneratedBlazorLinkerDescriptor)" />
-      <_BlazorLinkerDescriptor Include="$(_GeneratedBlazorLinkerDescriptor)" />
-      <_BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
+      <BlazorLinkerDescriptor Include="$(_GeneratedBlazorLinkerDescriptor)" />
+      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
     </ItemGroup>
   </Target>
 
@@ -207,7 +207,7 @@
       OutputPath="$(_TypeGranularityLinkerDescriptor)" />
 
     <ItemGroup>
-      <_BlazorLinkerDescriptor Include="$(_TypeGranularityLinkerDescriptor)" />
+      <BlazorLinkerDescriptor Include="$(_TypeGranularityLinkerDescriptor)" />
       <FileWrites Include="$(_TypeGranularityLinkerDescriptor)" />
     </ItemGroup>
   </Target>
@@ -217,7 +217,7 @@
       Name="_LinkBlazorApplication"
       Inputs="$(ProjectAssetsFile);
               @(_BlazorManagedRuntimeAssemby);
-              @(_BlazorLinkerDescriptor);
+              @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
       Outputs="$(_BlazorLinkerOutputCache)">
 
@@ -246,7 +246,7 @@
         ILLinkPath="$(ComponentsWebAssemblyLinkerPath)"
         AssemblyPaths="@(_BlazorAssemblyToLink)"
         RootAssemblyNames="@(_BlazorLinkerRoot)"
-        RootDescriptorFiles="@(_BlazorLinkerDescriptor)"
+        RootDescriptorFiles="@(BlazorLinkerDescriptor)"
         OutputDirectory="$(_BlazorIntermediateLinkerOutputPath)"
         ExtraArgs="$(_BlazorLinkerAdditionalOptions)"
         ToolExe="$(_DotNetHostFileName)"
