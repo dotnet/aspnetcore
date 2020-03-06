@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly.JSInterop", "WebAssembly.JSInterop", "{37FA056D-A7B3-4F72-A8B9-8D3C175E831E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAssembly.JSInterop", "WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.WebAssembly", "WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{7920B09F-8016-49CF-A229-E72D0CECDD17}"
 EndProject
@@ -105,7 +105,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Authentication.We
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DebugProxy", "DebugProxy", "{96DE9B14-D81F-422E-A33A-728BFB9C153A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compression", "Compression", "{710765DD-C2AD-4DBB-A114-14E62F31F463}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression", "WebAssembly\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj", "{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -537,6 +541,18 @@ Global
 		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x64.Build.0 = Release|Any CPU
 		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x86.ActiveCfg = Release|Any CPU
 		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x86.Build.0 = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|x64.Build.0 = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -591,6 +607,8 @@ Global
 		{2F105FA7-74DA-4855-9D8E-818DEE1F8D43} = {E4D756A7-A934-4D7F-BC6E-7B95FE4098AB}
 		{96DE9B14-D81F-422E-A33A-728BFB9C153A} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C} = {96DE9B14-D81F-422E-A33A-728BFB9C153A}
+		{710765DD-C2AD-4DBB-A114-14E62F31F463} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
+		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF} = {710765DD-C2AD-4DBB-A114-14E62F31F463}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27A36094-AA50-4FFD-ADE6-C055E391F741}

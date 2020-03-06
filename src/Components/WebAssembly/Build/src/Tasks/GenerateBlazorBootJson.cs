@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     var resourceName = GetResourceName(resource);
                     if (!resourceList.ContainsKey(resourceName))
                     {
-                        resourceList.Add(resourceName, $"sha256-{resource.GetMetadata("FileHash")}");
+                        resourceList.Add(resourceName, $"sha256-{resource.GetMetadata("Integrity")}");
                     }
                 }
             }

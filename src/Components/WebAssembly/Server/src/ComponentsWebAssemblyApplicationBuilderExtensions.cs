@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
@@ -21,15 +22,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class ComponentsWebAssemblyApplicationBuilderExtensions
     {
-        private static readonly HashSet<StringSegment> _supportedEncodings = new HashSet<StringSegment>(StringSegmentComparer.OrdinalIgnoreCase)
-        {
-            "gzip"
-        };
-
-        // List of encodings by preference order with their associated extension so that we can easily handle "*".
-        private static readonly List<(StringSegment encoding, string extension)> _preferredEncodings =
-            new List<(StringSegment encoding, string extension)>() { ("gzip", ".gz") };
-
         /// <summary>
         /// Configures the application to serve Blazor WebAssembly framework files from the path <paramref name="pathPrefix"/>. This path must correspond to a referenced Blazor WebAssembly application project.
         /// </summary>
@@ -55,10 +47,10 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
 
-                    // This will invoke the static files middleware plugged-in below.
-                    NegotiateEncoding(context, webHostEnvironment);
                     await next();
                 });
+
+                subBuilder.UseMiddleware<ContentEncodingNegotiator>();
 
                 subBuilder.UseStaticFiles(options);
             });
@@ -84,6 +76,7 @@ namespace Microsoft.AspNetCore.Builder
             // We unconditionally map pdbs as there will be no pdbs in the output folder for
             // release builds unless BlazorEnableDebugging is explicitly set to true.
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
+            AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
 
@@ -96,11 +89,12 @@ namespace Microsoft.AspNetCore.Builder
                 fileContext.Context.Response.Headers.Append(HeaderNames.CacheControl, "no-cache");
 
                 var requestPath = fileContext.Context.Request.Path;
-                if (string.Equals(Path.GetExtension(requestPath.Value), ".gz"))
+                var fileExtension = Path.GetExtension(requestPath.Value);
+                if (string.Equals(fileExtension, ".gz") || string.Equals(fileExtension, ".br"))
                 {
                     // When we are serving framework files (under _framework/ we perform content negotiation
-                    // on the accept encoding and replace the path with <<original>>.gz if we can serve gzip
-                    // content.
+                    // on the accept encoding and replace the path with <<original>>.gz|br if we can serve gzip or brotli content
+                    // respectively.
                     // Here we simply calculate the original content type by removing the extension and apply it
                     // again.
                     // When we revisit this, we should consider calculating the original content type and storing it
@@ -123,80 +117,5 @@ namespace Microsoft.AspNetCore.Builder
                 provider.Mappings.Add(name, mimeType);
             }
         }
-
-        private static void NegotiateEncoding(HttpContext context, IWebHostEnvironment webHost)
-        {
-            var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
-            if (StringValues.IsNullOrEmpty(accept))
-            {
-                return;
-            }
-
-            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || encodings.Count == 0)
-            {
-                return;
-            }
-
-            var selectedEncoding = StringSegment.Empty;
-            var selectedEncodingQuality = .0;
-
-            foreach (var encoding in encodings)
-            {
-                var encodingName = encoding.Value;
-                var quality = encoding.Quality.GetValueOrDefault(1);
-
-                if (quality < double.Epsilon)
-                {
-                    continue;
-                }
-
-                if (quality <= selectedEncodingQuality)
-                {
-                    continue;
-                }
-
-                if (_supportedEncodings.Contains(encodingName))
-                {
-                    selectedEncoding = encodingName;
-                    selectedEncodingQuality = quality;
-                }
-
-                if (StringSegment.Equals("*", encodingName, StringComparison.Ordinal))
-                {
-                    foreach (var candidate in _preferredEncodings)
-                    {
-                        if (ResourceExists(context, webHost, candidate.extension))
-                        {
-                            selectedEncoding = candidate.encoding;
-                            break;
-                        }
-                    }
-
-                    selectedEncodingQuality = quality;
-                }
-
-                if (StringSegment.Equals("identity", encodingName, StringComparison.OrdinalIgnoreCase))
-                {
-                    selectedEncoding = StringSegment.Empty;
-                    selectedEncodingQuality = quality;
-                }
-            }
-
-            if (StringSegment.Equals("gzip", selectedEncoding, StringComparison.OrdinalIgnoreCase))
-            {
-                if (ResourceExists(context, webHost, ".gz"))
-                {
-                    // We only try to serve the pre-compressed file if it's actually there.
-                    context.Request.Path = context.Request.Path + ".gz";
-                    context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
-                    context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.ContentEncoding);
-                }
-            }
-
-            return;
-        }
-
-        private static bool ResourceExists(HttpContext context, IWebHostEnvironment webHost, string extension) =>
-            webHost.WebRootFileProvider.GetFileInfo(context.Request.Path + extension).Exists;
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Blazor.Build;
 using Xunit;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
+using System.IO.Compression;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 {
@@ -99,6 +100,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            VerifyCompression(result, blazorPublishDirectory);
+        }
+
+        private static void VerifyCompression(MSBuildResult result, string blazorPublishDirectory)
+        {
+            var original = Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            var compressed = Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json.br");
+            using var brotliStream = new BrotliStream(File.OpenRead(compressed), CompressionMode.Decompress);
+            using var textReader = new StreamReader(brotliStream);
+            var uncompressedText = textReader.ReadToEnd();
+            var originalText = File.ReadAllText(original);
+
+            Assert.Equal(originalText, uncompressedText);
         }
 
         [Fact]

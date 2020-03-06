@@ -240,9 +240,16 @@ namespace Templates.Test.Helpers
             return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
         }
 
+        internal Task<HttpResponseMessage> SendRequest(Func<HttpRequestMessage> requestFactory)
+        {
+            return RequestWithRetries(client => client.SendAsync(requestFactory()), _httpClient);
+        }
+
+
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client => {
+            var response = await RequestWithRetries(client =>
+            {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, requestUrl));

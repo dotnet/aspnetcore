@@ -1,18 +1,29 @@
 <Project>
 
+  <PropertyGroup>
+    <_BlazorCurrentProjectWWWroot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)\wwwroot\'))</_BlazorCurrentProjectWWWroot>
+  </PropertyGroup>
+
   <Target Name="_ResolveBlazorGeneratedAssets" DependsOnTargets="_PrepareBlazorOutputs">
     <ItemGroup>
-      <StaticWebAsset Include="@(_BlazorOutputWithTargetPath->'%(FullPath)')" RemoveMetadata="TargetOutputPath">
+      <_BlazorOutputCandidateAsset Include="@(_BlazorOutputWithTargetPath->'%(FullPath)')">
         <SourceType></SourceType>
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/'))</RelativePath>
-      </StaticWebAsset>
+        <Integrity>%(_BlazorOutputWithTargetPath.Integrity)</Integrity>
+      </_BlazorOutputCandidateAsset>
+
+      <_BlazorOutputCandidateAsset Remove="@(StaticWebAsset)" />
+
+      <_StaticWebAssetIntegrity Include="@(_BlazorOutputCandidateAsset)" KeepMetadata="Integrity" />
+
+      <StaticWebAsset Include="@(_BlazorOutputCandidateAsset)" KeepMetadata="SourceType;SourceId;ContentRoot;BasePath;RelativePath" />
 
       <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'$(BlazorEnableDebugging)' != 'true' and '%(SourceType)' == '' and '%(Extension)' == '.pdb'" />
 
-      <!-- We are dependingo on a "private" property for static web assets, but this is something we can clean-up in a later release.
+      <!-- We are depending on a "private" property for static web assets, but this is something we can clean-up in a later release.
            These files are not "external" in the "traditional" sense but it is fine for now as this is an implementation detail.
            We only need to do this for the standalone case, for hosted scenarios this works just fine as the assets are considered
            external. -->
@@ -39,12 +50,11 @@
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
 
-    <PropertyGroup>
-      <_BlazorCurrentProjectWWWroot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)\wwwroot\'))</_BlazorCurrentProjectWWWroot>
-    </PropertyGroup>
-
     <ItemGroup>
-      <_BlazorCopyLocalAssets Include="@(StaticWebAsset)" Condition="'%(SourceType)' == '' and '%(ContentRoot)' != '$(_BlazorCurrentProjectWWWroot)'" />
+      <_BlazorCopyLocalAssets
+        Include="@(StaticWebAsset)"
+        Condition="'%(SourceType)' == '' and '%(ContentRoot)' != '$(_BlazorCurrentProjectWWWroot)' and !$([System.String]::Copy('%(RelativePath)').EndsWith('.br'))" />
+      <_BlazorCopyLocalAssets Remove="@(_BlazorCopyLocalExclusion)" />
     </ItemGroup>
 
     <!-- Copy the blazor output files  -->

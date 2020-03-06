@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var mock = new Mock<ITaskItem>();
             mock.Setup(m => m.GetMetadata("BootManifestResourceType")).Returns(type);
             mock.Setup(m => m.GetMetadata("BootManifestResourceName")).Returns(name);
-            mock.Setup(m => m.GetMetadata("FileHash")).Returns(fileHash);
+            mock.Setup(m => m.GetMetadata("Integrity")).Returns(fileHash);
 
             if (values != null)
             {

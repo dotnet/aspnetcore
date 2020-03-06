@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 assets = AssetsWithHashes.Select(item => new AssetsManifestFileEntry
                 {
                     url = item.GetMetadata("AssetUrl"),
-                    hash = $"sha256-{item.GetMetadata("FileHash")}",
+                    hash = $"sha256-{item.GetMetadata("Integrity")}",
                 }).ToArray()
             };
 
