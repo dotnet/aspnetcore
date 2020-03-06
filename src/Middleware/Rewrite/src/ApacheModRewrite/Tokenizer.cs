@@ -108,24 +108,19 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             {
                 var token = tokens[i];
                 var trimmed = token.Trim('\"');
-                switch (trimmed)
+
+                if (trimmed.Contains("\\d") || trimmed.Contains("\\w") || trimmed.Contains("\\s"))
                 {
-                    case "^/(\\d)$":
-                        tokens[i] = trimmed;
-                        break;
-
-                    case "^/(\\w)$":
-                        tokens[i] = trimmed;
-                        break;
-
-                    case "^/(\\s)$":
-                        tokens[i] = trimmed;
-                        break;
-
-                    default:
-                        tokens[i] = Regex.Unescape(trimmed);
-                        break;
+                    tokens[i] = trimmed;
                 }
+                else
+                {
+                    tokens[i] = Regex.Unescape(trimmed);
+                }
+                
+
+                    
+                
             }
         }
     }

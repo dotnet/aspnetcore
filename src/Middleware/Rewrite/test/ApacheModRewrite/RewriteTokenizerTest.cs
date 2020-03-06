@@ -92,47 +92,22 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             Assert.Equal("Mismatched number of quotes: \"", ex.Message);
         }
 
-        [Fact]
-        public void Tokenize_CheckRegexDigitDoesNotHitUnescape()
+        [Theory]
+        [InlineData("^/(\\d)$", "^/(\\d)$" )]
+        [InlineData("^/(\\w)$", "^/(\\w)$")]
+        [InlineData("^/(\\s)$", "^/(\\s)$")]
+        [InlineData("^/foo/(\\d)$", "^/foo/(\\d)$")]
+        [InlineData("^/foo/(\\w)$", "^/foo/(\\w)$")]
+        [InlineData("^/foo/(\\s)$", "^/foo/(\\s)$")]
+        public void Tokenize_CheckRegexUnescapableTypesDoNotHitUnescape(string testString, string expected)
         {
-            var testString = "RewriteRule ^/(\\d)$ /?num=$1";
+           // var testString = "RewriteRule ^/(\\d)$ /?num=$1";
             var tokens = new Tokenizer().Tokenize(testString);
 
-            var expected = new List<string>();
-            expected.Add(@"RewriteRule");
-            expected.Add(@"^/(\d)$");
-            expected.Add(@"/?num=$1");
-
-            Assert.Equal(expected, tokens);
+            Assert.Equal(expected, tokens[0]);
         }
 
-        [Fact]
-        public void Tokenize_CheckRegexWordDoesNotHitUnescape()
-        {
-            var testString = "RewriteRule ^/(\\w)$ /?num=$1";
-            var tokens = new Tokenizer().Tokenize(testString);
-
-            var expected = new List<string>();
-            expected.Add(@"RewriteRule");
-            expected.Add(@"^/(\w)$");
-            expected.Add(@"/?num=$1");
-
-            Assert.Equal(expected, tokens);
-        }
-
-        [Fact]
-        public void Tokenize_CheckRegexShorthandDoesNotHitUnescape()
-        {
-            var testString = "RewriteRule ^/(\\s)$ /?num=$1";
-            var tokens = new Tokenizer().Tokenize(testString);
-
-            var expected = new List<string>();
-            expected.Add(@"RewriteRule");
-            expected.Add(@"^/(\s)$");
-            expected.Add(@"/?num=$1");
-
-            Assert.Equal(expected, tokens);
-        }
+       
 
 
     }
