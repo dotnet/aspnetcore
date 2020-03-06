@@ -18,12 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Serilog.Extensions.Logging" />
-    <Reference Include="Serilog.Sinks.File" />
 
     <!--
       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
@@ -38,7 +35,4 @@
     <Reference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
-  </ItemGroup>
 </Project>
