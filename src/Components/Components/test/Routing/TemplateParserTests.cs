@@ -69,6 +69,21 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         [Fact]
+        public void Parse_MultipleOptionalParameters()
+        {
+            // Arrange
+            var template = "{p1?}/{p2?}/{p3?}";
+
+            var expected = new ExpectedTemplateBuilder().Parameter("p1?").Parameter("p2?").Parameter("p3?");
+
+            // Act
+            var actual = TemplateParser.ParseTemplate(template);
+
+            // Assert
+            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+        }
+
+        [Fact]
         public void InvalidTemplate_WithRepeatedParameter()
         {
             var ex = Assert.Throws<InvalidOperationException>(
@@ -99,7 +114,6 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         [Theory]
         [InlineData("{*}", "Invalid template '{*}'. The character '*' in parameter segment '{*}' is not allowed.")]
-        [InlineData("{?}", "Invalid template '{?}'. The character '?' in parameter segment '{?}' is not allowed.")]
         [InlineData("{{}", "Invalid template '{{}'. The character '{' in parameter segment '{{}' is not allowed.")]
         [InlineData("{}}", "Invalid template '{}}'. The character '}' in parameter segment '{}}' is not allowed.")]
         [InlineData("{=}", "Invalid template '{=}'. The character '=' in parameter segment '{=}' is not allowed.")]
@@ -128,6 +142,36 @@ namespace Microsoft.AspNetCore.Components.Routing
             var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("{a}//{z}"));
 
             var expectedMessage = "Invalid template '{a}//{z}'. Empty segments are not allowed.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void InvalidTemplate_LiteralAfterOptionalParam()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/test"));
+
+            var expectedMessage = "Invalid template 'test/{a?}/test'. Non-optional parameters or literal routes cannot appear after optional parameters.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void InvalidTemplate_NonOptionalParamAfterOptionalParam()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/{b}"));
+
+            var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void InvalidTemplate_BadOptionalCharacterPosition()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => TemplateParser.ParseTemplate("/test/{a?bc}/{b}"));
+
+            var expectedMessage = "Malformed parameter 'a?bc' in route '/test/{a?bc}/{b}'. '?' character can only appear at the end of parameter name.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -169,6 +213,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                     var xSegment = x.Segments[i];
                     var ySegment = y.Segments[i];
                     if (xSegment.IsParameter != ySegment.IsParameter)
+                    {
+                        return false;
+                    }
+                    if (xSegment.IsOptional != ySegment.IsOptional)
                     {
                         return false;
                     }
