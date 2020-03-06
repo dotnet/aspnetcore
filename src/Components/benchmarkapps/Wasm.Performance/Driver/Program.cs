@@ -79,7 +79,7 @@ namespace Wasm.Performance.Driver
                 var results = await BenchmarkResultTask.Task;
 
                 FormatAsBenchmarksOutput(results,
-                    includeMetadata: isFirst,
+                    includeMetadata: first,
                     includeStressRunDelimiter: !stressRunCancellation.IsCancellationRequested);
             } while (!stressRunCancellation.IsCancellationRequested);
 
