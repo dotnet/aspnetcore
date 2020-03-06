@@ -26,9 +26,12 @@ namespace Microsoft.AspNetCore.Components
 
         public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
         {
-            var activator = serviceProvider.GetRequiredService<IComponentActivator>();
+            var activator = serviceProvider.GetService<IComponentActivator>();
 
-            var instance = activator.CreateInstance(componentType);
+            var instance = activator != null
+                ? activator.CreateInstance(componentType)
+                : Activator.CreateInstance(componentType);
+
             if (!(instance is IComponent component))
             {
                 throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
