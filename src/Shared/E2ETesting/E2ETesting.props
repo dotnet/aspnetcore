@@ -4,7 +4,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
     <SeleniumScreenShotsFolderPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)','$(MSBuildProjectName)'))</SeleniumScreenShotsFolderPath>
     <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\selenium\</SeleniumProcessTrackingFolder>
-    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
+    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(TargetArchitecture)' != 'arm64' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
 
     <!-- Config that limits driver to chrome-->
     <SeleniumConfigPath>$([MSBuild]::NormalizePath($(MSBuildThisFileDirectory)selenium-config.json))</SeleniumConfigPath>
