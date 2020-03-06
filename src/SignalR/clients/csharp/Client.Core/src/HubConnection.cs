@@ -1207,11 +1207,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             finally
             {
                 invocationMessageChannel.Writer.TryComplete();
-                await invocationMessageReceiveTask;
                 timer.Stop();
                 await timerTask;
                 uploadStreamSource.Cancel();
                 await HandleConnectionClose(connectionState);
+
+                // await after the connection has been closed, otherwise could deadlock on a user's .On callback(s)
+                await invocationMessageReceiveTask;
             }
         }
 
