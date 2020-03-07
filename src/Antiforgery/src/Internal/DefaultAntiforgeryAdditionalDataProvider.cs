@@ -3,21 +3,21 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// A default <see cref="IAntiforgeryAdditionalDataProvider"/> implementation.
     /// </summary>
-    public class DefaultAntiforgeryAdditionalDataProvider : IAntiforgeryAdditionalDataProvider
+    internal class DefaultAntiforgeryAdditionalDataProvider : IAntiforgeryAdditionalDataProvider
     {
         /// <inheritdoc />
-        public virtual string GetAdditionalData(HttpContext context)
+        public string GetAdditionalData(HttpContext context)
         {
             return string.Empty;
         }
 
         /// <inheritdoc />
-        public virtual bool ValidateAdditionalData(HttpContext context, string additionalData)
+        public bool ValidateAdditionalData(HttpContext context, string additionalData)
         {
             // Default implementation does not understand anything but empty data.
             return string.IsNullOrEmpty(additionalData);

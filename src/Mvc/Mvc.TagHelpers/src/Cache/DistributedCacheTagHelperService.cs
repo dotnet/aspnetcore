@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -40,6 +39,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         private readonly ILogger _logger;
         private readonly ConcurrentDictionary<CacheTagKey, Task<IHtmlContent>> _workers;
 
+        /// <summary>
+        /// Creates a new <see cref="DistributedCacheTagHelperService"/>.
+        /// </summary>
+        /// <param name="storage">The <see cref="DistributedCacheTagHelper"/>'s <see cref="IDistributedCacheTagHelperStorage"/>.</param>
+        /// <param name="formatter">The <see cref="IDistributedCacheTagHelperFormatter"/> for cache value serialization.</param>
+        /// <param name="HtmlEncoder">The <see cref="HtmlEncoder"/> used to encode cache content.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DistributedCacheTagHelperService(
             IDistributedCacheTagHelperStorage storage,
             IDistributedCacheTagHelperFormatter formatter,
@@ -80,15 +86,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 
             while (content == null)
             {
-                Task<IHtmlContent> result;
-
                 // Is there any request already processing the value?
-                if (!_workers.TryGetValue(key, out result))
+                if (!_workers.TryGetValue(key, out var result))
                 {
                     // There is a small race condition here between TryGetValue and TryAdd that might cause the
                     // content to be computed more than once. We don't care about this race as the probability of
                     // happening is very small and the impact is not critical.
-                    var tcs = new TaskCompletionSource<IHtmlContent>();
+                    var tcs = new TaskCompletionSource<IHtmlContent>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
                     _workers.TryAdd(key, tcs.Task);
 

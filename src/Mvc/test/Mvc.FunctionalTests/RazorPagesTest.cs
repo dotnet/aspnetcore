@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
@@ -19,18 +18,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
     {
         private static readonly Assembly _resourcesAssembly = typeof(RazorPagesTest).GetTypeInfo().Assembly;
 
-        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
+        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<RazorPagesWebSite.Startup>();
+            builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
         public HttpClient Client { get; }
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent, responseContent.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -142,6 +141,46 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task PageWithoutModel_ReturnPartial()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("PageWithoutModelRenderPartial");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from Razor Page", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_Works()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from RenderPartialModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialUsingPageModelWorks()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/UsePageModelAsPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from RenderPartialWithModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialWithNoModel()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/NoPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello default", element.TextContent);
         }
 
         [Fact]
@@ -765,13 +804,12 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             Assert.Equal(expected, content);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36024")]
         public async Task PolymorphicPropertiesOnPageModelsAreValidated()
         {
             // Arrange
             var name = "TestName";
             var age = 123;
-            var expected = $"Name = {name}, Age = {age}";
             var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PolymorphicBinding")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -1171,11 +1209,11 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         public async Task AuthFiltersAppliedToPageModel_AreExecuted()
         {
             // Act
-            var response = await Client.GetAsync("/ModelWithAuthFilter");
+            var response = await Client.GetAsync("/Pages/ModelWithAuthFilter");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/Login?ReturnUrl=%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
+            Assert.Equal("/Login?ReturnUrl=%2FPages%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
         }
 
         [Fact]
@@ -1403,13 +1441,61 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         }
 
         [Fact]
-        public async Task ViewDataAvaialableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
+        public async Task ViewDataAwaitableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
         {
             // Act
             var content = await Client.GetStringAsync("http://localhost/Pages/ViewDataAvailableAfterHandlerExecuted");
 
             // Assert
             Assert.Equal("ViewData: Bar", content);
+        }
+
+        [Fact]
+        public async Task OptionsRequest_WithoutHandler_Returns200_WithoutExecutingPage()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorld");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesGetRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnGet!", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesOptionsRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnOptions!", content.Trim());
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)

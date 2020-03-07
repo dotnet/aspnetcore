@@ -6,7 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,9 +22,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _fixture = fixture;
         }
 
-        protected override bool ShouldSkipDbTests()
-            => TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
-
         public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -33,9 +29,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void CanCreateUserUsingEF()
         {
             using (var db = CreateContext())
@@ -48,13 +41,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             }
         }
 
-        public IdentityDbContext CreateContext(bool delete = false)
+        private IdentityDbContext CreateContext()
         {
-            var db = DbUtil.Create<IdentityDbContext>(_fixture.ConnectionString);
-            if (delete)
-            {
-                db.Database.EnsureDeleted();
-            }
+            var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection);
             db.Database.EnsureCreated();
             return db;
         }
@@ -62,13 +51,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         protected override object CreateTestContext()
         {
             return CreateContext();
-        }
-
-        public ApplicationDbContext CreateAppContext()
-        {
-            var db = DbUtil.Create<ApplicationDbContext>(_fixture.ConnectionString);
-            db.Database.EnsureCreated();
-            return db;
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
@@ -181,9 +163,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUsingManager()
         {
             var manager = CreateManager();
@@ -194,9 +173,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task TwoUsersSamePasswordDifferentHash()
         {
             var manager = CreateManager();
@@ -209,9 +185,20 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task FindByEmailThrowsWithTwoUsersWithSameEmail()
+        {
+            var manager = CreateManager();
+            var userA = new IdentityUser(Guid.NewGuid().ToString());
+            userA.Email = "dupe@dupe.com";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userA, "password"));
+            var userB = new IdentityUser(Guid.NewGuid().ToString());
+            userB.Email = "dupe@dupe.com";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
+
+        }
+
+        [ConditionalFact]
         public async Task AddUserToUnknownRoleFails()
         {
             var manager = CreateManager();
@@ -222,19 +209,19 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentUpdatesWillFail()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var user = CreateTestUser();
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateManager(db);
                 var manager2 = CreateManager(db2);
@@ -247,23 +234,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 user2.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
                 IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentUpdatesWillFailWithDetachedUser()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var user = CreateTestUser();
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateManager(db);
                 var manager2 = CreateManager(db2);
@@ -274,23 +263,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 user2.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user));
                 IdentityResultAssert.IsFailure(await manager2.UpdateAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteAModifiedUserWillFail()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var user = CreateTestUser();
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateManager(db);
                 var manager2 = CreateManager(db2);
@@ -302,23 +293,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 user1.UserName = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(user1));
                 IdentityResultAssert.IsFailure(await manager2.DeleteAsync(user2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentRoleUpdatesWillFail()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var role = new IdentityRole(Guid.NewGuid().ToString());
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateRoleManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateRoleManager(db);
                 var manager2 = CreateRoleManager(db2);
@@ -331,23 +324,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 role2.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
                 IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentRoleUpdatesWillFailWithDetachedRole()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var role = new IdentityRole(Guid.NewGuid().ToString());
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateRoleManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateRoleManager(db);
                 var manager2 = CreateRoleManager(db2);
@@ -359,23 +354,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 role2.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role));
                 IdentityResultAssert.IsFailure(await manager2.UpdateAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteAModifiedRoleWillFail()
         {
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
             var role = new IdentityRole(Guid.NewGuid().ToString());
-            using (var db = CreateContext())
+            using (var db = new IdentityDbContext(options))
             {
+                db.Database.EnsureCreated();
+
                 var manager = CreateRoleManager(db);
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             }
-            using (var db = CreateContext())
-            using (var db2 = CreateContext())
+            using (var db = new IdentityDbContext(options))
+            using (var db2 = new IdentityDbContext(options))
             {
                 var manager1 = CreateRoleManager(db);
                 var manager2 = CreateRoleManager(db2);
@@ -387,6 +384,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 role1.Name = Guid.NewGuid().ToString();
                 IdentityResultAssert.IsSuccess(await manager1.UpdateAsync(role1));
                 IdentityResultAssert.IsFailure(await manager2.DeleteAsync(role2), new IdentityErrorDescriber().ConcurrencyFailure());
+
+                db.Database.EnsureDeleted();
             }
         }
 

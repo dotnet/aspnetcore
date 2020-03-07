@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "ASP.NET"
+  ],
+  "name": "Razor Component",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A reusable UI component implemented with Razor",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "groupIdentity": "Microsoft.AspNetCore.Components.RazorComponent",
+  "precedence": "100",
+  "identity": "Microsoft.AspNetCore.Components.RazorComponent",
+  "shortname": "razorcomponent",
+  "sourceName": "Component1",
+  "primaryOutputs": [
+    {
+      "path": "Component1.razor"
+    }
+  ],
+  "defaultName": "Component1",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Component1.razor in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

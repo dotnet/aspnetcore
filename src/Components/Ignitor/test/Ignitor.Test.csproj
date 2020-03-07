@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Ignitor" />
+    <!-- Avoid MSB3277 warnings due to dependencies brought in through Ignitor targeting netstandard2.0. -->
+    <Reference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Server\src\Circuits\RenderBatchWriter.cs" />
+  </ItemGroup>
+
+</Project>

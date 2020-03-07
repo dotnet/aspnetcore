@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -27,15 +26,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         public RazorPageActivatorTest()
         {
-            DiagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+            DiagnosticListener = new DiagnosticListener("Microsoft.AspNetCore");
             HtmlEncoder = new HtmlTestEncoder();
             JsonHelper = Mock.Of<IJsonHelper>();
             MetadataProvider = new EmptyModelMetadataProvider();
-            ModelExpressionProvider = new ModelExpressionProvider(MetadataProvider, new ExpressionTextCache());
+            ModelExpressionProvider = new ModelExpressionProvider(MetadataProvider);
             UrlHelperFactory = new UrlHelperFactory();
         }
 
-        private DiagnosticSource DiagnosticSource { get; }
+        private DiagnosticListener DiagnosticListener { get; }
 
         private HtmlEncoder HtmlEncoder { get; }
 
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -98,10 +97,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
 
-            // When we don't have a model property, the activator will just leave viewdata alone.
+            // When we don't have a model property, the activator will just leave ViewData alone.
             Assert.NotNull(viewContext.ViewData);
         }
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -165,9 +164,72 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Throws<InvalidCastException>(() => activator.Activate(instance, viewContext));
         }
 
+        [Fact]
+        public void Activate_UsesModelFromModelTypeProvider()
+        {
+            // Arrange
+            var activator = CreateActivator();
+
+            var viewData = new ViewDataDictionary<object>(MetadataProvider, new ModelStateDictionary())
+            {
+                { "key", "value" },
+            };
+            var viewContext = CreateViewContext(viewData);
+            var page = new ModelTypeProviderRazorPage();
+
+            // Act
+            activator.Activate(page, viewContext);
+
+            // Assert
+            Assert.Same(viewContext.ViewData, page.ViewData);
+            Assert.NotSame(viewData, viewContext.ViewData);
+
+            Assert.IsType<ViewDataDictionary<Guid>>(viewContext.ViewData);
+            Assert.Equal("value", viewContext.ViewData["key"]);
+        }
+
+        [Fact]
+        public void GetOrAddCacheEntry_CachesPages()
+        {
+            // Arrange
+            var activator = CreateActivator();
+            var page = new TestRazorPage();
+
+            // Act
+            var result1 = activator.GetOrAddCacheEntry(page);
+            var result2 = activator.GetOrAddCacheEntry(page);
+
+            // Assert
+            Assert.Same(result1, result2);
+        }
+
+        [Fact]
+        public void GetOrAddCacheEntry_VariesByModelType_IfPageIsModelTypeProvider()
+        {
+            // Arrange
+            var activator = CreateActivator();
+            var page = new ModelTypeProviderRazorPage();
+
+            // Act - 1
+            var result1 = activator.GetOrAddCacheEntry(page);
+            var result2 = activator.GetOrAddCacheEntry(page);
+
+            // Assert - 1
+            Assert.Same(result1, result2);
+
+            // Act - 2
+            page.ModelType = typeof(string);
+            var result3 = activator.GetOrAddCacheEntry(page);
+            var result4 = activator.GetOrAddCacheEntry(page);
+
+            // Assert - 2
+            Assert.Same(result3, result4);
+            Assert.NotSame(result1, result3);
+        }
+
         private RazorPageActivator CreateActivator()
         {
-            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticSource, HtmlEncoder, ModelExpressionProvider);
+            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticListener, HtmlEncoder, ModelExpressionProvider);
         }
 
         private ViewContext CreateViewContext(ViewDataDictionary viewData = null)
@@ -183,7 +245,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var serviceProvider = new ServiceCollection()
                 .AddSingleton(myService)
                 .AddSingleton(htmlHelper)
-                .AddSingleton(new ExpressionTextCache())
                 .BuildServiceProvider();
 
             var httpContext = new DefaultHttpContext
@@ -223,6 +284,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class ModelTypeProviderRazorPage : RazorPage, IModelTypeProvider
+        {
+            [RazorInject]
+            public ViewDataDictionary ViewData { get; set; }
+
+            public Type ModelType { get; set; } = typeof(Guid);
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Type GetModelType() => ModelType;
         }
 
         private abstract class NoModelPropertyBase<TModel> : RazorPage

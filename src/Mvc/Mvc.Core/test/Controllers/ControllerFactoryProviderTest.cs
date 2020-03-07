@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Moq;
 using Xunit;
 
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
-        public void CreateControllerReleaser_UsesControllerActivatorAndPropertyActivator()
+        public void CreateControllerFactory_UsesControllerActivatorAndPropertyActivator()
         {
             // Arrange
             var expectedProperty1 = new object();

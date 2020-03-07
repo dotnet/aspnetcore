@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
+using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -88,6 +89,104 @@ namespace Microsoft.AspNetCore.Authentication
             var remoteFailureHanlder = openIdOptions.Events.OnRemoteFailure;
             Assert.NotNull(remoteFailureHanlder);
             Assert.IsType<AzureADB2COpenIDConnectEventHandlers>(redirectHandler.Target);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADB2CDefaults.CookieScheme);
+            Assert.Equal("/AzureADB2C/Account/SignIn/AzureADB2C", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/AzureADB2C/Account/SignOut/AzureADB2C", cookieAuthenticationOptions.LogoutPath);
+            Assert.Equal("/AzureADB2C/Account/AccessDenied", cookieAuthenticationOptions.AccessDeniedPath);
+            Assert.Equal(SameSiteMode.None, cookieAuthenticationOptions.Cookie.SameSite);
+        }
+
+        [Fact]
+        public void AddAzureADB2C_AllowsOverridingCookiesAndOpenIdConnectSettings()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddAzureADB2C(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com";
+                    o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                });
+
+            services.Configure<OpenIdConnectOptions>(AzureADB2CDefaults.OpenIdScheme, o =>
+            {
+                o.Authority = "https://overriden.com";
+            });
+
+            services.Configure<CookieAuthenticationOptions>(AzureADB2CDefaults.CookieScheme, o =>
+            {
+                o.AccessDeniedPath = "/Overriden";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var openIdOptionsMonitor = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+            Assert.NotNull(openIdOptionsMonitor);
+            var openIdOptions = openIdOptionsMonitor.Get(AzureADB2CDefaults.OpenIdScheme);
+            Assert.Equal("ClientId", openIdOptions.ClientId);
+            Assert.Equal($"https://overriden.com", openIdOptions.Authority);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADB2CDefaults.CookieScheme);
+            Assert.Equal("/AzureADB2C/Account/SignIn/AzureADB2C", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/Overriden", cookieAuthenticationOptions.AccessDeniedPath);
+        }
+
+        [Fact]
+        public void AddAzureADB2C_RegisteringAddCookiesAndAddOpenIdConnectHasNoImpactOnAzureAAExtensions()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddCookie()
+                .AddOpenIdConnect()
+                .AddAzureADB2C(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com";
+                    o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                });
+
+            services.Configure<OpenIdConnectOptions>(AzureADB2CDefaults.OpenIdScheme, o =>
+            {
+                o.Authority = "https://overriden.com";
+            });
+
+            services.Configure<CookieAuthenticationOptions>(AzureADB2CDefaults.CookieScheme, o =>
+            {
+                o.AccessDeniedPath = "/Overriden";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var openIdOptionsMonitor = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+            Assert.NotNull(openIdOptionsMonitor);
+            var openIdOptions = openIdOptionsMonitor.Get(AzureADB2CDefaults.OpenIdScheme);
+            Assert.Equal("ClientId", openIdOptions.ClientId);
+            Assert.Equal($"https://overriden.com", openIdOptions.Authority);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADB2CDefaults.CookieScheme);
+            Assert.Equal("/AzureADB2C/Account/SignIn/AzureADB2C", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/Overriden", cookieAuthenticationOptions.AccessDeniedPath);
         }
 
         [Fact]
@@ -210,6 +309,73 @@ namespace Microsoft.AspNetCore.Authentication
             var bearerOptions = bearerOptionsMonitor.Get(AzureADB2CDefaults.JwtBearerAuthenticationScheme);
             Assert.Equal("ClientId", bearerOptions.Audience);
             Assert.Equal($"https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0", bearerOptions.Authority);
+        }
+
+        [Fact]
+        public void AddAzureADB2CBearer_CanOverrideJwtBearerOptionsConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddAzureADB2CBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.SignUpSignInPolicyId = "B2C_1_SiUpIn";
+                });
+
+            services.Configure<JwtBearerOptions>(AzureADB2CDefaults.JwtBearerAuthenticationScheme, o =>
+            {
+                o.Audience = "http://overriden.com";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADB2CDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("https://login.microsoftonline.com/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0", bearerOptions.Authority);
+            Assert.Equal("http://overriden.com", bearerOptions.Audience);
+        }
+
+        [Fact]
+        public void AddAzureADB2CBearer_RegisteringJwtBearerHasNoImpactOnAzureAAExtensions()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddJwtBearer()
+                .AddAzureADB2CBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.SignUpSignInPolicyId = "B2C_1_SiUpIn";
+                });
+
+            services.Configure<JwtBearerOptions>(AzureADB2CDefaults.JwtBearerAuthenticationScheme, o =>
+            {
+                o.Audience = "http://overriden.com";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADB2CDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("https://login.microsoftonline.com/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0", bearerOptions.Authority);
+            Assert.Equal("http://overriden.com", bearerOptions.Audience);
         }
 
         [Fact]

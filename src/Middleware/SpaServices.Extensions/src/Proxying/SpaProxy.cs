@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int DefaultWebSocketBufferSize = 4096;
         private const int StreamCopyBufferSize = 81920;
 
+        // https://github.com/dotnet/aspnetcore/issues/16797
+        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
+
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
@@ -32,7 +35,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             {
                 AllowAutoRedirect = false,
                 UseCookies = false,
-                
             };
 
             return new HttpClient(handler)
@@ -133,6 +135,11 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             // Copy the request headers
             foreach (var header in request.Headers)
             {
+                if (NotForwardedHttpHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) && requestMessage.Content != null)
                 {
                     requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
@@ -229,7 +236,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                     // on Windows, by which time the logic in SockJS has already timed out and made
                     // it fall back on some other transport (xhr_streaming, usually). It's fine
                     // on Linux though, completing almost instantly.
-                    // 
+                    //
                     // The slowness on Windows does not cause a problem though, because the transport
                     // fallback logic works correctly and doesn't surface any errors, but it would be
                     // better if ConnectAsync was fast enough and the initial Websocket transport

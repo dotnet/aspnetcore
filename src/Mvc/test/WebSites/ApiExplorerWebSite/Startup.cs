@@ -6,6 +6,7 @@ using System.Linq;
 using ApiExplorerWebSite.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,33 +20,36 @@ namespace ApiExplorerWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ILoggerFactory, LoggerFactory>();
-            services.AddMvc(options =>
+
+            var wellKnownChangeToken = new WellKnownChangeToken();
+            services.AddControllers(options =>
             {
                 options.Filters.AddService(typeof(ApiExplorerDataFilter));
 
                 options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
                 options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
-                    typeof(ApiExplorerVisbilityDisabledByConventionController)));
+                    typeof(ApiExplorerVisibilityDisabledByConventionController)));
                 options.Conventions.Add(new ApiExplorerInboundOutboundConvention(
                     typeof(ApiExplorerInboundOutBoundController)));
-
-                var jsonOutputFormatter = options.OutputFormatters.OfType<JsonOutputFormatter>().First();
+                options.Conventions.Add(new ApiExplorerRouteChangeConvention(wellKnownChangeToken));
 
                 options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(jsonOutputFormatter);
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-            });
+            })
+            .AddNewtonsoftJson()
+            .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddSingleton<ApiExplorerDataFilter>();
-            services.AddSingleton<IActionDescriptorChangeProvider>(ActionDescriptorChangeProvider.Instance);
-            services.AddSingleton(ActionDescriptorChangeProvider.Instance);
+            services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
+            services.AddSingleton(wellKnownChangeToken);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default", "{controller}/{action}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

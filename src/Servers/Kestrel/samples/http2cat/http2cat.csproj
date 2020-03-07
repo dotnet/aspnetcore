@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2" />
+    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
+    <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
+      <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="TaskTimeoutExtensions.cs" />
+  </ItemGroup>
+
+</Project>
+

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
-    /// Respresents a middleware that maps a request path to a sub-request pipeline.
+    /// Represents a middleware that maps a request path to a sub-request pipeline.
     /// </summary>
     public class MapMiddleware
     {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         private readonly MapOptions _options;
 
         /// <summary>
-        /// Creates a new instace of <see cref="MapMiddleware"/>.
+        /// Creates a new instance of <see cref="MapMiddleware"/>.
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
         /// <param name="options">The middleware options.</param>
@@ -48,16 +48,17 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(context));
             }
 
-            PathString matchedPath;
-            PathString remainingPath;
-
-            if (context.Request.Path.StartsWithSegments(_options.PathMatch, out matchedPath, out remainingPath))
+            if (context.Request.Path.StartsWithSegments(_options.PathMatch, out var matchedPath, out var remainingPath))
             {
-                // Update the path
                 var path = context.Request.Path;
                 var pathBase = context.Request.PathBase;
-                context.Request.PathBase = pathBase.Add(matchedPath);
-                context.Request.Path = remainingPath;
+
+                if (!_options.PreserveMatchedPathSegment)
+                {
+                    // Update the path
+                    context.Request.PathBase = pathBase.Add(matchedPath);
+                    context.Request.Path = remainingPath;
+                }
 
                 try
                 {
@@ -65,8 +66,11 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 }
                 finally
                 {
-                    context.Request.PathBase = pathBase;
-                    context.Request.Path = path;
+                    if (!_options.PreserveMatchedPathSegment)
+                    {
+                        context.Request.PathBase = pathBase;
+                        context.Request.Path = path;
+                    }
                 }
             }
             else

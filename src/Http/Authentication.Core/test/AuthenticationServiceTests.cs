@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationServiceTests
     {
@@ -25,6 +25,30 @@ namespace Microsoft.AspNetCore.Authentication
             await context.AuthenticateAsync("base");
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.AuthenticateAsync("missing"));
             Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
+        public async Task CustomHandlersAuthenticateRunsClaimsTransformationEveryTime()
+        {
+            var transform = new RunOnce();
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            })
+                .AddSingleton<IClaimsTransformation>(transform)
+                .BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            // Because base handler returns a different principal per call, its run multiple times
+            await context.AuthenticateAsync("base");
+            Assert.Equal(1, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(2, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(3, transform.Ran);
         }
 
         [Fact]
@@ -58,6 +82,35 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public async Task CanOnlySignInWithIsAuthenticated()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<SignInHandler>("signin", "whatever");
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("signin", new ClaimsPrincipal(), null));
+            await context.SignInAsync("signin", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
+        }
+
+        [Fact]
+        public async Task CanSignInWithoutIsAuthenticated()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<SignInHandler>("signin", "whatever");
+                o.RequireAuthenticatedSignIn = false;
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.SignInAsync("signin", new ClaimsPrincipal(), null);
+            await context.SignInAsync("signin", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
+        }
+
+        [Fact]
         public async Task CanOnlySignInIfSupported()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -70,12 +123,12 @@ namespace Microsoft.AspNetCore.Authentication
             var context = new DefaultHttpContext();
             context.RequestServices = services;
 
-            await context.SignInAsync("uber", new ClaimsPrincipal(), null);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("base", new ClaimsPrincipal(), null));
+            await context.SignInAsync("uber", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("base", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null));
             Assert.Contains("uber", ex.Message);
             Assert.Contains("signin", ex.Message);
-            await context.SignInAsync("signin", new ClaimsPrincipal(), null);
-            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("signout", new ClaimsPrincipal(), null));
+            await context.SignInAsync("signin", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null);
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("signout", new ClaimsPrincipal(new ClaimsIdentity("whatever")), null));
             Assert.Contains("uber", ex.Message);
             Assert.Contains("signin", ex.Message);
         }
@@ -117,7 +170,7 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ForbidAsync();
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
             Assert.Contains("cannot be used for SignOutAsync", ex.Message);
-            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
             Assert.Contains("cannot be used for SignInAsync", ex.Message);
         }
 
@@ -136,7 +189,7 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ChallengeAsync();
             await context.ForbidAsync();
             await context.SignOutAsync();
-            await context.SignInAsync(new ClaimsPrincipal());
+            await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
         }
 
         [Fact]
@@ -154,7 +207,7 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ChallengeAsync();
             await context.ForbidAsync();
             await context.SignOutAsync();
-            await context.SignInAsync(new ClaimsPrincipal());
+            await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
         }
 
         [Fact]
@@ -172,7 +225,7 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ChallengeAsync();
             await context.ForbidAsync();
             await context.SignOutAsync();
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
             Assert.Contains("cannot be used for SignInAsync", ex.Message);
         }
 
@@ -190,12 +243,25 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ForbidAsync();
         }
 
+        private class RunOnce : IClaimsTransformation
+        {
+            public int Ran = 0;
+            public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+            {
+                Ran++;
+                return Task.FromResult(new ClaimsPrincipal());
+            }
+        }
 
         private class BaseHandler : IAuthenticationHandler
         {
             public Task<AuthenticateResult> AuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return Task.FromResult(AuthenticateResult.Success(
+                    new AuthenticationTicket(
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")),
+                        new AuthenticationProperties(),
+                        "whatever")));
             }
 
             public Task ChallengeAsync(AuthenticationProperties properties)

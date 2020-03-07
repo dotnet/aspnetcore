@@ -53,7 +53,7 @@ namespace Microsoft.Net.Http.Headers
                 (length != tag.Length))
             {
                 // Note that we don't allow 'W/' prefixes for weak ETags in the 'tag' parameter. If the user wants to
-                // add a weak ETag, he can set 'isWeak' to true.
+                // add a weak ETag, they can set 'isWeak' to true.
                 throw new FormatException("Invalid ETag name");
             }
 

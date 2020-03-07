@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -10,22 +11,32 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFUserStoreTestWithGenerics : IdentitySpecificationTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IDisposable
+    public class InMemoryEFUserStoreTestWithGenerics
+        : IdentitySpecificationTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IClassFixture<InMemoryDatabaseFixture>
     {
+        private readonly InMemoryDatabaseFixture _fixture;
         private readonly InMemoryContextWithGenerics _context;
         private UserStoreWithGenerics _store;
 
-        public InMemoryEFUserStoreTestWithGenerics()
+        public InMemoryEFUserStoreTestWithGenerics(InMemoryDatabaseFixture fixture)
         {
+            _fixture = fixture;
+
             var services = new ServiceCollection();
             services.AddHttpContextAccessor();
-            services.AddDbContext<InMemoryContextWithGenerics>(options => options.UseInMemoryDatabase("Scratch"));
+            services.AddDbContext<InMemoryContextWithGenerics>(
+                options => options
+                    .UseSqlite(_fixture.Connection)
+                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)));
             _context = services.BuildServiceProvider().GetRequiredService<InMemoryContextWithGenerics>();
+
+            _context.Database.EnsureCreated();
         }
 
         protected override object CreateTestContext()
@@ -79,10 +90,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -111,10 +118,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task RemoveClaimWithIssuerOnlyAffectsUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var user2 = CreateTestUser();
@@ -144,10 +147,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task CanReplaceUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -163,10 +162,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
             Assert.Equal(claim.Type, newClaim.Type);
             Assert.Equal(claim.Value, newClaim.Value);
             Assert.Equal(claim.Issuer, newClaim.Issuer);
-        }
-
-        public void Dispose()
-        {
         }
     }
 
@@ -320,13 +315,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
     public class InMemoryContextWithGenerics : InMemoryContext<IdentityUserWithGenerics, MyIdentityRole, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityRoleClaimWithIssuer, IdentityUserTokenWithStuff>
     {
-        public InMemoryContextWithGenerics(DbContextOptions options) : base(options)
+        public InMemoryContextWithGenerics(DbContextOptions<InMemoryContextWithGenerics> options) : base(options)
         { }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseInMemoryDatabase("Scratch");
-        }
     }
 
     #endregion

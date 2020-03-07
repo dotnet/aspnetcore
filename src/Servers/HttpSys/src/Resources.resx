@@ -148,6 +148,6 @@
     <value>The given IAsyncResult does not match this opperation.</value>
   </data>
   <data name="Warning_ExceptionInOnResponseCompletedAction" xml:space="preserve">
-    <value>An exception occured while running an action registered with {0}.</value>
+    <value>An exception occurred while running an action registered with {0}.</value>
   </data>
 </root>

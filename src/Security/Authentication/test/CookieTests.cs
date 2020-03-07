@@ -10,443 +10,28 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
-    public class CookieTests
+    public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
     {
         private TestClock _clock = new TestClock();
 
-        [Fact]
-        public async Task CanForwardDefault()
+        protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
+        protected override Type HandlerType => typeof(CookieAuthenticationHandler);
+
+        protected override void RegisterAuth(AuthenticationBuilder services, Action<CookieAuthenticationOptions> configure)
         {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler>("auth1", "auth1");
-            })
-            .AddCookie(o => o.ForwardDefault = "auth1");
-
-            var forwardDefault = new TestHandler();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await context.SignOutAsync();
-            Assert.Equal(1, forwardDefault.SignOutCount);
-
-            await context.SignInAsync(new ClaimsPrincipal());
-            Assert.Equal(1, forwardDefault.SignInCount);
-        }
-
-        [Fact]
-        public async Task ForwardSignInWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardSignIn = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.SignInAsync(new ClaimsPrincipal());
-            Assert.Equal(1, specific.SignInCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignOutCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardSignOutWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardSignOut = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.SignOutAsync();
-            Assert.Equal(1, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardForbidWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ForbidAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(1, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardAuthenticateWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardAuthenticate = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(1, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardChallengeWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler>("specific", "specific");
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardChallenge = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ChallengeAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(1, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardSelectorWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, selector.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, selector.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, selector.ChallengeCount);
-
-            await context.SignOutAsync();
-            Assert.Equal(1, selector.SignOutCount);
-
-            await context.SignInAsync(new ClaimsPrincipal());
-            Assert.Equal(1, selector.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task NullForwardSelectorUsesDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => null;
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await context.SignOutAsync();
-            Assert.Equal(1, forwardDefault.SignOutCount);
-
-            await context.SignInAsync(new ClaimsPrincipal());
-            Assert.Equal(1, forwardDefault.SignInCount);
-
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task SpecificForwardWinsOverSelectorAndDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddCookie(o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-                o.ForwardAuthenticate = "specific";
-                o.ForwardChallenge = "specific";
-                o.ForwardSignIn = "specific";
-                o.ForwardSignOut = "specific";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, specific.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, specific.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, specific.ChallengeCount);
-
-            await context.SignOutAsync();
-            Assert.Equal(1, specific.SignOutCount);
-
-            await context.SignInAsync(new ClaimsPrincipal());
-            Assert.Equal(1, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-        }
-
-        [Fact]
-        public async Task VerifySchemeDefaults()
-        {
-            var services = new ServiceCollection();
-            services.AddAuthentication().AddCookie();
-            var sp = services.BuildServiceProvider();
-            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
-            var scheme = await schemeProvider.GetSchemeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            Assert.NotNull(scheme);
-            Assert.Equal("CookieAuthenticationHandler", scheme.HandlerType.Name);
-            Assert.Null(scheme.DisplayName);
+            services.AddCookie(configure);
         }
 
         [Fact]
@@ -556,20 +141,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
-        public async Task CookieExpirationOptionIsIgnored()
+        public void SettingCookieExpirationOptionThrows()
         {
-            var server = CreateServerWithServices(s => s.AddAuthentication().AddCookie(o =>
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddCookie(o =>
             {
-                o.Cookie.Name = "TestCookie";
-                // this is currently ignored. Users should set o.ExpireTimeSpan instead
                 o.Cookie.Expiration = TimeSpan.FromDays(10);
-            }), SignInAsAlice);
-
-            var transaction = await SendAsync(server, "http://example.com/testpath");
-
-            var setCookie = transaction.SetCookie;
-            Assert.StartsWith("TestCookie=", setCookie);
-            Assert.DoesNotContain("; expires=", setCookie);
+            });
+            var options = services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.Throws<OptionsValidationException>(() => options.Get(CookieAuthenticationDefaults.AuthenticationScheme));
         }
 
         [Fact]
@@ -1421,7 +1001,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1444,7 +1024,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1468,7 +1048,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     app.UseAuthentication();
                     app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies",
-                        new ClaimsPrincipal())));
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
             var server = new TestServer(builder);
@@ -1485,7 +1065,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal())));
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
 
@@ -1718,7 +1298,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     app.Use(async (context, next) =>
                     {
                         var result = await context.AuthenticateAsync("Cookies");
-                        Describe(context.Response, result);
+                        await DescribeAsync(context.Response, result);
                     });
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
@@ -1872,7 +1452,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         {
                             res.StatusCode = 200;
                         }
-                        else if (req.Path == new PathString("/forbid")) // Simulate forbidden 
+                        else if (req.Path == new PathString("/forbid")) // Simulate forbidden
                         {
                             await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                         }
@@ -1894,12 +1474,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            Describe(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
+                            await DescribeAsync(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                         {
                             var ticket = await context.AuthenticateAsync(remainder.Value.Substring(1));
-                            Describe(res, ticket);
+                            await DescribeAsync(res, ticket);
                         }
                         else if (req.Path == new PathString("/testpath") && testpath != null)
                         {
@@ -1926,7 +1506,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return server;
         }
 
-        private static void Describe(HttpResponse res, AuthenticateResult result)
+        private static Task DescribeAsync(HttpResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -1940,7 +1520,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 xml.Add(result.Ticket.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
-            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
+            return res.Body.WriteAsync(xmlBytes, 0, xmlBytes.Length);
         }
 
         private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)

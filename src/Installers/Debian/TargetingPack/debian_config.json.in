@@ -1,0 +1,36 @@
+{
+  "maintainer_name": "${Authors}",
+  "maintainer_email": "${MaintainerEmail}",
+
+  "package_name": "${PackageId}",
+  "install_root": "${DebianPackageInstallRoot}",
+
+  "short_description": "${PackageSummary}",
+  "long_description": "${PackageDescription}",
+  "homepage": "${PackageProjectUrl}",
+
+  "release":{
+    "package_version":"${PackageVersion}",
+    "package_revision":"${PackageRevision}",
+    "urgency" : "low",
+    "changelog_message" : ""
+  },
+
+  "control": {
+    "priority":"standard",
+    "section":"devel",
+    "architecture":"any"
+  },
+
+  "copyright": "Microsoft",
+  "license": {
+    "type": "${PackageLicenseExpression}",
+    "full_text": "Copyright (c) .NET Foundation. All rights reserved.\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use\nthese files except in compliance with the License. You may obtain a copy of the\nLicense at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed\nunder the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR\nCONDITIONS OF ANY KIND, either express or implied. See the License for the\nspecific language governing permissions and limitations under the License."
+  },
+
+  "debian_dependencies": {
+    "dotnet-targeting-pack-${AspNetCoreMajorVersion}.${AspNetCoreMinorVersion}": {
+      "package_version": "${DotnetTargetingPackDependencyVersion}"
+    }
+  }
+}

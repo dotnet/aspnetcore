@@ -207,13 +207,7 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
 
         private class ItemClassifier : IClassifier<Item>
         {
-            public IEqualityComparer<object> ValueComparer
-            {
-                get
-                {
-                    return new RouteValueEqualityComparer();
-                }
-            }
+            public IEqualityComparer<object> ValueComparer => RouteValueEqualityComparer.Default;
 
             public IDictionary<string, DecisionCriterionValue> GetCriteria(Item item)
             {

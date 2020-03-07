@@ -1,0 +1,31 @@
+<Project>
+    <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
+
+    <PropertyGroup>
+      <RepoRoot Condition="'$(RepoRoot)' ==''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), global.json))\</RepoRoot>
+      <ComponentsRoot>$(RepoRoot)src\Components\</ComponentsRoot>
+      <BlazorBuildRoot>$(ComponentsRoot)Blazor\Build\src\</BlazorBuildRoot>
+      <ReferenceBlazorBuildFromSourceProps>$(BlazorBuildRoot)ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
+
+      <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/17308 -->
+      <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
+
+      <EnableSourceLink>false</EnableSourceLink>
+      <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    </PropertyGroup>
+
+    <Import Project="$(RepoRoot)eng\Versions.props" />
+
+    <ItemGroup>
+      <!-- Use the sample compiler \ SDK that the rest of our build uses-->
+      <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
+
+      <PackageReference Include="Microsoft.NET.Sdk.Razor"
+        Version="$(MicrosoftNETSdkRazorPackageVersion)"
+        PrivateAssets="All"
+        IsImplicitlyDefined="true" />
+    </ItemGroup>
+</Project>

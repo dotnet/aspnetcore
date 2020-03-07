@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Provides experimental support for using System.Text.Json with HttpClient. Intended for use with Blazor running under WebAssembly.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Text.Json" />
+  </ItemGroup>
+
+</Project>

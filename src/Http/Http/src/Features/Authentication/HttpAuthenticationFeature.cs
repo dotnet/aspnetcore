@@ -12,11 +12,5 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
             get;
             set;
         }
-
-        public IAuthenticationHandler Handler
-        {
-            get;
-            set;
-        }
     }
 }

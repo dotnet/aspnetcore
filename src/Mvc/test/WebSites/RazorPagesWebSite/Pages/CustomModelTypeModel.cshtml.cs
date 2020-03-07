@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,10 @@ namespace RazorPagesWebSite
         public InputModel Input { get; set; }
 
         public string ReturnUrl { get; set; }
+
+        [BindRequired]
+        [FromQuery(Name = nameof(Attempts))]
+        public int Attempts { get; set; }
 
         public class InputModel
         {
@@ -69,6 +74,9 @@ namespace RazorPagesWebSite
         {
             if (!ModelState.IsValid)
             {
+                Attempts++;
+                RouteData.Values.Add(nameof(Attempts), Attempts);
+
                 return Page();
             }
 

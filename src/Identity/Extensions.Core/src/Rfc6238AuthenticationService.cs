@@ -1,27 +1,32 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Identity
 {
-    using System;
-    using System.Text;
-
     internal static class Rfc6238AuthenticationService
     {
-        private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly TimeSpan _timestep = TimeSpan.FromMinutes(3);
         private static readonly Encoding _encoding = new UTF8Encoding(false, true);
+#if NETSTANDARD2_0
+        private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+#endif
 
         // Generates a new 80-bit security token
         public static byte[] GenerateRandomKey()
         {
             byte[] bytes = new byte[20];
+#if NETSTANDARD2_0
             _rng.GetBytes(bytes);
+#else
+            RandomNumberGenerator.Fill(bytes);
+#endif
             return bytes;
         }
 
@@ -63,7 +68,11 @@ namespace Microsoft.AspNetCore.Identity
         // More info: https://tools.ietf.org/html/rfc6238#section-4
         private static ulong GetCurrentTimeStepNumber()
         {
+#if NETSTANDARD2_0
             var delta = DateTime.UtcNow - _unixEpoch;
+#else
+            var delta = DateTimeOffset.UtcNow - DateTimeOffset.UnixEpoch;
+#endif
             return (ulong)(delta.Ticks / _timestep.Ticks);
         }
 

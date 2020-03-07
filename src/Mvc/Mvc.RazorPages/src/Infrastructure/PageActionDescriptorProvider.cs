@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -75,20 +76,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 var descriptor = new PageActionDescriptor
                 {
+                    ActionConstraints = selector.ActionConstraints.ToList(),
+                    AreaName = model.AreaName,
                     AttributeRouteInfo = new AttributeRouteInfo
                     {
                         Name = selector.AttributeRouteModel.Name,
                         Order = selector.AttributeRouteModel.Order ?? 0,
-                        Template = selector.AttributeRouteModel.Template,
+                        Template = TransformPageRoute(model, selector),
                         SuppressLinkGeneration = selector.AttributeRouteModel.SuppressLinkGeneration,
                         SuppressPathMatching = selector.AttributeRouteModel.SuppressPathMatching,
                     },
                     DisplayName = $"Page: {model.ViewEnginePath}",
+                    EndpointMetadata = selector.EndpointMetadata.ToList(),
                     FilterDescriptors = Array.Empty<FilterDescriptor>(),
                     Properties = new Dictionary<object, object>(model.Properties),
                     RelativePath = model.RelativePath,
                     ViewEnginePath = model.ViewEnginePath,
-                    AreaName = model.AreaName,
                 };
 
                 foreach (var kvp in model.RouteValues)
@@ -106,6 +109,35 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                 actions.Add(descriptor);
             }
+        }
+
+        private static string TransformPageRoute(PageRouteModel model, SelectorModel selectorModel)
+        {
+            // Transformer not set on page route
+            if (model.RouteParameterTransformer == null)
+            {
+                return selectorModel.AttributeRouteModel.Template;
+            }
+
+            var pageRouteMetadata = selectorModel.EndpointMetadata.OfType<PageRouteMetadata>().SingleOrDefault();
+            if (pageRouteMetadata == null)
+            {
+                // Selector does not have expected metadata
+                // This selector was likely configured by AddPageRouteModelConvention
+                // Use the existing explicitly configured template
+                return selectorModel.AttributeRouteModel.Template;
+            }
+
+            var segments = pageRouteMetadata.PageRoute.Split('/');
+            for (var i = 0; i < segments.Length; i++)
+            {
+                segments[i] = model.RouteParameterTransformer.TransformOutbound(segments[i]);
+            }
+
+            var transformedPageRoute = string.Join("/", segments);
+
+            // Combine transformed page route with template
+            return AttributeRouteModel.CombineTemplates(transformedPageRoute, pageRouteMetadata.RouteTemplate);
         }
     }
 }

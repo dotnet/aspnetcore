@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -28,10 +27,6 @@ namespace Microsoft.AspNetCore.Mvc
         public FileContentResult(byte[] fileContents, string contentType)
             : this(fileContents, MediaTypeHeaderValue.Parse(contentType))
         {
-            if (fileContents == null)
-            {
-                throw new ArgumentNullException(nameof(fileContents));
-            }
         }
 
         /// <summary>

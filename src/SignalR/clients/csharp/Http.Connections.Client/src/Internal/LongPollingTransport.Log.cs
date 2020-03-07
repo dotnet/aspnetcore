@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class LongPollingTransport
+    internal partial class LongPollingTransport
     {
         private static class Log
         {
@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             private static readonly Action<ILogger, Uri, Exception> _errorSendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(13, "ErrorSendingDeleteRequest"), "Error sending DELETE request to '{PollUrl}'.");
+
+            private static readonly Action<ILogger, Uri, Exception> _connectionAlreadyClosedSendingDeleteRequest =
+                LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(14, "ConnectionAlreadyClosedSendingDeleteRequest"), "A 404 response was returned from sending DELETE request to '{PollUrl}', likely because the transport was already closed on the server.");
 
             // EventIds 100 - 106 used in SendUtils
 
@@ -122,6 +125,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             public static void ErrorSendingDeleteRequest(ILogger logger, Uri pollUrl, Exception ex)
             {
                 _errorSendingDeleteRequest(logger, pollUrl, ex);
+            }
+
+            public static void ConnectionAlreadyClosedSendingDeleteRequest(ILogger logger, Uri pollUrl)
+            {
+                _connectionAlreadyClosedSendingDeleteRequest(logger, pollUrl, null);
             }
         }
     }

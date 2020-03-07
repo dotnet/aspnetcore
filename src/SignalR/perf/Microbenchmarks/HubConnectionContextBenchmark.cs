@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
@@ -44,9 +43,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _pipe, _pipe);
-            _hubConnectionContext = new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance);
+            var contextOptions = new HubConnectionContextOptions()
+            {
+                KeepAliveInterval = Timeout.InfiniteTimeSpan,
+            };
+            _hubConnectionContext = new HubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
 
-            _successHubProtocolResolver = new TestHubProtocolResolver(new JsonHubProtocol());
+            _successHubProtocolResolver = new TestHubProtocolResolver(new NewtonsoftJsonHubProtocol());
             _failureHubProtocolResolver = new TestHubProtocolResolver(null);
             _userIdProvider = new TestUserIdProvider();
             _supportedProtocols = new List<string> { "json" };

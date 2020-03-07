@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
     public class ConfigurationReaderTests
     {
         [Fact]
-        public void ReadCertificatesWhenNoCertificatsSection_ReturnsEmptyCollection()
+        public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
             var reader = new ConfigurationReader(config);
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadCertificatesWhenEmptyCertificatsSection_ReturnsEmptyCollection()
+        public void ReadCertificatesWhenEmptyCertificatesSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadCertificatsSection_ReturnsCollection()
+        public void ReadCertificatesSection_ReturnsCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {

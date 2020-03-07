@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketsTrace : ISocketsTrace
+    internal class SocketsTrace : ISocketsTrace
     {
         // ConnectionRead: Reserved: 3
 
@@ -19,11 +19,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private static readonly Action<ILogger, string, Exception> _connectionReadFin =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(ConnectionReadFin)), @"Connection id ""{ConnectionId}"" received FIN.");
 
-        private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN.");
+        private static readonly Action<ILogger, string, string, Exception> _connectionWriteFin =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""");
+
+        // ConnectionWrite: Reserved: 11
+
+        // ConnectionWriteCallback: Reserved: 12
 
         private static readonly Action<ILogger, string, Exception> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
 
         private static readonly Action<ILogger, string, Exception> _connectionReset =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
@@ -46,9 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _connectionReadFin(_logger, connectionId, null);
         }
 
-        public void ConnectionWriteFin(string connectionId)
+        public void ConnectionWriteFin(string connectionId, string reason)
         {
-            _connectionWriteFin(_logger, connectionId, null);
+            _connectionWriteFin(_logger, connectionId, reason, null);
         }
 
         public void ConnectionWrite(string connectionId, int count)

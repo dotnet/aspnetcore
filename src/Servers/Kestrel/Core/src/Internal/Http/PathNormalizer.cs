@@ -1,21 +1,59 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public static class PathNormalizer
+    internal static class PathNormalizer
     {
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';
 
+        public static string DecodePath(Span<byte> path, bool pathEncoded, string rawTarget, int queryLength)
+        {
+            int pathLength;
+            if (pathEncoded)
+            {
+                // URI was encoded, unescape and then parse as UTF-8
+                pathLength = UrlDecoder.DecodeInPlace(path, isFormEncoding: false);
+
+                // Removing dot segments must be done after unescaping. From RFC 3986:
+                //
+                // URI producing applications should percent-encode data octets that
+                // correspond to characters in the reserved set unless these characters
+                // are specifically allowed by the URI scheme to represent data in that
+                // component.  If a reserved character is found in a URI component and
+                // no delimiting role is known for that character, then it must be
+                // interpreted as representing the data octet corresponding to that
+                // character's encoding in US-ASCII.
+                //
+                // https://tools.ietf.org/html/rfc3986#section-2.2
+                pathLength = RemoveDotSegments(path.Slice(0, pathLength));
+
+                return Encoding.UTF8.GetString(path.Slice(0, pathLength));
+            }
+
+            pathLength = RemoveDotSegments(path);
+
+            if (path.Length == pathLength && queryLength == 0)
+            {
+                // If no decoding was required, no dot segments were removed and
+                // there is no query, the request path is the same as the raw target
+                return rawTarget;
+            }
+
+            return path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
+        }
+
         // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
         public static unsafe int RemoveDotSegments(Span<byte> input)
         {
-            fixed (byte* start = &MemoryMarshal.GetReference(input))
+            fixed (byte* start = input)
             {
                 var end = start + input.Length;
                 return RemoveDotSegments(start, end);
@@ -149,8 +187,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public static unsafe bool ContainsDotSegments(byte* start, byte* end)
         {
             var src = start;
-            var dst = start;
-
             while (src < end)
             {
                 var ch1 = *src;

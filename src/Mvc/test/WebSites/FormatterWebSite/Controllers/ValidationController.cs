@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FormatterWebSite
@@ -57,15 +58,39 @@ namespace FormatterWebSite
         // 'Developer' type is excluded but the shallow validation on the
         // property Developers should happen
         [ModelStateValidationFilter]
-        public IActionResult CreateProject([FromBody] Project project)
+        public Project CreateProject([FromBody] Project project)
         {
-            return Json(project);
+            return project;
         }
 
         [ModelStateValidationFilter]
-        public IActionResult CreateSimpleTypePropertiesModel([FromBody] SimpleTypePropertiesModel simpleTypePropertiesModel)
+        public SimpleTypePropertiesModel CreateSimpleTypePropertiesModel([FromBody] SimpleTypePropertiesModel simpleTypePropertiesModel)
         {
-            return Json(simpleTypePropertiesModel);
+            return simpleTypePropertiesModel;
+        }
+
+        [HttpPost]
+        public IActionResult ValidationProviderAttribute([FromBody] ValidationProviderAttributeModel validationProviderAttributeModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public IActionResult ValidationThrowsError_WhenValidationExceedsMaxValidationDepth([FromBody] InfinitelyRecursiveModel model)
+        {
+            return Ok();
+        }
+
+        [HttpPost]
+        [ModelStateValidationFilter]
+        public IActionResult CreateInvalidModel([FromBody] InvalidModel model)
+        {
+            return Ok(model);
         }
     }
 }

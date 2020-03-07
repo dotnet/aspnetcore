@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Web 应用程序",
+    "description": "用于创建包含示例 ASP.NET Core Razor 页面内容的 ASP.NET Core 应用程序的项目模板。"
+  }
+}

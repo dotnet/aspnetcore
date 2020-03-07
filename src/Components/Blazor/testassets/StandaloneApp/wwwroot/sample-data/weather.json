@@ -1,0 +1,32 @@
+﻿[
+  {
+    "dateFormatted": "06/05/2018",
+    "temperatureC": 1,
+    "summary": "Freezing",
+    "temperatureF": 33
+  },
+  {
+    "dateFormatted": "07/05/2018",
+    "temperatureC": 14,
+    "summary": "Bracing",
+    "temperatureF": 57
+  },
+  {
+    "dateFormatted": "08/05/2018",
+    "temperatureC": -13,
+    "summary": "Freezing",
+    "temperatureF": 9
+  },
+  {
+    "dateFormatted": "09/05/2018",
+    "temperatureC": -16,
+    "summary": "Balmy",
+    "temperatureF": 4
+  },
+  {
+    "dateFormatted": "10/05/2018",
+    "temperatureC": -2,
+    "summary": "Chilly",
+    "temperatureF": 29
+  }
+]

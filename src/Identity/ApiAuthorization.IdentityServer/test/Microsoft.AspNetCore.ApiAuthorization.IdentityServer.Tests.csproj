@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- We are a package that depends on the shared framework, this allows us to
+         avoid errors during restore -->
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+
+    <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="current.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="expired.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="future.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="test.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

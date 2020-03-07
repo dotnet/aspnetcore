@@ -12,25 +12,26 @@ namespace FormatterWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Developer)));
                 options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Supplier)));
 
                 options.InputFormatters.Add(new StringInputFormatter());
             })
-            .AddXmlDataContractSerializerFormatters();
-
-            services.Configure<MvcJsonOptions>(options => { options.SerializerSettings.Converters.Insert(0, new IModelConverter()); });
+            .AddNewtonsoftJson(options => options.SerializerSettings.Converters.Insert(0, new IModelConverter()))
+            .AddXmlDataContractSerializerFormatters()
+            .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
-
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseDeveloperExceptionPage();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("ActionAsMethod", "{controller}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

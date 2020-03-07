@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
 
                 // Using a service type already in defaults.
-                ParameterType = typeof(JsonOutputFormatter)
+                ParameterType = typeof(ITypeActivatorCache)
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext();
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
-            var outputFormatter = Assert.IsType<JsonOutputFormatter>(modelBindingResult.Model);
-            Assert.NotNull(outputFormatter);
+            var provider = Assert.IsAssignableFrom<ITypeActivatorCache>(modelBindingResult.Model);
+            Assert.NotNull(provider);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
 
                 // Use a service type already in defaults.
-                ParameterType = typeof(JsonOutputFormatter),
+                ParameterType = typeof(ITypeActivatorCache),
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext();
@@ -79,8 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
-            var outputFormatter = Assert.IsType<JsonOutputFormatter>(modelBindingResult.Model);
-            Assert.NotNull(outputFormatter);
+            var provider = Assert.IsAssignableFrom<ITypeActivatorCache>(modelBindingResult.Model);
+            Assert.NotNull(provider);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
 
                 // Use a service type already in defaults.
-                ParameterType = typeof(IEnumerable<JsonOutputFormatter>),
+                ParameterType = typeof(IEnumerable<ITypeActivatorCache>),
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext();
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             // Model
-            var formatterArray = Assert.IsType<JsonOutputFormatter[]>(modelBindingResult.Model);
+            var formatterArray = Assert.IsType<ITypeActivatorCache[]>(modelBindingResult.Model);
             Assert.Single(formatterArray);
 
             // ModelState
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class Person
         {
-            public JsonOutputFormatter Service { get; set; }
+            public ITypeActivatorCache Service { get; set; }
         }
 
         // [FromServices] cannot be associated with a type. But a [FromServices] or [ModelBinder] subclass or custom
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Similar to a custom IBindingSourceMetadata implementation or [ModelBinder] subclass on a custom service.
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider
-                .ForType<JsonOutputFormatter>()
+                .ForType<ITypeActivatorCache>()
                 .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
 
             var testContext = ModelBindingTestHelper.GetTestContext(metadataProvider: metadataProvider);
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             {
                 Name = "parameter-name",
                 BindingInfo = bindingInfo,
-                ParameterType = typeof(JsonOutputFormatter),
+                ParameterType = typeof(ITypeActivatorCache),
             };
 
             // Act
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.IsType<JsonOutputFormatter>(modelBindingResult.Model);
+            Assert.IsAssignableFrom<ITypeActivatorCache>(modelBindingResult.Model);
 
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState);

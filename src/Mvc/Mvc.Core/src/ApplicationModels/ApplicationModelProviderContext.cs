@@ -12,6 +12,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </summary>
     public class ApplicationModelProviderContext
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApplicationModelProviderContext"/>.
+        /// </summary>
+        /// <param name="controllerTypes">The discovered controller <see cref="TypeInfo"/> instances.</param>
         public ApplicationModelProviderContext(IEnumerable<TypeInfo> controllerTypes)
         {
             if (controllerTypes == null)
@@ -22,6 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ControllerTypes = controllerTypes;
         }
 
+        /// <summary>
+        /// Gets the discovered controller <see cref="TypeInfo"/> instances.
+        /// </summary>
         public IEnumerable<TypeInfo> ControllerTypes { get; }
 
         /// <summary>

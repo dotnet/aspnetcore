@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to add an OpenAPI service reference</Description>
+    <RootNamespace>Microsoft.DotNet.Openapi.Tools</RootNamespace>
+    <AssemblyName>dotnet-openapi</AssemblyName>
+    <PackageId>Microsoft.dotnet-openapi</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <Reference Include="Microsoft.Build.Locator" />
+    <Reference Include="Microsoft.Win32.Registry"  />
+    <Reference Include="System.Security.Principal.Windows"  />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>NSwag.ApiDescription.Client</_Parameter1>
+      <_Parameter2>$(NSwagApiDescriptionClientPackageVersion)</_Parameter2>
+      <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Newtonsoft.Json</_Parameter1>
+      <_Parameter2>$(NewtonsoftJsonPackageVersion)</_Parameter2>
+      <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

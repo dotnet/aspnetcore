@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 
@@ -108,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Generates a URL with an absolute path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>, and
-        /// <paramref name="protocol"/> to use.
+        /// <paramref name="protocol"/> to use. See the remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
@@ -116,6 +114,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method uses the value of <see cref="HttpRequest.Host"/> to populate the host section of the generated URI.
+        /// Relying on the value of the current request can allow untrusted input to influence the resulting URI unless
+        /// the <c>Host</c> header has been validated. See the deployment documentation for instructions on how to properly
+        /// validate the <c>Host</c> header in your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -136,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, and <paramref name="host"/> name.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
-        /// non-<c>null</c>.
+        /// non-<c>null</c>. See the remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
@@ -145,6 +151,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -166,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
-        /// non-<c>null</c>.
+        /// non-<c>null</c>. See the remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
@@ -176,6 +190,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="host">The host name for the URL.</param>
         /// <param name="fragment">The fragment for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -253,13 +275,22 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Generates a URL with an absolute path for the specified route <paramref name="routeName"/> and route
-        /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use.
+        /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use. See the
+        /// remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method uses the value of <see cref="HttpRequest.Host"/> to populate the host section of the generated URI.
+        /// Relying on the value of the current request can allow untrusted input to influence the resulting URI unless
+        /// the <c>Host</c> header has been validated. See the deployment documentation for instructions on how to properly
+        /// validate the <c>Host</c> header in your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,
@@ -279,6 +310,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use and
         /// <paramref name="host"/> name. Generates an absolute URL if
         /// <see cref="UrlActionContext.Protocol"/> and <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
+        /// See the remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
@@ -286,6 +318,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,
@@ -306,6 +346,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use,
         /// <paramref name="host"/> name and <paramref name="fragment"/>. Generates an absolute URL if
         /// <see cref="UrlActionContext.Protocol"/> and <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
+        /// See the remarks section for important security information.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
@@ -314,6 +355,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="host">The host name for the URL.</param>
         /// <param name="fragment">The fragment for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,
@@ -338,7 +387,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -347,7 +396,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, values: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -357,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler, values: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -367,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler: null, values: values);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with a relative path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -382,7 +431,8 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler, values, protocol: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>. See the remarks section
+        /// for important security information.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -390,6 +440,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method uses the value of <see cref="HttpRequest.Host"/> to populate the host section of the generated URI.
+        /// Relying on the value of the current request can allow untrusted input to influence the resulting URI unless
+        /// the <c>Host</c> header has been validated. See the deployment documentation for instructions on how to properly
+        /// validate the <c>Host</c> header in your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
@@ -399,7 +457,8 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler, values, protocol, host: null, fragment: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>. See the remarks section for
+        /// important security information.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -408,6 +467,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
@@ -418,7 +485,8 @@ namespace Microsoft.AspNetCore.Mvc
             => Page(urlHelper, pageName, pageHandler, values, protocol, host, fragment: null);
 
         /// <summary>
-        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>. See the remarks section for
+        /// important security information.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
@@ -428,6 +496,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="host">The host name for the URL.</param>
         /// <param name="fragment">The fragment for the URL.</param>
         /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
@@ -444,32 +520,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             var routeValues = new RouteValueDictionary(values);
             var ambientValues = urlHelper.ActionContext.RouteData.Values;
-            if (string.IsNullOrEmpty(pageName))
-            {
-                if (!routeValues.ContainsKey("page") &&
-                    ambientValues.TryGetValue("page", out var value))
-                {
-                    routeValues["page"] = value;
-                }
-            }
-            else
-            {
-                routeValues["page"] = CalculatePageName(urlHelper.ActionContext, pageName);
-            }
 
-            if (string.IsNullOrEmpty(pageHandler))
-            {
-                if (!routeValues.ContainsKey("handler") &&
-                    ambientValues.TryGetValue("handler", out var handler))
-                {
-                    // Clear out formaction unless it's explicitly specified in the routeValues.
-                    routeValues["handler"] = null;
-                }
-            }
-            else
-            {
-                routeValues["handler"] = pageHandler;
-            }
+            UrlHelperBase.NormalizeRouteValuesForPage(urlHelper.ActionContext, pageName, pageHandler, routeValues, ambientValues);
 
             return urlHelper.RouteUrl(
                 routeName: null,
@@ -479,23 +531,108 @@ namespace Microsoft.AspNetCore.Mvc
                 fragment: fragment);
         }
 
-        private static object CalculatePageName(ActionContext actionContext, string pageName)
+        /// <summary>
+        /// Generates an absolute URL for an action method, which contains the specified
+        /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
+        /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
+        /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
+        /// non-<c>null</c>. See the remarks section for important security information.
+        /// </summary>
+        /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="action">The name of the action method. When <see langword="null" />, defaults to the current executing action.</param>
+        /// <param name="controller">The name of the controller. When <see langword="null" />, defaults to the current executing controller.</param>
+        /// <param name="values">An object that contains route values.</param>
+        /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
+        /// <param name="host">The host name for the URL.</param>
+        /// <param name="fragment">The fragment for the URL.</param>
+        /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
+        public static string ActionLink(
+            this IUrlHelper helper,
+            string action = null,
+            string controller = null,
+            object values = null,
+            string protocol = null,
+            string host = null,
+            string fragment = null)
         {
-            Debug.Assert(pageName.Length > 0);
-            // Paths not qualified with a leading slash are treated as relative to the current page.
-            if (pageName[0] != '/')
+            if (helper == null)
             {
-                var currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(actionContext, "page");
-                if (string.IsNullOrEmpty(currentPagePath))
-                {
-                    // Disallow the use sibling page routing, a Razor page specific feature, from a non-page action.
-                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(pageName));
-                }
-
-                return ViewEnginePath.CombinePath(currentPagePath, pageName);
+                throw new ArgumentNullException(nameof(helper));
             }
 
-            return pageName;
+            var httpContext = helper.ActionContext.HttpContext;
+
+            if (protocol == null)
+            {
+                protocol = httpContext.Request.Scheme;
+            }
+
+            if (host == null)
+            {
+                host = httpContext.Request.Host.ToUriComponent();
+            }
+
+            return Action(helper, action, controller, values, protocol, host, fragment);
+        }
+
+        /// <summary>
+        /// Generates an absolute URL for a page, which contains the specified
+        /// <paramref name="pageName"/>, <paramref name="pageHandler"/>, route <paramref name="values"/>,
+        /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
+        /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
+        /// non-<c>null</c>. See the remarks section for important security information.
+        /// </summary>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="pageName">The page name to generate the url for. When <see langword="null"/>, defaults to the current executing page.</param>
+        /// <param name="pageHandler">The handler to generate the url for. When <see langword="null"/>, defaults to the current executing handler.</param>
+        /// <param name="values">An object that contains route values.</param>
+        /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
+        /// <param name="host">The host name for the URL.</param>
+        /// <param name="fragment">The fragment for the URL.</param>
+        /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
+        public static string PageLink(
+            this IUrlHelper urlHelper,
+            string pageName = null,
+            string pageHandler = null,
+            object values = null,
+            string protocol = null,
+            string host = null,
+            string fragment = null)
+        {
+            if (urlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(urlHelper));
+            }
+
+            var httpContext = urlHelper.ActionContext.HttpContext;
+
+            if (protocol == null)
+            {
+                protocol = httpContext.Request.Scheme;
+            }
+
+            if (host == null)
+            {
+                host = httpContext.Request.Host.ToUriComponent();
+            }
+
+            return Page(urlHelper, pageName, pageHandler, values, protocol, host, fragment);
         }
     }
 }

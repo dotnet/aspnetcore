@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         {
             var ex = Assert.Throws<FormatException>(() =>
             {
-                var buffer = new ReadOnlySequence<byte>(payload);;
+                var buffer = new ReadOnlySequence<byte>(payload);
                 BinaryMessageParser.TryParseMessage(ref buffer, out var message);
             });
             Assert.Equal("Messages over 2GB in size are not supported.", ex.Message);

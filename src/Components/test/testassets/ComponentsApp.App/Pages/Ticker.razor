@@ -1,0 +1,28 @@
+@page "/ticker"
+@implements IDisposable
+@using System.Threading
+
+<h1>Ticker</h1>
+<p class="tick-value">@tick</p>
+
+@code {
+    int tick;
+    private bool _isDisposed;
+
+    protected override void OnInitialized()
+    {
+        Task.Run(() => InvokeAsync(async () =>
+        {
+            while (!_isDisposed)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                tick++;
+                StateHasChanged();
+            }
+        }));
+    }
+
+
+    public void Dispose() => _isDisposed = true;
+
+}

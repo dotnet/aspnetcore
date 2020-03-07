@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication
 {

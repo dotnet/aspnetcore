@@ -75,5 +75,10 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="AuthenticatorTokenProvider"/> used to validate two factor sign ins with an authenticator.
         /// </value>
         public string AuthenticatorTokenProvider { get; set; } = DefaultAuthenticatorProvider;
+
+        /// <summary>
+        /// Gets or sets the issuer used for the authenticator issuer.
+        /// </summary>
+        public string AuthenticatorIssuer { get; set; } = "Microsoft.AspNetCore.Identity.UI";
     }
 }

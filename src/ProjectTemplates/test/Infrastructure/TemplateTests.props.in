@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RestoreAdditionalProjectSources>${RestoreAdditionalProjectSources}</RestoreAdditionalProjectSources>
+
+    <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
+    <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update="Microsoft.NETCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
+
+    <KnownFrameworkReference
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
+      RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+      Version="${MicrosoftNetCompilersToolsetPackageVersion}"
+      PrivateAssets="all"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+    <!--
+      Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
+      several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
+    -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="${MicrosoftNETSdkRazorPackageVersion}" />
+  </ItemGroup>
+</Project>

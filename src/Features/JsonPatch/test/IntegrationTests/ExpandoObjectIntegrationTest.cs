@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
         }
 
         [Fact]
-        public void TestIntegerProperty_IsSucessful()
+        public void TestIntegerProperty_IsSuccessful()
         {
             // Arrange
             dynamic targetObject = new ExpandoObject();
@@ -157,6 +157,25 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Assert
             Assert.Equal("A", targetObject.AnotherStringProperty);
+        }
+
+        [Fact]
+        public void CopyNullStringProperty_ToAnotherStringProperty()
+        {
+            // Arrange
+            dynamic targetObject = new ExpandoObject();
+
+            targetObject.StringProperty = null;
+            targetObject.AnotherStringProperty = "B";
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Copy("StringProperty", "AnotherStringProperty");
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.Null(targetObject.AnotherStringProperty);
         }
 
         [Fact]

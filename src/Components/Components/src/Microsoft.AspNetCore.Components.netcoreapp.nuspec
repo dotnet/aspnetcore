@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    $CommonMetadataElements$
+    <dependencies>
+      <group targetFramework=".NETCoreApp5.0">
+        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerPackageVersion$" />
+        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationPackageVersion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    $CommonFileElements$
+    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\" />
+    <file src="..\..\THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
+  </files>
+</package>

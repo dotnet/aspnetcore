@@ -4,37 +4,11 @@
   "description": "Provides a root to run npm scripts from. DO NOT PUBLISH",
   "private": true,
   "scripts": {
-    "build": "cd ./signalr && npm run build && cd ../signalr-protocol-msgpack && npm run build",
+    "build": "cd ./signalr && yarn run build && cd ../signalr-protocol-msgpack && yarn run build",
     "pretest": "node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr/tests/tsconfig.json && node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr-protocol-msgpack/tests/tsconfig.json",
-    "test": "node ./common/node_modules/jest/bin/jest.js",
-    "coverage": "node ./common/node_modules/jest/bin/jest.js --coverage"
+    "test": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js",
+    "coverage": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js --coverage"
   },
   "author": "Microsoft",
-  "license": "Apache-2.0",
-  "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsConfigFile": "./tsconfig.jest.json",
-        "skipBabel": true,
-        "enableTsDiagnostics": true
-      }
-    },
-    "transform": {
-      "^.+\\.tsx?$": "./common/node_modules/ts-jest"
-    },
-    "testEnvironment": "node",
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleNameMapper": {
-      "^ts-jest$": "<rootDir>/common/node_modules/ts-jest",
-      "^@aspnet/signalr$": "<rootDir>/signalr/dist/cjs/index.js"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
-  }
+  "license": "Apache-2.0"
 }

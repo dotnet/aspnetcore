@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp Analyzers for ASP.NET Core.</Description>
+    <PackageTags>aspnetcore</PackageTags>
+
+    <!--
+      This package is for internal use only. It contains analyzers that are bundled in the .NET Core Web SDK.
+
+      We do need to pack it so it can be picked up by the Web SDK.
+    -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <Nullable>Enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+  </ItemGroup>
+
+</Project>

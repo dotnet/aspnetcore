@@ -14,11 +14,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 {
-    /// <summary>
-    /// Infrastructure
-    /// </summary>
-    [Obsolete("This type is for internal use only and will be removed in a future version.")]
-    public abstract class BaseView
+    internal abstract class BaseView
     {
         /// <summary>
         /// The request context
@@ -106,11 +102,11 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 
         private string AttributeEnding { get; set; }
 
-        protected void BeginWriteAttribute(string name, string begining, int startPosition, string ending, int endPosition, int thingy)
+        protected void BeginWriteAttribute(string name, string beginning, int startPosition, string ending, int endPosition, int thingy)
         {
             Debug.Assert(string.IsNullOrEmpty(AttributeEnding));
 
-            Output.Write(begining);
+            Output.Write(beginning);
             AttributeEnding = ending;
         }
 

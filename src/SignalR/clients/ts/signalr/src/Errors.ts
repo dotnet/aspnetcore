@@ -10,7 +10,7 @@ export class HttpError extends Error {
     /** The HTTP status code represented by this error. */
     public statusCode: number;
 
-    /** Constructs a new instance of {@link @aspnet/signalr.HttpError}.
+    /** Constructs a new instance of {@link @microsoft/signalr.HttpError}.
      *
      * @param {string} errorMessage A descriptive error message.
      * @param {number} statusCode The HTTP status code represented by this error.
@@ -32,11 +32,31 @@ export class TimeoutError extends Error {
     // tslint:disable-next-line:variable-name
     private __proto__: Error;
 
-    /** Constructs a new instance of {@link @aspnet/signalr.TimeoutError}.
+    /** Constructs a new instance of {@link @microsoft/signalr.TimeoutError}.
      *
      * @param {string} errorMessage A descriptive error message.
      */
     constructor(errorMessage: string = "A timeout occurred.") {
+        const trueProto = new.target.prototype;
+        super(errorMessage);
+
+        // Workaround issue in Typescript compiler
+        // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
+        this.__proto__ = trueProto;
+    }
+}
+
+/** Error thrown when an action is aborted. */
+export class AbortError extends Error {
+    // @ts-ignore: Intentionally unused.
+    // tslint:disable-next-line:variable-name
+    private __proto__: Error;
+
+    /** Constructs a new instance of {@link AbortError}.
+     *
+     * @param {string} errorMessage A descriptive error message.
+     */
+    constructor(errorMessage: string = "An abort occurred.") {
         const trueProto = new.target.prototype;
         super(errorMessage);
 

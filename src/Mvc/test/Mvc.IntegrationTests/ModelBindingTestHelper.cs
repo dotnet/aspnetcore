@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -64,6 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
+        public static ParameterBinder GetParameterBinder(ModelBindingTestContext testContext)
+        {
+            return GetParameterBinder(testContext.HttpContext.RequestServices);
+        }
+
         public static ParameterBinder GetParameterBinder(IServiceProvider serviceProvider)
         {
             var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
@@ -74,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 new ModelBinderFactory(metadataProvider, options, serviceProvider),
                 new DefaultObjectValidator(
                     metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+                    options.Value),
                 options,
                 NullLoggerFactory.Instance);
         }
@@ -97,7 +102,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 new ModelBinderFactory(metadataProvider, options, services),
                 new DefaultObjectValidator(
                     metadataProvider,
-                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) },
+                    options.Value),
                 options,
                 NullLoggerFactory.Instance);
         }
@@ -122,7 +128,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             return new DefaultObjectValidator(
                 metadataProvider,
-                GetModelValidatorProviders(options));
+                GetModelValidatorProviders(options),
+                options?.Value ?? new MvcOptions());
         }
 
         private static IList<IModelValidatorProvider> GetModelValidatorProviders(IOptions<MvcOptions> options)
@@ -184,12 +191,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 serviceCollection.AddSingleton(Options.Create(mvcOptions));
             }
 
+            serviceCollection.AddMvc()
+                .AddNewtonsoftJson();
             serviceCollection
-                .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            serviceCollection
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
-                .AddTransient<ILoggerFactory, LoggerFactory>()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
 
             if (updateOptions != null)

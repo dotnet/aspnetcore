@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -244,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = new TestSession() });
             var viewContext = new ViewContext();
-            viewContext.TempData = new TempDataDictionary(httpContext, new SessionStateTempDataProvider());
+            viewContext.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
             var viewComponentContext = new ViewComponentContext();
             viewComponentContext.ViewContext = viewContext;
 

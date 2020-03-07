@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = new FeatureReferences<IHttpRequestFeature>(features);
+            _features.Initalize(features);
         }
 
         private IHttpRequestFeature HttpRequestFeature =>

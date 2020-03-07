@@ -1,0 +1,5 @@
+<!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
+<Project>
+  <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
+  <Target Name="InitializeSourceControlInformation"/>
+</Project>

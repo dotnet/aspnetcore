@@ -189,51 +189,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(entry.RawValue); // Value is set by test model binder, no need to validate it.
         }
 
-        // Make sure the metadata is honored when a [ModelBinder] attribute is associated with an action parameter's
-        // type. This should behave identically to such an attribute on an action parameter. (Tests such as
-        // BindParameter_WithData_WithPrefix_GetsBound cover associating [ModelBinder] with an action parameter.)
-        //
-        // This is a regression test for aspnet/Mvc#4652
-        [Theory]
-        [MemberData(nameof(NullAndEmptyBindingInfo))]
-        public async Task BinderTypeOnParameterType_WithDataEmptyPrefixAndVersion20_GetsBound(
-            BindingInfo bindingInfo)
-        {
-            // Arrange
-            var testContext = ModelBindingTestHelper.GetTestContext(
-                // ParameterBinder will use ModelMetadata for typeof(Address), not Parameter1's ParameterInfo.
-                updateOptions: options => options.AllowValidatingTopLevelNodes = false);
-
-            var modelState = testContext.ModelState;
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
-            var parameter = new ParameterDescriptor
-            {
-                Name = "Parameter1",
-                BindingInfo = bindingInfo,
-                ParameterType = typeof(Address),
-            };
-
-            // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
-
-            // Assert
-            // ModelBindingResult
-            Assert.True(modelBindingResult.IsModelSet);
-
-            // Model
-            var address = Assert.IsType<Address>(modelBindingResult.Model);
-            Assert.Equal("SomeStreet", address.Street);
-
-            // ModelState
-            Assert.True(modelState.IsValid);
-            var kvp = Assert.Single(modelState);
-            Assert.Equal("Street", kvp.Key);
-            var entry = kvp.Value;
-            Assert.NotNull(entry);
-            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
-            Assert.NotNull(entry.RawValue); // Value is set by test model binder, no need to validate it.
-        }
-
         private class Person3
         {
             [ModelBinder(BinderType = typeof(Address3ModelBinder))]

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Result of <see cref="IRazorPageFactoryProvider.CreateFactory(string)"/>.
     /// </summary>
-    public struct RazorPageFactoryResult
+    public readonly struct RazorPageFactoryResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageFactoryResult"/> with the

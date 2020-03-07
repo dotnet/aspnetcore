@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ServiceContext
+    internal class ServiceContext
     {
         public IKestrelTrace Log { get; set; }
 
@@ -19,7 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
-        public HttpConnectionManager ConnectionManager { get; set; }
+        public ConnectionManager ConnectionManager { get; set; }
+
+        public Heartbeat Heartbeat { get; set; }
 
         public KestrelServerOptions ServerOptions { get; set; }
     }

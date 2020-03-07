@@ -1,8 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -260,7 +258,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor);
+            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
     }
 }

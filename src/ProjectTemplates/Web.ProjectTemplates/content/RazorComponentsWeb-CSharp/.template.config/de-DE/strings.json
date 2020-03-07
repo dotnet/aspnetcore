@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor-Server-App",
+    "description": "Eine Projektvorlage für das Erstellen einer Blazor-Anwendung, die serverseitig innerhalb einer ASP.NET Core-Anwendung ausgeführt wird. Diese Vorlage kann für Webanwendungen mit umfangreichen dynamischen Benutzeroberflächen verwendet werden."
+  }
+}

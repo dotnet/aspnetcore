@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -21,16 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly MvcOptions _options;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes an instance of <see cref="FormatFilter"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public FormatFilter(IOptions<MvcOptions> options)
-            : this(options, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes an instance of <see cref="FormatFilter"/>.
@@ -59,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (context.RouteData.Values.TryGetValue("format", out var obj))
             {
                 // null and string.Empty are equivalent for route values.
-                var routeValue = obj?.ToString();
+                var routeValue = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 return string.IsNullOrEmpty(routeValue) ? null : routeValue;
             }
 
@@ -166,8 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return;
             }
 
-            var objectResult = context.Result as ObjectResult;
-            if (objectResult == null)
+            if (!(context.Result is ObjectResult objectResult))
             {
                 return;
             }

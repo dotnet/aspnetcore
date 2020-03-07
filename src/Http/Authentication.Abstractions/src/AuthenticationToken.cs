@@ -5,7 +5,7 @@
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
-    /// Name/Value representing an token.
+    /// Name/Value representing a token.
     /// </summary>
     public class AuthenticationToken
     {

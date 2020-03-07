@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #include <precomp.h>
+#include <MsiQuery.h>
+#include <msxml6.h>
 
 DECLARE_DEBUG_PRINT_OBJECT( "proxyCA.dll" );
 
@@ -39,6 +41,137 @@ struct COMPRESSION_MIME_TYPE
 
 COMPRESSION_MIME_TYPE gMimeTypes[] =
     { { L"text/event-stream", FALSE} };
+
+#define _HR_RET(hr)                                             __pragma(warning(push)) \
+    __pragma(warning(disable:26498)) /*disable constexpr warning */ \
+    const HRESULT __hrRet = hr; \
+    __pragma(warning(pop))
+
+#define _GOTO_FINISHED()                                        __pragma(warning(push)) \
+    __pragma(warning(disable:26438)) /*disable avoid goto warning*/ \
+    goto Finished \
+    __pragma(warning(pop))
+
+#define RETURN_IF_FAILED(hrr)                                 do { _HR_RET(hrr); if (FAILED(__hrRet)) { hr = __hrRet; IISLogWrite(SETUP_LOG_SEVERITY_INFORMATION, L"Exiting hr=0x%x", hr); return hr; }} while (0, 0)
+
+// Modifies the configSections to include the aspNetCore section
+UINT
+WINAPI
+AddConfigSection(
+	IN MSIHANDLE handle
+)
+{
+    HRESULT hr;
+    CComPtr<IXMLDOMDocument2> pXMLDoc;
+    VARIANT_BOOL variantResult;
+    IXMLDOMNode* webServerNode;
+    IXMLDOMNode* aspNetCoreNode;
+    IXMLDOMNode* tempNode;
+    IXMLDOMElement* element;
+    STRU customActionData;
+
+	CComBSTR selectLanguage = SysAllocString(L"SelectionLanguage");
+	CComBSTR xPath = SysAllocString(L"XPath");
+	CComBSTR webServerPath = SysAllocString(L"//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
+	CComBSTR aspNetCorePath = SysAllocString(L"//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"aspNetCore\"]");
+	CComBSTR section = SysAllocString(L"section");
+	CComBSTR name = SysAllocString(L"name");
+	CComBSTR aspNetCore = SysAllocString(L"aspNetCore");
+	CComBSTR overrideMode = SysAllocString(L"overrideModeDefault");
+	CComBSTR allow = SysAllocString(L"Allow");
+
+	RETURN_IF_FAILED(CoInitialize(NULL));
+
+	hr = MsiUtilGetProperty(handle, TEXT("CustomActionData"), &customActionData);
+
+	RETURN_IF_FAILED(hr = pXMLDoc.CoCreateInstance(__uuidof(DOMDocument60)));
+
+	RETURN_IF_FAILED(hr = pXMLDoc->put_async(false));
+
+	RETURN_IF_FAILED(hr = pXMLDoc->load(CComVariant(customActionData.QueryStr()), &variantResult));
+
+	if (variantResult == VARIANT_FALSE)
+	{
+		return ERROR_SUCCESS;
+	}
+
+	RETURN_IF_FAILED(hr = pXMLDoc->setProperty(selectLanguage, CComVariant(xPath)));
+
+	RETURN_IF_FAILED(hr = pXMLDoc->selectSingleNode(webServerPath, &webServerNode));
+
+	RETURN_IF_FAILED(hr = pXMLDoc->selectSingleNode(aspNetCorePath, &aspNetCoreNode));
+
+	if (aspNetCoreNode == NULL)
+	{
+		RETURN_IF_FAILED(hr = pXMLDoc->createElement(section, &element));
+
+		RETURN_IF_FAILED(hr = element->setAttribute(name, CComVariant(aspNetCore)));
+
+		RETURN_IF_FAILED(hr = element->setAttribute(overrideMode, CComVariant(allow)));
+
+		RETURN_IF_FAILED(hr = webServerNode->appendChild(element, &tempNode));
+
+		RETURN_IF_FAILED(hr = pXMLDoc->save(CComVariant(customActionData.QueryStr())));
+	}
+
+	return ERROR_SUCCESS;
+}
+
+// Modifies the configSections to remove the aspNetCore section
+UINT
+WINAPI
+RemoveConfigSection(
+    IN MSIHANDLE handle
+)
+{
+    HRESULT hr;
+    CComPtr<IXMLDOMDocument2> pXMLDoc;
+    VARIANT_BOOL variantResult;
+    IXMLDOMNode* webServerNode;
+    IXMLDOMNode* aspNetCoreNode;
+    IXMLDOMNode* tempNode;
+    STRU customActionData;
+
+    CComBSTR selectLanguage = SysAllocString(L"SelectionLanguage");
+    CComBSTR xPath = SysAllocString(L"XPath");
+    CComBSTR webServerPath = SysAllocString(L"//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
+    CComBSTR aspNetCorePath = SysAllocString(L"//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"aspNetCore\"]");
+    CComBSTR section = SysAllocString(L"section");
+    CComBSTR name = SysAllocString(L"name");
+    CComBSTR aspNetCore = SysAllocString(L"aspNetCore");
+    CComBSTR overrideMode = SysAllocString(L"overrideModeDefault");
+    CComBSTR allow = SysAllocString(L"Allow");
+
+    RETURN_IF_FAILED(CoInitialize(NULL));
+
+    hr = MsiUtilGetProperty(handle, TEXT("CustomActionData"), &customActionData);
+
+    RETURN_IF_FAILED(hr = pXMLDoc.CoCreateInstance(__uuidof(DOMDocument60)));
+
+    RETURN_IF_FAILED(hr = pXMLDoc->put_async(false));
+
+    RETURN_IF_FAILED(hr = pXMLDoc->load(CComVariant(customActionData.QueryStr()), &variantResult));
+
+    if (variantResult == VARIANT_FALSE)
+    {
+        return ERROR_SUCCESS;
+    }
+
+    RETURN_IF_FAILED(hr = pXMLDoc->setProperty(selectLanguage, CComVariant(xPath)));
+
+    RETURN_IF_FAILED(hr = pXMLDoc->selectSingleNode(webServerPath, &webServerNode));
+
+    RETURN_IF_FAILED(hr = pXMLDoc->selectSingleNode(aspNetCorePath, &aspNetCoreNode));
+
+    if (aspNetCoreNode != NULL)
+    {
+        RETURN_IF_FAILED(webServerNode->removeChild(aspNetCoreNode, &tempNode));
+
+        RETURN_IF_FAILED(hr = pXMLDoc->save(CComVariant(customActionData.QueryStr())));
+    }
+
+    return ERROR_SUCCESS;
+}
 
 UINT
 WINAPI

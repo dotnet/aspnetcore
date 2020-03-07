@@ -6,23 +6,58 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        private IServiceCollection _serviceCollection;
+
+        public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
-            Client = fixture.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<BasicWebSite.StartupWithoutEndpointRouting>());
+            factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection));
+
+            Client = factory.CreateDefaultClient();
         }
 
         protected override HttpClient Client { get; }
 
+        [Fact]
+        public void VerifyNewtonsoftJsonTempDataSerializer()
+        {
+            // Arrange
+            // This test could provide some diagnostics for the test failure reported in https://github.com/dotnet/aspnetcore-internal/issues/1803.
+            // AddNewtonsoftJson attempts to replace the DefaultTempDataSerializer. The test failure indicates this failed but it's not clear why.
+            // We'll capture the application's ServiceCollection and inspect the instance of ITempDataSerializer instances here. It might give us some
+            // clues if the test fails again in the future.
+
+            // Intentionally avoiding using Xunit.Assert to get more diagnostics.
+            var tempDataSerializers = _serviceCollection.Where(f => f.ServiceType == typeof(TempDataSerializer)).ToList();
+            if (tempDataSerializers.Count == 1 && tempDataSerializers[0].ImplementationType.FullName == "Microsoft.AspNetCore.Mvc.NewtonsoftJson.BsonTempDataSerializer")
+            {
+                return;
+            }
+
+            var builder = new StringBuilder();
+            foreach (var serializer in tempDataSerializers)
+            {
+                var type = serializer.ImplementationType;
+                builder.Append(serializer.ImplementationType.AssemblyQualifiedName);
+            }
+
+            throw new Exception($"Expected exactly one instance of TempDataSerializer based on NewtonsoftJson, but found {tempDataSerializers.Count} instance(s):" + Environment.NewLine + builder);
+        }
 
         [Theory]
         [InlineData(ChunkingCookieManager.DefaultChunkSize)]

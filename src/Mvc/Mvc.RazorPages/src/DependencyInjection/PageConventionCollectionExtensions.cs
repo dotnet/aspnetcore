@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -60,7 +61,31 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to the page with the specified name.
+        /// Adds the specified <paramref name="convention"/> to <paramref name="conventions"/>.
+        /// The added convention will apply to all handler properties and parameters on handler methods.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="convention">The <see cref="IParameterModelBaseConvention"/> to apply.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection Add(this PageConventionCollection conventions, IParameterModelBaseConvention convention)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (convention == null)
+            {
+                throw new ArgumentNullException(nameof(convention));
+            }
+
+            var adapter = new ParameterModelBaseConventionAdapter(convention);
+            conventions.Add(adapter);
+            return conventions;
+        }
+
+        /// <summary>
+        /// Allows anonymous access to the page with the specified name.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="pageName">The page name.</param>
@@ -77,13 +102,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            var anonymousFilter = new AllowAnonymousFilter();
-            conventions.AddPageApplicationModelConvention(pageName, model => model.Filters.Add(anonymousFilter));
+            conventions.AddPageApplicationModelConvention(pageName, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AllowAnonymousAttribute());
+                }
+                else
+                {
+                    model.Filters.Add(new AllowAnonymousFilter());
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to the page with the specified name located in the specified area.
+        /// Allows anonymous access to the page with the specified name located in the specified area.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -115,13 +149,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            var anonymousFilter = new AllowAnonymousFilter();
-            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model => model.Filters.Add(anonymousFilter));
+            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AllowAnonymousAttribute());
+                }
+                else
+                {
+                    model.Filters.Add(new AllowAnonymousFilter());
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified folder.
+        /// Allows anonymous access to all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -138,37 +181,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var anonymousFilter = new AllowAnonymousFilter();
-            conventions.AddFolderApplicationModelConvention(folderPath, model => model.Filters.Add(anonymousFilter));
+            conventions.AddFolderApplicationModelConvention(folderPath, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AllowAnonymousAttribute());
+                }
+                else
+                {
+                    model.Filters.Add(new AllowAnonymousFilter());
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds the specified <paramref name="convention"/> to <paramref name="conventions"/>.
-        /// The added convention will apply to all handler properties and parameters on handler methods.
-        /// </summary>
-        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
-        /// <param name="convention">The <see cref="IParameterModelBaseConvention"/> to apply.</param>
-        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
-        public static PageConventionCollection Add(this PageConventionCollection conventions, IParameterModelBaseConvention convention)
-        {
-            if (conventions == null)
-            {
-                throw new ArgumentNullException(nameof(conventions));
-            }
-
-            if (convention == null)
-            {
-                throw new ArgumentNullException(nameof(convention));
-            }
-
-            var adapter = new ParameterModelBaseConventionAdapter(convention);
-            conventions.Add(adapter);
-            return conventions;
-        }
-
-        /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified area folder.
+        /// Allows anonymous access to all pages under the specified area folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -200,13 +228,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var anonymousFilter = new AllowAnonymousFilter();
-            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model => model.Filters.Add(anonymousFilter));
+            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AllowAnonymousAttribute());
+                }
+                else
+                {
+                    model.Filters.Add(new AllowAnonymousFilter());
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to the page with the specified name.
+        /// Requires authorization with the specified policy for the page with the specified name.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="pageName">The page name.</param>
@@ -224,13 +261,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            var authorizeFilter = new AuthorizeFilter(policy);
-            conventions.AddPageApplicationModelConvention(pageName, model => model.Filters.Add(authorizeFilter));
+            conventions.AddPageApplicationModelConvention(pageName, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AuthorizeAttribute(policy));
+                }
+                else
+                {
+                    model.Filters.Add(new AuthorizeFilter(policy));
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> to the page with the specified name.
+        /// Requires authorization for the specified page.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="pageName">The page name.</param>
@@ -239,7 +285,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AuthorizePage(conventions, pageName, policy: string.Empty);
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with default policy to the page with the specified name.
+        /// Requires authorization for the specified area page.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -255,7 +301,7 @@ namespace Microsoft.Extensions.DependencyInjection
             => AuthorizeAreaPage(conventions, areaName, pageName, policy: string.Empty);
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to the page with the specified name.
+        /// Requires authorization for the specified area page with the specified policy.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -289,13 +335,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            var authorizeFilter = new AuthorizeFilter(policy);
-            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model => model.Filters.Add(authorizeFilter));
+            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AuthorizeAttribute(policy));
+                }
+                else
+                {
+                    model.Filters.Add(new AuthorizeFilter(policy));
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified folder.
+        /// Requires authorization for all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -313,13 +368,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var authorizeFilter = new AuthorizeFilter(policy);
-            conventions.AddFolderApplicationModelConvention(folderPath, model => model.Filters.Add(authorizeFilter));
+            conventions.AddFolderApplicationModelConvention(folderPath, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AuthorizeAttribute(policy));
+                }
+                else
+                {
+                    model.Filters.Add(new AuthorizeFilter(policy));
+                }
+            });
             return conventions;
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> to all pages under the specified folder.
+        /// Requires authorization for all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -328,7 +392,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AuthorizeFolder(conventions, folderPath, policy: string.Empty);
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the default policy to all pages under the specified folder.
+        /// Requires authorization with the default policy for all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -344,7 +408,7 @@ namespace Microsoft.Extensions.DependencyInjection
             => AuthorizeAreaFolder(conventions, areaName, folderPath, policy: string.Empty);
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified folder.
+        /// Requires authorization with the specified policy for all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
         /// <param name="areaName">The area name.</param>
@@ -378,8 +442,17 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var authorizeFilter = new AuthorizeFilter(policy);
-            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model => model.Filters.Add(authorizeFilter));
+            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
+            {
+                if (conventions.MvcOptions.EnableEndpointRouting)
+                {
+                    model.EndpointMetadata.Add(new AuthorizeAttribute(policy));
+                }
+                else
+                {
+                    model.Filters.Add(new AuthorizeFilter(policy));
+                }
+            });
             return conventions;
         }
 

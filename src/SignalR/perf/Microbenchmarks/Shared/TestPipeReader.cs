@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
             throw new NotImplementedException();
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            throw new NotImplementedException();
-        }
-
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             if (ReadResults.Count == 0)

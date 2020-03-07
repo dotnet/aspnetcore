@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Razor 类库",
+    "description": "用于创建 Razor 类库的项目模板。",
+    "parameter.SupportPagesAndViews.name": "支持页面和视图(_S)"
+  }
+}

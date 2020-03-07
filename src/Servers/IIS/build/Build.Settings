@@ -4,9 +4,7 @@
      <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
      <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
      <Platform Condition="'$(Platform)' == ''">Win32</Platform>
-     <PlatformToolset>v141</PlatformToolset>
-     <OutputPath Condition="'$(OutputPath)' == ''">$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutputPath>
-     <OutDir>$(OutputPath)</OutDir>
+     <PlatformToolset>v142</PlatformToolset>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 
@@ -18,6 +16,9 @@
    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
      <UseDebugLibraries>false</UseDebugLibraries>
      <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CodeAnalysisRuleSet>..\DefaultRules.ruleset</CodeAnalysisRuleSet>
+     <RunCodeAnalysis>false</RunCodeAnalysis>
+     <EnablePREfast>$(RunCodeAnalysis)</EnablePREfast>
    </PropertyGroup>
 
    <ItemDefinitionGroup>

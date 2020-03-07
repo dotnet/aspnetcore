@@ -1,14 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
+using System.Net.Http;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
+    internal class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
@@ -58,7 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             _buffer = _buffer.Slice(consumed, _buffer.End);
 
-            if (!_parser.ParseHeaders(new Adapter(this), _buffer, out consumed, out examined, out var consumedBytes))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -68,8 +71,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+        }
+
+        public void OnHeadersComplete(bool endStream)
+        {
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            throw new NotImplementedException();
         }
 
         private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
@@ -81,11 +98,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 RequestHandler = requestHandler;
             }
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
+
+            public void OnHeadersComplete(bool endStream)
+                => RequestHandler.OnHeadersComplete(endStream);
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

@@ -153,6 +153,39 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        public async Task BindParameter_WithEmptyQueryStringKey_DoesNotGetBound()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+
+                ParameterType = typeof(string)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?=someValue");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.False(modelBindingResult.IsModelSet);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState.Keys);
+        }
+
+        [Fact]
         [ReplaceCulture("en-GB", "en-GB")]
         public async Task BindDecimalParameter_WithData_GetsBound()
         {
@@ -241,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task BindParameter_NonConvertableValue_GetsError()
+        public async Task BindParameter_NonConvertibleValue_GetsError()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -290,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task BindParameter_NonConvertableValue_GetsCustomErrorMessage()
+        public async Task BindParameter_NonConvertibleValue_GetsCustomErrorMessage()
         {
             // Arrange
             var parameterType = typeof(int);

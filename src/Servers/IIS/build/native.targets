@@ -1,24 +1,44 @@
 <Project>
-  <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
+
+  <PropertyGroup>
+    <IncludePath>$(IncludePath);$(IntDir)</IncludePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="@(MessageFile->Count()) != 0">
+    <!-- Checking if the IntDir exists is a local development optimization. Normally, each time the build runs,
+      the aspnetcore_msg.h file is auto generated. The compiler notices that the file has been updated, and recompiles c++ files.
+      These files never update (they define message types, which aren't changed). Therefore, if the IntDir exists, don't recreate
+      the header file. -->
+    <CustomBuild Include="@(MessageFile)" Condition="!Exists('$(IntDir)MSG00001.bin')">
+      <FileType>Document</FileType>
+      <Command>mc "%(FullPath)" -h $(IntDir) -r $(IntDir)</Command>
+      <Message>Compiling Event Messages ...</Message>
+      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG00001.bin</Outputs>
+    </CustomBuild>
+
+    <MessageFile Remove="@(MessageFile)" />
+  </ItemGroup>
+
+  <Target Name="CreateVersionHeader" DependsOnTargets="InitializeSourceControlInformation" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />
       <VersionHeaderContents Include="// Licensed under the MIT License. See LICENSE.txt in the project root for license information." />
       <VersionHeaderContents Include="%0a" />
       <VersionHeaderContents Include="// This file is auto-generated" />
       <VersionHeaderContents Include="%0a" />
-      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AssemblyBuild),$(AspNetCoreModuleVersionRevision)" />
-      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AssemblyBuild).$(AspNetCoreModuleVersionRevision)\0&quot;" />
-      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AssemblyBuild),$(AspNetCoreModuleVersionRevision)" />
-      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AssemblyBuild).$(AspNetCoreModuleVersionRevision)\0&quot;" />
+      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
+      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
+      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
+      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
       <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
-      <VersionHeaderContents Include="#define CommitHash &quot;$(CommitHash)\0&quot;" />
+      <VersionHeaderContents Include="#define CommitHash &quot;$(SourceRevisionId)\0&quot;" />
     </ItemGroup>
 
     <ItemGroup>
-      <FileWrites Include="version.h" />
+      <FileWrites Include="$(IntDir)version.h" />
     </ItemGroup>
 
-    <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile File="$(IntDir)version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
   </Target>
 
 </Project>

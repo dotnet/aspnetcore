@@ -1,15 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.AspNetCore.SpaServices.Util;
-using System;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
@@ -17,11 +20,12 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     /// Provides an implementation of <see cref="ISpaPrerendererBuilder"/> that can build
     /// an Angular application by invoking the Angular CLI.
     /// </summary>
+    [Obsolete("Prerendering is no longer supported out of box")]
     public class AngularCliBuilder : ISpaPrerendererBuilder
     {
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
-        private readonly string _npmScriptName;
+        private readonly string _scriptName;
 
         /// <summary>
         /// Constructs an instance of <see cref="AngularCliBuilder"/>.
@@ -34,47 +38,54 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new ArgumentException("Cannot be null or empty.", nameof(npmScript));
             }
 
-            _npmScriptName = npmScript;
+            _scriptName = npmScript;
         }
 
         /// <inheritdoc />
         public async Task Build(ISpaBuilder spaBuilder)
         {
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new InvalidOperationException($"To use {nameof(AngularCliBuilder)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
+            var appBuilder = spaBuilder.ApplicationBuilder;
+            var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
             var logger = LoggerFinder.GetOrCreateLogger(
-                spaBuilder.ApplicationBuilder,
+                appBuilder,
                 nameof(AngularCliBuilder));
-            var npmScriptRunner = new NpmScriptRunner(
+            var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
+            var scriptRunner = new NodeScriptRunner(
                 sourcePath,
-                _npmScriptName,
+                _scriptName,
                 "--watch",
-                null);
-            npmScriptRunner.AttachToLogger(logger);
+                null,
+                pkgManagerCommand,
+                diagnosticSource,
+                applicationStoppingToken);
+            scriptRunner.AttachToLogger(logger);
 
-            using (var stdOutReader = new EventedStreamStringReader(npmScriptRunner.StdOut))
-            using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
+            using (var stdOutReader = new EventedStreamStringReader(scriptRunner.StdOut))
+            using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
             {
                 try
                 {
-                    await npmScriptRunner.StdOut.WaitForMatch(
+                    await scriptRunner.StdOut.WaitForMatch(
                         new Regex("Date", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{_npmScriptName}' exited without indicating success.\n" +
+                        $"The {pkgManagerCommand} script '{_scriptName}' exited without indicating success.\n" +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }
                 catch (OperationCanceledException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{_npmScriptName}' timed out without indicating success. " +
+                        $"The {pkgManagerCommand} script '{_scriptName}' timed out without indicating success. " +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -127,6 +128,17 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all clients connected to the hub excluding the specified connections.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="excludedConnectionIds">The connection IDs to exclude.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T AllExcept<T>(this IHubClients<T> hubClients, IEnumerable<string> excludedConnectionIds)
+        {
+            return hubClients.AllExcept(excludedConnectionIds.ToList());
+        }
+
+        /// <summary>
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on the specified connections.
         /// </summary>
         /// <param name="hubClients">The abstraction that provides access to connections.</param>
@@ -243,6 +255,17 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on the specified connections.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="connectionIds">The connection IDs.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T Clients<T>(this IHubClients<T> hubClients, IEnumerable<string> connectionIds)
+        {
+            return hubClients.Clients(connectionIds.ToList());
+        }
+
+        /// <summary>
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections in all of the specified groups.
         /// </summary>
         /// <param name="hubClients">The abstraction that provides access to connections.</param>
@@ -356,6 +379,17 @@ namespace Microsoft.AspNetCore.SignalR
         public static T Groups<T>(this IHubClients<T> hubClients, string group1, string group2, string group3, string group4, string group5, string group6, string group7, string group8)
         {
             return hubClients.Groups(new [] { group1, group2, group3, group4, group5, group6, group7, group8 });
+        }
+
+        /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections in all of the specified groups.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="groupNames">The group names.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T Groups<T>(this IHubClients<T> hubClients, IEnumerable<string> groupNames)
+        {
+            return hubClients.Groups(groupNames.ToList());
         }
 
         /// <summary>
@@ -483,6 +517,18 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections in the specified group excluding the specified connections.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="groupName">The group name.</param>
+        /// <param name="excludedConnectionIds">The connection IDs to exclude.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T GroupExcept<T>(this IHubClients<T> hubClients, string groupName, IEnumerable<string> excludedConnectionIds)
+        {
+            return hubClients.GroupExcept(groupName, excludedConnectionIds.ToList());
+        }
+
+        /// <summary>
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections associated with all of the specified users.
         /// </summary>
         /// <param name="hubClients">The abstraction that provides access to connections.</param>
@@ -596,6 +642,17 @@ namespace Microsoft.AspNetCore.SignalR
         public static T Users<T>(this IHubClients<T> hubClients, string user1, string user2, string user3, string user4, string user5, string user6, string user7, string user8)
         {
             return hubClients.Users(new [] { user1, user2, user3, user4, user5, user6, user7, user8 });
+        }
+
+        /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections associated with all of the specified users.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="userIds">The user IDs.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T Users<T>(this IHubClients<T> hubClients, IEnumerable<string> userIds)
+        {
+            return hubClients.Users(userIds.ToList());
         }
     }
 }

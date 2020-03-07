@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.HttpSys.Internal;
@@ -14,20 +15,54 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int BindingInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
+        private readonly RequestQueueMode _mode;
         private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, ILogger logger)
+        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
         {
+            _mode = mode;
             _urlGroup = urlGroup;
             _logger = logger;
 
-            HttpRequestQueueV2Handle requestQueueHandle = null;
-            var statusCode = HttpApi.HttpCreateRequestQueue(
-                    HttpApi.Version, null, null, 0, out requestQueueHandle);
+            var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+            Created = true;
+            if (_mode == RequestQueueMode.Attach)
+            {
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+                Created = false;
+            }
 
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            var statusCode = HttpApi.HttpCreateRequestQueue(
+                    HttpApi.Version,
+                    requestQueueName,
+                    null,
+                    flags,
+                    out var requestQueueHandle);
+
+            if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
+            {
+                // Tried to create, but it already exists so attach to it instead.
+                Created = false;
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+                statusCode = HttpApi.HttpCreateRequestQueue(
+                        HttpApi.Version,
+                        requestQueueName,
+                        null,
+                        flags,
+                        out requestQueueHandle);
+            }
+
+            if (flags == HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            {
+                throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
+            }
+            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_NAME)
+            {
+                throw new HttpSysException((int)statusCode, $"The given request queue name '{requestQueueName}' is invalid.");
+            }
+            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 throw new HttpSysException((int)statusCode);
             }
@@ -39,18 +74,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
             {
+                requestQueueHandle.Dispose();
                 throw new HttpSysException(Marshal.GetLastWin32Error());
             }
 
             Handle = requestQueueHandle;
             BoundHandle = ThreadPoolBoundHandle.BindHandle(Handle);
+
+            if (!Created)
+            {
+                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+            }
         }
+
+        /// <summary>
+        /// True if this instace created the queue instead of attaching to an existing one.
+        /// </summary>
+        internal bool Created { get; }
 
         internal SafeHandle Handle { get; }
         internal ThreadPoolBoundHandle BoundHandle { get; }
 
         internal unsafe void AttachToUrlGroup()
         {
+            Debug.Assert(Created);
             CheckDisposed();
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
@@ -67,6 +114,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void DetachFromUrlGroup()
         {
+            Debug.Assert(Created);
             CheckDisposed();
             // Break the association between request queue and url group. After this, requests for registered urls 
             // will get 503s.
@@ -87,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The listener must be active for this to work.
         internal unsafe void SetLengthLimit(long length)
         {
+            Debug.Assert(Created);
             CheckDisposed();
 
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,
@@ -102,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The listener must be active for this to work.
         internal unsafe void SetRejectionVerbosity(Http503VerbosityLevel verbosity)
         {
+            Debug.Assert(Created);
             CheckDisposed();
 
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,

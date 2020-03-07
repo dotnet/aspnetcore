@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -187,6 +188,12 @@ namespace Microsoft.AspNetCore.Builder
                     OriginalPath = originalPath.Value,
                     OriginalQueryString = originalQueryString.HasValue ? originalQueryString.Value : null,
                 });
+
+                // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                // the endpoint and route values to ensure things are re-calculated.
+                context.HttpContext.SetEndpoint(endpoint: null);
+                var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
+                routeValuesFeature?.RouteValues?.Clear();
 
                 context.HttpContext.Request.Path = newPath;
                 context.HttpContext.Request.QueryString = newQueryString;

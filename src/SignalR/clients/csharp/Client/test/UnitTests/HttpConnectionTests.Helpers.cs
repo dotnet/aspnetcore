@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             ITransport transport = null,
             ITransportFactory transportFactory = null,
             HttpTransportType? transportType = null,
+            TransferFormat transferFormat = TransferFormat.Text,
             Func<Task<string>> accessTokenProvider = null)
         {
             var httpOptions = new HttpConnectionOptions
@@ -35,24 +36,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 httpOptions.Url = new Uri(url);
             }
 
-            return CreateConnection(httpOptions, loggerFactory, transport, transportFactory);
+            return CreateConnection(httpOptions, loggerFactory, transport, transportFactory, transferFormat);
         }
 
-        private static HttpConnection CreateConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory = null, ITransport transport = null, ITransportFactory transportFactory = null)
+        private static HttpConnection CreateConnection(
+            HttpConnectionOptions httpConnectionOptions,
+            ILoggerFactory loggerFactory = null,
+            ITransport transport = null,
+            ITransportFactory transportFactory = null,
+            TransferFormat transferFormat = TransferFormat.Text)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-            httpConnectionOptions.Url = httpConnectionOptions.Url ?? new Uri("http://fakeuri.org/");
+            httpConnectionOptions.Url ??= new Uri("http://fakeuri.org/");
+            httpConnectionOptions.DefaultTransferFormat = transferFormat;
+
+            if (transportFactory == null && transport != null)
+            {
+                transportFactory = new TestTransportFactory(transport);
+            }
 
             if (transportFactory != null)
             {
                 return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
             }
-            else if (transport != null)
-            {
-                return new HttpConnection(httpConnectionOptions, loggerFactory, new TestTransportFactory(transport));
-            }
             else
             {
+                // Use the public constructor to get the default transport factory.
                 return new HttpConnection(httpConnectionOptions, loggerFactory);
             }
         }
