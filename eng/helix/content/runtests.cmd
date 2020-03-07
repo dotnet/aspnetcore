@@ -49,6 +49,8 @@ echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
 mkdir logs
 
+endlocal
+
 dir
 
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
