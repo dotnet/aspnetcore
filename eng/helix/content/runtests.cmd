@@ -49,8 +49,6 @@ echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
 mkdir logs
 
-endlocal
-
 dir
 
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
@@ -69,7 +67,7 @@ if %$quarantined%==True (
 )
 
 REM Disable "!Foo!" expansions because they break the filter syntax
-setlocal disableextensions
+setlocal disabledelayedexpansion
 set NONQUARANTINE_FILTER="Quarantined!=true"
 set QUARANTINE_FILTER="Quarantined=true"
 if %$quarantined%==true (
