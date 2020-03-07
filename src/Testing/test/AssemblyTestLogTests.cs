@@ -21,13 +21,13 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         private static readonly string TFM = new DirectoryInfo(AppContext.BaseDirectory).Name;
 
         [Fact]
-        public void FunctionalLogs_LogsPreservedFromNonFlakyRun()
+        public void FunctionalLogs_LogsPreservedFromNonQuarantinedTest()
         {
         }
 
         [Fact]
-        [Flaky("http://example.com", FlakyOn.All)]
-        public void FunctionalLogs_LogsPreservedFromFlakyRun()
+        [QuarantinedTest]
+        public void FunctionalLogs_LogsPreservedFromQuarantinedTest()
         {
         }
 
