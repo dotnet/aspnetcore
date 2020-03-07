@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -212,7 +213,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task StreamPool_EndedStreamErrorsOnStart_ReturnedToPool()
+        [QuarantinedTest]
+        public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.WriteAsync("Content");
+                throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 33,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 7,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, null);
+
+            // Ping will trigger the stream to be returned to the pool so we can assert it
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Stream is not returned to the pool
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task StreamPool_EndedStreamErrorsOnStart_NotReturnedToPool()
         {
             await InitializeConnectionAsync(_echoApplication);
 
@@ -231,14 +267,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2PingFrameFlags.ACK,
                 withStreamId: 0);
 
-            // Stream returned to the pool
-            Assert.Equal(1, _connection.StreamPool.Count);
+            // Stream not returned to the pool
+            Assert.Equal(0, _connection.StreamPool.Count);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
-        public async Task StreamPool_UnendedStreamErrorsOnStart_ReturnedToPool()
+        public async Task StreamPool_UnendedStreamErrorsOnStart_NotReturnedToPool()
         {
             _serviceContext.ServerOptions.Limits.MinRequestBodyDataRate = null;
 
@@ -268,8 +304,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2PingFrameFlags.ACK,
                 withStreamId: 0);
 
-            // Stream was returned to the pool because of the drain timeout
-            Assert.Equal(1, _connection.StreamPool.Count);
+            // Drain timeout has past but the stream was not returned because it is unfinished
+            Assert.Equal(0, _connection.StreamPool.Count);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter
     {
-        private readonly int _streamId;
+        private int StreamId => _stream.StreamId;
         private readonly Http2FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
         private readonly IKestrelTrace _log;
@@ -30,53 +30,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly MemoryPool<byte> _memoryPool;
         private readonly Http2Stream _stream;
         private readonly object _dataWriterLock = new object();
-        private readonly PipeWriter _pipeWriter;
+        private readonly Pipe _pipe;
+        private readonly ConcurrentPipeWriter _pipeWriter;
         private readonly PipeReader _pipeReader;
-        private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
+        private ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
-        private bool _completed;
+        private bool _streamCompleted;
         private bool _suffixSent;
         private bool _streamEnded;
-        private bool _disposed;
+        private bool _writerComplete;
 
         private IMemoryOwner<byte> _fakeMemoryOwner;
 
-        public Http2OutputProducer(
-            int streamId,
-            Http2FrameWriter frameWriter,
-            StreamOutputFlowControl flowControl,
-            MemoryPool<byte> pool,
-            Http2Stream stream,
-            IKestrelTrace log)
+        public Http2OutputProducer(Http2Stream stream, Http2StreamContext context, StreamOutputFlowControl flowControl)
         {
-            _streamId = streamId;
-            _frameWriter = frameWriter;
-            _flowControl = flowControl;
-            _memoryPool = pool;
             _stream = stream;
-            _log = log;
+            _frameWriter = context.FrameWriter;
+            _flowControl = flowControl;
+            _memoryPool = context.MemoryPool;
+            _log = context.ServiceContext.Log;
 
-            var pipe = CreateDataPipe(pool);
+            _pipe = CreateDataPipe(_memoryPool);
 
-            _pipeWriter = new ConcurrentPipeWriter(pipe.Writer, pool, _dataWriterLock);
-            _pipeReader = pipe.Reader;
+            _pipeWriter = new ConcurrentPipeWriter(_pipe.Writer, _memoryPool, _dataWriterLock);
+            _pipeReader = _pipe.Reader;
 
             // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
             // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
+            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, _log);
+
             _dataWriteProcessingTask = ProcessDataWrites();
         }
 
-        public void Dispose()
+        public void StreamReset()
+        {
+            Debug.Assert(_dataWriteProcessingTask.IsCompletedSuccessfully);
+
+            _streamEnded = false;
+            _suffixSent = false;
+            _suffixSent = false;
+            _startedWritingDataFrames = false;
+            _streamCompleted = false;
+            _writerComplete = false;
+
+            _pipe.Reset();
+            _pipeWriter.Reset();
+
+            _dataWriteProcessingTask = ProcessDataWrites();
+        }
+
+        public void Complete()
         {
             lock (_dataWriterLock)
             {
-                if (_disposed)
+                if (_writerComplete)
                 {
                     return;
                 }
 
-                _disposed = true;
+                _writerComplete = true;
 
                 Stop();
 
@@ -107,9 +119,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return default;
                 }
@@ -133,14 +145,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return default;
                 }
 
-                return _frameWriter.Write100ContinueAsync(_streamId);
+                return _frameWriter.Write100ContinueAsync(StreamId);
             }
         }
 
@@ -150,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 // The HPACK header compressor is stateful, if we compress headers for an aborted stream we must send them.
                 // Optimize for not compressing or sending them.
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
@@ -175,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     http2HeadersFrame = Http2HeadersFrameFlags.NONE;
                 }
 
-                _frameWriter.WriteResponseHeaders(_streamId, statusCode, http2HeadersFrame, responseHeaders);
+                _frameWriter.WriteResponseHeaders(StreamId, statusCode, http2HeadersFrame, responseHeaders);
             }
         }
 
@@ -188,11 +200,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
-                if (_completed || data.Length == 0)
+                if (_streamCompleted || data.Length == 0)
                 {
                     return Task.CompletedTask;
                 }
@@ -208,12 +220,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return _dataWriteProcessingTask;
                 }
 
-                _completed = true;
+                _streamCompleted = true;
                 _suffixSent = true;
 
                 _pipeWriter.Complete();
@@ -228,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Always send the reset even if the response body is _completed. The request body may not have completed yet.
                 Stop();
 
-                return _frameWriter.WriteRstStreamAsync(_streamId, error);
+                return _frameWriter.WriteRstStreamAsync(StreamId, error);
             }
         }
 
@@ -236,9 +248,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
@@ -253,9 +265,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return GetFakeMemory(sizeHint).Span;
                 }
@@ -268,9 +280,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return GetFakeMemory(sizeHint);
                 }
@@ -283,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
@@ -301,11 +313,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
-                ThrowIfSuffixSentOrDisposed();
+                ThrowIfSuffixSentOrCompleted();
 
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
-                if (_completed || data.Length == 0)
+                if (_streamCompleted || data.Length == 0)
                 {
                     return default;
                 }
@@ -341,12 +353,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (_streamCompleted)
                 {
                     return;
                 }
 
-                _completed = true;
+                _streamCompleted = true;
 
                 _pipeReader.CancelPendingRead();
 
@@ -382,12 +394,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             // Only flush if required (i.e. content length exceeds flow control availability)
                             // Writing remaining content without flushing allows content and trailers to be sent in the same packet
-                            await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false, forceFlush: false);
+                            await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, forceFlush: false);
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
                         _stream.DecrementActiveClientStreamCount();
-                        flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.ResponseTrailers);
+                        flushResult = await _frameWriter.WriteResponseTrailers(StreamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted && _streamEnded)
                     {
@@ -406,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             _stream.DecrementActiveClientStreamCount();
                         }
-                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream, forceFlush: true);
+                        flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, forceFlush: true);
                     }
 
                     _pipeReader.AdvanceTo(readResult.Buffer.End);
@@ -438,16 +450,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         [StackTraceHidden]
-        private void ThrowIfSuffixSentOrDisposed()
+        private void ThrowIfSuffixSentOrCompleted()
         {
             if (_suffixSent)
             {
                 ThrowSuffixSent();
             }
 
-            if (_disposed)
+            if (_writerComplete)
             {
-                ThrowDisposed();
+                ThrowWriterComplete();
             }
         }
 
@@ -458,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         [StackTraceHidden]
-        private static void ThrowDisposed()
+        private static void ThrowWriterComplete()
         {
             throw new InvalidOperationException("Cannot write to response after the request has completed.");
         }
