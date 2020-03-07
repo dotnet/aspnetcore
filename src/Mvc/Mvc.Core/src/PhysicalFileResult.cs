@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -42,12 +41,7 @@ namespace Microsoft.AspNetCore.Mvc
         public PhysicalFileResult(string fileName, MediaTypeHeaderValue contentType)
             : base(contentType?.ToString())
         {
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-
-            FileName = fileName;
+            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
 
         /// <summary>
@@ -56,15 +50,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string FileName
         {
             get => _fileName;
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _fileName = value;
-            }
+            set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <inheritdoc />

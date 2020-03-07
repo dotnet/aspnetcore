@@ -175,7 +175,30 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Assert
             Assert.Equal("A", targetObject.SimpleObject.AnotherStringProperty);
-        }       
+        }
+
+        [Fact]
+        public void CopyNullStringProperty_ToAnotherStringProperty()
+        {
+            // Arrange
+            var targetObject = new SimpleObjectWithNestedObject()
+            {
+                SimpleObject = new SimpleObject()
+                {
+                    StringProperty = null,
+                    AnotherStringProperty = "B"
+                }
+            };
+
+            var patchDocument = new JsonPatchDocument<SimpleObjectWithNestedObject>();
+            patchDocument.Copy(o => o.SimpleObject.StringProperty, o => o.SimpleObject.AnotherStringProperty);
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.Null(targetObject.SimpleObject.AnotherStringProperty);
+        }
 
         [Fact]
         public void Copy_DeepClonesObject()

@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Tools.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [QuarantinedTest]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -40,6 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -56,6 +60,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
@@ -72,6 +77,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -84,6 +90,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
@@ -100,8 +107,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();
-            _app.Start(new [] { "--list" });
-            var lines = await _app.Process.GetAllOutputLines();
+            _app.Start(new[] { "--list" });
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
+            var lines = await _app.Process.GetAllOutputLinesAsync(cts.Token);
+            var files = lines.Where(l => !l.StartsWith("watch :"));
 
             AssertEx.EqualFileList(
                 _app.Scenario.WorkFolder,
@@ -111,7 +121,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     "GlobbingApp/include/Foo.cs",
                     "GlobbingApp/GlobbingApp.csproj",
                 },
-                lines);
+                files);
         }
 
         public void Dispose()

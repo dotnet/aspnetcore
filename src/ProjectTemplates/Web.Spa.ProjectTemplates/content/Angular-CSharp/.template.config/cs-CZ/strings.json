@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Angular",
+    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core pomocí Angularu"
+  }
+}

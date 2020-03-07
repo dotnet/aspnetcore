@@ -26,6 +26,17 @@ namespace BasicWebSite.Controllers
             }
         }
 
+        public async Task<IActionResult> ActionWithSuffixAsync()
+        {
+            await Task.Yield();
+            return Ok();
+        }
+
+        public Task<IActionResult> ActionReturningViewAsync()
+        {
+            return Task.FromResult<IActionResult>(View());
+        }
+
         public async void AsyncVoidAction()
         {
             await Task.Delay(SimulateDelayMilliseconds);

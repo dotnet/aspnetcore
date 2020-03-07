@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
+    internal class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
     {
         private readonly AntiforgeryOptions _options;
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // We want to delay reading the form as much as possible, for example in case of large file uploads,
             // request token could be part of the header.
-            StringValues requestToken;
+            StringValues requestToken = default;
             if (_options.HeaderName != null)
             {
                 requestToken = httpContext.Request.Headers[_options.HeaderName];
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             if (_options.Cookie.Path != null)
             {
-                options.Path = _options.Cookie.Path.ToString();
+                options.Path = _options.Cookie.Path;
             }
             else
             {

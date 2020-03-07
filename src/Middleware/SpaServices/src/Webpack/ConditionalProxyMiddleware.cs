@@ -1,19 +1,22 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
     /// <summary>
-    /// Based on https://github.com/aspnet/Proxy/blob/dev/src/Microsoft.AspNetCore.Proxy/ProxyMiddleware.cs
+    /// Based on ProxyMiddleware from https://github.com/aspnet/Proxy/.
     /// Differs in that, if the proxied request returns a 404, we pass through to the next middleware in the chain
     /// This is useful for Webpack middleware, because it lets you fall back on prebuilt files on disk for
     /// chunks not exposed by the current Webpack config (e.g., DLL/vendor chunks).
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     internal class ConditionalProxyMiddleware
     {
         private const int DefaultHttpBufferSize = 4096;
@@ -89,7 +92,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
                 }
 
                 // We can handle this
-                context.Response.StatusCode = (int) responseMessage.StatusCode;
+                context.Response.StatusCode = (int)responseMessage.StatusCode;
                 foreach (var header in responseMessage.Headers)
                 {
                     context.Response.Headers[header.Key] = header.Value.ToArray();

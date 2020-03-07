@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -25,6 +26,37 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
             Assert.Equal("TestRouteConstraint", accessor.Value.ConstraintMap["foo"].Name);
+        }
+
+        [Fact]
+        public void EndpointDataSources_WithDependencyInjection_AddedDataSourcesAddedToEndpointDataSource()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddRouting();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var endpoint1 = new Endpoint((c) => Task.CompletedTask, EndpointMetadataCollection.Empty, string.Empty);
+            var endpoint2 = new Endpoint((c) => Task.CompletedTask, EndpointMetadataCollection.Empty, string.Empty);
+
+            var options = serviceProvider.GetRequiredService<IOptions<RouteOptions>>().Value;
+            var endpointDataSource = serviceProvider.GetRequiredService<EndpointDataSource>();
+
+            // Act 1
+            options.EndpointDataSources.Add(new DefaultEndpointDataSource(endpoint1));
+
+            // Assert 1
+            var result = Assert.Single(endpointDataSource.Endpoints);
+            Assert.Same(endpoint1, result);
+
+            // Act 2
+            options.EndpointDataSources.Add(new DefaultEndpointDataSource(endpoint2));
+
+            // Assert 2
+            Assert.Collection(endpointDataSource.Endpoints,
+                ep => Assert.Same(endpoint1, ep),
+                ep => Assert.Same(endpoint2, ep));
         }
 
         private class TestRouteConstraint : IRouteConstraint

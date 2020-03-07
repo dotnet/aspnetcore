@@ -1,0 +1,51 @@
+<div class="form-field">
+    <label>Name:</label>
+    <div>
+        <InputText @bind-Value="@Address.Name" />
+        <ValidationMessage For="@(() => Address.Name)" />
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Line 1:</label>
+    <div>
+        <InputText @bind-Value="@Address.Line1" id="Line1" />
+        <ValidationMessage For="@(() => Address.Line1)" />
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Line 2:</label>
+    <div>
+        <InputText @bind-Value="@Address.Line2" />
+        <ValidationMessage For="@(() => Address.Line2)" />
+    </div>
+</div>
+
+<div class="form-field">
+    <label>City:</label>
+    <div>
+        <InputText @bind-Value="@Address.City" />
+        <ValidationMessage For="@(() => Address.City)" />
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Region:</label>
+    <div>
+        <InputText @bind-Value="@Address.Region" />
+        <ValidationMessage For="@(() => Address.Region)" />
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Postal code:</label>
+    <div>
+        <InputText @bind-Value="@Address.PostalCode" />
+        <ValidationMessage For="@(() => Address.PostalCode)" />
+    </div>
+</div>
+
+@functions {
+    [Parameter] public Address Address { get; set; }
+}

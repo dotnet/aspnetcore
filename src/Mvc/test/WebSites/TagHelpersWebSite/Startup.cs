@@ -3,7 +3,9 @@
 
 using System.IO;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TagHelpersWebSite
@@ -13,12 +15,18 @@ namespace TagHelpersWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddControllersWithViews()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting();
+            app.UseStaticFiles();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
 
         public static void Main(string[] args)
@@ -32,6 +40,7 @@ namespace TagHelpersWebSite
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStaticWebAssets()
                 .UseStartup<Startup>()
                 .UseKestrel()
                 .UseIISIntegration();

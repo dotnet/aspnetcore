@@ -3,17 +3,42 @@
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-export function delay(durationInMilliseconds: number): Promise<void> {
+export function registerUnhandledRejectionHandler(): void {
+    process.on("unhandledRejection", (error) => {
+        if (error && error.stack) {
+            console.error(error.stack);
+        } else {
+            console.error(error);
+        }
+    });
+}
+
+export function delayUntil(timeoutInMilliseconds: number, condition?: () => boolean): Promise<void> {
     const source = new PromiseSource<void>();
-    setTimeout(() => source.resolve(), durationInMilliseconds);
+    let timeWait: number = 0;
+    const interval = setInterval(() => {
+        timeWait += 10;
+        if (condition) {
+            if (condition() === true) {
+                source.resolve();
+                clearInterval(interval);
+            } else if (timeoutInMilliseconds <= timeWait) {
+                source.reject(new Error("Timed out waiting for condition"));
+                clearInterval(interval);
+            }
+        } else if (timeoutInMilliseconds <= timeWait) {
+            source.resolve();
+            clearInterval(interval);
+        }
+    }, 10);
     return source.promise;
 }
 
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver: (value?: T | PromiseLike<T>) => void;
-    private rejecter: (reason?: any) => void;
+    private resolver!: (value?: T | PromiseLike<T>) => void;
+    private rejecter!: (reason?: any) => void;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
@@ -36,5 +61,28 @@ export class PromiseSource<T = void> implements Promise<T> {
     }
     public catch<TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<T | TResult> {
         return this.promise.catch(onrejected);
+    }
+}
+
+export class SyncPoint {
+    private atSyncPoint: PromiseSource;
+    private continueFromSyncPoint: PromiseSource;
+
+    constructor() {
+        this.atSyncPoint = new PromiseSource();
+        this.continueFromSyncPoint = new PromiseSource();
+    }
+
+    public waitForSyncPoint(): Promise<void> {
+        return this.atSyncPoint.promise;
+    }
+
+    public continue() {
+        this.continueFromSyncPoint.resolve();
+    }
+
+    public waitToContinue(): Promise<void> {
+        this.atSyncPoint.resolve();
+        return this.continueFromSyncPoint.promise;
     }
 }

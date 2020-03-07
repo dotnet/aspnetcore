@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 8,192 bytes (8 KB).
         /// </summary>
         /// <remarks>
+        /// For HTTP/2 this measures the total size of the required pseudo headers
+        /// :method, :scheme, :authority, and :path.
         /// </remarks>
         public int MaxRequestLineSize
         {
@@ -250,6 +252,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _maxConcurrentUpgradedConnections = value;
             }
         }
+
+        /// <summary>
+        /// Limits only applicable to HTTP/2 connections.
+        /// </summary>
+        public Http2Limits Http2 { get; } = new Http2Limits();
+
+        /// <summary>
+        /// Limits only applicable to HTTP/3 connections.
+        /// </summary>
+        public Http3Limits Http3 { get; } = new Http3Limits();
 
         /// <summary>
         /// Gets or sets the request body minimum data rate in bytes/second.

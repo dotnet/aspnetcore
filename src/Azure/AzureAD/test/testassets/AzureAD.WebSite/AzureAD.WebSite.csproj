@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,17 +9,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" />
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,11 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Identity" />
-    <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
   </ItemGroup>
 
 </Project>

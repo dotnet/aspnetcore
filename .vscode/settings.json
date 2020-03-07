@@ -1,9 +1,9 @@
 {
-    "files.trimTrailingWhitespace": true,
-    "files.associations": {
-        "*.*proj": "xml",
-        "*.props": "xml",
-        "*.targets": "xml",
-        "*.tasks": "xml"
-    }
+  "files.trimTrailingWhitespace": true,
+  "files.associations": {
+    "*.*proj": "xml",
+    "*.props": "xml",
+    "*.targets": "xml",
+    "*.tasks": "xml"
+  }
 }

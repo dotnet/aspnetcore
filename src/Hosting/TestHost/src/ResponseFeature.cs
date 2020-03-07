@@ -3,28 +3,32 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class ResponseFeature : IHttpResponseFeature
+    internal class ResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature
     {
+        private readonly HeaderDictionary _headers = new HeaderDictionary();
+        private readonly Action<Exception> _abort;
+
         private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
         private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
-        private HeaderDictionary _headers = new HeaderDictionary();
         private int _statusCode;
         private string _reasonPhrase;
 
-        public ResponseFeature()
+        public ResponseFeature(Action<Exception> abort)
         {
             Headers = _headers;
-            Body = new MemoryStream();
 
             // 200 is the default status code all the way down to the host, so we set it
             // here to be consistent with the rest of the hosts when writing tests.
             StatusCode = 200;
+            _abort = abort;
         }
 
         public int StatusCode
@@ -63,6 +67,12 @@ namespace Microsoft.AspNetCore.TestHost
 
         public Stream Body { get; set; }
 
+        public Stream Stream => Body;
+
+        internal PipeWriter BodyWriter { get; set; }
+
+        public PipeWriter Writer => BodyWriter;
+
         public bool HasStarted { get; set; }
 
         public void OnStarting(Func<object, Task> callback, object state)
@@ -98,14 +108,50 @@ namespace Microsoft.AspNetCore.TestHost
 
         public async Task FireOnSendingHeadersAsync()
         {
-            await _responseStartingAsync();
-            HasStarted = true;
-            _headers.IsReadOnly = true;
+            if (!HasStarted)
+            {
+                try
+                {
+                    await _responseStartingAsync();
+                }
+                finally
+                {
+                    HasStarted = true;
+                    _headers.IsReadOnly = true;
+                }
+            }
         }
 
         public Task FireOnResponseCompletedAsync()
         {
             return _responseCompletedAsync();
+        }
+
+        public async Task StartAsync(CancellationToken token = default)
+        {
+            try
+            {
+                await FireOnSendingHeadersAsync();
+            }
+            catch (Exception ex)
+            {
+                _abort(ex);
+                throw;
+            }
+        }
+
+        public void DisableBuffering()
+        {
+        }
+
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        {
+            return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
+        }
+
+        public Task CompleteAsync()
+        {
+            return Writer.CompleteAsync().AsTask();
         }
     }
 }

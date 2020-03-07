@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvTcpHandle : UvStreamHandle
+    internal class UvTcpHandle : UvStreamHandle
     {
         public UvTcpHandle(ILibuvTrace logger) : base(logger)
         {
@@ -30,10 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         public void Bind(IPEndPoint endPoint)
         {
-            SockAddr addr;
             var addressText = endPoint.Address.ToString();
 
-            _uv.ip4_addr(addressText, endPoint.Port, out addr, out var error1);
+            _uv.ip4_addr(addressText, endPoint.Port, out var addr, out var error1);
 
             if (error1 != null)
             {
@@ -56,18 +55,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         public IPEndPoint GetPeerIPEndPoint()
         {
-            SockAddr socketAddress;
             int namelen = Marshal.SizeOf<SockAddr>();
-            _uv.tcp_getpeername(this, out socketAddress, ref namelen);
+            _uv.tcp_getpeername(this, out var socketAddress, ref namelen);
 
             return socketAddress.GetIPEndPoint();
         }
 
         public IPEndPoint GetSockIPEndPoint()
         {
-            SockAddr socketAddress;
             int namelen = Marshal.SizeOf<SockAddr>();
-            _uv.tcp_getsockname(this, out socketAddress, ref namelen);
+            _uv.tcp_getsockname(this, out var socketAddress, ref namelen);
 
             return socketAddress.GetIPEndPoint();
         }

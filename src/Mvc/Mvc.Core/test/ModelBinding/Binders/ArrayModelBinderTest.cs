@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -42,13 +42,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(new[] { 42, 84 }, array);
         }
 
-        [Fact]
-        public async Task ArrayModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
+        private IActionResult ActionWithArrayParameter(string[] parameter) => null;
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task ArrayModelBinder_CreatesEmptyCollection_IfIsTopLevelObject(
+            bool allowValidatingTopLevelNodes,
+            bool isBindingRequired)
         {
             // Arrange
+            var expectedErrorCount = isBindingRequired ? 1 : 0;
             var binder = new ArrayModelBinder<string>(
                 new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -57,7 +67,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string[]));
+            var parameter = typeof(ArrayModelBinderTest)
+                .GetMethod(nameof(ActionWithArrayParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
 
             bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
@@ -67,22 +83,74 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Empty(Assert.IsType<string[]>(bindingContext.Result.Model));
             Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("param")]
-        public async Task ArrayModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
+        [Fact]
+        public async Task ArrayModelBinder_CreatesEmptyCollectionAndAddsError_IfIsTopLevelObject()
         {
             // Arrange
             var binder = new ArrayModelBinder<string>(
                 new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes: true);
+
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
+            bindingContext.FieldName = "fieldName";
+            bindingContext.ModelName = "modelName";
+
+            var metadataProvider = new TestModelMetadataProvider();
+            var parameter = typeof(ArrayModelBinderTest)
+                .GetMethod(nameof(ActionWithArrayParameter), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            metadataProvider
+                .ForParameter(parameter)
+                .BindingDetails(b => b.IsBindingRequired = true);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForParameter(parameter);
+
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Empty(Assert.IsType<string[]>(bindingContext.Result.Model));
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var keyValuePair = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("modelName", keyValuePair.Key);
+            var error = Assert.Single(keyValuePair.Value.Errors);
+            Assert.Equal("A value for the 'fieldName' parameter or property was not provided.", error.ErrorMessage);
+        }
+
+        [Theory]
+        [InlineData("", false, false)]
+        [InlineData("", true, false)]
+        [InlineData("", false, true)]
+        [InlineData("", true, true)]
+        [InlineData("param", false, false)]
+        [InlineData("param", true, false)]
+        [InlineData("param", false, true)]
+        [InlineData("param", true, true)]
+        public async Task ArrayModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(
+            string prefix,
+            bool allowValidatingTopLevelNodes,
+            bool isBindingRequired)
+        {
+            // Arrange
+            var binder = new ArrayModelBinder<string>(
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance,
+                allowValidatingTopLevelNodes);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
 
             var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(ModelWithArrayProperty), nameof(ModelWithArrayProperty.ArrayProperty))
+                .BindingDetails(b => b.IsBindingRequired = isBindingRequired);
             bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithArrayProperty),
                 nameof(ModelWithArrayProperty.ArrayProperty));
@@ -94,6 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
         }
 
         public static TheoryData<int[]> ArrayModelData
@@ -151,49 +220,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private static IModelBinder CreateIntBinder()
-        {
-            return new StubModelBinder(context =>
-            {
-                var value = context.ValueProvider.GetValue(context.ModelName);
-                if (value != ValueProviderResult.None)
-                {
-                    object valueToConvert = null;
-                    if (value.Values.Count == 1)
-                    {
-                        valueToConvert = value.Values[0];
-                    }
-                    else if (value.Values.Count > 1)
-                    {
-                        valueToConvert = value.Values.ToArray();
-                    }
-
-                    var model = ModelBindingHelper.ConvertTo(valueToConvert, context.ModelType, value.Culture);
-                    return ModelBindingResult.Success(model);
-                }
-                return ModelBindingResult.Failed();
-            });
-        }
-
         private static DefaultModelBindingContext GetBindingContext(IValueProvider valueProvider)
         {
-            var bindingContext = new DefaultModelBindingContext()
-            {
-                ModelName = "someName",
-                ModelState = new ModelStateDictionary(),
-                ValueProvider = valueProvider,
-            };
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = "someName";
+            bindingContext.ValueProvider = valueProvider;
+
             return bindingContext;
         }
 
         private static DefaultModelBindingContext CreateContext()
         {
-            var modelBindingContext = new DefaultModelBindingContext()
+            var actionContext = new ActionContext
             {
-                ActionContext = new ActionContext()
-                {
-                    HttpContext = new DefaultHttpContext(),
-                },
+                HttpContext = new DefaultHttpContext(),
+            };
+            var modelBindingContext = new DefaultModelBindingContext
+            {
+                ActionContext = actionContext,
+                ModelState = actionContext.ModelState,
             };
 
             return modelBindingContext;
@@ -210,4 +255,3 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
     }
 }
-

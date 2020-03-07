@@ -1,0 +1,4 @@
+{
+  "DefaultWaitTimeoutInSeconds": 20,
+  "ScreenShotsPath": "../../screenshots"
+}

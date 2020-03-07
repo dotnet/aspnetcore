@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
@@ -38,8 +37,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <inheritdoc />
         public override int Order => -1000;
 
+        /// <summary>
+        /// Gets the <see cref="IHtmlGenerator"/> used to generate the <see cref="SelectTagHelper"/>'s output.
+        /// </summary>
         protected IHtmlGenerator Generator { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

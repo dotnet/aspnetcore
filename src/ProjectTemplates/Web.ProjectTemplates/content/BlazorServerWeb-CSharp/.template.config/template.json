@@ -1,0 +1,381 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor"
+  ],
+  "name": "Blazor Server App",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "groupIdentity": "Microsoft.Web.Blazor.Server",
+  "precedence": "7000",
+  "identity": "Microsoft.Web.Blazor.Server.CSharp.5.0",
+  "shortName": "blazorserver",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "BlazorServerWeb-CSharp",
+  "preferNameDirectory": true,
+  "guids": [
+    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
+  ],
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!IndividualLocalAuth || UseLocalDB)",
+          "exclude": [
+            "app.db"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth)",
+          "exclude": [
+            "Data/SqlLite/**",
+            "Data/SqlServer/**",
+            "Data/ApplicationDbContext.cs",
+            "Areas/**"
+          ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB)",
+          "rename": {
+            "Data/SqlServer/": "Data/Migrations/"
+          },
+          "exclude": [
+            "Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB)",
+          "rename": {
+            "Data/SqlLite/": "Data/Migrations/"
+          },
+          "exclude": [
+            "Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(NoAuth)",
+          "rename": {
+            "Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.*.razor",
+            "Shared/MainLayout.Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!NoAuth)",
+          "rename": {
+            "Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Shared/MainLayout.NoAuth.razor"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Shared/LoginDisplay.IndividualLocalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(IndividualB2CAuth)",
+          "rename": {
+            "Shared/LoginDisplay.IndividualB2CAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(OrganizationalAuth)",
+          "rename": {
+            "Shared/LoginDisplay.OrganizationalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(WindowsAuth)",
+          "rename": {
+            "Shared/LoginDisplay.WindowsAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "auth": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No authentication"
+        },
+        {
+          "choice": "Individual",
+          "description": "Individual authentication"
+        },
+        {
+          "choice": "IndividualB2C",
+          "description": "Individual authentication with Azure AD B2C"
+        },
+        {
+          "choice": "SingleOrg",
+          "description": "Organizational authentication for a single tenant"
+        },
+        {
+          "choice": "MultiOrg",
+          "description": "Organizational authentication for multiple tenants"
+        },
+        {
+          "choice": "Windows",
+          "description": "Windows authentication"
+        }
+      ],
+      "defaultValue": "None",
+      "description": "The type of authentication to use"
+    },
+    "AAdB2CInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/tfp/",
+      "replaces": "https:////login.microsoftonline.com/tfp/",
+      "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
+    },
+    "SignUpSignInPolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "replaces": "MySignUpSignInPolicyId",
+      "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
+    },
+    "ResetPasswordPolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "replaces": "MyResetPasswordPolicyId",
+      "description": "The reset password policy ID for this project (use with IndividualB2C auth)."
+    },
+    "EditProfilePolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "replaces": "MyEditProfilePolicyId",
+      "description": "The edit profile policy ID for this project (use with IndividualB2C auth)."
+    },
+    "AADInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/",
+      "replaces": "https:////login.microsoftonline.com/",
+      "description": "The Azure Active Directory instance to connect to (use with SingleOrg or MultiOrg auth)."
+    },
+    "ClientId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "11111111-1111-1111-11111111111111111",
+      "description": "The Client ID for this project (use with IndividualB2C, SingleOrg or MultiOrg auth)."
+    },
+    "Domain": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "qualified.domain.name",
+      "description": "The domain for the directory tenant (use with SingleOrg or IndividualB2C auth)."
+    },
+    "TenantId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "22222222-2222-2222-2222-222222222222",
+      "description": "The TenantId ID of the directory to connect to (use with SingleOrg auth)."
+    },
+    "CallbackPath": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "/signin-oidc",
+      "defaultValue": "/signin-oidc",
+      "description": "The request path within the application's base path of the redirect URI (use with SingleOrg or IndividualB2C auth)."
+    },
+    "OrgReadAccess": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to allow this application read access to the directory (only applies to SingleOrg or MultiOrg auth)."
+    },
+    "UserSecretsId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "HttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      },
+      "replaces": "8080"
+    },
+    "HttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
+    },
+    "HttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
+      },
+      "replaces": "44300"
+    },
+    "OrganizationalAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\" || auth == \"MultiOrg\")"
+    },
+    "WindowsAuth": {
+      "type": "computed",
+      "value": "(auth == \"Windows\")"
+    },
+    "MultiOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"MultiOrg\")"
+    },
+    "SingleOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\")"
+    },
+    "IndividualLocalAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\")"
+    },
+    "IndividualAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\" || auth == \"IndividualB2C\")"
+    },
+    "IndividualB2CAuth": {
+      "type": "computed",
+      "value": "(auth == \"IndividualB2C\")"
+    },
+    "NoAuth": {
+      "type": "computed",
+      "value": "(!(IndividualAuth || OrganizationalAuth || WindowsAuth))"
+    },
+    "RequiresHttps": {
+      "type": "computed",
+      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+    },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
+    },
+    "UseLocalDB": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
+        }
+      ],
+      "replaces": "netcoreapp5.0",
+      "defaultValue": "netcoreapp5.0"
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "copyrightYear",
+      "parameters": {
+        "format": "yyyy"
+      }
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "BlazorServerWeb-CSharp.csproj"
+    }
+  ],
+  "defaultName": "WebApplication",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

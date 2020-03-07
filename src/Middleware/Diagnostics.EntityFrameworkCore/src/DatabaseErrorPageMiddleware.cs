@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -131,6 +130,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                             {
                                 var databaseExists = await relationalDatabaseCreator.ExistsAsync();
 
+                                if (databaseExists)
+                                {
+                                    databaseExists = await relationalDatabaseCreator.HasTablesAsync();
+                                }
+
                                 var migrationsAssembly = context.GetService<IMigrationsAssembly>();
                                 var modelDiffer = context.GetService<IMigrationsModelDiffer>();
 
@@ -148,7 +152,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                                         : context.Database.GetMigrations())
                                     .ToArray();
 
-                                if (pendingModelChanges || pendingMigrations.Any())
+                                if (pendingModelChanges || pendingMigrations.Length > 0)
                                 {
                                     var page = new DatabaseErrorPage
                                     {

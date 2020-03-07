@@ -1,18 +1,26 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {
     internal class OpenIdConnectBackChannelHttpHandler : HttpMessageHandler
     {
+        private IWebHostEnvironment _env;
+
+        public OpenIdConnectBackChannelHttpHandler(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = new HttpResponseMessage();
 
-            var basePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "ForTesting", "Mocks", "OpenIdConnect"));
+            var basePath = Path.GetFullPath(Path.Combine(_env.ContentRootPath, "ForTesting", "Mocks", "OpenIdConnect"));
 
             if (request.RequestUri.AbsoluteUri == "https://login.windows.net/[tenantName].onmicrosoft.com/.well-known/openid-configuration")
             {

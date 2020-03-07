@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("text/plain", result.ContentType.ToString());
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task ContentDispositionHeader_IsEncodedCorrectly()
         {
             // See comment in FileResult.cs detailing how the FileDownloadName should be encoded.
@@ -55,8 +54,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(@"attachment; filename=""some\\file""; filename*=UTF-8''some%5Cfile", httpContext.Response.Headers["Content-Disposition"]);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task ContentDispositionHeader_IsEncodedCorrectly_ForUnicodeCharacters()
         {
             // Arrange
@@ -78,8 +76,7 @@ namespace Microsoft.AspNetCore.Mvc
                 httpContext.Response.Headers["Content-Disposition"]);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task ExecuteResultAsync_DoesNotSetContentDisposition_IfNotSpecified()
         {
             // Arrange
@@ -104,8 +101,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(Stream.Null, httpContext.Response.Body);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task ExecuteResultAsync_SetsContentDisposition_IfSpecified()
         {
             // Arrange
@@ -126,8 +122,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("attachment; filename=filename.ext; filename*=UTF-8''filename.ext", httpContext.Response.Headers["Content-Disposition"]);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task ExecuteResultAsync_ThrowsException_IfCannotResolveLoggerFactory()
         {
             // Arrange
@@ -179,7 +174,6 @@ namespace Microsoft.AspNetCore.Mvc
                     { "{", "attachment; filename=\"{\"; filename*=UTF-8''%7B" },
                     { "}", "attachment; filename=\"}\"; filename*=UTF-8''%7D" },
                     { " ", "attachment; filename=\" \"; filename*=UTF-8''%20" },
-                    { "a\tb", "attachment; filename=\"a\tb\"; filename*=UTF-8''a%09b" },
                     { "a b", "attachment; filename=\"a b\"; filename*=UTF-8''a%20b" },
 
                     // Values that need to be escaped
@@ -187,12 +181,13 @@ namespace Microsoft.AspNetCore.Mvc
                     { "\\", "attachment; filename=\"\\\\\"; filename*=UTF-8''%5C" },
 
                     // Values that need to be specially encoded (Base64, see rfc2047)
-                    { "a\nb", "attachment; filename=\"a\nb\"; filename*=UTF-8''a%0Ab" },
+                    { "a\tb", "attachment; filename=a_b; filename*=UTF-8''a%09b" },
+                    { "a\nb", "attachment; filename=a_b; filename*=UTF-8''a%0Ab" },
 
                     // Values with non unicode characters
                     { "résumé.txt", "attachment; filename=r_sum_.txt; filename*=UTF-8''r%C3%A9sum%C3%A9.txt" },
                     { "Δ", "attachment; filename=_; filename*=UTF-8''%CE%94" },
-                    { "Δ\t", "attachment; filename=\"_\t\"; filename*=UTF-8''%CE%94%09" },
+                    { "Δ\t", "attachment; filename=__; filename*=UTF-8''%CE%94%09" },
                     { "ABCXYZabcxyz012789!@#$%^&*()-=_+.:~Δ", @"attachment; filename=""ABCXYZabcxyz012789!@#$%^&*()-=_+.:~_""; filename*=UTF-8''ABCXYZabcxyz012789!%40#$%25^&%2A%28%29-%3D_+.%3A~%CE%94" },
                 };
             }
@@ -205,16 +200,10 @@ namespace Microsoft.AspNetCore.Mvc
                 var data = new TheoryData<string, string>();
                 for (var i = 0; i < 32; i++)
                 {
-                    if (i == 10)
-                    {
-                        // skip \n as it has a special encoding
-                        continue;
-                    }
-
-                    data.Add(char.ConvertFromUtf32(i), "attachment; filename=\"" + char.ConvertFromUtf32(i) + "\"; filename*=UTF-8''%" + i.ToString("X2"));
+                    data.Add(char.ConvertFromUtf32(i), $"attachment; filename=_; filename*=UTF-8''%{i:X2}");
                 }
 
-                data.Add(char.ConvertFromUtf32(127), "attachment; filename=\"" + char.ConvertFromUtf32(127) + "\"; filename*=UTF-8''%7F");
+                data.Add(char.ConvertFromUtf32(127), $"attachment; filename=\"{char.ConvertFromUtf32(127)}\"; filename*=UTF-8''%7F");
 
                 return data;
             }
@@ -234,8 +223,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedOutput, actual);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public async Task SetsAcceptRangeHeader()
         {
             // Arrange

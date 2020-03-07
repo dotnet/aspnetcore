@@ -7,21 +7,24 @@
             <?ifdef SharedFrameworkInstallCondition?>
             <?undef SharedFrameworkInstallCondition?>
             <?endif?>
+            <?ifdef DotNetHome?>
+            <?undef DotNetHome?>
+            <?endif?>
             <?if $(var.Platform)=x86?>
             <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX) AND (NOT OPT_NO_X86)?>
+            <?define DotNetHome=DOTNETHOME_X86?>
             <?elseif $(var.Platform)=x64?>
             <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?define DotNetHome=DOTNETHOME_X64?>
             <?endif?>
 
-            <?define SourceFile=$(var.BinPath)\aspnetcore-runtime-$(var.PackageVersion)-win-$(var.Platform).msi?>
-
             <MsiPackage Id="AspNetCoreSharedFramework_$(var.Platform)"
-                        SourceFile="$(var.SourceFile)"
+                        SourceFile="$(var.SharedFramework.TargetPath)"
                         Compressed="yes"
                         Visible="no"
                         Vital="yes"
                         InstallCondition="$(var.SharedFrameworkInstallCondition)">
-                <Payload Name="sfx_$(var.Platform).cab" SourceFile="$(var.BinPath)\sfx_$(var.Platform).cab"/>
+                <MsiProperty Name="DOTNETHOME" Value="[$(var.DotNetHome)]" />
             </MsiPackage>
         </PackageGroup>
 	</Fragment>

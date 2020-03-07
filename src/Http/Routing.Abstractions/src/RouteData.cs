@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
         private RouteValueDictionary _values;
 
         /// <summary>
-        /// Creates a new <see cref="RouteData"/> instance.
+        /// Creates a new instance of <see cref="RouteData"/> instance.
         /// </summary>
         public RouteData()
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Creates a new <see cref="RouteData"/> instance with values copied from <paramref name="other"/>.
+        /// Creates a new instance of <see cref="RouteData"/> instance with values copied from <paramref name="other"/>.
         /// </summary>
         /// <param name="other">The other <see cref="RouteData"/> instance to copy.</param>
         public RouteData(RouteData other)
@@ -49,6 +49,20 @@ namespace Microsoft.AspNetCore.Routing
             {
                 _values = new RouteValueDictionary(other._values);
             }
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RouteData"/> instance with the specified values.
+        /// </summary>
+        /// <param name="values">The <see cref="RouteValueDictionary"/> values.</param>
+        public RouteData(RouteValueDictionary values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            _values = values;
         }
 
         /// <summary>
@@ -84,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Gets the set of values produced by routes on the current routing path.
+        /// Gets the values produced by routes on the current routing path.
         /// </summary>
         public RouteValueDictionary Values
         {
@@ -175,7 +189,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// A snapshot of the state of a <see cref="RouteData"/> instance.
         /// </summary>
-        public struct RouteDataSnapshot
+        public readonly struct RouteDataSnapshot
         {
             private readonly RouteData _routeData;
             private readonly RouteValueDictionary _dataTokens;
@@ -183,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing
             private readonly RouteValueDictionary _values;
 
             /// <summary>
-            /// Creates a new <see cref="RouteDataSnapshot"/> for <paramref name="routeData"/>.
+            /// Creates a new instance of <see cref="RouteDataSnapshot"/> for <paramref name="routeData"/>.
             /// </summary>
             /// <param name="routeData">The <see cref="RouteData"/>.</param>
             /// <param name="dataTokens">The data tokens.</param>

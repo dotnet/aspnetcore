@@ -31,7 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                return new ComplexTypeModelBinder(propertyBinders, loggerFactory);
+                return new ComplexTypeModelBinder(
+                    propertyBinders,
+                    loggerFactory,
+                    allowValidatingTopLevelNodes: true);
             }
 
             return null;

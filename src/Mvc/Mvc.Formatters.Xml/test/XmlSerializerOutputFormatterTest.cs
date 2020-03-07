@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
@@ -523,6 +522,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             request.Headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset.ToString();
             request.ContentType = contentType;
             httpContext.Response.Body = new MemoryStream();
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(Options.Create(new MvcOptions()))
+                .BuildServiceProvider();
             return httpContext;
         }
 

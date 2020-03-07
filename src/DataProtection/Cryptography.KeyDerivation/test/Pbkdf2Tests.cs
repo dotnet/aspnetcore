@@ -5,16 +5,13 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
 {
     public class Pbkdf2Tests
     {
-
-#if NET461
-#elif NETCOREAPP2_1
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF. We only use 5 iterations so
         // that our unit tests are fast.
@@ -60,9 +57,6 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
             var salt = Encoding.UTF8.GetBytes("abcdefghijkl");
             RunTest_WithLongPassword_Impl<NetCorePbkdf2Provider>(salt, "NGJtFzYUaaSxu+3ZsMeZO5d/qPJDUYW4caLkFlaY0cLSYdh1PN4+nHUVp4pUUubJWu3UeXNMnHKNDfnn8GMfnDVrAGTv1lldszsvUJ0JQ6p4+daQEYBc//Tj/ejuB3luwW0IinyE7U/ViOQKbfi5pCZFMQ0FFx9I+eXRlyT+I74=");
         }
-#else
-#error Update target framework
-#endif
 
         // The 'numBytesRequested' parameters below are chosen to exercise code paths where
         // this value straddles the digest length of the PRF. We only use 5 iterations so

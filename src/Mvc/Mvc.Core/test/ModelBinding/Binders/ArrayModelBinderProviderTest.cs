@@ -52,6 +52,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Fact]
+        public void Create_ForArrayType_ReturnsBinder()
+        {
+            // Arrange
+            var provider = new ArrayModelBinderProvider();
+
+            var context = new TestModelBinderProviderContext(typeof(int[]));
+            context.OnCreatingBinder(m =>
+            {
+                Assert.Equal(typeof(int), m.ModelType);
+                return Mock.Of<IModelBinder>();
+            });
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var binder = Assert.IsType<ArrayModelBinder<int>>(result);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
+        }
+
+        [Fact]
         public void Create_ForModelMetadataReadOnly_ReturnsNull()
         {
             // Arrange

@@ -1,0 +1,31 @@
+<div>
+    <p>Fragment will be toggled below</p>
+
+    @if (showFragment)
+    {
+        @ExampleFragment
+    }
+
+    <button @onclick=@(_ => showFragment = !showFragment)>Toggle</button>
+    <p>The end</p>
+</div>
+
+@code {
+    bool showFragment;
+
+    static RenderFragment ExampleFragment = builder =>
+    {
+        // TODO: Improve syntax
+        // Ideally we'd support inline Razor syntax here and are investigating this
+        // Could be:
+        //    static RenderFragment ExampleFragment()
+        //        => @<p>Some text<div>Child text</div></p>; // spaced over multiple lines, of course
+        // Failing that, we could have an C#-based representation, e.g.,
+        //    new Element.P { "Some text", new Element.Div { "Child text" } }, etc.
+        builder.OpenElement(100, "p");
+        builder.AddAttribute(101, "name", "fragment-element");
+        builder.AddAttribute(102, "style", "color: red");
+        builder.AddContent(103, "This is from the fragment");
+        builder.CloseElement();
+    };
+}

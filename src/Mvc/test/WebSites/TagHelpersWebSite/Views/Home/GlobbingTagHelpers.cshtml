@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Globbing Page";
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@section footerContent {
+    <!-- File wildcard -->
+    <script asp-src-include="/js/dist/dashboard*.js"></script>
+    <!-- RazorClassLib folder wildcard -->
+    <script asp-src-include="/_content/RazorPagesClassLibrary/**/file.js"></script>
+    <!-- RazorClassLib deep wildcard -->
+    <script asp-src-include="/**/*.js"></script>
+    <!-- RazorClassLib Exclude local -->
+    <script asp-src-exclude="/js/dist/*.js" asp-src-include="**/*.js"></script>
+    <!-- local Exclude lib-->
+    <script asp-src-exclude="/_content/**/*.js" asp-src-include="**/*.js"></script>
+}
+Globbing

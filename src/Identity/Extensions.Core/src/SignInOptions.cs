@@ -19,5 +19,11 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <value>True if a user must have a confirmed telephone number before they can sign in, otherwise false.</value>
         public bool RequireConfirmedPhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating whether a confirmed <see cref="IUserConfirmation{TUser}"/> account is required to sign in. Defaults to false.
+        /// </summary>
+        /// <value>True if a user must have a confirmed account before they can sign in, otherwise false.</value>
+        public bool RequireConfirmedAccount { get; set; }
     }
 }

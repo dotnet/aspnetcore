@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h1 id="head1">SignalR Web Worker Sample</h1>
+
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="message-text" placeholder="Type a message" />
+            <input type="submit" id="broadcast" class="btn" value="Broadcast" disabled />
+        </div>
+    </form>
+
+    <ul id="message-list"></ul>
+
+    <script>
+        let messageText = document.getElementById('message-text');
+        let broadcastButton = document.getElementById('broadcast');
+        let messageList = document.getElementById('message-list');
+
+        function addLine(line) {
+            var child = document.createElement('li');
+            child.innerText = line;
+            messageList.appendChild(child);
+        }
+
+        if (window.Worker) {
+            var worker = new Worker('worker.js')
+
+            worker.postMessage(window.location.origin);
+
+            broadcastButton.addEventListener('click', function (event) {
+                worker.postMessage(messageText.value);
+                messageText.value = '';
+                event.preventDefault();
+            });
+
+            worker.onmessage = function (e) {
+                if (e.data === 'connected') {
+                    broadcastButton.disabled = false;
+                    addLine('Connection started.');
+                } else {
+                    addLine(e.data);
+                }
+            };
+        } else {
+            addLine('Web workers are not supported by this browser!')
+        }
+    </script>
+</body>
+</html>

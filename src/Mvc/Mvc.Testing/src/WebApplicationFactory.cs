@@ -1,4 +1,4 @@
-// Copyright (c) .NET  Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,8 +8,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -22,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     {
         private bool _disposed;
         private TestServer _server;
+        private IHost _host;
         private Action<IWebHostBuilder> _configuration;
         private IList<HttpClient> _clients = new List<HttpClient>();
         private List<WebApplicationFactory<TEntryPoint>> _derivedFactories =
@@ -41,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <see cref="WebApplicationFactoryContentRootAttribute"/> on the assembly containing the functional tests with
         /// a key equal to the <typeparamref name="TEntryPoint"/> assembly <see cref="Assembly.FullName"/>.
         /// In case an attribute with the right key can't be found, <see cref="WebApplicationFactory{TEntryPoint}"/>
-        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> asembly name
+        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> assembly name
         /// to the solution directory. The application root directory will be used to discover views and content files.
         /// </para>
         /// <para>
@@ -66,7 +70,26 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <summary>
         /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
         /// </summary>
-        public TestServer Server => _server;
+        public TestServer Server
+        {
+            get
+            {
+                EnsureServer();
+                return _server;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IServiceProvider"/> created by the server associated with this <see cref="WebApplicationFactory{TEntryPoint}"/>.
+        /// </summary>
+        public virtual IServiceProvider Services
+        {
+            get
+            {
+                EnsureServer();
+                return _host?.Services ?? _server.Host.Services;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
@@ -96,7 +119,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var factory = new DelegatedWebApplicationFactory(
                 ClientOptions,
                 CreateServer,
+                CreateHost,
                 CreateWebHostBuilder,
+                CreateHostBuilder,
                 GetTestAssemblies,
                 ConfigureClient,
                 builder =>
@@ -119,6 +144,19 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             EnsureDepsFile();
 
+            var hostBuilder = CreateHostBuilder();
+            if (hostBuilder != null)
+            {
+                hostBuilder.ConfigureWebHost(webHostBuilder =>
+                {
+                    SetContentRoot(webHostBuilder);
+                    _configuration(webHostBuilder);
+                    webHostBuilder.UseTestServer();
+                });
+                _host = CreateHost(hostBuilder);
+                _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+                return;
+            }
 
             var builder = CreateWebHostBuilder();
             SetContentRoot(builder);
@@ -128,6 +166,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private void SetContentRoot(IWebHostBuilder builder)
         {
+            if (SetContentRootFromSetting(builder))
+            {
+                return;
+            }
+
             var metadataAttributes = GetContentRootMetadataAttributes(
                 typeof(TEntryPoint).Assembly.FullName,
                 typeof(TEntryPoint).Assembly.GetName().Name);
@@ -159,6 +202,24 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             {
                 builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
             }
+        }
+
+        private static bool SetContentRootFromSetting(IWebHostBuilder builder)
+        {
+            // Attempt to look for TEST_CONTENTROOT_APPNAME in settings. This should result in looking for
+            // ASPNETCORE_TEST_CONTENTROOT_APPNAME environment variable.
+            var assemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
+            var settingSuffix = assemblyName.ToUpperInvariant().Replace(".", "_");
+            var settingName = $"TEST_CONTENTROOT_{settingSuffix}";
+
+            var settingValue = builder.GetSetting(settingName);
+            if (settingValue == null)
+            {
+                return false;
+            }
+
+            builder.UseContentRoot(settingValue);
+            return true;
         }
 
         private WebApplicationFactoryContentRootAttribute[] GetContentRootMetadataAttributes(
@@ -228,6 +289,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private void EnsureDepsFile()
         {
+            if (typeof(TEntryPoint).Assembly.EntryPoint == null)
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidAssemblyEntryPoint(typeof(TEntryPoint).Name));
+            }
+
             var depsFileName = $"{typeof(TEntryPoint).Assembly.GetName().Name}.deps.json";
             var depsFile = new FileInfo(Path.Combine(AppContext.BaseDirectory, depsFileName));
             if (!depsFile.Exists)
@@ -239,10 +305,29 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <summary>
+        /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="TestServer"/>.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
+        /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
+        /// array as arguments.
+        /// </remarks>
+        /// <returns>A <see cref="IHostBuilder"/> instance.</returns>
+        protected virtual IHostBuilder CreateHostBuilder()
+        {
+            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
+            if (hostBuilder != null)
+            {
+                hostBuilder.UseEnvironment(Environments.Development);
+            }
+            return hostBuilder;
+        }
+
+        /// <summary>
         /// Creates a <see cref="IWebHostBuilder"/> used to set up <see cref="TestServer"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation of this method looks for a <c>public static IWebHostBuilder CreateDefaultBuilder(string[] args)</c>
+        /// The default implementation of this method looks for a <c>public static IWebHostBuilder CreateWebHostBuilder(string[] args)</c>
         /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
         /// array as arguments.
         /// </remarks>
@@ -252,25 +337,43 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var builder = WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>());
             if (builder == null)
             {
-                throw new InvalidOperationException(Resources.FormatMissingCreateWebHostBuilderMethod(
+                throw new InvalidOperationException(Resources.FormatMissingBuilderMethod(
+                    nameof(IHostBuilder),
                     nameof(IWebHostBuilder),
                     typeof(TEntryPoint).Assembly.EntryPoint.DeclaringType.FullName,
                     typeof(WebApplicationFactory<TEntryPoint>).Name,
+                    nameof(CreateHostBuilder),
                     nameof(CreateWebHostBuilder)));
             }
             else
             {
-                return builder.UseEnvironment("Development");
+                return builder.UseEnvironment(Environments.Development);
             }
         }
 
         /// <summary>
         /// Creates the <see cref="TestServer"/> with the bootstrapped application in <paramref name="builder"/>.
+        /// This is only called for applications using <see cref="IWebHostBuilder"/>. Applications based on
+        /// <see cref="IHostBuilder"/> will use <see cref="CreateHost"/> instead.
         /// </summary>
         /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
         /// create the server.</param>
         /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
         protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+
+        /// <summary>
+        /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
+        /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
+        /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer"/> instead.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
+        /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
+        protected virtual IHost CreateHost(IHostBuilder builder)
+        {
+            var host = builder.Build();
+            host.Start();
+            return host;
+        }
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -397,6 +500,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 _server?.Dispose();
+                _host?.Dispose();
             }
 
             _disposed = true;
@@ -405,21 +509,27 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
         {
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
+            private readonly Func<IHostBuilder, IHost> _createHost;
             private readonly Func<IWebHostBuilder> _createWebHostBuilder;
+            private readonly Func<IHostBuilder> _createHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
             private readonly Action<HttpClient> _configureClient;
 
             public DelegatedWebApplicationFactory(
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
+                Func<IHostBuilder, IHost> createHost,
                 Func<IWebHostBuilder> createWebHostBuilder,
+                Func<IHostBuilder> createHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
                 Action<HttpClient> configureClient,
                 Action<IWebHostBuilder> configureWebHost)
             {
                 ClientOptions = new WebApplicationFactoryClientOptions(options);
                 _createServer = createServer;
+                _createHost = createHost;
                 _createWebHostBuilder = createWebHostBuilder;
+                _createHostBuilder = createHostBuilder;
                 _getTestAssemblies = getTestAssemblies;
                 _configureClient = configureClient;
                 _configuration = configureWebHost;
@@ -427,7 +537,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
+            protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
+
             protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
+
+            protected override IHostBuilder CreateHostBuilder() => _createHostBuilder();
 
             protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
 
@@ -440,7 +554,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 return new DelegatedWebApplicationFactory(
                     ClientOptions,
                     _createServer,
+                    _createHost,
                     _createWebHostBuilder,
+                    _createHostBuilder,
                     _getTestAssemblies,
                     _configureClient,
                     builder =>

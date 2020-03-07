@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -481,6 +480,52 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.True(isValid);
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_OfSkippedEntry()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo");
+
+            // Act
+            var validationState = modelState.GetValidationState("foo");
+            var fieldValidationState = modelState.GetFieldValidationState("foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Skipped, validationState);
+            Assert.Equal(ModelValidationState.Valid, fieldValidationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_WithSkippedProperty()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo.bar.prop1");
+            modelState.MarkFieldValid("foo.bar.prop2");
+
+            // Act
+            var validationState = modelState.GetFieldValidationState("foo.bar");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_WithAllSkippedProperties()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo.bar.prop1");
+            modelState.MarkFieldSkipped("foo.bar.prop2");
+
+            // Act
+            var validationState = modelState.GetFieldValidationState("foo.bar");
+
+            // Assert
             Assert.Equal(ModelValidationState.Valid, validationState);
         }
 
@@ -1162,8 +1207,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void TryAddModelException_AddsErrorMessage_ForInputFormatterException()
         {
             // Arrange
+            var expectedMessage = "This is an InputFormatterException";
             var dictionary = new ModelStateDictionary();
-            var exception = new InputFormatterException("This is an InputFormatterException.");
+            var exception = new InputFormatterException(expectedMessage);
 
             // Act
             dictionary.TryAddModelException("key", exception);
@@ -1172,7 +1218,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var entry = Assert.Single(dictionary);
             Assert.Equal("key", entry.Key);
             var error = Assert.Single(entry.Value.Errors);
-            Assert.Same(exception, error.Exception);
+            Assert.Equal(expectedMessage, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void TryAddModelException_AddsErrorMessage_ForValueProviderException()
+        {
+            // Arrange
+            var expectedMessage = "This is an ValueProviderException";
+            var dictionary = new ModelStateDictionary();
+            var exception = new ValueProviderException(expectedMessage);
+
+            // Act
+            dictionary.TryAddModelException("key", exception);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal(expectedMessage, error.ErrorMessage);
         }
 
         [Fact]
@@ -1182,13 +1246,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var expectedMessage = "This is an InputFormatterException";
             var dictionary = new ModelStateDictionary();
 
-            var bindingMetadataProvider = new DefaultBindingMetadataProvider();
-            var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
-            var provider = new DefaultModelMetadataProvider(compositeProvider, new OptionsAccessor());
+            var provider = new EmptyModelMetadataProvider();
             var metadata = provider.GetMetadataForType(typeof(int));
 
             // Act
             dictionary.TryAddModelError("key", new InputFormatterException(expectedMessage), metadata);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal(expectedMessage, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelStateDictionary_AddsErrorMessage_ForValueProviderException()
+        {
+            // Arrange
+            var expectedMessage = "This is an ValueProviderException";
+            var dictionary = new ModelStateDictionary();
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(int));
+
+            // Act
+            dictionary.TryAddModelError("key", new ValueProviderException(expectedMessage), metadata);
 
             // Assert
             var entry = Assert.Single(dictionary);

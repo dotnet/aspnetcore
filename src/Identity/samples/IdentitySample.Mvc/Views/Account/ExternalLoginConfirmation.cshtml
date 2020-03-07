@@ -3,16 +3,16 @@
     ViewData["Title"] = "Register";
 }
 
-<h2>@ViewData["Title"].</h2>
-<h3>Associate your @ViewData["LoginProvider"] account.</h3>
+<h1>@ViewData["Title"].</h1>
+<h3>Associate your @ViewData["ProviderDisplayName"] account.</h3>
 
 <form asp-controller="Account" asp-action="ExternalLoginConfirmation" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
     <h4>Association Form</h4>
     <hr />
-    <div asp-validation-summary="All" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <p class="text-info">
-        You've successfully authenticated with <strong>@ViewData["LoginProvider"]</strong>.
+        You've successfully authenticated with <strong>@ViewData["ProviderDisplayName"]</strong>.
         Please enter a user name for this site below and click the Register button to finish
         logging in.
     </p>

@@ -11,49 +11,49 @@ namespace BasicWebSite.Controllers
     {
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RequestFormLimitsBeforeAntiforgeryValidation(Product product)
+        public ActionResult<Product> RequestFormLimitsBeforeAntiforgeryValidation(Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Json(product);
+            return product;
         }
 
         [HttpPost]
         [RequestFormLimits(ValueCountLimit = 5)]
-        public IActionResult OverrideControllerLevelLimits(Product product)
+        public ActionResult<Product> OverrideControllerLevelLimits(Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            return Json(product);
+            return product;
         }
 
         [HttpPost]
         [RequestFormLimits]
-        public IActionResult OverrideControllerLevelLimitsUsingDefaultLimits(Product product)
+        public ActionResult<Product> OverrideControllerLevelLimitsUsingDefaultLimits(Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            return Json(product);
+            return product;
         }
 
         [HttpPost]
         [RequestFormLimits(ValueCountLimit = 2)]
         [RequestSizeLimit(100)]
         [ValidateAntiForgeryToken]
-        public IActionResult RequestSizeLimitBeforeRequestFormLimits(Product product)
+        public ActionResult<Product> RequestSizeLimitBeforeRequestFormLimits(Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            return Json(product);
+            return product;
         }
     }
 }

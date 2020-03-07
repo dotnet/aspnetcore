@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BasicWebSite
 {
     // Only matches when the requestId is the same as the one passed in the constructor.
-    public class RequestScopedActionConstraintAttribute : Attribute, IActionConstraintFactory
+    public class RequestScopedConstraintAttribute : Attribute, IActionConstraintFactory
     {
         private readonly string _requestId;
         private readonly Func<Type, object, ObjectFactory> CreateFactory =
@@ -19,15 +19,20 @@ namespace BasicWebSite
 
         public bool IsReusable => false;
 
-        public RequestScopedActionConstraintAttribute(string requestId)
+        public RequestScopedConstraintAttribute(string requestId)
         {
             _requestId = requestId;
         }
 
-        public IActionConstraint CreateInstance(IServiceProvider services)
+        IActionConstraint IActionConstraintFactory.CreateInstance(IServiceProvider services)
+        {
+            return CreateInstanceCore(services);
+        }
+
+        private Constraint CreateInstanceCore(IServiceProvider services)
         {
             var constraintType = typeof(Constraint);
-            return (Constraint)ActivatorUtilities.CreateInstance(services, typeof(Constraint),new[] { _requestId });
+            return (Constraint)ActivatorUtilities.CreateInstance(services, typeof(Constraint), new[] { _requestId });
         }
 
         private class Constraint : IActionConstraint
@@ -43,7 +48,12 @@ namespace BasicWebSite
 
             public int Order { get; private set; }
 
-            public bool Accept(ActionConstraintContext context)
+            bool IActionConstraint.Accept(ActionConstraintContext context)
+            {
+                return AcceptCore();
+            }
+
+            private bool AcceptCore()
             {
                 return _requestId == _requestIdService.RequestId;
             }

@@ -1,16 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefaultItemExcludes>$(DefaultItemExcludes);AutobahnTestApp\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
-
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Content Include="AutobahnTestApp\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

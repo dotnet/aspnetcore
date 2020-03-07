@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -13,8 +13,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
     {
         private readonly IHtmlFormElement _loginForm;
         private readonly IHtmlAnchorElement _forgotPasswordLink;
+        private readonly IHtmlAnchorElement _reconfirmLink;
         private readonly IHtmlFormElement _externalLoginForm;
         private readonly IHtmlElement _contosoButton;
+        private readonly IHtmlElement _loginButton;
 
         public Login(
             HttpClient client,
@@ -23,7 +25,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             : base(client, login, context)
         {
             _loginForm = HtmlAssert.HasForm("#account", login);
+            _loginButton = HtmlAssert.HasElement("#login-submit", login);
             _forgotPasswordLink = HtmlAssert.HasLink("#forgot-password", login);
+            _reconfirmLink = HtmlAssert.HasLink("#resend-confirmation", login);
             if (Context.ContosoLoginEnabled)
             {
                 _externalLoginForm = HtmlAssert.HasForm("#external-account", login);
@@ -50,6 +54,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             return new ForgotPassword(Client, forgotPassword, Context);
         }
 
+        public async Task<ResendEmailConfirmation> ClickReconfirmEmailLinkAsync()
+        {
+            var response = await Client.GetAsync(_reconfirmLink.Href);
+            var forgotPassword = await ResponseAssert.IsHtmlDocumentAsync(response);
+
+            return new ResendEmailConfirmation(Client, forgotPassword, Context);
+        }
+
         public async Task<Index> LoginValidUserAsync(string userName, string password)
         {
             var loggedIn = await SendLoginForm(userName, password);
@@ -61,7 +73,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             return new Index(
                 Client,
                 index,
-                Context.WithAuthenticatedUser());
+                Context.WithAuthenticatedUser().WithPasswordLogin());
         }
 
         public async Task LoginWrongPasswordAsync(string userName, string password)
@@ -87,7 +99,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 
         private async Task<HttpResponseMessage> SendLoginForm(string userName, string password)
         {
-            return await Client.SendAsync(_loginForm, new Dictionary<string, string>()
+            return await Client.SendAsync(_loginForm, _loginButton, new Dictionary<string, string>()
             {
                 ["Input_Email"] = userName,
                 ["Input_Password"] = password

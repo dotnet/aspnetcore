@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Returns all of the AuthenticationTokens contained in the properties.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
-        /// <returns>The authentication toekns.</returns>
+        /// <returns>The authentication tokens.</returns>
         public static IEnumerable<AuthenticationToken> GetTokens(this AuthenticationProperties properties)
         {
             if (properties == null)
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
-        public static Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName) 
+        public static Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
             => auth.GetTokenAsync(context, scheme: null, tokenName: tokenName);
 
         /// <summary>

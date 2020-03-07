@@ -1,14 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26208.0
-MinimumVisualStudioVersion = 15.0.26730.03
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{71D070C4-B325-48F7-9F25-DD4E91C2BBCA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6EDD8B57-4DE8-4246-A6A3-47ECD92740B4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "src\Microsoft.AspNetCore.Antiforgery.csproj", "{B705D40F-CFFA-4BE5-8541-A1F832CAD04D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "src\Microsoft.AspNetCore.Antiforgery.csproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery.Test", "test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{A94825FA-EF8A-469D-BFE1-27B395EB8B2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery.Test", "test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{415E83F8-6002-47E4-AA8E-CD5169C06F28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,23 +16,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B705D40F-CFFA-4BE5-8541-A1F832CAD04D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B705D40F-CFFA-4BE5-8541-A1F832CAD04D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B705D40F-CFFA-4BE5-8541-A1F832CAD04D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B705D40F-CFFA-4BE5-8541-A1F832CAD04D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A94825FA-EF8A-469D-BFE1-27B395EB8B2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A94825FA-EF8A-469D-BFE1-27B395EB8B2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A94825FA-EF8A-469D-BFE1-27B395EB8B2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A94825FA-EF8A-469D-BFE1-27B395EB8B2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{415E83F8-6002-47E4-AA8E-CD5169C06F28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{415E83F8-6002-47E4-AA8E-CD5169C06F28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{415E83F8-6002-47E4-AA8E-CD5169C06F28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{415E83F8-6002-47E4-AA8E-CD5169C06F28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B705D40F-CFFA-4BE5-8541-A1F832CAD04D} = {71D070C4-B325-48F7-9F25-DD4E91C2BBCA}
-		{A94825FA-EF8A-469D-BFE1-27B395EB8B2C} = {6EDD8B57-4DE8-4246-A6A3-47ECD92740B4}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {BF8565B1-55A1-47DB-869C-E9BEDECF71BE}
+		{46FB03FB-7A44-4106-BDDE-D6F5417544AB} = {71D070C4-B325-48F7-9F25-DD4E91C2BBCA}
+		{415E83F8-6002-47E4-AA8E-CD5169C06F28} = {6EDD8B57-4DE8-4246-A6A3-47ECD92740B4}
 	EndGlobalSection
 EndGlobal

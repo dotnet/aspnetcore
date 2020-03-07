@@ -32,7 +32,7 @@ namespace VersioningWebSite
 
         public bool IsReusable => true;
 
-        public IActionConstraint CreateInstance(IServiceProvider services)
+        IActionConstraint IActionConstraintFactory.CreateInstance(IServiceProvider services)
         {
             return new VersionRangeValidator(_minVersion, _maxVersion) { Order = _order ?? 0 };
         }

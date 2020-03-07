@@ -6,11 +6,10 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class OpaqueUpgradeTests
     {
         [ConditionalFact]
-        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         public async Task OpaqueUpgrade_DownLevel_FeatureIsAbsent()
         {
             using (Utilities.CreateHttpServer(out var address, httpContext =>
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
             string address;
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -101,40 +100,33 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
                 var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 await opaqueFeature.UpgradeAsync();
-                upgraded = true;
-                waitHandle.Set();
+                upgraded.SetResult(true);
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
                 }
             }
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_GetUpgrade_NotAffectedByMaxRequestBodyLimit()
         {
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -150,29 +142,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(feature.MaxRequestBodySize);
                 Assert.Throws<InvalidOperationException>(() => feature.MaxRequestBodySize = 12);
                 Assert.Equal(15, await stream.ReadAsync(new byte[15], 0, 15));
-                upgraded = true;
-                waitHandle.Set();
-            }))
+                upgraded.SetResult(true);
+            }, options => options.MaxRequestBodySize = 10))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
                     stream.Write(new byte[15], 0, 15);
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(10)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
                 }
             }
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
         {
             var callbackCalled = false;
-            var waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 httpContext.Response.OnStarting(_ =>
                 {
@@ -184,22 +171,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 await opaqueFeature.UpgradeAsync();
-                upgraded = true;
-                waitHandle.Set();
+                upgraded.SetResult(true);
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
                     Assert.True(callbackCalled, "Callback not called");
                 }
             }
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         // See HTTP_VERB for known verbs
         [InlineData("UNKNOWN", null)]
         [InlineData("INVALID", null)]
@@ -257,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         // Http.Sys returns a 411 Length Required if PUT or POST does not specify content-length or chunked.
         [InlineData("POST", "Content-Length: 10")]
         [InlineData("POST", "Transfer-Encoding: chunked")]

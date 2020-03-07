@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using BasicWebSite.Filters;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,16 @@ namespace BasicWebSite.Controllers
         public string Login(LoginViewModel model)
         {
             return "OK";
+        }
+
+        // POST: /Antiforgery/LoginWithRedirectResultFilter
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        [TypeFilter(typeof(RedirectAntiforgeryValidationFailedResultFilter))]
+        public string LoginWithRedirectResultFilter(LoginViewModel model)
+        {
+            return "Ok";
         }
 
         // GET: /Antiforgery/FlushAsyncLogin

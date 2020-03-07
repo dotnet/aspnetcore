@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.StaticFiles
     /// </summary>
     public class FileExtensionContentTypeProvider : IContentTypeProvider
     {
+        // Notes:
+        // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
+        // - We only plan to add new entries where we expect them to be applicable to a majority of developers such as being
+        // used in the project templates.
         #region Extension mapping table
         /// <summary>
         /// Creates a new provider with a set of default mappings.
@@ -72,7 +76,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".crt", "application/x-x509-ca-cert" },
                 { ".csh", "application/x-csh" },
                 { ".css", "text/css" },
-                { ".csv", "application/octet-stream" },
+                { ".csv", "text/csv" }, // https://tools.ietf.org/html/rfc7111#section-5.1
                 { ".cur", "application/octet-stream" },
                 { ".dcr", "application/x-director" },
                 { ".deploy", "application/octet-stream" },
@@ -331,7 +335,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".vsto", "application/x-ms-vsto" },
                 { ".vsw", "application/vnd.visio" },
                 { ".vsx", "application/vnd.visio" },
-                { ".vtx", "application/vnd.visio" },
+                { ".vtx", "application/vnd.visio" },                
+                { ".wasm", "application/wasm" },
                 { ".wav", "audio/wav" },
                 { ".wax", "audio/x-ms-wax" },
                 { ".wbmp", "image/vnd.wap.wbmp" },

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor" />
+  </ItemGroup>
+</Project>

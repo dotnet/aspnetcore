@@ -12,12 +12,27 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
 {
     public class Client
     {
+        private readonly int _processId;
+        private readonly IAgent _agent;
         private HubConnection _connection;
         private CancellationTokenSource _sendCts;
         private bool _sendInProgress;
         private volatile ConnectionState _connectionState = ConnectionState.Connecting;
 
         public ConnectionState State => _connectionState;
+        public Client(int processId, IAgent agent)
+        {
+            _processId = processId;
+            _agent = agent;
+        }
+
+        private void LogFault(string description, Exception exception)
+        {
+            var message = $"{description}: {exception.GetType()}: {exception.Message}";
+            Trace.WriteLine(message);
+            _agent.LogAsync(_processId, message);
+        }
+
         public async Task CreateAndStartConnectionAsync(string url, HttpTransportType transportType)
         {
             _connection = new HubConnectionBuilder()
@@ -33,7 +48,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 }
                 else
                 {
-                    Trace.WriteLine($"Connection terminated with error: {ex.GetType()}: {ex.Message}");
+                    LogFault("Connection terminated with error", ex);
                     _connectionState = ConnectionState.Faulted;
                 }
 
@@ -57,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine($"Connection.Start Failed: {ex.GetType()}: {ex.Message}");
+                    LogFault("Connection.Start Failed", ex);
 
                     if (connectCount == 3)
                     {

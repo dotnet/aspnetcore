@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Analyzers.csproj" />
+
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+
+    <!--
+        These tests include startup code for most parts of our stack. This list will grow as we add more.
+    -->
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+  </ItemGroup>
+
+</Project>

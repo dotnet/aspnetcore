@@ -1,0 +1,53 @@
+@using Microsoft.JSInterop
+@using BasicTestApp.InteropTest
+@using System.Runtime.InteropServices
+@using System.Text.Json
+@inject IJSRuntime JSRuntime
+
+<button id="btn-interop" @onclick="@InvokeInteropAsync">Invoke interop!</button>
+
+@if (DoneWithInterop)
+{
+    <button id="circuit-functional" @onclick="@DoWork">Circuit still functional</button>
+    if (TaskWasCancelled)
+    {
+        <p id="task-was-cancelled">Task was cancelled.</p>
+    }
+    <p id="done-with-interop">Done with interop.</p>
+}
+
+@if (WorkDone)
+{
+    <p id="done-circuit-functional">Circuit is functional after client notification completion.</p>
+}
+
+@code {
+    public bool TaskWasCancelled { get; set; }
+
+    public bool WorkDone { get; set; }
+
+    public bool DoneWithInterop { get; set; }
+
+    public async Task InvokeInteropAsync()
+    {
+        try
+        {
+            using var cancellationTokenSource = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(1));
+            await JSRuntime.InvokeVoidAsync(
+                "asyncFunctionTakesLongerThanDefaultTimeoutToResolve",
+                cancellationTokenSource.Token,
+                Array.Empty<object>());
+        }
+        catch (TaskCanceledException)
+        {
+            TaskWasCancelled = true;
+        }
+
+        DoneWithInterop = true;
+    }
+
+    public void DoWork()
+    {
+        WorkDone = true;
+    }
+}

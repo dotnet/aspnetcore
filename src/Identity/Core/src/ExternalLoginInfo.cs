@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> to associate with this login.</param>
         /// <param name="loginProvider">The provider associated with this login information.</param>
         /// <param name="providerKey">The unique identifier for this user provided by the login provider.</param>
-        /// <param name="displayName">The display name for this user provided by the login provider.</param>
+        /// <param name="displayName">The display name for the login provider.</param>
         public ExternalLoginInfo(ClaimsPrincipal principal, string loginProvider, string providerKey, 
             string displayName) : base(loginProvider, providerKey, displayName)
         {
@@ -35,5 +35,10 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="AuthenticationToken"/>s associated with this login.
         /// </summary>
         public IEnumerable<AuthenticationToken> AuthenticationTokens { get; set; }
+
+        /// <summary>
+        /// The <see cref="Authentication.AuthenticationProperties"/> associated with this login.
+        /// </summary>
+        public AuthenticationProperties AuthenticationProperties { get; set; }
     }
 }

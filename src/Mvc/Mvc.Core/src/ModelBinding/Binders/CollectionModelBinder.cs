@@ -9,11 +9,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -24,27 +23,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class CollectionModelBinder<TElement> : ICollectionModelBinder
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
+        private readonly int _maxModelBindingCollectionSize = MvcOptions.DefaultMaxModelBindingCollectionSize;
         private Func<object> _modelCreator;
 
         /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="CollectionModelBinder{TElement}"/>.</para>
+        /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
         /// </summary>
-        /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public CollectionModelBinder(IModelBinder elementBinder)
-            : this(elementBinder, NullLoggerFactory.Instance)
+        /// <param name="elementBinder">
+        /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public CollectionModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
+            : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes: true)
         {
         }
 
         /// <summary>
         /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
         /// </summary>
-        /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
+        /// <param name="elementBinder">
+        /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
+        /// </param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public CollectionModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        public CollectionModelBinder(
+            IModelBinder elementBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes)
         {
             if (elementBinder == null)
             {
@@ -58,7 +67,40 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             ElementBinder = elementBinder;
             Logger = loggerFactory.CreateLogger(GetType());
+            AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
+        /// </summary>
+        /// <param name="elementBinder">
+        /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <remarks>This is the preferred <see cref="CollectionModelBinder{TElement}"/> constructor.</remarks>
+        public CollectionModelBinder(
+            IModelBinder elementBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes,
+            MvcOptions mvcOptions)
+            : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes)
+        {
+            if (mvcOptions == null)
+            {
+                throw new ArgumentNullException(nameof(mvcOptions));
+            }
+
+            _maxModelBindingCollectionSize = mvcOptions.MaxModelBindingCollectionSize;
+        }
+
+        // Internal for testing.
+        internal bool AllowValidatingTopLevelNodes { get; }
 
         /// <summary>
         /// Gets the <see cref="IModelBinder"/> instances for binding collection elements.
@@ -92,6 +134,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     if (model == null)
                     {
                         model = CreateEmptyCollection(bindingContext.ModelType);
+                    }
+
+                    if (AllowValidatingTopLevelNodes)
+                    {
+                        AddErrorIfBindingRequired(bindingContext);
                     }
 
                     bindingContext.Result = ModelBindingResult.Success(model);
@@ -159,6 +206,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return targetType.GetTypeInfo().IsClass &&
                 !targetType.GetTypeInfo().IsAbstract &&
                 typeof(ICollection<TElement>).IsAssignableFrom(targetType);
+        }
+
+        /// <summary>
+        /// Add a <see cref="ModelError" /> to <see cref="ModelBindingContext.ModelState" /> if
+        /// <see cref="ModelMetadata.IsBindingRequired" />.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <remarks>
+        /// For back-compatibility reasons, <see cref="ModelBindingContext.Result" /> must have
+        /// <see cref="ModelBindingResult.IsModelSet" /> equal to <see langword="true" /> when a
+        /// top-level model is not bound. Therefore, ParameterBinder can not detect a
+        /// <see cref="ModelMetadata.IsBindingRequired" /> failure for collections. Add the error here.
+        /// </remarks>
+        protected void AddErrorIfBindingRequired(ModelBindingContext bindingContext)
+        {
+            var modelMetadata = bindingContext.ModelMetadata;
+            if (modelMetadata.IsBindingRequired)
+            {
+                var messageProvider = modelMetadata.ModelBindingMessageProvider;
+                var message = messageProvider.MissingBindRequiredValueAccessor(bindingContext.FieldName);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, message);
+            }
         }
 
         /// <summary>
@@ -272,8 +341,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             else
             {
                 indexNamesIsFinite = false;
-                indexNames = Enumerable.Range(0, int.MaxValue)
-                                       .Select(i => i.ToString(CultureInfo.InvariantCulture));
+                var limit = _maxModelBindingCollectionSize == int.MaxValue ?
+                    int.MaxValue :
+                    _maxModelBindingCollectionSize + 1;
+                indexNames = Enumerable
+                    .Range(0, limit)
+                    .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 
             var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
@@ -310,6 +383,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
+            }
+
+            // Did the collection grow larger than the limit?
+            if (boundCollection.Count > _maxModelBindingCollectionSize)
+            {
+                // Look for a non-empty name. Both ModelName and OriginalModelName may be empty at the top level.
+                var name = string.IsNullOrEmpty(bindingContext.ModelName) ?
+                    (string.IsNullOrEmpty(bindingContext.OriginalModelName) &&
+                        bindingContext.ModelMetadata.MetadataKind != ModelMetadataKind.Type ?
+                        bindingContext.ModelMetadata.Name :
+                        bindingContext.OriginalModelName) : // This name may unfortunately be empty.
+                    bindingContext.ModelName;
+
+                throw new InvalidOperationException(Resources.FormatModelBinding_ExceededMaxModelBindingCollectionSize(
+                    name,
+                    nameof(MvcOptions),
+                    nameof(MvcOptions.MaxModelBindingCollectionSize),
+                    _maxModelBindingCollectionSize,
+                    bindingContext.ModelMetadata.ElementType));
             }
 
             return new CollectionResult
@@ -401,17 +493,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
         {
-            IEnumerable<string> indexNames = null;
-            if (valueProviderResult != null)
-            {
-                var indexes = (string[])valueProviderResult;
-                if (indexes != null && indexes.Length > 0)
-                {
-                    indexNames = indexes;
-                }
-            }
-
-            return indexNames;
+            var indexes = (string[])valueProviderResult;
+            return (indexes == null || indexes.Length == 0) ? null : indexes;
         }
     }
 }

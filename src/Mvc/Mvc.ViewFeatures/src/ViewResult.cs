@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that renders a view to the response.
     /// </summary>
-    public class ViewResult : ActionResult
+    public class ViewResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -64,7 +64,15 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
+            var executor = context.HttpContext.RequestServices.GetService<IActionResultExecutor<ViewResult>>();
+            if (executor == null)
+            {
+                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddControllersWithViews()",
+                    "ConfigureServices(...)"));
+            }
+
             await executor.ExecuteAsync(context, this);
         }
     }

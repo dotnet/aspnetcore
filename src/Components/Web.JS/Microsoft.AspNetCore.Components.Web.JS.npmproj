@@ -1,0 +1,38 @@
+﻿<Project DefaultTargets="Build">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\release\blazor.server.js" />
+    <BuildOutputFiles Include="dist\release\blazor.webassembly.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
+    <ProjectReference
+      Include="..\..\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
+  </ItemGroup>
+
+  <Target Name="GetTargetPath" />
+
+  <!-- Workaround strange issues with something calling these targets. -->
+  <Target Name="GetTargetFramework" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
+  <Target Name="GetTargetPath" />
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+</Project>

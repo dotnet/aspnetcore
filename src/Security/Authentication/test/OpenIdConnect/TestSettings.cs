@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         public string ExpectedState { get; set; }
 
-        public TestServer CreateTestServer(AuthenticationProperties properties = null) => TestServerBuilder.CreateServer(_configureOptions, handler: null, properties: properties);
+        public TestServer CreateTestServer(AuthenticationProperties properties = null, Func<HttpContext, Task> handler = null) => TestServerBuilder.CreateServer(_configureOptions, handler: handler, properties: properties);
 
         public IDictionary<string, string> ValidateChallengeFormPost(string responseBody, params string[] parametersToValidate)
         {
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                         ValidateState(actualValues, errors, htmlEncoded);
                         break;
                     case OpenIdConnectParameterNames.SkuTelemetry:
-                        ValidateSkuTelemetry(actualValues, errors, htmlEncoded);
+                        ValidateSkuTelemetry(actualValues, errors);
                         break;
                     case OpenIdConnectParameterNames.VersionTelemetry:
                         ValidateVersionTelemetry(actualValues, errors, htmlEncoded);
@@ -258,14 +259,13 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private void ValidateState(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
             ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
 
-        private void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-#if NETCOREAPP2_1
-            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NETSTANDARD1_4", actualParams, errors, htmlEncoded);
-#elif NET461
-            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET451", actualParams, errors, htmlEncoded);
-#else
-#error Invalid target framework.
-#endif
+        private static void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors)
+        {
+            if (!actualParams.ContainsKey(OpenIdConnectParameterNames.SkuTelemetry))
+            {
+                errors.Add($"Parameter {OpenIdConnectParameterNames.SkuTelemetry} is missing");
+            }
+        }
 
         private void ValidateVersionTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
             ValidateParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualParams, errors, htmlEncoded);

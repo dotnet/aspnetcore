@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\standalone\standalone.csproj" />
+  </ItemGroup>
+
+</Project>

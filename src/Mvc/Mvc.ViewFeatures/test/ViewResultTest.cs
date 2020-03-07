@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -51,6 +50,25 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act & Assert
             Assert.Same(customModel, viewResult.Model);
+        }
+
+        [Fact]
+        public async Task ExecuteResultAsync_Throws_IfServicesNotRegistered()
+        {
+            // Arrange
+            var actionContext = new ActionContext(new DefaultHttpContext() { RequestServices = Mock.Of<IServiceProvider>(), }, new RouteData(), new ActionDescriptor());
+            var expected =
+                $"Unable to find the required services. Please add all the required services by calling " +
+                $"'IServiceCollection.AddControllersWithViews()' inside the call to 'ConfigureServices(...)' " +
+                $"in the application startup code.";
+
+            var viewResult = new ViewResult();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => viewResult.ExecuteResultAsync(actionContext));
+
+            // Assert
+            Assert.Equal(expected, ex.Message);
         }
 
         [Fact]
@@ -234,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
-                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
+                Mock.Of<ITempDataDictionaryFactory>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance,
                 new EmptyModelMetadataProvider());

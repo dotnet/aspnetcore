@@ -1,11 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Content Include="Microsoft.AspNetCore.TestHost.StaticWebAssets.xml" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

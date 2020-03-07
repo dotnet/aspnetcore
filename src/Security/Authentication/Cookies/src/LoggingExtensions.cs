@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,29 +7,29 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, Exception> _authSchemeSignedIn;
-        private static Action<ILogger, string, Exception> _authSchemeSignedOut;
+        private static Action<ILogger, string, Exception> _authenticationSchemeSignedIn;
+        private static Action<ILogger, string, Exception> _authenticationSchemeSignedOut;
 
         static LoggingExtensions()
         {
-            _authSchemeSignedIn = LoggerMessage.Define<string>(
-                eventId: 10,
+            _authenticationSchemeSignedIn = LoggerMessage.Define<string>(
+                eventId: new EventId(10, "AuthenticationSchemeSignedIn"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed in.");
-            _authSchemeSignedOut = LoggerMessage.Define<string>(
-                eventId: 11,
+            _authenticationSchemeSignedOut = LoggerMessage.Define<string>(
+                eventId: new EventId(11, "AuthenticationSchemeSignedOut"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
         }
 
-        public static void SignedIn(this ILogger logger, string authenticationScheme)
+        public static void AuthenticationSchemeSignedIn(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeSignedIn(logger, authenticationScheme, null);
+            _authenticationSchemeSignedIn(logger, authenticationScheme, null);
         }
 
-        public static void SignedOut(this ILogger logger, string authenticationScheme)
+        public static void AuthenticationSchemeSignedOut(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeSignedOut(logger, authenticationScheme, null);
+            _authenticationSchemeSignedOut(logger, authenticationScheme, null);
         }
     }
 }

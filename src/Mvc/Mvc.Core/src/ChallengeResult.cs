@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.ChallengeAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
     /// </summary>
     public class ChallengeResult : ActionResult
     {

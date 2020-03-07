@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -10,8 +11,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <see cref="ActionContext.ModelState"/> and short-circuits the pipeline
     /// with an Unsupported Media Type (415) response.
     /// </summary>
-    public class UnsupportedContentTypeFilter : IActionFilter
+    public class UnsupportedContentTypeFilter : IActionFilter, IOrderedFilter
     {
+        /// <summary>
+        /// Gets or sets the filter order. <see cref="IOrderedFilter.Order"/>.
+        /// <para>
+        /// Defaults to <c>-3000</c> to ensure it executes before <see cref="ModelStateInvalidFilter"/>.
+        /// </para>
+        /// </summary>
+        public int Order { get; set; } = -3000;
+
         /// <inheritdoc />
         public void OnActionExecuting(ActionExecutingContext context)
         {
@@ -32,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             foreach (var kvp in modelState)
             {
                 var errors = kvp.Value.Errors;
-                for (int i = 0; i < errors.Count; i++)
+                for (var i = 0; i < errors.Count; i++)
                 {
                     var error = errors[i];
                     if (error.Exception is UnsupportedContentTypeException)

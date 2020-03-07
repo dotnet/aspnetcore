@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Description>Provides experimental support for validation using DataAnnotations.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.Tests" />
+  </ItemGroup>
+
+</Project>

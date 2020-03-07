@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We have tests that test runtime view compilation. -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <IsTestAssetProject>true</IsTestAssetProject>
@@ -10,9 +9,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
 
-    <!-- Faking like we had Razor-on-Build (Rzc) and MvcPrecompilation -->
-    <ProjectReference Include="..\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj" />
+    <!-- Faking like we had Razor-on-Build (RZC) -->
     <ProjectReference Include="..\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
@@ -20,5 +19,7 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
   </ItemGroup>
+
+  <Import Project="..\..\..\Mvc.Razor.RuntimeCompilation\src\targets\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.targets" />
 
 </Project>

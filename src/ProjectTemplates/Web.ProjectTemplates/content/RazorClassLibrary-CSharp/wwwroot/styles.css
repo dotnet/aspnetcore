@@ -1,0 +1,11 @@
+﻿/*
+    This file is to show how CSS and other static resources (such as images) can be
+    used from a library project/package.
+*/
+
+.my-component {
+    border: 2px dashed red;
+    padding: 1em;
+    margin: 1em 0;
+    background-image: url('background.png');
+}

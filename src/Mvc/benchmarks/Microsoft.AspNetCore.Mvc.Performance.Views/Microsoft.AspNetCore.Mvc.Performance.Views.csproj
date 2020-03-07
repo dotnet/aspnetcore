@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!--  Workaround https://github.com/dotnet/core-setup/issues/3726 -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IsBenchmarkProject>true</IsBenchmarkProject>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+</Project>

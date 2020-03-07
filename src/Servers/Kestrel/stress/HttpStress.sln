@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29021.251
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpStress", "HttpStress.csproj", "{6B32E657-6B17-419F-A5CA-1981CE7E05AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B32E657-6B17-419F-A5CA-1981CE7E05AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B32E657-6B17-419F-A5CA-1981CE7E05AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B32E657-6B17-419F-A5CA-1981CE7E05AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B32E657-6B17-419F-A5CA-1981CE7E05AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BE19C273-6157-47D5-8616-1FA48989F91B}
+	EndGlobalSection
+EndGlobal

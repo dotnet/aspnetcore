@@ -1,0 +1,36 @@
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<button @onclick="Navigate">Navigate</button>
+
+<span id="test-info">@UrlLocation</span>
+
+@code{
+    string UrlLocation;
+
+    protected override void OnInitialized()
+    {
+        UrlLocation = NavigationManager.Uri;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        UrlLocation = NavigationManager.Uri;
+        StateHasChanged();
+    }
+
+    async Task Navigate()
+    {
+        await JSRuntime.InvokeVoidAsync("navigationManagerNavigate");
+    }
+}

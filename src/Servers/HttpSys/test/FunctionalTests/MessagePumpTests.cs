@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [InlineData("invalid address")]
         [InlineData("")]
         [InlineData(null)]
-        public void OverridingIServerAdressesFeatureWithDirectConfiguration_WarnsOnStart(string serverAddress)
+        public void OverridingIServerAddressesFeatureWithDirectConfiguration_WarnsOnStart(string serverAddress)
         {
             var overrideAddress = "http://localhost:11002/";
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public void UseIServerAdressesFeature_WhenNoDirectConfiguration()
+        public void UseIServerAddressesFeature_WhenNoDirectConfiguration()
         {
             var serverAddress = "http://localhost:11001/";
 
@@ -114,7 +114,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
-                Assert.Equal(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
+                // Trailing slash is added when put in UrlPrefix.
+                Assert.StartsWith(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
             }
         }
 

@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
             "text/xml",
             "application/json",
             "text/json",
+            // WebAssembly
+            "application/wasm",
         };
     }
 }

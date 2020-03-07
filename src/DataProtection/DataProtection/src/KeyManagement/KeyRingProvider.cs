@@ -45,10 +45,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             CacheableKeyRingProvider = this;
             _defaultKeyResolver = defaultKeyResolver;
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
+
+            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/dotnet/aspnetcore/issues/3975
+            AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(2);
         }
 
         // for testing
         internal ICacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
+
+        internal DateTime AutoRefreshWindowEnd { get; set; }
+
+        internal bool InAutoRefreshWindow() => DateTime.UtcNow < AutoRefreshWindowEnd;
 
         private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
         {
@@ -142,15 +149,24 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             return GetCurrentKeyRingCore(DateTime.UtcNow);
         }
 
-        internal IKeyRing GetCurrentKeyRingCore(DateTime utcNow)
+        internal IKeyRing RefreshCurrentKeyRing()
+        {
+            return GetCurrentKeyRingCore(DateTime.UtcNow, forceRefresh: true);
+        }
+
+        internal IKeyRing GetCurrentKeyRingCore(DateTime utcNow, bool forceRefresh = false)
         {
             Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
             // Can we return the cached keyring to the caller?
-            var existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
-            if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+            CacheableKeyRing existingCacheableKeyRing = null;
+            if (!forceRefresh)
             {
-                return existingCacheableKeyRing.KeyRing;
+                existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+                if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+                {
+                    return existingCacheableKeyRing.KeyRing;
+                }
             }
 
             // The cached keyring hasn't been created or must be refreshed. We'll allow one thread to
@@ -163,18 +179,21 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 Monitor.TryEnter(_cacheableKeyRingLockObj, (existingCacheableKeyRing != null) ? 0 : Timeout.Infinite, ref acquiredLock);
                 if (acquiredLock)
                 {
-                    // This thread acquired the critical section and is responsible for updating the
-                    // cached keyring. But first, let's make sure that somebody didn't sneak in before
-                    // us and update the keyring on our behalf.
-                    existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
-                    if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+                    if (!forceRefresh)
                     {
-                        return existingCacheableKeyRing.KeyRing;
-                    }
+                        // This thread acquired the critical section and is responsible for updating the
+                        // cached keyring. But first, let's make sure that somebody didn't sneak in before
+                        // us and update the keyring on our behalf.
+                        existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+                        if (CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
+                        {
+                            return existingCacheableKeyRing.KeyRing;
+                        }
 
-                    if (existingCacheableKeyRing != null)
-                    {
-                        _logger.ExistingCachedKeyRingIsExpired();
+                        if (existingCacheableKeyRing != null)
+                        {
+                            _logger.ExistingCachedKeyRingIsExpired();
+                        }
                     }
 
                     // It's up to us to refresh the cached keyring.
@@ -207,9 +226,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                             Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
                         }
 
-                        // The immediate caller should fail so that he can report the error up his chain. This makes it more likely
+                        // The immediate caller should fail so that they can report the error up the chain. This makes it more likely
                         // that an administrator can see the error and react to it as appropriate. The caller can retry the operation
-                        // and will probably have success as long as he falls within the temporary extension mentioned above.
+                        // and will probably have success as long as they fall within the temporary extension mentioned above.
                         throw;
                     }
 

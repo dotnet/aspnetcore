@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             HtmlEncoder htmlEncoder,
             IViewComponentSelector selector,
             IViewComponentInvokerFactory invokerFactory,
-            IViewBufferScope viewBufferScope)
+            IViewBufferScope viewBufferScope
+            )
         {
             if (descriptorProvider == null)
             {

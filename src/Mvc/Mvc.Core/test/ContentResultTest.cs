@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.TestCommon;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -259,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc
                                     new ActionDescriptor());
         }
 
-        private static IServiceCollection CreateServices(params ViewComponentDescriptor[] descriptors)
+        private static IServiceCollection CreateServices()
         {
             // An array pool could return a buffer which is greater or equal to the size of the default character
             // chunk size. Since the tests here depend on a specific character buffer size to test boundary conditions,

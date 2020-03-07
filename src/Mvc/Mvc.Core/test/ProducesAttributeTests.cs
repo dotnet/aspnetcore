@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Test
+namespace Microsoft.AspNetCore.Mvc
 {
     public class ProducesAttributeTests
     {

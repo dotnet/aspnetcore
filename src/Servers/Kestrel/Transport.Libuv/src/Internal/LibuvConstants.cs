@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.CompilerServices;
@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal static class LibuvConstants
     {
-        public const int ListenBacklog = 128;
-
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
@@ -22,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsConnectionReset(int errno)
         {
-            return errno == ECONNRESET || errno == EPIPE || errno == ENOTCONN | errno == EINVAL;
+            return errno == ECONNRESET || errno == EPIPE || errno == ENOTCONN || errno == EINVAL;
         }
 
         private static int? GetECONNRESET()

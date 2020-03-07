@@ -3,22 +3,21 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
-    public class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
+    internal class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
     {
         private readonly IViewComponentFactory _viewComponentFactory;
         private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
         private readonly ILogger _logger;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
 
         public DefaultViewComponentInvokerFactory(
             IViewComponentFactory viewComponentFactory,
             ViewComponentInvokerCache viewComponentInvokerCache,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory)
         {
             if (viewComponentFactory == null)
@@ -31,9 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(viewComponentInvokerCache));
             }
 
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                throw new ArgumentNullException(nameof(diagnosticSource));
+                throw new ArgumentNullException(nameof(diagnosticListener));
             }
 
             if (loggerFactory == null)
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             _viewComponentFactory = viewComponentFactory;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             _viewComponentInvokerCache = viewComponentInvokerCache;
 
             _logger = loggerFactory.CreateLogger<DefaultViewComponentInvoker>();
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             return new DefaultViewComponentInvoker(
                 _viewComponentFactory,
                 _viewComponentInvokerCache,
-                _diagnosticSource,
+                _diagnosticListener,
                 _logger);
         }
     }

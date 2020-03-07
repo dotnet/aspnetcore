@@ -29,16 +29,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public DefaultModelBindingMessageProvider()
         {
             SetMissingBindRequiredValueAccessor(Resources.FormatModelBinding_MissingBindRequiredMember);
-            SetMissingKeyOrValueAccessor(Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent);
-            SetMissingRequestBodyRequiredValueAccessor(Resources.FormatModelBinding_MissingRequestBodyRequiredMember);
+            SetMissingKeyOrValueAccessor(() => Resources.KeyValuePair_BothKeyAndValueMustBePresent);
+            SetMissingRequestBodyRequiredValueAccessor(() => Resources.ModelBinding_MissingRequestBodyRequiredMember);
             SetValueMustNotBeNullAccessor(Resources.FormatModelBinding_NullValueNotValid);
             SetAttemptedValueIsInvalidAccessor(Resources.FormatModelState_AttemptedValueIsInvalid);
             SetNonPropertyAttemptedValueIsInvalidAccessor(Resources.FormatModelState_NonPropertyAttemptedValueIsInvalid);
             SetUnknownValueIsInvalidAccessor(Resources.FormatModelState_UnknownValueIsInvalid);
-            SetNonPropertyUnknownValueIsInvalidAccessor(Resources.FormatModelState_NonPropertyUnknownValueIsInvalid);
+            SetNonPropertyUnknownValueIsInvalidAccessor(() => Resources.ModelState_NonPropertyUnknownValueIsInvalid);
             SetValueIsInvalidAccessor(Resources.FormatHtmlGeneration_ValueIsInvalid);
             SetValueMustBeANumberAccessor(Resources.FormatHtmlGeneration_ValueMustBeNumber);
-            SetNonPropertyValueMustBeANumberAccessor(Resources.FormatHtmlGeneration_NonPropertyValueMustBeNumber);
+            SetNonPropertyValueMustBeANumberAccessor(() => Resources.HtmlGeneration_NonPropertyValueMustBeNumber);
         }
 
         /// <summary>

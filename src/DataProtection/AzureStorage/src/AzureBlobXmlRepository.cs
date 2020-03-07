@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Blob;
 
 namespace Microsoft.AspNetCore.DataProtection.AzureStorage
 {
@@ -42,12 +42,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureStorage
         /// concurrent threads, and each invocation must return a new object.</param>
         public AzureBlobXmlRepository(Func<ICloudBlob> blobRefFactory)
         {
-            if (blobRefFactory == null)
-            {
-                throw new ArgumentNullException(nameof(blobRefFactory));
-            }
-
-            _blobRefFactory = blobRefFactory;
+            _blobRefFactory = blobRefFactory ?? throw new ArgumentNullException(nameof(blobRefFactory));
             _random = new Random();
         }
 
