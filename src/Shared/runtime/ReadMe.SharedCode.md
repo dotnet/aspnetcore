@@ -28,8 +28,8 @@ dotnet/AspNetCore code paths:
 - Run restore in the root once: `PS D:\github\AspNetCore> .\restore.cmd`
 - Activate to use the repo local runtime: `PS D:\github\AspNetCore> . .\activate.ps1`
 - Build the individual projects:
-- `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet msbuild`
-- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet msbuild`
+- `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet build`
+- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet build`
 
 ### Running dotnet/AspNetCore tests:
 - `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet test`
