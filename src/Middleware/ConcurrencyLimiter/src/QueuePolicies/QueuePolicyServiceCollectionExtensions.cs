@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">Set the options used by the queue.
         /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
         /// <returns></returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter(configure).AddQueuePolicy() instead")]
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter().AddQueuePolicy(configure) instead")]
         public static IServiceCollection AddQueuePolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.AddConcurrencyLimiter()
@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">Set the options used by the queue.
         /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
         /// <returns></returns>
-        [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter(configure).AddStackPolicy() instead")]
+        [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter().AddStackPolicy(configure) instead")]
         public static IServiceCollection AddStackPolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.AddConcurrencyLimiter()
