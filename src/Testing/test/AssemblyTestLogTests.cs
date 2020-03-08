@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 }
             });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
         public Task TestLogWritesToGlobalLogFile() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 ", testLogContent, ignoreLineEndingDifferences: true);
             });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
         public Task TestLogTruncatesTestNameToAvoidLongPaths() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 Assert.Equal(longTestName.Substring(longTestName.Length - testFileName.Length / 2, testFileName.Length / 2), testFileName.Substring(testFileName.Length - testFileName.Length / 2, testFileName.Length / 2));
             });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
         public  Task TestLogEnumerateFilenamesToAvoidCollisions() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
