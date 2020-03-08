@@ -1,6 +1,6 @@
 @echo off
-REM Disable "!Foo!" expansions because they break the filter syntax
-setlocal disableextensions
+REM Need delayed expansion !PATH! so parens in the path don't mess up the parens for the if statements that use parens for blocks
+setlocal enabledelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
 set $target=%1
@@ -9,6 +9,7 @@ set $runtimeVersion=%3
 set $helixQueue=%4
 set $arch=%5
 set $quarantined=%6
+set $efVersion=%7
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -16,14 +17,24 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
-set PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin
-
+set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
+echo Set path to: %PATH%
+echo "Installing SDK"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
+echo "Installing Runtime"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
-
+echo "Checking for Microsoft.AspNetCore.App"
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
+    
+    echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
+    dotnet nuget add source %HELIX_WORKITEM_ROOT%
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
+    dotnet nuget list source
+    dotnet tool install dotnet-ef --global --version %$efVersion%
+    
+    set PATH=!PATH!;%DOTNET_CLI_HOME%\.dotnet\tools
 )
 
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
@@ -31,6 +42,8 @@ set HELIX=%$helixQueue%
 set HELIX_DIR=%HELIX_WORKITEM_ROOT%
 set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
 set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
+set DotNetEfFullPath=%HELIX_DIR%\nugetRestore\dotnet-ef\%$efVersion%\tools\netcoreapp3.1\any\dotnet-ef.exe
+echo "Set DotNetEfFullPath: %DotNetEfFullPath%"
 echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
@@ -53,6 +66,8 @@ if %$quarantined%==True (
     set %$quarantined=true
 )
 
+REM Disable "!Foo!" expansions because they break the filter syntax
+setlocal disabledelayedexpansion
 set NONQUARANTINE_FILTER="Quarantined!=true"
 set QUARANTINE_FILTER="Quarantined=true"
 if %$quarantined%==true (
