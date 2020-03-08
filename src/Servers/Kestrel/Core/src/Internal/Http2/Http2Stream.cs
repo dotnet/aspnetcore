@@ -17,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
     {
         private Http2StreamContext _context;
         private Http2OutputProducer _http2Output;
@@ -587,6 +587,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
         public abstract void Execute();
+
+        public void Dispose()
+        {
+            _http2Output.Dispose();
+        }
 
         [Flags]
         private enum StreamCompletionFlags
