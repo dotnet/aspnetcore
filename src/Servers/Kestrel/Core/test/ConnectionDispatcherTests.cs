@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             connection.ConnectionClosed = new CancellationToken(canceled: true);
             var kestrelConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, _ => Task.CompletedTask, connection, serviceContext.Log);
             serviceContext.ConnectionManager.AddConnection(0, kestrelConnection);
-            var completeFeature = kestrelConnection.GetTransport().Features.Get<IConnectionCompleteFeature>();
+            var completeFeature = kestrelConnection.TransportConnection.Features.Get<IConnectionCompleteFeature>();
 
             Assert.NotNull(completeFeature);
             object stateObject = new object();
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             connection.ConnectionClosed = new CancellationToken(canceled: true);
             var kestrelConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, _ => Task.CompletedTask, connection, serviceContext.Log);
             serviceContext.ConnectionManager.AddConnection(0, kestrelConnection);
-            var completeFeature = kestrelConnection.GetTransport().Features.Get<IConnectionCompleteFeature>();
+            var completeFeature = kestrelConnection.TransportConnection.Features.Get<IConnectionCompleteFeature>();
 
             Assert.NotNull(completeFeature);
             object stateObject = new object();

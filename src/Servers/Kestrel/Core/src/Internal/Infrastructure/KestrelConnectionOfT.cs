@@ -10,8 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     internal class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkItem where T : BaseConnectionContext
     {
         private readonly Func<T, Task> _connectionDelegate;
-
-        public T TransportConnection { get; set; }
+        private readonly T _transportConnection;
 
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
@@ -21,11 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             : base(id, serviceContext, logger)
         {
             _connectionDelegate = connectionDelegate;
-            TransportConnection = connectionContext;
+            _transportConnection = connectionContext;
             connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
             connectionContext.Features.Set<IConnectionCompleteFeature>(this);
             connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
         }
+
+        public override BaseConnectionContext TransportConnection => _transportConnection;
 
         void IThreadPoolWorkItem.Execute()
         {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         internal async Task ExecuteAsync()
         {
-            var connectionContext = TransportConnection;
+            var connectionContext = _transportConnection;
 
             try
             {
@@ -63,15 +64,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Dispose the transport connection, this needs to happen before removing it from the
                 // connection manager so that we only signal completion of this connection after the transport
                 // is properly torn down.
-                await TransportConnection.DisposeAsync();
+                await connectionContext.DisposeAsync();
 
                 _serviceContext.ConnectionManager.RemoveConnection(_id);
             }
-        }
-
-        public override BaseConnectionContext GetTransport()
-        {
-            return TransportConnection;
         }
     }
 }
