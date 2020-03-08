@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
     {
         private static readonly Assembly ThisAssembly = typeof(AssemblyTestLogTests).GetTypeInfo().Assembly;
         private static readonly string ThisAssemblyName = ThisAssembly.GetName().Name;
-        private static readonly string TFM = new DirectoryInfo(AppContext.BaseDirectory).Name;
+        private static readonly string TFM = ThisAssembly.GetCustomAttributes().OfType<TestOutputDirectoryAttribute>().FirstOrDefault().TargetFramework;
 
         [Fact]
         public void FunctionalLogs_LogsPreservedFromNonQuarantinedTest()
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 }
             });
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
+        [Fact]
         public Task TestLogWritesToGlobalLogFile() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 ", testLogContent, ignoreLineEndingDifferences: true);
             });
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
+        [Fact]
         public Task TestLogTruncatesTestNameToAvoidLongPaths() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 Assert.Equal(longTestName.Substring(longTestName.Length - testFileName.Length / 2, testFileName.Length / 2), testFileName.Substring(testFileName.Length - testFileName.Length / 2, testFileName.Length / 2));
             });
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/19683")]
+        [Fact]
         public  Task TestLogEnumerateFilenamesToAvoidCollisions() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
