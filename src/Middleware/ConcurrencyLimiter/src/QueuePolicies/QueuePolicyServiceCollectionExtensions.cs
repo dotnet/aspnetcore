@@ -21,8 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
         [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter(configure).AddQueuePolicy() instead")]
         public static IServiceCollection AddQueuePolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
-            services.AddConcurrencyLimiter(configure)
-                .AddQueuePolicy();
+            services.AddConcurrencyLimiter()
+                .AddQueuePolicy(configure);
 
             return services;
         }
@@ -37,8 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
         [Obsolete("This is obsolete and will be removed in a future version. Use AddConcurrencyLimiter(configure).AddStackPolicy() instead")]
         public static IServiceCollection AddStackPolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
-            services.AddConcurrencyLimiter(configure)
-               .AddStackPolicy();
+            services.AddConcurrencyLimiter()
+               .AddStackPolicy(configure);
 
             return services;
         }
