@@ -12,9 +12,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a FIFO queue as its queueing strategy.
         /// </summary>
         /// <param name="builder"></param>
+        /// <param name="configure">Set the options used by the queue.</param>
         /// <returns></returns>
-        public static ConcurrencyLimiterBuilder AddQueuePolicy(this ConcurrencyLimiterBuilder builder)
+        public static ConcurrencyLimiterBuilder AddQueuePolicy(this ConcurrencyLimiterBuilder builder, Action<QueuePolicyOptions> configure)
         {
+            builder.Services.AddOptions<QueuePolicyOptions>().Configure(configure);
+
+            builder.Services.AddSingleton<IQueuePolicy, QueuePolicy>();
+            return builder;
+        }
+
+        /// <summary>
+        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a FIFO queue as its queueing strategy.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configure">Set the options used by the queue.</param>
+        /// <returns></returns>
+        public static ConcurrencyLimiterBuilder AddQueuePolicy(this ConcurrencyLimiterBuilder builder, Action<QueuePolicyOptions, IServiceProvider> configure)
+        {
+            builder.Services.AddOptions<QueuePolicyOptions>().Configure(configure);
+
             builder.Services.AddSingleton<IQueuePolicy, QueuePolicy>();
             return builder;
         }
@@ -23,9 +40,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a LIFO stack as its queueing strategy.
         /// </summary>
         /// <param name="builder"></param>
+        /// <param name="configure">Set the options used by the queue.</param>
         /// <returns></returns>
-        public static ConcurrencyLimiterBuilder AddStackPolicy(this ConcurrencyLimiterBuilder builder)
+        public static ConcurrencyLimiterBuilder AddStackPolicy(this ConcurrencyLimiterBuilder builder, Action<QueuePolicyOptions> configure)
         {
+            builder.Services.AddOptions<QueuePolicyOptions>().Configure(configure);
+
+            builder.Services.AddSingleton<IQueuePolicy, StackPolicy>();
+            return builder;
+        }
+
+        /// <summary>
+        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a LIFO stack as its queueing strategy.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configure">Set the options used by the queue.</param>
+        /// <returns></returns>
+        public static ConcurrencyLimiterBuilder AddStackPolicy(this ConcurrencyLimiterBuilder builder, Action<QueuePolicyOptions, IServiceProvider> configure)
+        {
+            builder.Services.AddOptions<QueuePolicyOptions>().Configure(configure);
+
             builder.Services.AddSingleton<IQueuePolicy, StackPolicy>();
             return builder;
         }

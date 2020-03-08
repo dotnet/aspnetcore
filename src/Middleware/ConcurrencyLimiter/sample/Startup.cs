@@ -15,11 +15,11 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddConcurrencyLimiter(options =>
+            services.AddConcurrencyLimiter().AddStackPolicy(options =>
             {
                 options.MaxConcurrentRequests = 2;
                 options.RequestQueueLimit = 25;
-            }).AddStackPolicy();
+            });
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

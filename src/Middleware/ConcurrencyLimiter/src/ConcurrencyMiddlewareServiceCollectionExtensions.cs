@@ -12,25 +12,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
-        /// <param name="configure">Set the options used by the queue.
         /// <returns></returns>
-        public static ConcurrencyLimiterBuilder AddConcurrencyLimiter(this IServiceCollection services, Action<QueuePolicyOptions> configure)
+        public static ConcurrencyLimiterBuilder AddConcurrencyLimiter(this IServiceCollection services)
         {
-            services.Configure(configure);
-
-            return new ConcurrencyLimiterBuilder(services);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
-        /// <param name="configure">Set the options used by the queue.
-        /// <returns></returns>
-        public static ConcurrencyLimiterBuilder AddConcurrencyLimiter(this IServiceCollection services, Action<QueuePolicyOptions, IServiceProvider> configure)
-        {
-            services.AddOptions<QueuePolicyOptions>().Configure(configure);
-
             return new ConcurrencyLimiterBuilder(services);
         }
     }
