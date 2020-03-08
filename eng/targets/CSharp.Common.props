@@ -27,6 +27,8 @@
     <Reference Include="Moq" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
+
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Content>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
