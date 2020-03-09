@@ -309,6 +309,11 @@ export class AuthenticationService {
                 settings.scope = settings.defaultScopes.join(' ');
             }
 
+            if (settings.response_type === null) {
+                // If the response type is not set, it gets serialized as null. OIDC-client behaves differently than when the value is undefined, so we explicitly check for a null value and remove the property instead.
+                delete settings.response_type;
+            }
+
             finalSettings = settings;
         }
 
