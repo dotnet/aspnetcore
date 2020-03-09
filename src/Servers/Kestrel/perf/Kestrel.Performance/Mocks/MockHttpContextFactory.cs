@@ -32,7 +32,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             lock (_lock)
             {
-                _cache.Enqueue((DefaultHttpContext)httpContext);
+                var defaultHttpContext = (DefaultHttpContext)httpContext;
+
+                defaultHttpContext.Uninitialize();
+                _cache.Enqueue(defaultHttpContext);
             }
         }
     }
