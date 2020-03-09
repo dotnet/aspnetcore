@@ -29,7 +29,7 @@ namespace Wasm.Performance.Driver
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 });
                 await context.Response.WriteAsync("OK");
-                Program.SetBenchmarkResult(result);
+                Program.BenchmarkResultTask.TrySetResult(result);
             });
         }
     }

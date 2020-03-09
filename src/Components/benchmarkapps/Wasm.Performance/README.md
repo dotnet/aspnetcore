@@ -18,3 +18,9 @@ To run the benchmark app in the Benchmark server, run
 ```
 dotnet run -- --config aspnetcore/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json application.endpoints <BenchmarkServerUri> --scenario blazorwasmbenchmark
 ```
+
+If you have local changes that you'd like to benchmark, the easiest way is to push your local changes and tell the server to use your branch:
+
+```
+dotnet run -- --config aspnetcore/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json application.endpoints <BenchmarkServerUri> --scenario blazorwasmbenchmark --application.buildArguments "gitBranch=mylocalchanges"
+```

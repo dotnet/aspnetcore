@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -23,52 +21,77 @@ namespace Wasm.Performance.Driver
 {
     public class Program
     {
-        static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
-        static TaskCompletionSource<BenchmarkResult> benchmarkResult = new TaskCompletionSource<BenchmarkResult>();
+        internal static TaskCompletionSource<BenchmarkResult> BenchmarkResultTask;
 
         public static async Task<int> Main(string[] args)
         {
-            var seleniumPort = 4444;
+            // This cancellation token manages the timeout for the stress run.
+            // By default the driver executes and reports a single Benchmark run. For stress runs,
+            // we'll pass in the duration to execute the runs in milliseconds. This will cause this driver
+            // to repeat executions for the duration specified.
+            var stressRunCancellation = CancellationToken.None;
+            var isStressRun = false;
             if (args.Length > 0)
             {
-                if (!int.TryParse(args[0], out seleniumPort))
+                if (!int.TryParse(args[0], out var stressRunSeconds))
                 {
-                    Console.Error.WriteLine("Usage Driver <selenium-port>");
+                    Console.Error.WriteLine("Usage Driver <stress-run-duration>");
                     return 1;
+                }
+
+                if (stressRunSeconds > 0)
+                {
+                    isStressRun = true;
+
+                    var stressRunDuration = TimeSpan.FromSeconds(stressRunSeconds);
+                    Console.WriteLine($"Stress run duration: {stressRunDuration}.");
+                    stressRunCancellation = new CancellationTokenSource(stressRunDuration).Token;
                 }
             }
 
             // This write is required for the benchmarking infrastructure.
             Console.WriteLine("Application started.");
 
-            var cancellationToken = new CancellationTokenSource(Timeout);
-            cancellationToken.Token.Register(() => benchmarkResult.TrySetException(new TimeoutException($"Timed out after {Timeout}")));
-
-            using var browser = await Selenium.CreateBrowser(seleniumPort, cancellationToken.Token);
+            using var browser = await Selenium.CreateBrowser(default);
             using var testApp = StartTestApp();
             using var benchmarkReceiver = StartBenchmarkResultReceiver();
-
             var testAppUrl = GetListeningUrl(testApp);
             var receiverUrl = GetListeningUrl(benchmarkReceiver);
-
             Console.WriteLine($"Test app listening at {testAppUrl}.");
 
-            var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
-            browser.Url = launchUrl;
-            browser.Navigate();
+            var firstRun = true;
+            do
+            {
+                BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
+                var timeForEachRun = TimeSpan.FromMinutes(3);
+                using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
+                runCancellationToken.Token.Register(() => BenchmarkResultTask.TrySetException(new TimeoutException($"Timed out after {timeForEachRun}")));
 
-            FormatAsBenchmarksOutput(benchmarkResult.Task.Result);
+                if (firstRun)
+                {
+                    var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
+                    browser.Url = launchUrl;
+                    browser.Navigate();
+                }
+                else
+                {
+                    browser.FindElementById("runAll").Click();
+                }
+
+                var results = await BenchmarkResultTask.Task;
+
+                FormatAsBenchmarksOutput(results,
+                    includeMetadata: firstRun,
+                    isStressRun: isStressRun);
+
+                firstRun = false;
+            } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
 
             Console.WriteLine("Done executing benchmark");
             return 0;
         }
 
-        internal static void SetBenchmarkResult(BenchmarkResult result)
-        {
-            benchmarkResult.TrySetResult(result);
-        }
-
-        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult)
+        private static void FormatAsBenchmarksOutput(BenchmarkResult benchmarkResult, bool includeMetadata, bool isStressRun)
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
@@ -123,6 +146,20 @@ namespace Wasm.Performance.Driver
                     Timestamp = DateTime.UtcNow,
                     Name = scenarioName,
                     Value = result.Duration,
+                });
+            }
+
+            if (!includeMetadata)
+            {
+                output.Metadata.Clear();
+            }
+
+            if (isStressRun)
+            {
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "$$Delimiter$$",
                 });
             }
 
@@ -184,9 +221,9 @@ namespace Wasm.Performance.Driver
                 isDone.Set();
             });
 
-            if (!isDone.WaitOne(Timeout))
+            if (!isDone.WaitOne(TimeSpan.FromSeconds(30)))
             {
-                throw new TimeoutException("Timed out waiting for: " + action);
+                throw new TimeoutException("Timed out waiting to start the host");
             }
 
             if (edi != null)
