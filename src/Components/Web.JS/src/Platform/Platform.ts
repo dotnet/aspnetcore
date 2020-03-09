@@ -1,4 +1,4 @@
-import { WebAssemblyResourceLoader } from "./WebAssemblyResourceLoader";
+import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
 
 export interface Platform {
   start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
@@ -19,5 +19,3 @@ export interface Platform {
   readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 }
-
-

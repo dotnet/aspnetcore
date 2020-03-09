@@ -1,4 +1,4 @@
-import { BootConfigResult } from "./BootConfig";
+import { BootConfigResult } from './BootConfig';
 
 export class WebAssemblyConfigLoader {
   static async initAsync(bootConfigResult: BootConfigResult): Promise<void> {

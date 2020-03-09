@@ -41,7 +41,7 @@ async function boot(options?: any): Promise<void> {
   // Fetch the resources and prepare the Mono runtime
   const bootConfigResult = await BootConfigResult.initAsync();
 
-   const [resourceLoader] = await Promise.all([
+  const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
 
