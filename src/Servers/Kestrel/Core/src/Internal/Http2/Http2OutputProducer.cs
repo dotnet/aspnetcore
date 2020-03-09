@@ -112,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 Stop();
 
+                // Make sure the writing side is completed.
                 _pipeWriter.Complete();
 
                 if (_fakeMemoryOwner != null)
