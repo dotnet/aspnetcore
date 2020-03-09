@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestDependsOnNode>true</TestDependsOnNode>
-    <TestDependsOnYarn>true</TestDependsOnYarn>    
   </PropertyGroup>
 
   <ItemGroup>
