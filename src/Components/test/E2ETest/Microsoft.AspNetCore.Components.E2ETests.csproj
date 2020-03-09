@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
@@ -45,14 +45,14 @@
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\**\AzureAD.WebSite.deps.json" />
-      <_testFiles Include="..\testassets\**\*" />
+      <_TestFiles Include="..\testassets\**\*" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)"
       ContinueOnError="true" />
     <Copy
-      SourceFiles="@(_testFiles)"
+      SourceFiles="@(_TestFiles)"
       DestinationFolder="$(PublishDir)\%(RecursiveDir)"
       ContinueOnError="true" />
   </Target>
@@ -60,6 +60,7 @@
   <ItemGroup>
     <HelixContent Include="package.json" />
     <HelixContent Include="yarn.lock" />
+    <HelixContent Include="node_modules" />
     <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
