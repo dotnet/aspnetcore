@@ -7,7 +7,7 @@ param (
 
 . $PSScriptRoot\tools.ps1
 
-function InstallDarcCli ($darcVersion) {
+function InstallDarcCli ($darcVersion, $toolpath) {
   $darcCliPackageName = 'microsoft.dotnet.darc'
 
   $dotnetRoot = InitializeDotNetCli -install:$true
@@ -32,13 +32,13 @@ function InstallDarcCli ($darcVersion) {
     Write-Host "'$dotnet' tool install $darcCliPackageName --version $darcVersion --add-source '$arcadeServicesSource' -v $verbosity -g"
     & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g
   }else {
-    Write-Host "'$dotnet' tool install $darcCliPackageName --version $darcVersion --add-source '$arcadeServicesSource' -v $verbosity -g --tool-path '$toolpath'"
+    Write-Host "'$dotnet' tool install $darcCliPackageName --version $darcVersion --add-source '$arcadeServicesSource' -v $verbosity --tool-path '$toolpath'"
     & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity --tool-path "$toolpath"
   }
 }
 
 try {
-  InstallDarcCli $darcVersion
+  InstallDarcCli $darcVersion $toolpath
 }
 catch {
   Write-Host $_.ScriptStackTrace
