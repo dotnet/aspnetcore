@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
     public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
