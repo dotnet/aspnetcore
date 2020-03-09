@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -41,6 +42,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorClassLibraryTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);

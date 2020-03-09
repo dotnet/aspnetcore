@@ -25,6 +25,7 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Project,
     [string]$HelixQueues = "Windows.10.Amd64.Open",
+    [string]$TargetArchitecture = "",
     [bool]$RunQuarantinedTests = $false
 )
 $ErrorActionPreference = 'Stop'
@@ -38,4 +39,4 @@ $env:BUILD_REPOSITORY_NAME="aspnetcore"
 $env:SYSTEM_TEAMPROJECT="aspnetcore"
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
-dotnet msbuild $Project /t:Helix /p:IsRequiredCheck=true /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests /p:_UseHelixOpenQueues=true
+dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests /p:_UseHelixOpenQueues=true
