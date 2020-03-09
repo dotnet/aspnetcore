@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 reporter.Warn("Trusting the HTTPS development certificate is currently disabled. To trust the certificate manually " +
                  "export the certificate with dotnet dev-certs https -ep <<path>> and run the following command "+
-                 "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain'.");
+                 "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<path>>'.");
             }
 
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(
