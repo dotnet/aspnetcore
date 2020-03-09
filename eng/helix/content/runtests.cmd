@@ -54,11 +54,6 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 dir
 
-if (%targetFrameworkIdentifier%==.NETFramework) (
-    xunit.console.exe %target% -xml testResults.xml
-    exit /b %ERRORLEVEL%
-)
-
 %DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt
 REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
