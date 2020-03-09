@@ -309,6 +309,10 @@ export class AuthenticationService {
                 settings.scope = settings.defaultScopes.join(' ');
             }
 
+            if (settings.response_type === null) {
+                delete settings.response_type;
+            }
+
             finalSettings = settings;
         }
 
