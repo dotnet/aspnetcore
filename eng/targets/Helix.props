@@ -23,7 +23,6 @@
     <NodeVersion>10.15.3</NodeVersion>
     <AppRuntimeVersion>5.0.0-ci</AppRuntimeVersion>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
-    <JdkVersion>11.0.3</JdkVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
