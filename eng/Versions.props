@@ -98,7 +98,7 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.1.0</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Blazor -->
-    <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0-preview2.20159.1</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0-preview2.20159.2</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.1.2-servicing.20067.6</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.2-servicing.20067.6</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
