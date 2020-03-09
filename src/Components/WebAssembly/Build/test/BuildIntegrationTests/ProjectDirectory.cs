@@ -43,7 +43,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     throw new InvalidOperationException("RepoRoot was not specified.");
                 }
 
-                var testAppsRoot = Path.Combine(RepoRoot, "src", "Components", "WebAssembly", "Build", "testassets");
+                var testAppsRoot = Path.Combine(Directory.GetCurrentDirectory(), "testassets");
+                if (!Directory.Exists(testAppsRoot))
+                {
+                    testAppsRoot = Path.Combine(RepoRoot, "src", "Components", "Blazor", "Build", "testassets");
+                }
+
+                if (!Directory.Exists(testAppsRoot))
+                {
+                    throw new DirectoryNotFoundException("Unable to find testassets in " +
+                        $"{Path.Combine(Directory.GetCurrentDirectory(), "testassets")} or {testAppsRoot}.");
+                }
+
                 foreach (var project in new string[] { projectName, }.Concat(additionalProjects ?? Array.Empty<string>()))
                 {
                     var projectRoot = Path.Combine(testAppsRoot, project);

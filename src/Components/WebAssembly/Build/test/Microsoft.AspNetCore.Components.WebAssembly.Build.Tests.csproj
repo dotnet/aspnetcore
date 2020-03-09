@@ -37,6 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HelixContent Include="..\testassets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Testing.RepoRoot</_Parameter1>
       <_Parameter2>$(RepoRoot)</_Parameter2>
