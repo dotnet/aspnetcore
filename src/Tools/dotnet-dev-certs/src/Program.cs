@@ -222,12 +222,19 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
                     "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
             }
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && trust?.HasValue() == true)
+            {
+                reporter.Warn("Trusting the HTTPS development certificate is currently disabled. To trust the certificate manually " +
+                 "export the certificate with dotnet dev-certs https -ep <<path>> and run the following command "+
+                 "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain'.");
+            }
 
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(
                 now,
                 now.Add(HttpsCertificateValidity),
                 exportPath.Value(),
-                trust == null ? false : trust.HasValue(),
+                (trust == null || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ? false : trust.HasValue(),
                 password.HasValue(),
                 password.Value());
 
