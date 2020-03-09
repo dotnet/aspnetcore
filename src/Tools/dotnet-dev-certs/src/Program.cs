@@ -208,15 +208,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     "This command will make the certificate key accessible across security partitions and might prompt you for your password. For more information see: https://aka.ms/aspnetcore/3.1/troubleshootcertissues");
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && trust?.HasValue() == true)
-            {
-                reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
-                    "already trusted we will run the following command:" + Environment.NewLine +
-                    "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
-                    Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the system keychain.");
-            }
-
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && trust?.HasValue() == true)
             {
                 reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
