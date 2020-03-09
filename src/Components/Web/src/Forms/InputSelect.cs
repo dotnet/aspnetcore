@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public RenderFragment ChildContent { get; set; }
 
-        private new readonly Type _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+        private readonly Type _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
