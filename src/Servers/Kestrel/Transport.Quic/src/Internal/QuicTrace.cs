@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     internal class QuicTrace : IQuicTrace
     {
