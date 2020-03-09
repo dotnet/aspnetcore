@@ -17,8 +17,8 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
-set PATH=%DOTNET_ROOT%;%HELIX_CORRELATION_PAYLOAD%\node\bin;!PATH!
-echo Set path to: %PATH%
+set PATH=%DOTNET_ROOT%;%HELIX_CORRELATION_PAYLOAD%\node\bin;%25HELIX_CORRELATION_PAYLOAD%25\jdk\bin;!PATH!
+echo Set path to: !PATH!
 echo "Installing SDK"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
 echo "Installing Runtime"
@@ -35,6 +35,7 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     dotnet tool install dotnet-ef --global --version %$efVersion%
     
     set PATH=!PATH!;%DOTNET_CLI_HOME%\.dotnet\tools
+    echo Set path to: !PATH!
 )
 
 echo "Current Directory: %HELIX_WORKITEM_ROOT%"
