@@ -29,7 +29,6 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MonoWebAssemblyInteropPackageVersion=$(MonoWebAssemblyInteropPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -39,7 +38,6 @@
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Build\src\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj" />
-    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)JSInterop\src\WebAssembly.JSInterop.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
