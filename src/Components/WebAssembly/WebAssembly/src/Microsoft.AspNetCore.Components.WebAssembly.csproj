@@ -10,7 +10,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="WebAssembly.JSInterop" />
+    <Reference Include="Microsoft.JSInterop.WebAssembly" />
   </ItemGroup>
 
   <ItemGroup>

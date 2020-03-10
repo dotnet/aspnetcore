@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Json;
-using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
+using WebAssembly.JSInterop;
 
-namespace WebAssembly.JSInterop
+namespace Microsoft.JSInterop.WebAssembly
 {
     /// <summary>
     /// Provides methods for invoking JavaScript functions for applications running
