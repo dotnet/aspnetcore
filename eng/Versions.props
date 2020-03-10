@@ -71,7 +71,8 @@
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview.2.20155.3</NETStandardLibraryRefPackageVersion>
-    <!-- Packages from dotnet/corefx -->
+    <!-- Packages from dotnet/runtime -->
+    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.3-runtime.20160.1</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.2.20155.3</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-preview.2.20155.3</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.2.20155.3</SystemComponentModelAnnotationsPackageVersion>

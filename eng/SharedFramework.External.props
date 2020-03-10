@@ -53,9 +53,9 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"         Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
 
-    <!-- Dependencies from dotnet/corefx -->
+    <!-- Dependencies from dotnet/runtime -->
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 

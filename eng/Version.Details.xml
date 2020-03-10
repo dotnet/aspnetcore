@@ -213,9 +213,9 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>540b4e8f129a132749a60174464b8c8274bfed7d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3.20156.3" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>540b4e8f129a132749a60174464b8c8274bfed7d</Sha>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3-runtime.20160.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fd1480ec75c7b783264b0526e38fbbf2e62a3b6e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.3.20156.3" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
