@@ -38,8 +38,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("throw-simple-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
-                "[Custom logger] Unhandled exception",
-                "[System.InvalidTimeZoneException]: Doing something that won't work!",
+                "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
+                "[Custom logger] Unhandled exception rendering component: Doing something that won't work!",
+                "System.InvalidTimeZoneException: Doing something that won't work!",
                 "at BasicTestApp.ErrorComponent.ThrowSimple");
         }
 
@@ -49,10 +50,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("throw-inner-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
-                "[Custom logger] Unhandled exception",
-                "[System.InvalidTimeZoneException]: Here is the outer exception",
-                "at BasicTestApp.ErrorComponent.ThrowInner",
-                "[System.ArithmeticException]: Here is the inner exception");
+                "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
+                "[Custom logger] Unhandled exception rendering component: Here is the outer exception",
+                "System.InvalidTimeZoneException: Here is the outer exception ---> System.ArithmeticException: Here is the inner exception",
+                "at BasicTestApp.ErrorComponent.ThrowInner");
         }
 
         [Fact]
@@ -61,12 +62,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("throw-aggregate-exception")).Click();
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
             AssertLogContainsCriticalMessages(
-                "[Custom logger] Unhandled exception",
-                "[System.AggregateException]: One or more errors occurred. (Aggregate exception 1) (Aggregate exception 2) (Aggregate exception 3)",
-                "at BasicTestApp.ErrorComponent.ThrowAggregate",
-                "[System.InvalidTimeZoneException]: Aggregate exception 1",
-                "[System.InvalidTimeZoneException]: Aggregate exception 2",
-                "[System.InvalidTimeZoneException]: Aggregate exception 3");
+                "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
+                "[Custom logger] Unhandled exception rendering component: Aggregate exception 1",
+                "System.InvalidTimeZoneException: Aggregate exception 1",
+                "[Custom logger] Unhandled exception rendering component: Aggregate exception 2",
+                "System.InvalidTimeZoneException: Aggregate exception 2",
+                "[Custom logger] Unhandled exception rendering component: Aggregate exception 3",
+                "System.InvalidTimeZoneException: Aggregate exception 3");
         }
 
         [Fact]
@@ -76,21 +78,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Id("blazor-error-ui"));
             Browser.Exists(By.Id("log-trace"));
 
+            ((IJavaScriptExecutor)Browser).ExecuteScript("console.info('Test log message')");
+
+            // None of these severity levels are displayed by default, so at the end
+            // we'll continue to see "Test log message" as the most recent output
             Browser.FindElement(By.Id("log-none")).Click();
-            AssertLastLogMessage(LogLevel.Info, "[Custom logger] This is a None message with count=1");
-
             Browser.FindElement(By.Id("log-trace")).Click();
-            AssertLastLogMessage(LogLevel.Debug, "[Custom logger] This is a Trace message with count=2");
-
             Browser.FindElement(By.Id("log-debug")).Click();
-            AssertLastLogMessage(LogLevel.Debug, "[Custom logger] This is a Debug message with count=3");
-
             Browser.FindElement(By.Id("log-information")).Click();
-            AssertLastLogMessage(LogLevel.Info, "[Custom logger] This is a Information message with count=4");
+            AssertLastLogMessage(LogLevel.Info, "Test log message");
 
+            // These severity levels are displayed
             Browser.FindElement(By.Id("log-warning")).Click();
             AssertLastLogMessage(LogLevel.Warning, "[Custom logger] This is a Warning message with count=5");
-
             Browser.FindElement(By.Id("log-error")).Click();
             AssertLastLogMessage(LogLevel.Severe, "[Custom logger] This is a Error message with count=6");
 
