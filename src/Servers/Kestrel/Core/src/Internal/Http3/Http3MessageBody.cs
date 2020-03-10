@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3Stream _context;
         private ReadResult _readResult;
 
-        private Http3MessageBody(Http3Stream context) : base(context)
+        private Http3MessageBody(Http3Stream context)
+            : base(context)
         {
             _context = context;
         }
