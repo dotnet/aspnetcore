@@ -20,7 +20,6 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-$InstallDir = '.' # Try to install to workitem directory
 
 Set-StrictMode -Version 1
 
