@@ -3,13 +3,10 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <AssemblyName>webassembly-debugproxy</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DebugProxy</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <Description>Debug proxy for use when building Blazor applications.</Description>
-    <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
     <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>

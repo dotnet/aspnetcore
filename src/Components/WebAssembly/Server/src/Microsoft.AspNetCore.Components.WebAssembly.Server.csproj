@@ -13,4 +13,8 @@
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.DebugProxy" />
+  </ItemGroup>
+
 </Project>
