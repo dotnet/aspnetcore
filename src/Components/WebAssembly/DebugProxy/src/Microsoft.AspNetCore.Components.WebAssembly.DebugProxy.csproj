@@ -18,6 +18,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+
+    <!-- Dependencies of ws-proxy sources -->
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Mono.Cecil" />
   </ItemGroup>
 
 </Project>
