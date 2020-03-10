@@ -392,6 +392,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private async ValueTask ProcessDataWrites()
         {
+            // ProcessDataWrites runs for the lifetime of the Http2OutputProducer, and is designed to be reused by multiple streams.
+            // When Http2OutputProducer is no longer used (e.g. a stream is aborted and will no longer be used, or the connection is closed)
+            // it should be disposed so ProcessDataWrites exits. Not disposing won't cause a memory leak in release builds, but in debug
+            // builds active tasks are rooted on Task.s_currentActiveTasks. Dispose could be removed in the future when active tasks are
+            // tracked by a weak reference. See https://github.com/dotnet/runtime/issues/26565
             do
             {
                 FlushResult flushResult = default;
