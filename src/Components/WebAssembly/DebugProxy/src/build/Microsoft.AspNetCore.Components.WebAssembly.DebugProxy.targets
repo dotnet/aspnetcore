@@ -11,7 +11,7 @@
 
   <Target Name="_GenerateDebugProxyConfig">
     <PropertyGroup>
-      <_DebugProxyConfigName>BlazorDebugProxy.config</_DebugProxyConfigName>
+      <_DebugProxyConfigName>$(TargetName).BlazorDebugProxy.config</_DebugProxyConfigName>
       <_DebugProxyConfigIntermediateOutputPath>$(IntermediateOutputPath)$(_DebugProxyConfigName)</_DebugProxyConfigIntermediateOutputPath>
     </PropertyGroup>
 

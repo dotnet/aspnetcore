@@ -29,13 +29,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
                 {
                     var applicationPath = args.SkipWhile(a => a != "--applicationpath").Skip(1).FirstOrDefault();
                     var applicationDirectory = Path.GetDirectoryName(applicationPath);
-                    var name = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
+                    var debugProxyConfigPath = Path.ChangeExtension(applicationPath, ".BlazorDebugProxy.config");
+                    var staticWebAssetsManifestPath = Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml");
 
                     var inMemoryConfiguration = new Dictionary<string, string>
                     {
                         ["Logging:LogLevel:Microsoft"] = "Warning",
                         ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
-                        [WebHostDefaults.StaticWebAssetsKey] = name,
+                        ["blazorDebugProxyConfig"] = debugProxyConfigPath,
+                        [WebHostDefaults.StaticWebAssetsKey] = staticWebAssetsManifestPath,
                     };
 
                     config.AddInMemoryCollection(inMemoryConfiguration);
