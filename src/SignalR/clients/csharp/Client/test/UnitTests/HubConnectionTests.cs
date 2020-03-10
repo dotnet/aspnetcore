@@ -448,22 +448,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return Task.CompletedTask;
                 };
 
-                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "Echo", arguments = new object[] { "42" } });
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "Echo", arguments = new object[] { "42" } }).OrTimeout();
 
                 // Read sent message first to make sure invoke has been processed and is waiting for a response
                 await connection.ReadSentJsonAsync().OrTimeout();
-                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType });
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType }).OrTimeout();
 
                 await closedTcs.Task.OrTimeout();
 
-                try
-                {
-                    await tcs.Task.OrTimeout();
-                    Assert.True(false);
-                }
-                catch (TaskCanceledException)
-                {
-                }
+                await Assert.ThrowsAsync<TaskCanceledException>(() => tcs.Task.OrTimeout());
             }
         }
 
