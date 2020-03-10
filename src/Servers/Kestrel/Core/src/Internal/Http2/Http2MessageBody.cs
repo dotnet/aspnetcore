@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AddAndCheckConsumedBytes(bytesRead);
         }
 
-        public new void Reset()
+        public override void Reset()
         {
             base.Reset();
             _readResult = default;

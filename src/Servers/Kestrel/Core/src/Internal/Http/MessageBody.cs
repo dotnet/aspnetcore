@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnStopAsync() => Task.CompletedTask;
 
-        protected void Reset()
+        public virtual void Reset()
         {
             _send100Continue = true;
             _consumedBytes = 0;
