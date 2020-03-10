@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
@@ -18,12 +19,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
             };
             app.HelpOption("-?|-h|--help");
 
-            var browserPortOption = new CommandOption("-b|--browser-port", CommandOptionType.SingleValue)
+            var browserHostOption = new CommandOption("-b|--browser-host", CommandOptionType.SingleValue)
             {
-                Description = "Port to which the debug proxy should connect"
+                Description = "Host on which the browser is listening for debug connections. Example: http://localhost:9300"
             };
 
-            app.Options.Add(browserPortOption);
+            app.Options.Add(browserHostOption);
 
             app.OnExecute(() =>
             {
@@ -39,6 +40,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                         // By default we bind to a dyamic port
                         // This can be overridden using an option like "--urls http://localhost:9500"
                         webBuilder.UseUrls($"http://127.0.0.1:0");
+                    })
+                    .ConfigureServices(serviceCollection =>
+                    {
+                        serviceCollection.AddSingleton(new DebugProxyOptions
+                        {
+                            BrowserHost = browserHostOption.HasValue()
+                                ? browserHostOption.Value()
+                                : "http://127.0.0.1:9300",
+                        });
                     })
                     .Build();
 
