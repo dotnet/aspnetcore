@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -107,13 +108,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             var resolvedUrl = ResolveWebSocketsUrl(url);
 
+            var isWasm = RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
+
             // We don't need to capture to a local because we never change this delegate.
             if (_accessTokenProvider != null)
             {
                 var accessToken = await _accessTokenProvider();
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    // We can't use request headers in the browser, so instead append the token as a query string if running WASM
+                    if (isWasm)
+                    {
+                        resolvedUrl += (resolvedUrl.indexOf("?") < 0 ? "?" : "&") + "access_token=" + UrlEncoder.Default.Encode(accessToken);
+                    }
+                    else
+                    {
+                        _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    }
                 }
             }
 

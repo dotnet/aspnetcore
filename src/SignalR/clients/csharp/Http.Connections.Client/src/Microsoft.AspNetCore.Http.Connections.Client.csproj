@@ -4,6 +4,7 @@
     <Description>Client for ASP.NET Core Connection Handlers</Description>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <IsShippingPackage>true</IsShippingPackage>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,9 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Text.Encodings.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="$(MicrosoftAspNetCoreAppVersion)" />
   </ItemGroup>
 
   <ItemGroup>
