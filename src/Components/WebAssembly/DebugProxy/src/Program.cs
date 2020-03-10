@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                         {
                             BrowserHost = browserHostOption.HasValue()
                                 ? browserHostOption.Value()
-                                : "http://127.0.0.1:9300",
+                                : "http://127.0.0.1:9222",
                         });
                     })
                     .Build();
