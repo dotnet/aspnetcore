@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             => throw new NotSupportedException();
 
         public ILogger CreateLogger(string categoryName)
-            => new WebAssemblyConsoleLogger<object>(_jsRuntime);
+            => new WebAssemblyConsoleLogger<object>(categoryName, _jsRuntime);
 
         public void Dispose()
         {

@@ -103,7 +103,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override void HandleException(Exception exception)
         {
-            _logger.LogCritical(exception, "Unhandled exception");
+            if (exception is AggregateException aggregateException)
+            {
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    Log.UnhandledExceptionRenderingComponent(_logger, innerException);
+                }
+            }
+            else
+            {
+                Log.UnhandledExceptionRenderingComponent(_logger, exception);
+            }
         }
 
         /// <inheritdoc />
@@ -181,6 +191,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
                 TaskCompletionSource = new TaskCompletionSource<object>();
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
+
+            private static class EventIds
+            {
+                public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
+            }
+
+            static Log()
+            {
+                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
+                    LogLevel.Critical,
+                    EventIds.UnhandledExceptionRenderingComponent,
+                    "Unhandled exception rendering component: {Message}");
+            }
+
+            public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
+            {
+                _unhandledExceptionRenderingComponent(
+                    logger,
+                    exception.Message,
+                    exception);
             }
         }
     }
