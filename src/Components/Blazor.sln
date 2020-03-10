@@ -103,6 +103,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Msal", "Auth
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Authentication.WebAssembly.Msal", "WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj", "{2F105FA7-74DA-4855-9D8E-818DEE1F8D43}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DebugProxy", "DebugProxy", "{96DE9B14-D81F-422E-A33A-728BFB9C153A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -521,6 +525,18 @@ Global
 		{2F105FA7-74DA-4855-9D8E-818DEE1F8D43}.Release|x64.Build.0 = Release|Any CPU
 		{2F105FA7-74DA-4855-9D8E-818DEE1F8D43}.Release|x86.ActiveCfg = Release|Any CPU
 		{2F105FA7-74DA-4855-9D8E-818DEE1F8D43}.Release|x86.Build.0 = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|x64.Build.0 = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Debug|x86.Build.0 = Debug|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x64.ActiveCfg = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x64.Build.0 = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x86.ActiveCfg = Release|Any CPU
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -573,6 +589,8 @@ Global
 		{EAF50654-98ED-44BB-A120-0436EC0CD3E0} = {CBD2BB24-3EC3-4950-ABE4-8C521D258DCD}
 		{E4D756A7-A934-4D7F-BC6E-7B95FE4098AB} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{2F105FA7-74DA-4855-9D8E-818DEE1F8D43} = {E4D756A7-A934-4D7F-BC6E-7B95FE4098AB}
+		{96DE9B14-D81F-422E-A33A-728BFB9C153A} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
+		{8BB1A8BE-F002-40A2-9B8E-439284B21C1C} = {96DE9B14-D81F-422E-A33A-728BFB9C153A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27A36094-AA50-4FFD-ADE6-C055E391F741}
