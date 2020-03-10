@@ -1,15 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.WebAssembly
-{
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-    public static partial class JSInteropMethods
-    {
-        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string uri, bool isInterceptedLink) { }
-    }
-}
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -43,6 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMappingCollection RootComponents { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost Build() { throw null; }
+        public void ConfigureContainer<TBuilder>(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TBuilder> factory, System.Action<TBuilder> configure = null) { }
         public static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder CreateDefault(string[] args = null) { throw null; }
     }
 }
@@ -59,11 +51,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         public static Microsoft.AspNetCore.Components.WebAssembly.Http.FetchCredentialsOption DefaultCredentials { get { throw null; } set { } }
     }
 }
-namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
+namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
 {
-    public static partial class WebAssemblyEventDispatcher
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+    public static partial class JSInteropMethods
     {
         [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
         public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
+        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
+        public static void NotifyLocationChanged(string uri, bool isInterceptedLink) { }
+    }
+}
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class HttpClientServiceCollectionExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddBaseAddressHttpClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { throw null; }
     }
 }

@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly.JSInterop", "WebAssembly.JSInterop", "{37FA056D-A7B3-4F72-A8B9-8D3C175E831E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAssembly.JSInterop", "WebAssembly\JSInterop\src\WebAssembly.JSInterop.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAssembly.JSInterop", "WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{7920B09F-8016-49CF-A229-E72D0CECDD17}"
 EndProject
