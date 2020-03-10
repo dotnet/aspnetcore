@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal sealed class Http2MessageBody : MessageBody
     {
-        private Http2Stream _context;
+        private readonly Http2Stream _context;
         private ReadResult _readResult;
 
-        public Http2MessageBody(Http2Stream context)
+        public Http2MessageBody(Http2Stream context) : base(context)
         {
-            Reset(context);
+            _context = context;
         }
 
         protected override void OnReadStarting()
@@ -45,26 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AddAndCheckConsumedBytes(bytesRead);
         }
 
-        public static MessageBody For(Http2Stream context, Http2MessageBody previousMessageBody)
+        public new void Reset()
         {
-            if (context.ReceivedEmptyRequestBody)
-            {
-                return ZeroContentLengthClose;
-            }
-
-            if (previousMessageBody is Http2MessageBody http2MessageBody)
-            {
-                http2MessageBody.Reset(context);
-                return http2MessageBody;
-            }
-
-            return new Http2MessageBody(context);
-        }
-
-        public void Reset(Http2Stream context)
-        {
-            base.Reset(context);
-            _context = context;
+            base.Reset();
             _readResult = default;
         }
 

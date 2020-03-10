@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (_messageBody != null)
             {
-                _messageBody.Reset(this);
+                _messageBody.Reset();
             }
             else
             {
