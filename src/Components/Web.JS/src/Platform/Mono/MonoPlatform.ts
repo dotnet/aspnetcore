@@ -1,7 +1,8 @@
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
-import { Platform } from '../Platform';
+import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
+import { BINDING, MONO } from './MonoTypes';
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
@@ -156,7 +157,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   };
   module.preRun = [];
   module.postRun = [];
-  module.preloadPlugins = [];
+  (module as any).preloadPlugins = [];
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
   module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
@@ -245,10 +246,10 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function bindStaticMethod(assembly: string, typeName: string, method: string) : (...args: any[]) => any {
+function bindStaticMethod(assembly: string, typeName: string, method: string) {
   // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
   const fqn = `[${assembly}] ${typeName}:${method}`;
-  return Module.mono_bind_static_method(fqn);
+  return BINDING.bind_static_method(fqn);
 }
 
 function attachInteropInvoker(): void {
