@@ -32,10 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
-
-            // Since this is where generic unhandled errors get routed, we want the category
-            // name to be something generic, not "WebAssemblyRenderer".
-            _logger = loggerFactory.CreateLogger(".NET");
+            _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
