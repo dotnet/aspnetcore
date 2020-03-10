@@ -17,10 +17,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             _jsRuntime = (IJSInProcessRuntime)services.GetRequiredService<IJSRuntime>();
         }
 
+        // We might implement this in the future, but it's not required currently
         public void AddProvider(ILoggerProvider provider)
-        {
-            // No-op
-        }
+            => throw new NotSupportedException();
 
         public ILogger CreateLogger(string categoryName)
             => new WebAssemblyConsoleLogger<object>(_jsRuntime);
