@@ -119,7 +119,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     // We can't use request headers in the browser, so instead append the token as a query string if running WASM
                     if (isWasm)
                     {
-                        resolvedUrl += (resolvedUrl.indexOf("?") < 0 ? "?" : "&") + "access_token=" + UrlEncoder.Default.Encode(accessToken);
+                        var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
+                        var builder = new UriBuilder(resolvedUrl);
+                        builder.Query += builder.Query.Length == 0 ? ("?" + accessTokenEncoded) : ("&" + accessTokenEncoded);
+                        resolvedUrl = builder.Uri;
                     }
                     else
                     {
