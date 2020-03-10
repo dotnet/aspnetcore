@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 return;
             }
 
-            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema.xml");
+            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
 
             if (!File.Exists(ancmConfigPath) && !SkipInVSTSAttribute.RunningInVSTS)
             {
