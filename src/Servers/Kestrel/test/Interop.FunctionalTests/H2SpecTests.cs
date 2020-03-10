@@ -21,7 +21,6 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2225")]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()
