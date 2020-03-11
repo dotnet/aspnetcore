@@ -41,10 +41,11 @@ namespace Microsoft.AspNetCore.Builder
             var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             var executablePath = LocateDebugProxyExecutable(environment);
             var muxerPath = DotNetMuxer.MuxerPathOrDefault();
+            var ownerPid = Process.GetCurrentProcess().Id;
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = muxerPath,
-                Arguments = $"exec \"{executablePath}\"",
+                Arguments = $"exec \"{executablePath}\" --owner-pid {ownerPid}",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
             };

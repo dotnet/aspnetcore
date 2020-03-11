@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +27,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 Description = "Host on which the browser is listening for debug connections. Example: http://localhost:9300"
             };
 
+            var ownerPidOption = new CommandOption("-op|--owner-pid", CommandOptionType.SingleValue)
+            {
+                Description = "ID of the owner process. The debug proxy will shut down if this process exits."
+            };
+
             app.Options.Add(browserHostOption);
+            app.Options.Add(ownerPidOption);
 
             app.OnExecute(() =>
             {
@@ -52,6 +61,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                     })
                     .Build();
 
+                if (ownerPidOption.HasValue())
+                {
+                    var ownerProcess = Process.GetProcessById(int.Parse(ownerPidOption.Value()));
+                    _ = ExitWhenOwnerProcessExits(ownerProcess, host);
+                }
+
                 host.Run();
 
                 return 0;
@@ -66,6 +81,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 app.Error.WriteLine(cex.Message);
                 app.ShowHelp();
                 return 1;
+            }
+        }
+
+        private static async Task ExitWhenOwnerProcessExits(Process ownerProcess, IHost host)
+        {
+            while (true)
+            {
+                if (ownerProcess.HasExited)
+                {
+                    Console.WriteLine("Exiting because parent process has exited");
+                    await host.StopAsync();
+                }
+                
+                await Task.Delay(1000);
             }
         }
     }
