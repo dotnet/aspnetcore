@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                     foreach (var action in Options.ClaimActions)
                     {
-                        action.Run(user.RootElement, identity, ClaimsIssuer);
+                        action.Run(updatedUser.RootElement, identity, ClaimsIssuer);
                     }
                 }
             }
