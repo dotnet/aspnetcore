@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -1051,12 +1052,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendWindowUpdateAsync(int streamId, int sizeIncrement)
         {
             var outputWriter = _pair.Application.Output;
-            var frame = new Http2Frame();
-            frame.PrepareWindowUpdate(streamId, sizeIncrement);
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
-            var buffer = outputWriter.GetSpan(4);
-            BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)sizeIncrement);
-            outputWriter.Advance(4);
+            outputWriter.WriteWindowUpdateAsync(streamId, sizeIncrement);
             return FlushAsync(outputWriter);
         }
 

@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">

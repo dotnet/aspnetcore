@@ -30,9 +30,14 @@ namespace FunctionalTests
             var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging(factory =>
                 {
-                    factory.AddConsole(options => options.IncludeScopes = true);
+                    factory.AddConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "[HH:mm:ss] ";
+                        options.UseUtcTimestamp = true;
+                    });
                     factory.AddDebug();
-                    factory.SetMinimumLevel(LogLevel.Information);
+                    factory.SetMinimumLevel(LogLevel.Debug);
                 })
                 .UseKestrel((builderContext, options) =>
                 {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net.Http.HPack;
@@ -24,9 +25,9 @@ namespace Microsoft.AspNetCore.Testing
             writer.Write(payload);
         }
 
-        public static void WriteStartStream(this PipeWriter writer, int streamId, Http2HeadersEnumerator headers, byte[] headerEncodingBuffer, bool endStream)
+        public static void WriteStartStream(this PipeWriter writer, int streamId, Http2HeadersEnumerator headers, byte[] headerEncodingBuffer, bool endStream, Http2Frame frame = null)
         {
-            var frame = new Http2Frame();
+            frame ??= new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
             var buffer = headerEncodingBuffer.AsSpan();
@@ -63,9 +64,9 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        public static void WriteStartStream(this PipeWriter writer, int streamId, Span<byte> headerData, bool endStream)
+        public static void WriteStartStream(this PipeWriter writer, int streamId, Span<byte> headerData, bool endStream, Http2Frame frame = null)
         {
-            var frame = new Http2Frame();
+            frame ??= new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
             frame.PayloadLength = headerData.Length;
             frame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
@@ -79,16 +80,24 @@ namespace Microsoft.AspNetCore.Testing
             writer.Write(headerData);
         }
 
-        public static void WriteData(this PipeWriter writer, int streamId, Memory<byte> data, bool endStream)
+        public static void WriteData(this PipeWriter writer, int streamId, Memory<byte> data, bool endStream, Http2Frame frame = null)
         {
-            var frame = new Http2Frame();
-
+            frame ??= new Http2Frame();
             frame.PrepareData(streamId);
             frame.PayloadLength = data.Length;
             frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
 
             Http2FrameWriter.WriteHeader(frame, writer);
             writer.Write(data.Span);
+        }
+
+        public static void WriteWindowUpdateAsync(this PipeWriter writer, int streamId, int sizeIncrement, Http2Frame frame = null)
+        {
+            frame ??= new Http2Frame();
+            frame.PrepareWindowUpdate(streamId, sizeIncrement);
+            Http2FrameWriter.WriteHeader(frame, writer);
+            BinaryPrimitives.WriteUInt32BigEndian(writer.GetSpan(4), (uint)sizeIncrement);
+            writer.Advance(4);
         }
     }
 }
