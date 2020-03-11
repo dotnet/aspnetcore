@@ -5,6 +5,7 @@ export interface Platform {
 
   callEntryPoint(assemblyName: string): void;
 
+  toJavaScriptString(dotNetString: System_String): string;
   toUint8Array(array: System_Array<any>): Uint8Array;
 
   getArrayLength(array: System_Array<any>): number;

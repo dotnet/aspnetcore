@@ -3,7 +3,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
 
-
+let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
@@ -39,6 +39,17 @@ export const monoPlatform: Platform = {
     const invokeEntrypoint = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Hosting.EntrypointInvoker', 'InvokeEntrypoint');
     // Note we're passing in null because passing arrays is problematic until https://github.com/mono/mono/issues/18245 is resolved.
     invokeEntrypoint(assemblyName, null);
+  },
+
+  toJavaScriptString: function toJavaScriptString(managedString: System_String) {
+    // Comments from original Mono sample:
+    // FIXME this is wastefull, we could remove the temp malloc by going the UTF16 route
+    // FIXME this is unsafe, cuz raw objects could be GC'd.
+
+    const utf8 = mono_string_get_utf8(managedString);
+    const res = (<any>window['Module']).UTF8ToString(utf8);
+    Module._free(utf8 as any);
+    return res;
   },
 
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
@@ -93,7 +104,7 @@ export const monoPlatform: Platform = {
 
   readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): string | null {
     const fieldValue = Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
-    return fieldValue === 0 ? null : BINDING.conv_string(fieldValue as any as System_String);
+    return fieldValue === 0 ? null : monoPlatform.toJavaScriptString(fieldValue as any as System_String);
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
@@ -182,6 +193,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
     mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
+    mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
 
     MONO.loaded_files = [];
 

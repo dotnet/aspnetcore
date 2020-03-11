@@ -10,7 +10,7 @@ declare interface MONO {
 
 // Mono uses this global to hold low-level interop APIs
 declare interface BINDING {
-  js_string_to_mono_string(jsString: string): Pointer;
+  js_string_to_mono_string(jsString: string): System_String;
   js_typed_array_to_array(array: Uint8Array): Pointer;
   js_typed_array_to_array<T>(array: Array<T>): Pointer;
   conv_string(dotnetString: System_String | null): string | null;
