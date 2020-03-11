@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 endpoints.MapGet("/", new TargetPickerUi(debugProxyOptions).Display);
 
                 // At this URL, we wire up the actual MonoProxy
-                endpoints.MapGet("/_framework/debug/ws-proxy", async (context) =>
+                endpoints.MapGet("/ws-proxy", async (context) =>
                 {
                     if (!context.WebSockets.IsWebSocketRequest)
                     {

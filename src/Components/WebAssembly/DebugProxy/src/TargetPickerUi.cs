@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 schemeName: incomingRequest.IsHttps ? "wss" : "ws",
                 hostName: incomingRequest.Host.Host)
             {
-                Path = $"{incomingRequest.PathBase}/_framework/debug/ws-proxy",
+                Path = $"{incomingRequest.PathBase}/ws-proxy",
                 Query = $"browser={WebUtility.UrlEncode(browserEndpoint)}"
             };
 
