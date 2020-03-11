@@ -129,6 +129,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        [RequiresNewShim]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         public async Task PreferEnvironmentVariablesOverWebConfigWhenConfigured(HostingModel hostingModel)
