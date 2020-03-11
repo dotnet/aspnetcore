@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
             context.Response.ContentType = "text/html";
 
             var request = context.Request;
-            var targetApplicationUrl = request.Query["applicationurl"];
+            var targetApplicationUrl = request.Query["url"];
 
             var debuggerTabsListUrl = $"{_options.BrowserHost}/json";
             IEnumerable<BrowserTab> availableTabs;

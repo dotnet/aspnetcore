@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Use(async (context, next) =>
                 {
-                    var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl();
+                    var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices);
                     var requestPath = context.Request.Path.ToString();
                     if (requestPath == string.Empty)
                     {

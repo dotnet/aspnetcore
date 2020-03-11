@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs" Link="Shared\DotNetMuxer.cs" />
 
     <!-- Ensure debug proxy is built first, but don't create an actual reference, since we don't want its transitive dependencies. -->
     <ProjectReference
