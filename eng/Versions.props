@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
+    <PreReleasePreviewNumber>3</PreReleasePreviewNumber>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
