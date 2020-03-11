@@ -2,7 +2,7 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
-import { BINDING, MONO } from './MonoTypes';
+
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';

@@ -1,5 +1,4 @@
 import { BootConfigResult } from './BootConfig';
-import { BINDING } from './Mono/MonoTypes';
 import { System_String, Pointer } from './Platform';
 
 export class WebAssemblyConfigLoader {
