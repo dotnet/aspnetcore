@@ -3,35 +3,20 @@
   <PropertyGroup>
     <GetCopyToOutputDirectoryItemsDependsOn>
       $(GetCopyToOutputDirectoryItemsDependsOn);
-      _GenerateDebugProxyConfig;
+      _GenerateDebugProxyCopyToOutputDirectoryItems;
     </GetCopyToOutputDirectoryItemsDependsOn>
 
-    <_DebugProxyDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\tools\'))</_DebugProxyDirectory>
+    <_DebugProxyBinariesDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\tools\'))</_DebugProxyBinariesDirectory>
   </PropertyGroup>
 
-  <Target Name="_GenerateDebugProxyConfig">
-    <PropertyGroup>
-      <_DebugProxyConfigName>$(TargetName).BlazorDebugProxy.config</_DebugProxyConfigName>
-      <_DebugProxyConfigIntermediateOutputPath>$(IntermediateOutputPath)$(_DebugProxyConfigName)</_DebugProxyConfigIntermediateOutputPath>
-    </PropertyGroup>
-
-    <WriteLinesToFile
-      File="$(_DebugProxyConfigIntermediateOutputPath)"
-      Lines="$(_DebugProxyDirectory)"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-
+  <Target Name="_GenerateDebugProxyCopyToOutputDirectoryItems">
     <ItemGroup>
+      <_DebugProxyBinaries Include="$(_DebugProxyBinariesDirectory)**" />
       <ContentWithTargetPath
-        Include="$(_DebugProxyConfigIntermediateOutputPath)">
-        <TargetPath>$(_DebugProxyConfigName)</TargetPath>
+        Include="@(_DebugProxyBinaries)">
+        <TargetPath>BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ContentWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup>
-      <FileWrites Include="$(_DebugProxyConfigIntermediateOutputPath)" />
     </ItemGroup>
   </Target>
 
