@@ -13,6 +13,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" RefProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\ref\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
-    <ProjectReferenceProvider Include="Http.Connections.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Http.Connections.Client.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
   </ItemGroup>
 </Project>
