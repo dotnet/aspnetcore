@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private Http2OutputProducer _http2Output;
         private StreamInputFlowControl _inputFlowControl;
         private StreamOutputFlowControl _outputFlowControl;
+        private Http2MessageBody _messageBody;
 
         private bool _decrementCalled;
 
@@ -170,7 +171,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this);
+        {
+            if (ReceivedEmptyRequestBody)
+            {
+                return MessageBody.ZeroContentLengthClose;
+            }
+
+            if (_messageBody != null)
+            {
+                _messageBody.Reset();
+            }
+            else
+            {
+                _messageBody = new Http2MessageBody(this);
+            }
+
+            return _messageBody;
+        }
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
