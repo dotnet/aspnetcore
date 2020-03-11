@@ -33,7 +33,7 @@
       <!-- Also include in package output -->
       <Content Include="@(DebugProxyBinaries)"
                Pack="true"
-               PackagePath="contentFiles\any\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
+               Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
                PackageCopyToOutput="PreserveNewest" />
     </ItemGroup>
   </Target>
