@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -29,10 +29,12 @@
       <ContentWithTargetPath Include="@(DebugProxyBinaries)"
         TargetPath="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" />
+
       <!-- Also include in package output -->
       <Content Include="@(DebugProxyBinaries)"
-               PackagePath="content\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
-               Pack="true" />
+               Pack="true"
+               PackagePath="contentFiles\any\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
+               PackageCopyToOutput="PreserveNewest" />
     </ItemGroup>
   </Target>
 
