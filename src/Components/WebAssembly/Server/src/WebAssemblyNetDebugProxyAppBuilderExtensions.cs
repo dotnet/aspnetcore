@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -18,26 +16,30 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
         {
-            app.Use((context, next) =>
+            app.Map("/_framework/debug", app =>
             {
-                var requestPath = context.Request.Path;
-                if (!requestPath.StartsWithSegments("/_framework/debug"))
+                app.Use(async (context, next) =>
                 {
-                    return next();
-                }
+                    var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl();
+                    var requestPath = context.Request.Path.ToString();
+                    if (requestPath == string.Empty)
+                    {
+                        requestPath = "/";
+                    }
 
-                if (requestPath.Equals("/_framework/debug/ws-proxy", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new NotImplementedException("TODO: Start up external process, then redirect to it");
-                }
-
-                if (requestPath.Equals("/_framework/debug", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new NotImplementedException("TODO: Start up external process, then redirect to it");
-                }
-
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                    // Although we could redirect for every URL we see here, we filter the allowed set
+                    // to ensure this doesn't get misused as some kind of more general redirector
+                    switch (requestPath)
+                    {
+                        case "/":
+                        case "/ws-proxy":
+                            context.Response.Redirect($"{debugProxyBaseUrl}{requestPath}{context.Request.QueryString}");
+                            break;
+                        default:
+                            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            break;
+                    }
+                });
             });
         }
     }
