@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             var executablePath = LocateDebugProxyExecutable(environment);
-            var muxerPath = DotNetMuxer.MuxerPath;
+            var muxerPath = DotNetMuxer.MuxerPathOrDefault();
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = muxerPath,
