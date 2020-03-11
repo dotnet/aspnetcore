@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
@@ -16,7 +17,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     internal static class DebugProxyLauncher
     {
-        private static object LaunchLock = new object();
+        private static readonly object LaunchLock = new object();
+        private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
         private static Task<string> LaunchedDebugProxyUrl;
 
         public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider)
@@ -34,20 +36,40 @@ namespace Microsoft.AspNetCore.Builder
 
         private static async Task<string> LaunchAndGetUrl(IServiceProvider serviceProvider)
         {
+            var tcs = new TaskCompletionSource<string>();
+
             var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             var executablePath = LocateDebugProxyExecutable(environment);
             var muxerPath = DotNetMuxer.MuxerPathOrDefault();
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = muxerPath,
-                Arguments = $"exec \"{executablePath}\" --urls http://localhost:63001",
+                Arguments = $"exec \"{executablePath}\"",
                 UseShellExecute = false,
+                RedirectStandardOutput = true,
             };
             RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
-            Process.Start(processStartInfo);
 
-            await Task.Delay(1000);
-            return "http://localhost:63001";
+            var debugProxyProcess = Process.Start(processStartInfo);
+            var nowListeningRegex = new Regex("^\\s*Now listening on: (.*)$");
+            debugProxyProcess.OutputDataReceived += (sender, eventArgs) =>
+            {
+                var match = nowListeningRegex.Match(eventArgs.Data);
+                if (match.Success)
+                {
+                    var url = match.Groups[1].Captures[0].Value;
+                    tcs.TrySetResult(url);
+                }
+            };
+            debugProxyProcess.BeginOutputReadLine();
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(DebugProxyLaunchTimeout);
+                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
+            });
+
+            return await tcs.Task;
         }
 
         private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string> environment)
