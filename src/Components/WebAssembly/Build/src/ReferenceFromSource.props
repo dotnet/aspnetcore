@@ -2,12 +2,6 @@
 
   <Import Project="ReferenceBlazorBuildFromSource.props" />
 
-  <!-- Debug proxy support when referencing from source -->
-  <Import Project="..\..\Server\src\build\Microsoft.AspNetCore.Components.WebAssembly.Server.targets" />
-  <PropertyGroup>
-    <_BlazorDebugProxyDirectory>$(MSBuildThisFileDirectory)..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_BlazorDebugProxyDirectory>
-  </PropertyGroup>
-
   <!--
     Debugging support using blazor-devserver serve.
 

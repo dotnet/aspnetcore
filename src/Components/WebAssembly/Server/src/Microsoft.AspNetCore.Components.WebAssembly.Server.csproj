@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,10 +7,25 @@
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
     <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
+
+    <!-- We're deliberately bundling assemblies as content files. Suppress the warning. -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+
+    <!-- Ensure debug proxy is built first, but don't create an actual reference, since we don't want its transitive dependencies. -->
+    <ProjectReference
+      Include="..\..\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj"
+      ReferenceOutputAssembly="false" />
+
+    <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
+    <DebugProxyBinaries Include="..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
+    <Content Include="@(DebugProxyBinaries)"
+             Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             Pack="true" />
   </ItemGroup>
 
 </Project>

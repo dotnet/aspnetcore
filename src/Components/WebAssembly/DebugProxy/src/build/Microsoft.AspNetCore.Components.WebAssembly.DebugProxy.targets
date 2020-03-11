@@ -1,5 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <_BlazorDebugProxyDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\tools\'))</_BlazorDebugProxyDirectory>
-  </PropertyGroup>
-</Project>
