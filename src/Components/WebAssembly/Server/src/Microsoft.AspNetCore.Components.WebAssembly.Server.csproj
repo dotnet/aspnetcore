@@ -19,13 +19,20 @@
     <ProjectReference
       Include="..\..\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj"
       ReferenceOutputAssembly="false" />
-
-    <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
-    <DebugProxyBinaries Include="..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
-    <Content Include="@(DebugProxyBinaries)"
-             Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             Pack="true" />
   </ItemGroup>
+
+  <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
+  <Target Name="IncludeDebugProxyBinariesAsContent" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <DebugProxyBinaries Include="..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
+      <ContentWithTargetPath Include="@(DebugProxyBinaries)"
+        TargetPath="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
+        CopyToOutputDirectory="PreserveNewest" />
+      <!-- Also include in package output -->
+      <Content Include="@(DebugProxyBinaries)"
+               PackagePath="content\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
+               Pack="true" />
+    </ItemGroup>
+  </Target>
 
 </Project>
