@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             while (dataLength > 0)
             {
-                OutputFlowControlAwaitable availabilityAwaitable;
+                ManualResetValueTaskSource<object> availabilityAwaitable;
                 var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // It should be very rare for a continuation to run without any availability.
                 if (availabilityAwaitable != null)
                 {
-                    await availabilityAwaitable;
+                    await new ValueTask<object>(availabilityAwaitable, availabilityAwaitable.Version);
                 }
 
                 flushResult = await writeTask;

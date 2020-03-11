@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         private readonly OutputFlowControl _connectionLevelFlowControl;
         private readonly OutputFlowControl _streamLevelFlowControl;
 
-        private OutputFlowControlAwaitable _currentConnectionLevelAwaitable;
+        private ManualResetValueTaskSource<object> _currentConnectionLevelAwaitable;
 
         public StreamOutputFlowControl(OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
         {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _streamLevelFlowControl.Reset(initialWindowSize);
             if (_currentConnectionLevelAwaitable != null)
             {
-                Debug.Assert(_currentConnectionLevelAwaitable.IsCompleted, "Should have been completed by the previous stream.");
+                Debug.Assert(_currentConnectionLevelAwaitable.GetStatus(_currentConnectionLevelAwaitable.Version) == ValueTaskSourceStatus.Succeeded, "Should have been completed by the previous stream.");
                 _currentConnectionLevelAwaitable = null;
             }
         }
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _streamLevelFlowControl.Advance(bytes);
         }
 
-        public int AdvanceUpToAndWait(long bytes, out OutputFlowControlAwaitable awaitable)
+        public int AdvanceUpToAndWait(long bytes, out ManualResetValueTaskSource<object> awaitable)
         {
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // connection-level awaitable so the stream abort is observed immediately.
             // This could complete an awaitable still sitting in the connection-level awaitable queue,
             // but this is safe because completing it again will just no-op.
-            _currentConnectionLevelAwaitable?.Complete();
+            _currentConnectionLevelAwaitable?.TrySetResult(null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
