@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             var psi = new ProcessStartInfo
             {
-                FileName = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) ? "npm" : "yarn";
+                FileName = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ? "npm" : "yarn";
                 Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" -- -port {port}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 psi.FileName = "cmd";
-                var cmd = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) ? "npm" : "yarn";
+                var cmd = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ? "npm" : "yarn";
                 psi.Arguments = $"/c {cmd} {psi.Arguments}";
             }
 
