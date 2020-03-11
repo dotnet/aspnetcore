@@ -880,6 +880,54 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.True(result.IsSuccessStatusCode);
         }
 
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherPathIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_PATH"] = "nope";
+            var result = await DeployAsync(deploymentParameters);
+            var response = await result.HttpClient.GetAsync("/");
+
+            if (hostingModel == HostingModel.InProcess)
+            {
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            }
+            else
+            {
+                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+            }
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherArgsIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_ARGS"] = "fail";
+            var result = await DeployAsync(deploymentParameters);
+            var response = await result.HttpClient.GetAsync("/");
+
+            if (hostingModel == HostingModel.InProcess)
+            {
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            }
+            else
+            {
+                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+            }
+        }
+
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
         {
             var entries = GetEventLogsFromDotnetRuntime(deploymentResult);

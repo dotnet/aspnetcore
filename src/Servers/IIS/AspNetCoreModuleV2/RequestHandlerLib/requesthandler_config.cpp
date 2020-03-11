@@ -7,6 +7,7 @@
 #include "environmentvariablehash.h"
 #include "exceptions.h"
 #include "config_utility.h"
+#include "Environment.h"
 
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {
@@ -101,6 +102,8 @@ REQUESTHANDLER_CONFIG::Populate(
     BSTR                            bstrBasicAuthSection = NULL;
     BSTR                            bstrAnonymousAuthSection = NULL;
     BSTR                            bstrAspNetCoreSection = NULL;
+    auto launcherPathEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_PATH);
+    auto launcherArgsEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS);
 
     pAdminManager = pHttpServer->GetAdminManager();
     try
@@ -248,12 +251,43 @@ REQUESTHANDLER_CONFIG::Populate(
         goto Finished;
     }
 
-    hr = GetElementStringProperty(pAspNetCoreElement,
-        CS_ASPNETCORE_PROCESS_EXE_PATH,
-        &m_struProcessPath);
-    if (FAILED(hr))
+    // We prefer the environment variables for LAUNCHER_PATH and LAUNCHER_ARGS
+    if (launcherPathEnv.has_value())
     {
-        goto Finished;
+        hr = m_struProcessPath.Copy(launcherPathEnv.value().c_str());
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+    else
+    {
+        hr = GetElementStringProperty(pAspNetCoreElement,
+            CS_ASPNETCORE_PROCESS_EXE_PATH,
+            &m_struProcessPath);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+
+    if (launcherArgsEnv.has_value())
+    {
+        hr = m_struArguments.Copy(launcherArgsEnv.value().c_str());
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+    else
+    {
+        hr = GetElementStringProperty(pAspNetCoreElement,
+            CS_ASPNETCORE_PROCESS_ARGUMENTS,
+            &m_struArguments);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
     }
 
     hr = GetElementStringProperty(pAspNetCoreElement,
@@ -278,14 +312,6 @@ REQUESTHANDLER_CONFIG::Populate(
     {
         // block unknown hosting value
         hr = HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
-        goto Finished;
-    }
-
-    hr = GetElementStringProperty(pAspNetCoreElement,
-        CS_ASPNETCORE_PROCESS_ARGUMENTS,
-        &m_struArguments);
-    if (FAILED(hr))
-    {
         goto Finished;
     }
 
