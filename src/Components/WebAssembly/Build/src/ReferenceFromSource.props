@@ -3,9 +3,9 @@
   <Import Project="ReferenceBlazorBuildFromSource.props" />
 
   <!-- Debug proxy support when referencing from source -->
-  <Import Project="..\..\DebugProxy\src\build\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.targets" />
+  <Import Project="..\..\Server\src\build\Microsoft.AspNetCore.Components.WebAssembly.Server.targets" />
   <PropertyGroup>
-    <_DebugProxyDirectory>$(MSBuildThisFileDirectory)..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_DebugProxyDirectory>
+    <_BlazorDebugProxyDirectory>$(MSBuildThisFileDirectory)..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_BlazorDebugProxyDirectory>
   </PropertyGroup>
 
   <!--

@@ -1,38 +1,5 @@
 <Project>
-
   <PropertyGroup>
-    <GetCopyToOutputDirectoryItemsDependsOn>
-      $(GetCopyToOutputDirectoryItemsDependsOn);
-      _GenerateDebugProxyConfig;
-    </GetCopyToOutputDirectoryItemsDependsOn>
-
-    <_DebugProxyDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\tools\'))</_DebugProxyDirectory>
+    <_BlazorDebugProxyDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\tools\'))</_BlazorDebugProxyDirectory>
   </PropertyGroup>
-
-  <Target Name="_GenerateDebugProxyConfig">
-    <PropertyGroup>
-      <_DebugProxyConfigName>$(TargetName).BlazorDebugProxy.config</_DebugProxyConfigName>
-      <_DebugProxyConfigIntermediateOutputPath>$(IntermediateOutputPath)$(_DebugProxyConfigName)</_DebugProxyConfigIntermediateOutputPath>
-    </PropertyGroup>
-
-    <WriteLinesToFile
-      File="$(_DebugProxyConfigIntermediateOutputPath)"
-      Lines="$(_DebugProxyDirectory)"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-
-    <ItemGroup>
-      <ContentWithTargetPath
-        Include="$(_DebugProxyConfigIntermediateOutputPath)">
-        <TargetPath>$(_DebugProxyConfigName)</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </ContentWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup>
-      <FileWrites Include="$(_DebugProxyConfigIntermediateOutputPath)" />
-    </ItemGroup>
-  </Target>
-
 </Project>
