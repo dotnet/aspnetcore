@@ -20,6 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
+$InstallDir = '.' # Use workload directory always
 
 Set-StrictMode -Version 1
 
