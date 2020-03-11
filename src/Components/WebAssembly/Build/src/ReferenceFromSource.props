@@ -5,7 +5,7 @@
   <!-- Debug proxy support when referencing from source -->
   <Import Project="..\..\DebugProxy\src\build\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.targets" />
   <PropertyGroup>
-    <_DebugProxyBinariesDirectory>$(MSBuildThisFileDirectory)..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_DebugProxyBinariesDirectory>
+    <_DebugProxyDirectory>$(MSBuildThisFileDirectory)..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</_DebugProxyDirectory>
   </PropertyGroup>
 
   <!--
