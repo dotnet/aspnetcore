@@ -23,16 +23,4 @@
     <Reference Include="Mono.Cecil" />
   </ItemGroup>
 
-  <!-- Pack settings -->
-  <PropertyGroup>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NuspecFile>Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.nuspec</NuspecFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="componentsrootdir=..\..\..\" />
-  </ItemGroup>
-
 </Project>
