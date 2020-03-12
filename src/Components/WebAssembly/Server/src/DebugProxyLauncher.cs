@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly object LaunchLock = new object();
         private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
         private static Task<string> LaunchedDebugProxyUrl;
+        private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
+        private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
 
         public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider)
         {
@@ -52,21 +55,10 @@ namespace Microsoft.AspNetCore.Builder
             RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
             var debugProxyProcess = Process.Start(processStartInfo);
-            var nowListeningRegex = new Regex("^\\s*Now listening on: (.*)$");
-            debugProxyProcess.OutputDataReceived += (sender, eventArgs) =>
-            {
-                var match = nowListeningRegex.Match(eventArgs.Data);
-                if (match.Success)
-                {
-                    var url = match.Groups[1].Captures[0].Value;
-                    tcs.TrySetResult(url);
-                }
-            };
-            debugProxyProcess.BeginOutputReadLine();
+            CompleteTaskWhenServerIsReady(debugProxyProcess, tcs);
 
-            _ = Task.Run(async () =>
+            new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
             {
-                await Task.Delay(DebugProxyLaunchTimeout);
                 tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
             });
 
@@ -105,7 +97,7 @@ namespace Microsoft.AspNetCore.Builder
             return debugProxyPath;
         }
 
-        internal static string GetAssemblyLocation(Assembly assembly)
+        private static string GetAssemblyLocation(Assembly assembly)
         {
             if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) &&
                 result.IsFile && string.IsNullOrWhiteSpace(result.Fragment))
@@ -114,6 +106,38 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return assembly.Location;
+        }
+
+        private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
+        {
+            string capturedUrl = null;
+            aspNetProcess.OutputDataReceived += OnOutputDataReceived;
+            aspNetProcess.BeginOutputReadLine();
+
+            void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
+            {
+                if (ApplicationStartedRegex.IsMatch(eventArgs.Data))
+                {
+                    aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
+                    if (!string.IsNullOrEmpty(capturedUrl))
+                    {
+                        taskCompletionSource.TrySetResult(capturedUrl);
+                    }
+                    else
+                    {
+                        taskCompletionSource.TrySetException(new InvalidOperationException(
+                            "The application started listening without first advertising a URL"));
+                    }
+                }
+                else
+                {
+                    var match = NowListeningRegex.Match(eventArgs.Data);
+                    if (match.Success)
+                    {
+                        capturedUrl = match.Groups["url"].Value;
+                    }
+                }
+            }
         }
     }
 }
