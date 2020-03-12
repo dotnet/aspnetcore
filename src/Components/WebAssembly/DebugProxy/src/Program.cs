@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -64,7 +63,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 if (ownerPidOption.HasValue())
                 {
                     var ownerProcess = Process.GetProcessById(int.Parse(ownerPidOption.Value()));
-                    _ = ExitWhenOwnerProcessExits(ownerProcess, host);
+                    ownerProcess.EnableRaisingEvents = true;
+                    ownerProcess.Exited += async (sender, eventArgs) =>
+                    {
+                        Console.WriteLine("Exiting because parent process has exited");
+                        await host.StopAsync();
+                    };
                 }
 
                 host.Run();
@@ -81,20 +85,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
                 app.Error.WriteLine(cex.Message);
                 app.ShowHelp();
                 return 1;
-            }
-        }
-
-        private static async Task ExitWhenOwnerProcessExits(Process ownerProcess, IHost host)
-        {
-            while (true)
-            {
-                if (ownerProcess.HasExited)
-                {
-                    Console.WriteLine("Exiting because parent process has exited");
-                    await host.StopAsync();
-                }
-                
-                await Task.Delay(1000);
             }
         }
     }
