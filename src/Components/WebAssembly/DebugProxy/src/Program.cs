@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
 
                         // By default we bind to a dyamic port
                         // This can be overridden using an option like "--urls http://localhost:9500"
-                        webBuilder.UseUrls($"http://127.0.0.1:0");
+                        webBuilder.UseUrls("http://127.0.0.1:0");
                     })
                     .ConfigureServices(serviceCollection =>
                     {
