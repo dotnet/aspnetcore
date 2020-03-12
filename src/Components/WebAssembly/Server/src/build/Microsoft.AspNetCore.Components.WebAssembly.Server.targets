@@ -1,7 +1,7 @@
 <Project>
 
   <Target Name="_IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths"
-        Condition="'$(BlazorWebAssemblyOmitDebugProxyOutput)' != 'true'">
+          Condition="'$(BlazorWebAssemblyOmitDebugProxyOutput)' != 'true'">
 
     <ItemGroup>
       <_DebugProxyBinaries Include="$(MSBuildThisFileDirectory)..\tools\BlazorDebugProxy\**" />
