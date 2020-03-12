@@ -1,5 +1,8 @@
 <Project>
-  <Task Name="_IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths">
+
+  <Task Name="_IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths"
+        Condition="'$(BlazorWebAssemblyOmitDebugProxyOutput)' != 'true'">
+
     <ItemGroup>
       <_DebugProxyBinaries Include="$(MSBuildThisFileDirectory)..\tools\BlazorDebugProxy\**" />
       <Content
@@ -7,5 +10,7 @@
         Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
   </Task>
+
 </Project>
