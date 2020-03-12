@@ -82,9 +82,8 @@ namespace Microsoft.AspNetCore.Builder
         private static string LocateDebugProxyExecutable(IWebHostEnvironment environment)
         {
             var assembly = Assembly.Load(environment.ApplicationName);
-            var assemblyLocation = GetAssemblyLocation(assembly);
             var debugProxyPath = Path.Combine(
-                Path.GetDirectoryName(assemblyLocation),
+                Path.GetDirectoryName(assembly.Location),
                 "BlazorDebugProxy",
                 "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.dll");
 
@@ -95,17 +94,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return debugProxyPath;
-        }
-
-        private static string GetAssemblyLocation(Assembly assembly)
-        {
-            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) &&
-                result.IsFile && string.IsNullOrWhiteSpace(result.Fragment))
-            {
-                return result.LocalPath;
-            }
-
-            return assembly.Location;
         }
 
         private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
