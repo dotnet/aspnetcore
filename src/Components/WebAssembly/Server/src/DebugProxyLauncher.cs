@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (!File.Exists(debugProxyPath))
             {
-                throw new InvalidOperationException(
+                throw new FileNotFoundException(
                     $"Cannot start debug proxy because it cannot be found at '{debugProxyPath}'");
             }
 
