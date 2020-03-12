@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         }
 
-        public WebAssemblyConsoleLogger(IJSInProcessRuntime jsRuntime)
-            : this(string.Empty, jsRuntime)
+        public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
+            : this(string.Empty, (IJSInProcessRuntime)jsRuntime) // Cast for DI
         {
         }
 
