@@ -1,9 +1,9 @@
-import { System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
+import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
 
-let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
+let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
@@ -47,7 +47,7 @@ export const monoPlatform: Platform = {
     // FIXME this is unsafe, cuz raw objects could be GC'd.
 
     const utf8 = mono_string_get_utf8(managedString);
-    const res = Module.UTF8ToString(utf8);
+    const res = (<any>window['Module']).UTF8ToString(utf8);
     Module._free(utf8 as any);
     return res;
   },
@@ -168,7 +168,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   };
   module.preRun = [];
   module.postRun = [];
-  module.preloadPlugins = [];
+  (module as any).preloadPlugins = [];
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
   module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
@@ -258,10 +258,10 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function bindStaticMethod(assembly: string, typeName: string, method: string) : (...args: any[]) => any {
+function bindStaticMethod(assembly: string, typeName: string, method: string) {
   // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
   const fqn = `[${assembly}] ${typeName}:${method}`;
-  return Module.mono_bind_static_method(fqn);
+  return BINDING.bind_static_method(fqn);
 }
 
 function attachInteropInvoker(): void {

@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -59,6 +62,41 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 return Services.BuildServiceProvider();
             };
+
+            InitializeEnvironment();
+        }
+
+        private void InitializeEnvironment()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
+            {
+                // The remainder of this method relies on the ability to make .NET WebAssembly-specific JSInterop calls.
+                // Note that this short-circuit exists as a way for unit tests running in .NET Core without JSInterop to run.
+                return;
+            }
+
+            var applicationEnvironment = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            Services.AddSingleton<IWebAssemblyHostEnvironment>(new WebAssemblyHostEnvironment(applicationEnvironment));
+
+            var configFiles = new[]
+            {
+                "appsettings.json",
+                $"appsettings.{applicationEnvironment}.json"
+            };
+
+            foreach (var configFile in configFiles)
+            {
+                var appSettingsJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
+                    "Blazor._internal.getConfig",
+                    configFile);
+
+                if (appSettingsJson != null)
+                {
+                    // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
+                    // for Configuration, of where there are several.
+                    Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
+                }
+            }
         }
 
         /// <summary>
@@ -130,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());
         }
 
-        private void InitializeDefaultServices()
+        internal void InitializeDefaultServices()
         {
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);

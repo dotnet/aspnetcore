@@ -40,6 +40,8 @@
         $(ComponentsWebAssemblyFrameworkPath)" />
 
       <_WebAssemblyBCLAssembly Include="%(_WebAssemblyBCLFolder.Identity)*.dll" />
+
+      <_BlazorConfigFile Include="wwwroot\appsettings*.json" />
     </ItemGroup>
 
     <!--
@@ -298,12 +300,43 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_GenerateBlazorBootJsonInputHash">
+    <ItemGroup>
+      <_BlazorBootJsonHashInput Include="@(IntermediateAssembly)" />
+      <_BlazorBootJsonHashInput Include="@(_BlazorOutputWithTargetPath)" />
+      <_BlazorBootJsonHashInput Include="@(_BlazorConfigFile)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_BlazorBootJsonHashInput)">
+      <Output TaskParameter="HashResult" PropertyName="_BlazorBootJsonInputHash" />
+    </Hash>
+
+    <PropertyGroup>
+      <_BlazorBootJsonInputHashFile>$(_BlazorIntermediateOutputPath)boot.json.input</_BlazorBootJsonInputHashFile>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      Lines="$(_BlazorBootJsonInputHash)"
+      File="$(_BlazorBootJsonInputHashFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+  </Target>
+
   <UsingTask TaskName="GenerateBlazorBootJson" AssemblyFile="$(_BlazorTasksPath)" />
 
   <Target
     Name="_GenerateBlazorBootJson"
-    Inputs="$(MSBuildAllProjects);@(_BlazorOutputWithTargetPath)"
+    DependsOnTargets="_GenerateBlazorBootJsonInputHash"
+    Inputs="$(MSBuildAllProjects);@(_BlazorOutputWithTargetPath);$(_BlazorBootJsonInputHashFile)"
     Outputs="$(_BlazorBootJsonIntermediateOutputPath)">
+
+    <PropertyGroup>
+      <_IsDebugBuild>false</_IsDebugBuild>
+      <_IsDebugBuild Condition="'$(Configuration)' == 'Debug'">true</_IsDebugBuild>
+      <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+    </PropertyGroup>
+
     <ItemGroup>
       <_BlazorBootResource Include="@(_BlazorOutputWithTargetPath->HasMetadata('BootManifestResourceType'))" />
     </ItemGroup>
@@ -312,18 +345,14 @@
       <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHash" />
     </GetFileHash>
 
-    <PropertyGroup>
-      <_IsDebugBuild>false</_IsDebugBuild>
-      <_IsDebugBuild Condition="'$(Configuration)' == 'Debug'">true</_IsDebugBuild>
-      <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
-    </PropertyGroup>
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_BlazorBootResourceWithHash)"
       DebugBuild="$(_IsDebugBuild)"
       LinkerEnabled="$(BlazorWebAssemblyEnableLinking)"
       CacheBootResources="$(BlazorCacheBootResources)"
-      OutputPath="$(_BlazorBootJsonIntermediateOutputPath)" />
+      OutputPath="$(_BlazorBootJsonIntermediateOutputPath)"
+      ConfigurationFiles="@(_BlazorConfigFile)" />
 
     <ItemGroup>
       <_BlazorOutputWithTargetPath Include="$(_BlazorBootJsonIntermediateOutputPath)" TargetOutputPath="$(_BaseBlazorRuntimeOutputPath)$(_BlazorBootJsonName)" />

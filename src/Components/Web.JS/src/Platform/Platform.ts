@@ -1,4 +1,4 @@
-import { WebAssemblyResourceLoader } from "./WebAssemblyResourceLoader";
+import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
 
 export interface Platform {
   start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
