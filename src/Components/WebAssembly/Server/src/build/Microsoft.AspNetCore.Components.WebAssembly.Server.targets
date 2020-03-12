@@ -1,6 +1,6 @@
 <Project>
 
-  <Task Name="_IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths"
+  <Target Name="_IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths"
         Condition="'$(BlazorWebAssemblyOmitDebugProxyOutput)' != 'true'">
 
     <ItemGroup>
@@ -11,6 +11,6 @@
         CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
-  </Task>
+  </Target>
 
 </Project>
