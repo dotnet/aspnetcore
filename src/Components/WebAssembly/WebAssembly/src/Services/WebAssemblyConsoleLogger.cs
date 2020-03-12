@@ -25,6 +25,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         }
 
+        public WebAssemblyConsoleLogger(IJSInProcessRuntime jsRuntime)
+            : this(string.Empty, jsRuntime)
+        {
+        }
+
         public WebAssemblyConsoleLogger(string name, IJSInProcessRuntime jsRuntime)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
