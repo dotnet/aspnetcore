@@ -27,6 +27,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2ConnectionTests : Http2TestBase
     {
         [Fact]
+        public async Task FlowControl_MultipleStreams_FirstInFirstOutOrder()
+        {
+            await InitializeConnectionAsync(async c =>
+            {
+                // Send headers
+                await c.Response.Body.FlushAsync();
+
+                // Send large data (1 larger than window size)
+                await c.Response.Body.WriteAsync(new byte[65536]);
+            });
+
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            // Ensure the stream window size is large enough
+            await SendWindowUpdateAsync(streamId: 1, 65536);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 33,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16383,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // 1 byte is remaining
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+            // Ensure the stream window size is large enough
+            await SendWindowUpdateAsync(streamId: 3, 65536);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 33,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // FIFO means stream 1 returns data first
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
         {
             IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
