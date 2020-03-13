@@ -86,10 +86,12 @@ namespace Microsoft.AspNetCore.E2ETesting
             var port = FindAvailablePort();
             var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
 
-            var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.Testing.SeleniumConfigPath")
-                ?.Value;
+            var seleniumConfigPath = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) ? 
+                typeof(SeleniumStandaloneServer).Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.Testing.SeleniumConfigPath")
+                    ?.Value
+                : "selenium-config.json";
 
             if (seleniumConfigPath == null)
             {
