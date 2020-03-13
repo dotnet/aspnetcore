@@ -102,8 +102,8 @@ REQUESTHANDLER_CONFIG::Populate(
     BSTR                            bstrBasicAuthSection = NULL;
     BSTR                            bstrAnonymousAuthSection = NULL;
     BSTR                            bstrAspNetCoreSection = NULL;
-    auto launcherPathEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_PATH);
-    auto launcherArgsEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS);
+    std::optional<std::wstring> launcherPathEnv;
+    std::optional<std::wstring> launcherArgsEnv;
 
     pAdminManager = pHttpServer->GetAdminManager();
     try
@@ -252,13 +252,20 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     // We prefer the environment variables for LAUNCHER_PATH and LAUNCHER_ARGS
+    try
+    {
+        launcherPathEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_PATH);
+        launcherArgsEnv = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS);
+    }
+    catch(...)
+    {
+        FINISHED_IF_FAILED(E_FAIL);
+    }
+
     if (launcherPathEnv.has_value())
     {
         hr = m_struProcessPath.Copy(launcherPathEnv.value().c_str());
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(hr);
     }
     else
     {
@@ -274,10 +281,7 @@ REQUESTHANDLER_CONFIG::Populate(
     if (launcherArgsEnv.has_value())
     {
         hr = m_struArguments.Copy(launcherArgsEnv.value().c_str());
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(hr);
     }
     else
     {

@@ -890,18 +890,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
 
-            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_PATH"] = "nope";
-            var result = await DeployAsync(deploymentParameters);
-            var response = await result.HttpClient.GetAsync("/");
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_PATH"] = _dotnetLocation;
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nope"));
 
-            if (hostingModel == HostingModel.InProcess)
-            {
-                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            }
-            else
-            {
-                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
-            }
+            await StartAsync(deploymentParameters);
         }
 
         [ConditionalTheory]
@@ -913,19 +905,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         public async Task EnvironmentVariableForLauncherArgsIsPreferred(HostingModel hostingModel)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            using var publishedApp = await deploymentParameters.ApplicationPublisher.Publish(deploymentParameters, LoggerFactory.CreateLogger("test"));
 
-            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_ARGS"] = "fail";
-            var result = await DeployAsync(deploymentParameters);
-            var response = await result.HttpClient.GetAsync("/");
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_ARGS"] = Path.ChangeExtension(Path.Combine(publishedApp.Path, deploymentParameters.ApplicationPublisher.ApplicationPath), ".dll");
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", "nope"));
 
-            if (hostingModel == HostingModel.InProcess)
-            {
-                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            }
-            else
-            {
-                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
-            }
+            await StartAsync(deploymentParameters);
         }
 
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
