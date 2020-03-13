@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await c.Response.Body.WriteAsync(new byte[65536]);
             });
 
-
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             // Ensure the stream window size is large enough
             await SendWindowUpdateAsync(streamId: 1, 65536);

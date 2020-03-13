@@ -7,6 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
+    /// <summary>
+    /// ReusableQueue is very similar to Queue, the main difference being that dequeued items are left
+    /// in the backing array. <see cref="TryEnqueueExisting"/> will attempt to re-enqueue an existing
+    /// dequeued item, allowing you to reuse that instance.
+    /// </summary>
     public class ReusableQueue<T> where T : class
     {
         private T[] _array;
