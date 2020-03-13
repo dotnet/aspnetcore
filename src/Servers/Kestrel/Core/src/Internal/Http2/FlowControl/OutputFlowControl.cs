@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                 // to save allocating a new instance.
                 if (_awaitableQueue.TryEnqueueExisting(out var awaitable))
                 {
+                    Debugger.Launch();
                     awaitable.Reset();
                 }
                 else
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // When output flow control is reused the client window size needs to be reset.
             // The client might have changed the window size before the stream is reused.
             _flow = new FlowControl(initialWindowSize);
-            Debug.Assert(_awaitableQueue.Count == 0, "Queue should have been emptied by the previous stream.");
+            Debug.Assert((_awaitableQueue?.Count ?? 0) == 0, "Queue should have been emptied by the previous stream.");
         }
 
         public void Advance(int bytes)
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         {
             if (_flow.TryUpdateWindow(bytes))
             {
-                while (_flow.Available > 0 && _awaitableQueue?.Count >= 0)
+                while (_flow.Available > 0 && _awaitableQueue?.Count > 0)
                 {
                     _awaitableQueue.Dequeue().TrySetResult(null);
                 }
