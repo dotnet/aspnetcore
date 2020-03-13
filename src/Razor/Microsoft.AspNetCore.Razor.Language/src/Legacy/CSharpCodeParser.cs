@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         ParseCodeBlock(builder, block);
 
                         // ParseCodeBlock is responsible for parsing the insides of a code block (non-inclusive of braces).
-                        // Therefore, there's one of two cases after parsing: 
+                        // Therefore, there's one of two cases after parsing:
                         //  1. We've hit the End of File (incomplete parse block).
                         //  2. It's a complete parse block and we're at a right brace.
 
