@@ -81,10 +81,6 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>540b4e8f129a132749a60174464b8c8274bfed7d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="5.0.0-preview.3.20156.3" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>540b4e8f129a132749a60174464b8c8274bfed7d</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.3.20156.3" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>540b4e8f129a132749a60174464b8c8274bfed7d</Sha>
