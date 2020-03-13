@@ -386,6 +386,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [SkipOnHelix("", Queues = "Ubuntu.1604.Amd64.Open;Windows.10.Amd64.Open")]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "This check only applies to Mac OS as it is the one that checks the key for validity.")]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "This check only applies to Mac OS as it is the one that checks the key for validity.")]
         public async Task DevCertWithInvalidPrivateKeyProducesCustomWarning()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();

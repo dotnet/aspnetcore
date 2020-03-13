@@ -89,7 +89,7 @@ namespace Templates.Test.Helpers
         internal void EnsureDevelopmentCertificates()
         {
             var now = DateTimeOffset.Now;
-            var manager = new CertificateManager();
+            var manager = CertificateManager.Instance;
             var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), "CN=localhost");
             manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
