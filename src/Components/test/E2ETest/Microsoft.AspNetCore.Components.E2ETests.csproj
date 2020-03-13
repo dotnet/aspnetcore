@@ -18,6 +18,7 @@
     <TestDependsOnNode>true</TestDependsOnNode>
     <TestDependsOnJava>true</TestDependsOnJava>
     <TestDependsOnYarn>true</TestDependsOnYarn>
+    <TestDependsOnChrome>true</TestDependsOnChrome>
   </PropertyGroup>
 
   <ItemGroup>
