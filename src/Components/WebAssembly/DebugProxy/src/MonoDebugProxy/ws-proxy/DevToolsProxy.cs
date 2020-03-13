@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -11,12 +11,45 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace WebAssembly.Net.Debugging {
-	internal class SessionId {
-		public string sessionId;
+	internal struct SessionId {
+		public readonly string sessionId;
+
+		public SessionId (string sessionId)
+		{
+			this.sessionId = sessionId;
+		}
+
+		public override int GetHashCode ()
+			=> sessionId?.GetHashCode () ?? 0;
+
+		public override bool Equals (object obj)
+			=> (obj is SessionId) ? ((SessionId) obj).sessionId == sessionId : false;
+
+		public override string ToString ()
+			=> $"session-{sessionId}";
 	}
 
-	internal class MessageId : SessionId {
-		public int id;
+	internal struct MessageId {
+		public readonly string sessionId;
+		public readonly int id;
+
+		public MessageId (string sessionId, int id)
+		{
+			this.sessionId = sessionId;
+			this.id = id;
+		}
+
+		public static implicit operator SessionId (MessageId id)
+			=> new SessionId (id.sessionId);
+
+		public override string ToString ()
+			=> $"msg-{sessionId}:::{id}";
+
+		public override int GetHashCode ()
+			=> (sessionId?.GetHashCode () ?? 0) ^ id.GetHashCode ();
+
+		public override bool Equals (object obj)
+			=> (obj is MessageId) ? ((MessageId) obj).sessionId == sessionId && ((MessageId) obj).id == id : false;
 	}
 
 	internal struct Result {
@@ -28,17 +61,17 @@ namespace WebAssembly.Net.Debugging {
 
 		Result (JObject result, JObject error)
 		{
-                       if (result != null && error != null)
-                               throw new ArgumentException ($"Both {nameof(result)} and {nameof(error)} arguments cannot be non-null.");
+			if (result != null && error != null)
+				throw new ArgumentException ($"Both {nameof(result)} and {nameof(error)} arguments cannot be non-null.");
 
-                       bool resultHasError = String.Compare ((result? ["result"] as JObject)? ["subtype"]?. Value<string> (), "error") == 0;
-                       if (result != null && resultHasError) {
-                               this.Value = null;
-                               this.Error = result;
-                       } else {
-                               this.Value = result;
-                               this.Error = error;
-                       }
+			bool resultHasError = String.Compare ((result? ["result"] as JObject)? ["subtype"]?. Value<string> (), "error") == 0;
+			if (result != null && resultHasError) {
+				this.Value = null;
+				this.Error = result;
+			} else {
+				this.Value = result;
+				this.Error = error;
+			}
 		}
 
 		public static Result FromJson (JObject obj)
@@ -120,12 +153,13 @@ namespace WebAssembly.Net.Debugging {
 	internal class DevToolsProxy {
 		TaskCompletionSource<bool> side_exception = new TaskCompletionSource<bool> ();
 		TaskCompletionSource<bool> client_initiated_close = new TaskCompletionSource<bool> ();
-		List<(MessageId, TaskCompletionSource<Result>)> pending_cmds = new List<(MessageId, TaskCompletionSource<Result>)> ();
+		Dictionary<MessageId, TaskCompletionSource<Result>> pending_cmds = new Dictionary<MessageId, TaskCompletionSource<Result>> ();
 		ClientWebSocket browser;
 		WebSocket ide;
 		int next_cmd_id;
 		List<Task> pending_ops = new List<Task> ();
 		List<DevToolsQueue> queues = new List<DevToolsQueue> ();
+
 		protected readonly ILogger logger;
 
 		public DevToolsProxy (ILoggerFactory loggerFactory)
@@ -219,11 +253,11 @@ namespace WebAssembly.Net.Debugging {
 		{
 			//logger.LogTrace ("got id {0} res {1}", id, result);
 			// Fixme
-			var idx = pending_cmds.FindIndex (e => e.Item1.id == id.id && e.Item1.sessionId == id.sessionId);
-			var item = pending_cmds [idx];
-			pending_cmds.RemoveAt (idx);
-
-			item.Item2.SetResult (result);
+			if (pending_cmds.Remove (id, out var task)) {
+				task.SetResult (result);
+				return;
+			}
+			logger.LogError ("Cannot respond to command: {id} with result: {result} - command is not pending", id, result);
 		}
 
 		void ProcessBrowserMessage (string msg, CancellationToken token)
@@ -232,9 +266,9 @@ namespace WebAssembly.Net.Debugging {
 			var res = JObject.Parse (msg);
 
 			if (res ["id"] == null)
-				pending_ops.Add (OnEvent (new SessionId { sessionId = res ["sessionId"]?.Value<string> () }, res ["method"].Value<string> (), res ["params"] as JObject, token));
+				pending_ops.Add (OnEvent (new SessionId (res ["sessionId"]?.Value<string> ()), res ["method"].Value<string> (), res ["params"] as JObject, token));
 			else
-				OnResponse (new MessageId { id = res ["id"].Value<int> (), sessionId = res ["sessionId"]?.Value<string> () }, Result.FromJson (res));
+				OnResponse (new MessageId (res ["sessionId"]?.Value<string> (), res ["id"].Value<int> ()), Result.FromJson (res));
 		}
 
 		void ProcessIdeMessage (string msg, CancellationToken token)
@@ -242,7 +276,10 @@ namespace WebAssembly.Net.Debugging {
 			Log ("protocol", $"ide: {msg}");
 			if (!string.IsNullOrEmpty (msg)) {
 				var res = JObject.Parse (msg);
-				pending_ops.Add (OnCommand (new MessageId { id = res ["id"].Value<int> (), sessionId = res ["sessionId"]?.Value<string> () }, res ["method"].Value<string> (), res ["params"] as JObject, token));
+				pending_ops.Add (OnCommand (
+						new MessageId (res ["sessionId"]?.Value<string> (), res ["id"].Value<int> ()),
+						res ["method"].Value<string> (),
+						res ["params"] as JObject, token));
 			}
 		}
 
@@ -263,9 +300,9 @@ namespace WebAssembly.Net.Debugging {
 			});
 			var tcs = new TaskCompletionSource<Result> ();
 
-			var msgId = new MessageId { id = id, sessionId = sessionId.sessionId };
+			var msgId = new MessageId (sessionId.sessionId, id);
 			//Log ("verbose", $"add cmd id {sessionId}-{id}");
-			pending_cmds.Add ((msgId , tcs));
+			pending_cmds[msgId] = tcs;
 
 			Send (this.browser, o, token);
 			return tcs.Task;
