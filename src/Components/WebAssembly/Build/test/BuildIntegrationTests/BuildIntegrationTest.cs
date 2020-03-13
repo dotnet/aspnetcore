@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
@@ -133,9 +134,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.CodeAnalysis.CSharp.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
 
-            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
-            Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
-            Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
+            var bootJson = JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(
+                File.ReadAllText(Path.Combine(project.DirectoryPath, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            var satelliteResources = bootJson.resources.satelliteResources;
+            Assert.NotNull(satelliteResources);
+            Assert.Contains("es-ES/classlibrarywithsatelliteassemblies.resources.dll", satelliteResources["es-ES"].Keys);
+            Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
+            Assert.Contains("ja/standalone.resources.dll", satelliteResources["ja"].Keys);
         }
     }
 }

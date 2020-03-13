@@ -1,4 +1,4 @@
-import { Pointer, System_String } from '../Platform';
+import { Pointer, System_String, System_Array, System_Object } from '../Platform';
 
 // Mono uses this global to hang various debugging-related items on
 
@@ -10,9 +10,12 @@ declare interface MONO {
 
 // Mono uses this global to hold low-level interop APIs
 declare interface BINDING {
+  mono_obj_array_new(length: number): System_Array<System_Object>;
+  mono_obj_array_set(array: System_Array<System_Object>, index: Number, value: Pointer): void;
   js_string_to_mono_string(jsString: string): System_String;
   js_typed_array_to_array(array: Uint8Array): Pointer;
-  js_typed_array_to_array<T>(array: Array<T>): Pointer;
+  js_to_mono_obj(jsObject: any) : Pointer;
+  mono_array_to_js_array<T>(object: Pointer) : Array<T>;
   conv_string(dotnetString: System_String | null): string | null;
   bind_static_method(fqn: string, signature?: string): Function;
 }

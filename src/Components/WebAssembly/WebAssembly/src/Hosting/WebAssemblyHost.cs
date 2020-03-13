@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
 
+        internal SatelliteResourcesLoader SatelliteResourcesLoader { get; set; } = SatelliteResourcesLoader.Instance;
+
         /// <summary>
         /// Disposes the host asynchronously.
         /// </summary>
@@ -131,6 +133,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     var rootComponent = rootComponents[i];
                     await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector);
                 }
+
+                // Users may want to configure the culture based on some ambient state such as local storage, url etc.
+                // If they have changed the culture since the initial load, fetch satellite assemblies for this selection.
+                await SatelliteResourcesLoader.LoadCurrentCultureResourcesAsync();
 
                 await tcs.Task;
             }

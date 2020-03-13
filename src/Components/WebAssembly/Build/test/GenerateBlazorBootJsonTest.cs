@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Json;
 using Microsoft.Build.Framework;
 using Moq;
 using Xunit;
 using BootJsonData = Microsoft.AspNetCore.Components.WebAssembly.Build.GenerateBlazorBootJson.BootJsonData;
-using ResourceType = Microsoft.AspNetCore.Components.WebAssembly.Build.GenerateBlazorBootJson.ResourceType;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 {
@@ -23,24 +23,42 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 Resources = new[]
                 {
                     CreateResourceTaskItem(
-                        ResourceType.assembly,
+                        "assembly",
                         name: "My.Assembly1.ext", // Can specify filename with no dir
                         fileHash: "abcdefghikjlmnopqrstuvwxyz"),
 
                     CreateResourceTaskItem(
-                        ResourceType.assembly,
+                        "assembly",
                         name: "dir\\My.Assembly2.ext2", // Can specify Windows-style path
                         fileHash: "012345678901234567890123456789"),
 
                     CreateResourceTaskItem(
-                        ResourceType.pdb,
+                        "pdb",
                         name: "otherdir/SomePdb.pdb", // Can specify Linux-style path
                         fileHash: "pdbhashpdbhashpdbhash"),
 
                     CreateResourceTaskItem(
-                        ResourceType.runtime,
+                        "runtime",
                         name: "some-runtime-file", // Can specify path with no extension
-                        fileHash: "runtimehashruntimehash")
+                        fileHash: "runtimehashruntimehash"),
+
+                    CreateResourceTaskItem(
+                        "satellite",
+                        name: "en-GB\\satellite-assembly1.ext",
+                        fileHash: "hashsatelliteassembly1",
+                        ("Culture", "en-GB")),
+
+                    CreateResourceTaskItem(
+                        "satellite",
+                        name: "fr/satellite-assembly2.dll",
+                        fileHash: "hashsatelliteassembly2",
+                        ("Culture", "fr")),
+
+                    CreateResourceTaskItem(
+                        "satellite",
+                        name: "en-GB\\satellite-assembly3.ext",
+                        fileHash: "hashsatelliteassembly3",
+                        ("Culture", "en-GB")),
                 }
             };
 
@@ -52,28 +70,49 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Assert
             var parsedContent = ParseBootData(stream);
             Assert.Equal("MyEntrypointAssembly", parsedContent.entryAssembly);
-            Assert.Collection(parsedContent.resources.Keys,
-                resourceListKey =>
+
+            var resources = parsedContent.resources.assembly;
+            Assert.Equal(2, resources.Count);
+            Assert.Equal("sha256-abcdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.ext"]);
+            Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // Paths are converted to use URL-style separators
+
+            resources = parsedContent.resources.pdb;
+            Assert.Single(resources);
+            Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["otherdir/SomePdb.pdb"]);
+
+            resources = parsedContent.resources.runtime;
+            Assert.Single(resources);
+            Assert.Equal("sha256-runtimehashruntimehash", resources["some-runtime-file"]);
+
+            var satelliteResources = parsedContent.resources.satelliteResources;
+            Assert.Collection(
+                satelliteResources.OrderBy(kvp => kvp.Key),
+                kvp =>
                 {
-                    var resources = parsedContent.resources[resourceListKey];
-                    Assert.Equal(ResourceType.assembly, resourceListKey);
-                    Assert.Equal(2, resources.Count);
-                    Assert.Equal("sha256-abcdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.ext"]);
-                    Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // Paths are converted to use URL-style separators
+                    Assert.Equal("en-GB", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value.OrderBy(item => item.Key),
+                        item =>
+                        {
+                            Assert.Equal("en-GB/satellite-assembly1.ext", item.Key);
+                            Assert.Equal("sha256-hashsatelliteassembly1", item.Value);
+                        },
+                        item =>
+                        {
+                            Assert.Equal("en-GB/satellite-assembly3.ext", item.Key);
+                            Assert.Equal("sha256-hashsatelliteassembly3", item.Value);
+                        });
                 },
-                resourceListKey =>
+                kvp =>
                 {
-                    var resources = parsedContent.resources[resourceListKey];
-                    Assert.Equal(ResourceType.pdb, resourceListKey);
-                    Assert.Single(resources);
-                    Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["otherdir/SomePdb.pdb"]);
-                },
-                resourceListKey =>
-                {
-                    var resources = parsedContent.resources[resourceListKey];
-                    Assert.Equal(ResourceType.runtime, resourceListKey);
-                    Assert.Single(resources);
-                    Assert.Equal("sha256-runtimehashruntimehash", resources["some-runtime-file"]);
+                    Assert.Equal("fr", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value.OrderBy(item => item.Key),
+                        item =>
+                        {
+                            Assert.Equal("fr/satellite-assembly2.dll", item.Key);
+                            Assert.Equal("sha256-hashsatelliteassembly2", item.Value);
+                        });
                 });
         }
 
@@ -137,12 +176,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             return (BootJsonData)serializer.ReadObject(stream);
         }
 
-        private static ITaskItem CreateResourceTaskItem(ResourceType type, string name, string fileHash)
+        private static ITaskItem CreateResourceTaskItem(string type, string name, string fileHash, params (string key, string value)[] values)
         {
             var mock = new Mock<ITaskItem>();
-            mock.Setup(m => m.GetMetadata("BootManifestResourceType")).Returns(type.ToString());
+            mock.Setup(m => m.GetMetadata("BootManifestResourceType")).Returns(type);
             mock.Setup(m => m.GetMetadata("BootManifestResourceName")).Returns(name);
             mock.Setup(m => m.GetMetadata("FileHash")).Returns(fileHash);
+
+            if (values != null)
+            {
+                foreach (var (key, value) in values)
+                {
+                    mock.Setup(m => m.GetMetadata(key)).Returns(value);
+                }
+            }
             return mock.Object;
         }
     }

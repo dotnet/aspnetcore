@@ -32,6 +32,7 @@ export interface ResourceGroups {
   readonly assembly: ResourceList;
   readonly pdb?: ResourceList;
   readonly runtime: ResourceList;
+  readonly satelliteResources?: { [name: string] : ResourceList };
 }
 
 export type ResourceList = { [name: string]: string };

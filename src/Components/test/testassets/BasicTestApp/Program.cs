@@ -7,7 +7,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Web;
 using BasicTestApp.AuthTest;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
@@ -22,9 +24,6 @@ namespace BasicTestApp
         public static async Task Main(string[] args)
         {
             await SimulateErrorsIfNeededForTest();
-
-            // We want the culture to be en-US so that the tests for bind can work consistently.
-            CultureInfo.CurrentCulture = new CultureInfo("en-US");
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -55,7 +54,36 @@ namespace BasicTestApp
                 return new PrependMessageLoggerFactory("Custom logger", originalLogger);
             });
 
-            await builder.Build().RunAsync();
+            var host = builder.Build();
+            ConfigureCulture(host);
+
+            await host.RunAsync();
+        }
+
+        private static void ConfigureCulture(WebAssemblyHost host)
+        {
+            // In the absence of a specified value, we want the culture to be en-US so that the tests for bind can work consistently.
+            var culture = new CultureInfo("en-US");
+
+            Uri uri = null;
+            try
+            {
+                uri = new Uri(host.Services.GetService<NavigationManager>().Uri);
+            }
+            catch (ArgumentException)
+            {
+                // Some of our tests set this application up incorrectly so that querying NavigationManager.Uri throws.
+            }
+
+            if (uri != null && HttpUtility.ParseQueryString(uri.Query)["culture"] is string cultureName)
+            {
+                culture = new CultureInfo(cultureName);
+            }
+
+            // CultureInfo.CurrentCulture is async-scoped and will not affect the culture in sibling scopes.
+            // Use CultureInfo.DefaultThreadCurrentCulture instead to modify the application's default scope.
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
 
         // Supports E2E tests in StartupErrorNotificationTest

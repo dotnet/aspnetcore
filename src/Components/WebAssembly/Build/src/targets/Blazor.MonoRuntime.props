@@ -5,8 +5,7 @@
     <AdditionalMonoLinkerOptions>--disable-opt unreachablebodies --verbose --strip-security true --exclude-feature com -v false -c link -u link -b true</AdditionalMonoLinkerOptions>
 
     <_BlazorJsPath Condition="'$(_BlazorJsPath)' == ''">$(MSBuildThisFileDirectory)..\tools\blazor\blazor.webassembly.js</_BlazorJsPath>
-    <_BaseBlazorDistPath>dist\</_BaseBlazorDistPath>
-    <_BaseBlazorRuntimeOutputPath>$(_BaseBlazorDistPath)_framework\</_BaseBlazorRuntimeOutputPath>
+    <_BaseBlazorRuntimeOutputPath>_framework\</_BaseBlazorRuntimeOutputPath>
     <_BlazorRuntimeBinOutputPath>$(_BaseBlazorRuntimeOutputPath)_bin\</_BlazorRuntimeBinOutputPath>
     <_BlazorRuntimeWasmOutputPath>$(_BaseBlazorRuntimeOutputPath)wasm\</_BlazorRuntimeWasmOutputPath>
     <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>

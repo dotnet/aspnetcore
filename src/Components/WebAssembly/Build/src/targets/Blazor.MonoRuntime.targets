@@ -50,14 +50,14 @@
     -->
     <ItemGroup>
       <!-- Assemblies from packages -->
-      <_BlazorManagedRuntimeAssemby Include="@(RuntimeCopyLocalItems)" />
+      <_BlazorManagedRuntimeAssembly Include="@(RuntimeCopyLocalItems)" />
 
       <!-- Assemblies from other references -->
       <_BlazorUserRuntimeAssembly Include="@(ReferencePath->WithMetadataValue('CopyLocal', 'true'))"  />
       <_BlazorUserRuntimeAssembly Include="@(ReferenceDependencyPaths->WithMetadataValue('CopyLocal', 'true'))" />
 
-      <_BlazorManagedRuntimeAssemby Include="@(_BlazorUserRuntimeAssembly)" />
-      <_BlazorManagedRuntimeAssemby Include="@(IntermediateAssembly)" />
+      <_BlazorManagedRuntimeAssembly Include="@(_BlazorUserRuntimeAssembly)" />
+      <_BlazorManagedRuntimeAssembly Include="@(IntermediateAssembly)" />
     </ItemGroup>
 
     <MakeDir Directories="$(_BlazorIntermediateOutputPath)" />
@@ -70,26 +70,57 @@
       satellite assemblies, this should include all assemblies needed to run the application.
     -->
     <ItemGroup>
+      <_BlazorJSFile Include="$(_BlazorJSPath)" />
+      <_BlazorJSFile Include="$(_BlazorJSMapPath)" Condition="Exists('$(_BlazorJSMapPath)')" />
+      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
+
       <!--
         ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
         Remove assemblies that are inputs to calculating the assembly closure. Instead use the resolved outputs, since it is the minimal set.
+
+        ReferenceCopyLocalPaths also includes satellite assemblies from referenced projects but are inexpicably missing
+        any metadata that might allow them to be differentiated. We'll explicitly add those
+        to _BlazorOutputWithTargetPath so that satellite assemblies from packages, the current project and referenced project
+        are all treated the same.
        -->
-      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
-      <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" />
+      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)"
+                             Exclude="@(_BlazorManagedRuntimeAssembly);@(ReferenceSatellitePaths)"
+                             Condition="'%(Extension)' == '.dll'" />
+
+      <_BlazorCopyLocalPaths Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
+        <DestinationSubDirectory>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\</DestinationSubDirectory>
+      </_BlazorCopyLocalPaths>
 
       <_BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
         <!-- This group is for satellite assemblies. We set the resource name to include a path, e.g. "fr\\SomeAssembly.resources.dll" -->
-        <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
-        <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
+        <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Culture)' == '' AND '%(_BlazorCopyLocalPaths.Extension)' == '.dll'">assembly</BootManifestResourceType>
+        <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Culture)' != '' AND '%(_BlazorCopyLocalPaths.Extension)' == '.dll'">satellite</BootManifestResourceType>
         <BootManifestResourceName>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
         <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
 
+      <_BlazorOutputWithTargetPath Include="@(ReferenceSatellitePaths)">
+        <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\'))</Culture>
+        <BootManifestResourceType>satellite</BootManifestResourceType>
+        <BootManifestResourceName>%(ReferenceSatellitePaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
+        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(ReferenceSatellitePaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
+
       <_BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
         <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
-        <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
+        <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Extension)' == '.pdb'">pdb</BootManifestResourceType>
+        <BootManifestResourceName>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
+        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
+
+      <_BlazorOutputWithTargetPath Include="@(_DotNetWasmRuntimeFile)">
+        <TargetOutputPath>$(_BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <BootManifestResourceType>runtime</BootManifestResourceType>
         <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
-        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
+
+      <_BlazorOutputWithTargetPath Include="@(_BlazorJSFile)">
+        <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
     </ItemGroup>
 
@@ -100,42 +131,6 @@
     -->
     <ItemGroup Condition="'$(BlazorEnableDebugging)' != 'true'">
       <_BlazorOutputWithTargetPath Remove="@(_BlazorOutputWithTargetPath)" Condition="'%(Extension)' == '.pdb'" />
-    </ItemGroup>
-
-    <!--
-      The following itemgroup attempts to extend the set to include satellite assemblies.
-      The mechanism behind this (or whether it's correct) is a bit unclear so
-      https://github.com/dotnet/aspnetcore/issues/18951 tracks the need for follow-up.
-    -->
-    <ItemGroup>
-      <!--
-          ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.
-          Remove assemblies that are inputs to calculating the assembly closure. Instead use the resolved outputs, since it is the minimal set.
-         -->
-      <_BlazorCopyLocalPaths Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
-      <_BlazorCopyLocalPaths Remove="@(_BlazorManagedRuntimeAssemby)" Condition="'%(Extension)' == '.dll'" />
-
-      <_BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
-        <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
-        <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
-        <BootManifestResourceName>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
-        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
-      </_BlazorOutputWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup>
-      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
-      <_BlazorOutputWithTargetPath Include="@(_DotNetWasmRuntimeFile)">
-        <TargetOutputPath>$(_BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-        <BootManifestResourceType>runtime</BootManifestResourceType>
-        <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
-      </_BlazorOutputWithTargetPath>
-
-      <_BlazorJSFile Include="$(_BlazorJSPath)" />
-      <_BlazorJSFile Include="$(_BlazorJSMapPath)" Condition="Exists('$(_BlazorJSMapPath)')" />
-      <_BlazorOutputWithTargetPath Include="@(_BlazorJSFile)">
-        <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </_BlazorOutputWithTargetPath>
     </ItemGroup>
   </Target>
 
@@ -218,7 +213,7 @@
   <Target
       Name="_LinkBlazorApplication"
       Inputs="$(ProjectAssetsFile);
-              @(_BlazorManagedRuntimeAssemby);
+              @(_BlazorManagedRuntimeAssembly);
               @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
       Outputs="$(_BlazorLinkerOutputCache)">
@@ -277,7 +272,7 @@
     Name="_ResolveBlazorRuntimeDependencies"
     Inputs="$(ProjectAssetsFile);
             @(IntermediateAssembly);
-            @(_BlazorManagedRuntimeAssemby)"
+            @(_BlazorManagedRuntimeAssembly)"
     Outputs="$(_BlazorApplicationAssembliesCacheFile)">
 
     <!--
@@ -287,7 +282,7 @@
     -->
     <ResolveBlazorRuntimeDependencies
       EntryPoint="@(IntermediateAssembly)"
-      ApplicationDependencies="@(_BlazorManagedRuntimeAssemby)"
+      ApplicationDependencies="@(_BlazorManagedRuntimeAssembly)"
       WebAssemblyBCLAssemblies="@(_WebAssemblyBCLAssembly)">
 
       <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssembly" />

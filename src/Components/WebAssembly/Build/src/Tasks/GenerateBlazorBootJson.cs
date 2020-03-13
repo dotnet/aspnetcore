@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using Microsoft.Build.Framework;
@@ -61,28 +62,56 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 cacheBootResources = CacheBootResources,
                 debugBuild = DebugBuild,
                 linkerEnabled = LinkerEnabled,
-                resources = new Dictionary<ResourceType, ResourceHashesByNameDictionary>(),
+                resources = new ResourcesData(),
                 config = new List<string>(),
             };
 
             // Build a two-level dictionary of the form:
-            // - BootResourceType (e.g., "assembly")
+            // - assembly:
             //   - UriPath (e.g., "System.Text.Json.dll")
             //     - ContentHash (e.g., "4548fa2e9cf52986")
+            // - runtime:
+            //   - UriPath (e.g., "dotnet.js")
+            //     - ContentHash (e.g., "3448f339acf512448")
             if (Resources != null)
             {
+                var resourceData = result.resources;
                 foreach (var resource in Resources)
                 {
                     var resourceTypeMetadata = resource.GetMetadata("BootManifestResourceType");
-                    if (!Enum.TryParse<ResourceType>(resourceTypeMetadata, out var resourceType))
+                    ResourceHashesByNameDictionary resourceList;
+                    switch (resourceTypeMetadata)
                     {
-                        throw new NotSupportedException($"Unsupported BootManifestResourceType metadata value: {resourceTypeMetadata}");
-                    }
+                        case "runtime":
+                            resourceList = resourceData.runtime;
+                            break;
+                        case "assembly":
+                            resourceList = resourceData.assembly;
+                            break;
+                        case "pdb":
+                            resourceData.pdb = new ResourceHashesByNameDictionary();
+                            resourceList = resourceData.pdb;
+                            break;
+                        case "satellite":
+                            if (resourceData.satelliteResources is null)
+                            {
+                                resourceData.satelliteResources = new Dictionary<string, ResourceHashesByNameDictionary>(StringComparer.OrdinalIgnoreCase);
+                            }
+                            var resourceCulture = resource.GetMetadata("Culture");
+                            if (resourceCulture is null)
+                            {
+                                Log.LogWarning("Satellite resource {0} does not specify required metadata 'Culture'.", resource);
+                                continue;
+                            }
 
-                    if (!result.resources.TryGetValue(resourceType, out var resourceList))
-                    {
-                        resourceList = new ResourceHashesByNameDictionary();
-                        result.resources.Add(resourceType, resourceList);
+                            if (!resourceData.satelliteResources.TryGetValue(resourceCulture, out resourceList))
+                            {
+                                resourceList = new ResourceHashesByNameDictionary();
+                                resourceData.satelliteResources.Add(resourceCulture, resourceList);
+                            }
+                            break;
+                        default:
+                            throw new NotSupportedException($"Unsupported BootManifestResourceType metadata value: {resourceTypeMetadata}");
                     }
 
                     var resourceName = GetResourceName(resource);
@@ -142,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             /// and values are SHA-256 hashes formatted in prefixed base-64 style (e.g., 'sha256-abcdefg...')
             /// as used for subresource integrity checking.
             /// </summary>
-            public Dictionary<ResourceType, ResourceHashesByNameDictionary> resources { get; set; }
+            public ResourcesData resources { get; set; } = new ResourcesData();
 
             /// <summary>
             /// Gets a value that determines whether to enable caching of the <see cref="resources"/>
@@ -166,11 +195,29 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             public List<string> config { get; set; }
         }
 
-        public enum ResourceType
+        public class ResourcesData
         {
-            assembly,
-            pdb,
-            runtime,
+            /// <summary>
+            /// .NET Wasm runtime resources (dotnet.wasm, dotnet.js) etc.
+            /// </summary>
+            public ResourceHashesByNameDictionary runtime { get; set; } = new ResourceHashesByNameDictionary();
+
+            /// <summary>
+            /// "assembly" (.dll) resources
+            /// </summary>
+            public ResourceHashesByNameDictionary assembly { get; set; } = new ResourceHashesByNameDictionary();
+
+            /// <summary>
+            /// "debug" (.pdb) resources
+            /// </summary>
+            [DataMember(EmitDefaultValue = false)]
+            public ResourceHashesByNameDictionary pdb { get; set; }
+
+            /// <summary>
+            /// localization (.satellite resx) resources
+            /// </summary>
+            [DataMember(EmitDefaultValue = false)]
+            public Dictionary<string, ResourceHashesByNameDictionary> satelliteResources { get; set; }
         }
 #pragma warning restore IDE1006 // Naming Styles
     }

@@ -3,36 +3,31 @@
 
 using System;
 using System.Globalization;
-using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 {
-    // For now this is limited to server-side execution because we don't have the ability to set the
-    // culture in client-side Blazor.
-    public class GlobalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<InternationalizationStartup>>
+    public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServerFixture>
+        where TServerFixture : ServerFixture
     {
-        public GlobalizationTest(
-            BrowserFixture browserFixture,
-            BasicTestAppServerSiteFixture<InternationalizationStartup> serverFixture,
-            ITestOutputHelper output)
+        public GlobalizationTest(BrowserFixture browserFixture, TServerFixture serverFixture, ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
         }
 
-        protected override void InitializeAsyncCore()
-        {
-            Navigate(ServerPathBase);
-            Browser.MountTestComponent<CulturePicker>();
-            Browser.Exists(By.Id("culture-selector"));
-        }
+        protected abstract void SetCulture(string culture);
+
+        /// <summary>
+        /// Blazor Server and these tests will use the application's UtcOffset when calculating DateTimeOffset when
+        /// an offset is not explicitly specified. Blazor WASM always calculates DateTimeOffsets as Utc.
+        /// We'll use <see cref="UtcOffset"/> to express this difference in calculating expected values in these tests.
+        /// </summary>
+        protected abstract TimeSpan UtcOffset { get; }
 
         [Theory]
         [InlineData("en-US")]
@@ -74,11 +69,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // datetimeoffset
             input = Browser.FindElement(By.Id("input_type_text_datetimeoffset"));
             display = Browser.FindElement(By.Id("input_type_text_datetimeoffset_value"));
-            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4), UtcOffset).ToString(cultureInfo), () => display.Text);
 
-            input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo));
             input.SendKeys("\t");
-            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo), () => display.Text);
         }
 
         // The logic is different for verifying culture-invariant fields. The problem is that the logic for what
@@ -145,13 +140,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             input = Browser.FindElement(By.Id("input_type_date_datetimeoffset"));
             display = Browser.FindElement(By.Id("input_type_date_datetimeoffset_value"));
             extraInput = Browser.FindElement(By.Id("input_type_date_datetimeoffset_extrainput"));
-            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
-            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4), UtcOffset).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4), UtcOffset).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo));
             extraInput.SendKeys("\t");
-            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
-            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
         }
 
         [Theory]
@@ -214,29 +209,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             input = Browser.FindElement(By.Id("inputdate_datetimeoffset"));
             display = Browser.FindElement(By.Id("inputdate_datetimeoffset_value"));
             extraInput = Browser.FindElement(By.Id("inputdate_datetimeoffset_extrainput"));
-            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
-            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4), UtcOffset).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4), UtcOffset).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo));
             extraInput.SendKeys("\t");
-            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
-            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
-        }
-
-        private void SetCulture(string culture)
-        {
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // Click the link to return back to the test page
-            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
-
-            // That should have triggered a page load, so wait for the main test selector to come up.
-            Browser.MountTestComponent<GlobalizationBindCases>();
-            Browser.Exists(By.Id("globalization-cases"));
-
-            var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2), UtcOffset).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
         }
     }
 }

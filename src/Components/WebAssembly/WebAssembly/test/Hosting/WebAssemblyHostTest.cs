@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             var host = builder.Build();
+            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
 
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             var host = builder.Build();
+            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
             var task = host.RunAsyncCore(cts.Token);
@@ -59,6 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
+            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
 
             var disposable = host.Services.GetRequiredService<DisposableService>();
 
@@ -86,6 +90,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 DisposeCount++;
                 return new ValueTask(Task.CompletedTask);
             }
+        }
+
+        private class TestSatelliteResourcesLoader : SatelliteResourcesLoader
+        {
+            internal TestSatelliteResourcesLoader()
+                : base(WebAssemblyJSRuntimeInvoker.Instance)
+            {
+            }
+
+            protected override ValueTask LoadSatelliteAssembliesForCurrentCultureAsync() => default;
         }
     }
 }
