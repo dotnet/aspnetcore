@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         internal static string GetNormalizedOrigin(string origin)
         {
-            if (string.IsNullOrEmpty(origin))
+            if (origin is null)
             {
                 throw new ArgumentNullException(nameof(origin));
             }
