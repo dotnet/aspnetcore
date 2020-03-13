@@ -160,10 +160,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   const module = {} as typeof Module;
   const suppressMessages = ['DEBUGGING ENABLED'];
 
-  module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
+  module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(line));
 
   module.printErr = line => {
-    console.error(`WASM: ${line}`);
+    console.error(line);
     showErrorNotification();
   };
   module.preRun = [];

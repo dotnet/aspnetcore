@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BasicTestApp.AuthTest;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BasicTestApp
 {
@@ -40,6 +42,16 @@ namespace BasicTestApp
             {
                 options.AddPolicy("NameMustStartWithB", policy =>
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
+
+            // Replace the default logger with a custom one that wraps it
+            var originalLoggerDescriptor = builder.Services.Single(d => d.ServiceType == typeof(ILoggerFactory));
+            builder.Services.AddSingleton<ILoggerFactory>(services =>
+            {
+                var originalLogger = (ILoggerFactory)Activator.CreateInstance(
+                    originalLoggerDescriptor.ImplementationType,
+                    new object[] { services });
+                return new PrependMessageLoggerFactory("Custom logger", originalLogger);
             });
 
             await builder.Build().RunAsync();
