@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     /// in the backing array. <see cref="TryEnqueueExisting"/> will attempt to re-enqueue an existing
     /// dequeued item, allowing you to reuse that instance.
     /// </summary>
-    public class ReusableQueue<T> where T : class
+    internal class ReusableQueue<T> where T : class
     {
         private T[] _array;
         private int _head;       // The index from which to dequeue if the queue isn't empty.
