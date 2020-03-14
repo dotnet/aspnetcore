@@ -14,7 +14,7 @@ import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
 const enum ConnectionState {
-    Connecting = "Connecting ",
+    Connecting = "Connecting",
     Connected = "Connected",
     Disconnected = "Disconnected",
     Disconnecting = "Disconnecting",
