@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                 // to save allocating a new instance.
                 if (_awaitableQueue.TryEnqueueExisting(out var awaitable))
                 {
-                    Debugger.Launch();
                     awaitable.Reset();
                 }
                 else

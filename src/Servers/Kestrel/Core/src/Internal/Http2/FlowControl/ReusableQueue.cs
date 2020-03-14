@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     {
         private T[] _array;
         private int _head;       // The index from which to dequeue if the queue isn't empty.
+        private int _reuseHead;  // The index from which to reuse if the queue isn't empty.
         private int _tail;       // The index at which to enqueue if the queue isn't full.
         private int _size;       // Number of elements.
 
@@ -52,19 +53,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
 
             _head = 0;
+            _reuseHead = 0;
             _tail = 0;
         }
 
         public bool TryEnqueueExisting([NotNullWhen(true)]out T item)
         {
-            // We're at capacity so there isn't an existing item to reuse
-            if (_size == _array.Length)
+            // We're at capacity or we have already reused existing items.
+            // There isn't an existing item to reuse.
+            if ((_size > 0 && _reuseHead == _head) ||
+                (_size == _array.Length))
             {
                 item = default;
                 return false;
             }
 
-            item = _array[_tail];
+            item = _array[_reuseHead];
 
             // Space in array hasn't been used yet
             if (item == null)
@@ -72,9 +76,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                 return false;
             }
 
-            // Reuse existing
-            MoveNext(ref _tail);
-            _size++;
+            _array[_reuseHead] = null;
+            MoveNext(ref _reuseHead);
+
+            EnqueueCore(item);
             return true;
         }
 
@@ -89,6 +94,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                     newcapacity = _array.Length + MinimumGrow;
                 }
                 SetCapacity(newcapacity);
+            }
+
+            EnqueueCore(item);
+        }
+
+        private void EnqueueCore(T item)
+        {
+            if (_size > 0 && _tail == _reuseHead)
+            {
+                MoveNext(ref _reuseHead);
             }
 
             _array[_tail] = item;
@@ -116,24 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             return removed;
         }
 
-        public bool TryDequeue([MaybeNullWhen(false)] out T result)
-        {
-            int head = _head;
-            T[] array = _array;
-
-            if (_size == 0)
-            {
-                result = default!;
-                return false;
-            }
-
-            // Change the head but don't set array index to null
-            result = array[head];
-            MoveNext(ref _head);
-            _size--;
-            return true;
-        }
-
         // Returns the object at the head of the queue. The object remains in the
         // queue. If the queue is empty, this method throws an
         // InvalidOperationException.
@@ -145,18 +142,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
 
             return _array[_head];
-        }
-
-        public bool TryPeek([MaybeNullWhen(false)] out T result)
-        {
-            if (_size == 0)
-            {
-                result = default!;
-                return false;
-            }
-
-            result = _array[_head];
-            return true;
         }
 
         // Returns true if the queue contains at least one object equal to item.
@@ -199,6 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 
             _array = newarray;
             _head = 0;
+            _reuseHead = 0;
             _tail = (_size == capacity) ? 0 : _size;
         }
 
