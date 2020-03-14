@@ -39,16 +39,6 @@ export interface IAvailableTransport {
 
 const MAX_REDIRECTS = 100;
 
-let WebSocketModule: any = null;
-let EventSourceModule: any = null;
-if (Platform.isNode && typeof require !== "undefined") {
-    // In order to ignore the dynamic require in webpack builds we need to do this magic
-    // @ts-ignore: TS doesn't know about these names
-    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    WebSocketModule = requireFunc("ws");
-    EventSourceModule = requireFunc("eventsource");
-}
-
 /** @private */
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
@@ -88,19 +78,30 @@ export class HttpConnection implements IConnection {
             throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
         }
 
+        let webSocketModule: any = null;
+        let eventSourceModule: any = null;
+
+        if (Platform.isNode && typeof require !== "undefined") {
+            // In order to ignore the dynamic require in webpack builds we need to do this magic
+            // @ts-ignore: TS doesn't know about these names
+            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+            webSocketModule = requireFunc("ws");
+            eventSourceModule = requireFunc("eventsource");
+        }
+
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
         } else if (Platform.isNode && !options.WebSocket) {
-            if (WebSocketModule) {
-                options.WebSocket = WebSocketModule;
+            if (webSocketModule) {
+                options.WebSocket = webSocketModule;
             }
         }
 
         if (!Platform.isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
         } else if (Platform.isNode && !options.EventSource) {
-            if (typeof EventSourceModule !== "undefined") {
-                options.EventSource = EventSourceModule;
+            if (typeof eventSourceModule !== "undefined") {
+                options.EventSource = eventSourceModule;
             }
         }
 
