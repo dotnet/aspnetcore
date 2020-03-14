@@ -44,21 +44,6 @@
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
-  <!--Target Name="PublishAssets" AfterTargets="Publish">
-    <ItemGroup>
-      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\**\AzureAD.WebSite.deps.json" />
-      <_testFiles Include="..\testassets\**\*" />
-    </ItemGroup>
-    <Copy
-      SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)"
-      ContinueOnError="true" />
-    <Copy
-      SourceFiles="@(_testFiles)"
-      DestinationFolder="$(PublishDir)\%(RecursiveDir)"
-      ContinueOnError="true" />
-  </Target-->
-   
   <ItemGroup>
     <HelixContent Include="package.json" />
     <HelixContent Include="yarn.lock" />
