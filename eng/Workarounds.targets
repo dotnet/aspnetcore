@@ -40,17 +40,22 @@
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <KnownAppHostPackOrFrameworkReferenceTfm>$(DefaultNetCoreTargetFramework)</KnownAppHostPackOrFrameworkReferenceTfm>
+    <KnownAppHostPackOrFrameworkReferenceTfm Condition="'$(KnownAppHostPackOrFrameworkReferenceTfm)' == 'net5.0'">netcoreapp5.0</KnownAppHostPackOrFrameworkReferenceTfm>
+  </PropertyGroup>
+
   <ItemGroup>
-    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.0 -->
+    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.1 -->
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
       TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
+      Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
       TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
+      Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />
   </ItemGroup>
 
