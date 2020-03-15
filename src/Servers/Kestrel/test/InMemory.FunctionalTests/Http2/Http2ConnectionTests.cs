@@ -29,10 +29,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             await InitializeConnectionAsync(async c =>
             {
                 // Send headers
                 await c.Response.Body.FlushAsync();
+
+                // Wait before sending data
+                await tcs.Task;
 
                 // Send large data (1 larger than window size)
                 await c.Response.Body.WriteAsync(new byte[65536]);
@@ -46,6 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 33,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
+
+            tcs.SetResult(null);
+
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
@@ -65,6 +73,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // 1 byte is remaining
 
+            tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
             // Ensure the stream window size is large enough
             await SendWindowUpdateAsync(streamId: 3, 65536);
@@ -81,6 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
+
+            tcs.SetResult(null);
+
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
