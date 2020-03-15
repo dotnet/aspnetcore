@@ -3,7 +3,7 @@
     "version": "5.0.100-preview.2.20120.3"
   },
   "tools": {
-    "dotnet": "5.0.100-preview.2.20120.3",
+    "dotnet": "5.0.100-preview.2.20163.4",
     "runtimes": {
       "dotnet/x64": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"

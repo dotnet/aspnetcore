@@ -2,6 +2,9 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
+    <!-- TODO: Remove this when alls parts of aspnetcore switched to the net5.0 TFM. -->
+    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+
     <!-- The .csproj files in this folder do not actually produce .dll's. They are only present to produce .nupkgs and enable Visual Studio support -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <HasReferenceAssembly>false</HasReferenceAssembly>
