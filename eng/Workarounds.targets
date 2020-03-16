@@ -49,12 +49,12 @@
     <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.1 -->
     <KnownAppHostPack
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
+      TargetFramework="$(KnownAppHostPackOrFrameworkReferenceTfm)"
       Condition="@(KnownAppHostPack->Count()) != '0' AND !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.1'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
+      TargetFramework="$(KnownAppHostPackOrFrameworkReferenceTfm)"
       Condition="@(KnownFrameworkReference->Count()) != '0' AND !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(KnownAppHostPackOrFrameworkReferenceTfm)')))"
       />
   </ItemGroup>
