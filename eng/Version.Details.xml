@@ -332,17 +332,17 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>8d0fa056d78af506e3218af056c92930e8a5d5c1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20158.2">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20162.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>527179abfbb5cd738035c4ac2d2566c571ce85db</Sha>
+      <Sha>16d4350184cf362cd59807b589d1c93803025abc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20158.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20162.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>527179abfbb5cd738035c4ac2d2566c571ce85db</Sha>
+      <Sha>16d4350184cf362cd59807b589d1c93803025abc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20158.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20162.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>527179abfbb5cd738035c4ac2d2566c571ce85db</Sha>
+      <Sha>16d4350184cf362cd59807b589d1c93803025abc</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.5.0-beta4-20153-05" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
