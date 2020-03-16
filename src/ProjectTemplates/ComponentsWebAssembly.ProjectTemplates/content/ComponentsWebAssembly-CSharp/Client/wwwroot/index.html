@@ -10,6 +10,9 @@
     <link href="css/site.css" rel="stylesheet" />
     <!--#if PWA -->
     <link href="manifest.json" rel="manifest" />
+    <!--iOS does not support specifying icons for PWAs in app manifests so we
+    must use a link element to define icons for iOS.-->
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <!--#endif -->
 </head>
 
