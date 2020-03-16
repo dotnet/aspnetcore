@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public Task RestoreAsync(string project)
         {
             _logger?.WriteLine($"Restoring msbuild project in {project}");
-            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore");
+            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore", "--ignore-failed-sources");
         }
 
         public Task BuildAsync(string project)
