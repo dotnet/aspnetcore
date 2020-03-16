@@ -89,7 +89,7 @@ namespace Microsoft.JSInterop.WebAssembly
         /// <param name="arg1">The second argument.</param>
         /// <param name="arg2">The third argument.</param>
         /// <returns>The result of the function invocation.</returns>
-        public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        public virtual TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
             var result = InternalCalls.InvokeJSUnmarshalled<T0, T1, T2, TResult>(out var exception, identifier, arg0, arg1, arg2);
             return exception != null

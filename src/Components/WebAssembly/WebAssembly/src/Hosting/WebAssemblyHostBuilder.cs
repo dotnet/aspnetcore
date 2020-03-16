@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder();
+            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
 
             // Right now we don't have conventions or behaviors that are specific to this method
             // however, making this the default for the template allows us to add things like that
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        private WebAssemblyHostBuilder()
+        internal WebAssemblyHostBuilder(WebAssemblyJSRuntime jsRuntime)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -58,25 +58,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             InitializeDefaultServices();
 
+            var hostEnvironment = InitializeEnvironment(jsRuntime);
+
             _createServiceProvider = () =>
             {
-                return Services.BuildServiceProvider();
+                return Services.BuildServiceProvider(validateScopes: hostEnvironment.Environment == "Development");
             };
-
-            InitializeEnvironment();
         }
 
-        private void InitializeEnvironment()
+        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntime jsRuntime)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
-            {
-                // The remainder of this method relies on the ability to make .NET WebAssembly-specific JSInterop calls.
-                // Note that this short-circuit exists as a way for unit tests running in .NET Core without JSInterop to run.
-                return;
-            }
+            var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment);
 
-            var applicationEnvironment = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
-            Services.AddSingleton<IWebAssemblyHostEnvironment>(new WebAssemblyHostEnvironment(applicationEnvironment));
+            Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
 
             var configFiles = new[]
             {
@@ -86,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             foreach (var configFile in configFiles)
             {
-                var appSettingsJson = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string, byte[]>(
+                var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
                     "Blazor._internal.getConfig",
                     configFile);
 
@@ -97,6 +92,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
                 }
             }
+
+            return hostEnvironment;
         }
 
         /// <summary>
