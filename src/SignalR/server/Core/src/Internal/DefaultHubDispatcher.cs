@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
-                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments);
+                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
 
                         result = _hubPipeline.OnAfterIncoming(result, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
 
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             object result;
                             try
                             {
-                                result = await ExecuteHubMethod(methodExecutor, hub, arguments);
+                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
                                 result = _hubPipeline.OnAfterIncoming(result, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
@@ -465,25 +465,35 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments)
+        private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection)
         {
             if (methodExecutor.IsMethodAsync)
             {
                 if (methodExecutor.MethodReturnType == typeof(Task))
                 {
-                    await (Task)methodExecutor.Execute(hub, arguments);
+                    return await _hubPipeline.InvokeHubMethod(hub, new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments), async (HubInvocationContext invocationContext) =>
+                    {
+                        await (Task)methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
+                        return null;
+                    });
                 }
                 else
                 {
-                    return await methodExecutor.ExecuteAsync(hub, arguments);
+                    return await _hubPipeline.InvokeHubMethod(hub, new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments), async (HubInvocationContext invocationContext) =>
+                    {
+                        return await methodExecutor.ExecuteAsync(hub, invocationContext.HubMethodArguments.ToArray());
+                    });
                 }
             }
             else
             {
-                return methodExecutor.Execute(hub, arguments);
+                return await _hubPipeline.InvokeHubMethod(hub, new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments), (HubInvocationContext invocationContext) =>
+                {
+                    return Task.FromResult(methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray()));
+                });
             }
 
-            return null;
+            //return null;
         }
 
         private async Task SendInvocationError(string invocationId,

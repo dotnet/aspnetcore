@@ -11,11 +11,70 @@ using System.Text.Json;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace SignalRSamples
 {
     public class CustomHubPipeline : IHubPipeline
     {
+        private readonly ILogger _logger;
+        public CustomHubPipeline(ILogger<CustomHubPipeline> logger)
+        {
+            _logger = logger;
+        }
+
+        public async Task<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next)
+        {
+            try
+            {
+                _logger.LogInformation("Starting invoke");
+                if (false)
+                {
+                    //var method = GetMethod(hub, invocationContext.HubMethodName);
+                    //if (method.HasResult)
+                    //{
+                    //    return await method.Invoke(invocationContext.HubMethodArguments);
+                    //}
+                    //else
+                    //{
+                    //    await method.Invoke(invocationContext.HubMethodArguments);
+                    //    return null;
+                    //}
+                }
+                else
+                {
+                    var res = await next(invocationContext);
+                    if (invocationContext.HubMethodName == nameof(Chat.Echo))
+                    {
+                        return "test";
+                    }
+                    else if (invocationContext.HubMethodName == nameof(Streaming.AsyncEnumerableCounter))
+                    {
+                        return Add((IAsyncEnumerable<int>)res);
+
+                        async IAsyncEnumerable<int> Add(IAsyncEnumerable<int> enumerable)
+                        {
+                            await foreach(var item in enumerable)
+                            {
+                                yield return item + 5;
+                            }
+                        }
+                    }
+                    return res;
+                }
+            }
+            catch
+            {
+                throw new HubException("some error");
+            }
+            finally
+            {
+                _logger.LogInformation("Ending invoke");
+            }
+        }
+
         private readonly Random _rand = new Random();
 
         public object OnAfterIncoming(object result, HubInvocationContext invocationContext)
@@ -30,7 +89,8 @@ namespace SignalRSamples
 
         public bool OnBeforeIncoming(HubInvocationContext invocationContext)
         {
-            return (_rand.Next() % 3) != 0;
+            return true;
+            //return (_rand.Next() % 3) != 0;
         }
 
         public void OnIncomingError(Exception ex, HubInvocationContext invocationContext)
@@ -57,7 +117,7 @@ namespace SignalRSamples
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
 
-            services.AddSingleton<IHubPipeline>(new CustomHubPipeline());
+            services.AddSingleton<IHubPipeline, CustomHubPipeline>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
