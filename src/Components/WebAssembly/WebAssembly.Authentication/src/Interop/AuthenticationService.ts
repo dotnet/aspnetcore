@@ -253,15 +253,26 @@ class OidcAuthorizeService implements AuthorizeService {
 export class AuthenticationService {
 
     static _infrastructureKey = 'Microsoft.AspNetCore.Components.WebAssembly.Authentication';
-    static _initialized = false;
+    static _initialized : Promise<void>;
     static instance: OidcAuthorizeService;
 
     public static async init(settings: UserManagerSettings & AuthorizeServiceSettings) {
+        // Multiple initializations can start concurrently and we want to avoid that.
+        // In order to do so, we create an initialization promise and the first call to init
+        // tries to initialize the app and sets up a promise other calls can await on.
         if (!AuthenticationService._initialized) {
-            AuthenticationService._initialized = true;
-            const userManager = await this.createUserManager(settings);
-            AuthenticationService.instance = new OidcAuthorizeService(userManager);
+            this._initialized = new Promise(async (resolve, reject) => {
+                try {
+                    const userManager = await this.createUserManager(settings);
+                    AuthenticationService.instance = new OidcAuthorizeService(userManager);
+                    resolve();
+                } catch (e) {
+                    reject(e);
+                }
+            });
         }
+
+        await this._initialized;
     }
 
     public static getUser() {
