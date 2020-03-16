@@ -1,6 +1,6 @@
 {
   "sdk": {
-    "version": "5.0.100-preview.2.20120.3",
+    "version": "5.0.100-preview.2.20163.4",
     "allowPrerelease": true,
     "rollForward": "major"
   },
@@ -17,7 +17,7 @@
     "Git": "2.22.0",
     "jdk": "11.0.3",
     "vs": {
-      "version": "16.3",
+      "version": "16.5",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
