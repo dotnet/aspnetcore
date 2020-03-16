@@ -58,25 +58,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
                     };
 
-                    if (string.IsNullOrEmpty(stackFrame.FilePath))
-                    {
-                        try
-                        {
-                            // .NET Framework and older versions of mono don't support portable PDBs
-                            // so we read it manually to get file name and line information
-                            portablePdbReader.PopulateStackFrame(stackFrame, method, frame.GetILOffset());
-                        }
-                        catch (Exception ex)
-                        {
-                            if (exceptions is null)
-                            {
-                                exceptions = new List<Exception>();
-                            }
-
-                            exceptions.Add(ex);
-                        }
-                    }
-
                     frames.Add(stackFrame);
                 }
 
