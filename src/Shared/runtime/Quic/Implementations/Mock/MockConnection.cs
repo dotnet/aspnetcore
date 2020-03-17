@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers.Binary;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -14,17 +15,17 @@ namespace System.Net.Quic.Implementations.Mock
     {
         private readonly bool _isClient;
         private bool _disposed = false;
-        private IPEndPoint _remoteEndPoint;
-        private IPEndPoint _localEndPoint;
+        private IPEndPoint? _remoteEndPoint;
+        private IPEndPoint? _localEndPoint;
         private object _syncObject = new object();
-        private Socket _socket = null;
-        private IPEndPoint _peerListenEndPoint = null;
-        private TcpListener _inboundListener = null;
+        private Socket? _socket = null;
+        private IPEndPoint? _peerListenEndPoint = null;
+        private TcpListener? _inboundListener = null;
         private long _nextOutboundBidirectionalStream;
         private long _nextOutboundUnidirectionalStream;
 
         // Constructor for outbound connections
-        internal MockConnection(IPEndPoint remoteEndPoint, SslClientAuthenticationOptions sslClientAuthenticationOptions, IPEndPoint localEndPoint = null)
+        internal MockConnection(IPEndPoint? remoteEndPoint, SslClientAuthenticationOptions? sslClientAuthenticationOptions, IPEndPoint? localEndPoint = null)
         {
             _remoteEndPoint = remoteEndPoint;
             _localEndPoint = localEndPoint;
@@ -43,8 +44,8 @@ namespace System.Net.Quic.Implementations.Mock
             _socket = socket;
             _peerListenEndPoint = peerListenEndPoint;
             _inboundListener = inboundListener;
-            _localEndPoint = (IPEndPoint)socket.LocalEndPoint;
-            _remoteEndPoint = (IPEndPoint)socket.RemoteEndPoint;
+            _localEndPoint = (IPEndPoint?)socket.LocalEndPoint;
+            _remoteEndPoint = (IPEndPoint?)socket.RemoteEndPoint;
         }
 
         internal override bool Connected
@@ -57,9 +58,9 @@ namespace System.Net.Quic.Implementations.Mock
             }
         }
 
-        internal override IPEndPoint LocalEndPoint => new IPEndPoint(_localEndPoint.Address, _localEndPoint.Port);
+        internal override IPEndPoint LocalEndPoint => new IPEndPoint(_localEndPoint!.Address, _localEndPoint.Port);
 
-        internal override IPEndPoint RemoteEndPoint => new IPEndPoint(_remoteEndPoint.Address, _remoteEndPoint.Port);
+        internal override IPEndPoint RemoteEndPoint => new IPEndPoint(_remoteEndPoint!.Address, _remoteEndPoint.Port);
 
         internal override SslApplicationProtocol NegotiatedApplicationProtocol => throw new NotImplementedException();
 
@@ -73,14 +74,14 @@ namespace System.Net.Quic.Implementations.Mock
                 throw new InvalidOperationException("Already connected");
             }
 
-            Socket socket = new Socket(_remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            Socket socket = new Socket(_remoteEndPoint!.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             await socket.ConnectAsync(_remoteEndPoint).ConfigureAwait(false);
             socket.NoDelay = true;
 
-            _localEndPoint = (IPEndPoint)socket.LocalEndPoint;
+            _localEndPoint = (IPEndPoint?)socket.LocalEndPoint;
 
             // Listen on a new local endpoint for inbound streams
-            TcpListener inboundListener = new TcpListener(_localEndPoint.Address, 0);
+            TcpListener inboundListener = new TcpListener(_localEndPoint!.Address, 0);
             inboundListener.Start();
             int inboundListenPort = ((IPEndPoint)inboundListener.LocalEndpoint).Port;
 
@@ -97,7 +98,7 @@ namespace System.Net.Quic.Implementations.Mock
             } while (bytesRead != buffer.Length);
 
             int peerListenPort = BinaryPrimitives.ReadInt32LittleEndian(buffer);
-            IPEndPoint peerListenEndPoint = new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address, peerListenPort);
+            IPEndPoint peerListenEndPoint = new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint!).Address, peerListenPort);
 
             _socket = socket;
             _peerListenEndPoint = peerListenEndPoint;
@@ -141,7 +142,7 @@ namespace System.Net.Quic.Implementations.Mock
         internal async Task<Socket> CreateOutboundMockStreamAsync(long streamId)
         {
             Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            await socket.ConnectAsync(_peerListenEndPoint).ConfigureAwait(false);
+            await socket.ConnectAsync(_peerListenEndPoint!).ConfigureAwait(false);
             socket.NoDelay = true;
 
             // Write stream ID to socket so server can read it
@@ -156,7 +157,7 @@ namespace System.Net.Quic.Implementations.Mock
         {
             CheckDisposed();
 
-            Socket socket = await _inboundListener.AcceptSocketAsync().ConfigureAwait(false);
+            Socket socket = await _inboundListener!.AcceptSocketAsync().ConfigureAwait(false);
 
             // Read first bytes to get stream ID
             byte[] buffer = new byte[8];

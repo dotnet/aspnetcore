@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Net.Quic.Implementations;
 using System.Net.Quic.Implementations.MsQuic.Internal;
 using System.Net.Security;
@@ -22,13 +23,13 @@ namespace System.Net.Quic
         /// <param name="remoteEndPoint">The remote endpoint to connect to.</param>
         /// <param name="sslClientAuthenticationOptions">TLS options</param>
         /// <param name="localEndPoint">The local endpoint to connect from.</param>
-        public QuicConnection(IPEndPoint remoteEndPoint, SslClientAuthenticationOptions sslClientAuthenticationOptions, IPEndPoint localEndPoint = null)
+        public QuicConnection(IPEndPoint remoteEndPoint, SslClientAuthenticationOptions? sslClientAuthenticationOptions, IPEndPoint? localEndPoint = null)
             : this(QuicImplementationProviders.Default, remoteEndPoint, sslClientAuthenticationOptions, localEndPoint)
         {
         }
 
         // !!! TEMPORARY: Remove "implementationProvider" before shipping
-        public QuicConnection(QuicImplementationProvider implementationProvider, IPEndPoint remoteEndPoint, SslClientAuthenticationOptions sslClientAuthenticationOptions, IPEndPoint localEndPoint = null)
+        public QuicConnection(QuicImplementationProvider implementationProvider, IPEndPoint remoteEndPoint, SslClientAuthenticationOptions? sslClientAuthenticationOptions, IPEndPoint? localEndPoint = null)
             : this(implementationProvider, new QuicClientConnectionOptions() { RemoteEndPoint = remoteEndPoint, ClientAuthenticationOptions = sslClientAuthenticationOptions, LocalEndPoint = localEndPoint })
         {
         }

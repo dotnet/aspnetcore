@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers;
 using System.Diagnostics;
 #if KESTREL
@@ -93,7 +94,7 @@ namespace System.Net.Http.HPack
         private byte[] _headerValueOctets;
 
         private State _state = State.Ready;
-        private byte[] _headerName;
+        private byte[]? _headerName;
         private int _stringIndex;
         private int _stringLength;
         private int _headerNameLength;
@@ -129,13 +130,13 @@ namespace System.Net.Http.HPack
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler? handler)
         {
             DecodeInternal(data, endHeaders, handler);
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        private void DecodeInternal(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        private void DecodeInternal(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler? handler)
         {
             int intResult;
 
@@ -370,7 +371,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ProcessHeaderValue(IHttpHeadersHandler handler)
+        private void ProcessHeaderValue(IHttpHeadersHandler? handler)
         {
             OnString(nextState: State.Ready);
 
@@ -394,7 +395,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
+        private void OnIndexedHeaderField(int index, IHttpHeadersHandler? handler)
         {
             HeaderField header = GetHeader(index);
             handler?.OnHeader(header.Name, header.Value);
