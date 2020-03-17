@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<RunSettings>  
+  <!-- Configurations that affect the Test Framework -->  
+  <RunConfiguration>  
+    <!-- Specify timeout in milliseconds. A valid value should be >= 0. If 0, timeout will be infinity-->
+    <TestSessionTimeout>180000</TestSessionTimeout>
+  </RunConfiguration>
+</RunSettings>  
