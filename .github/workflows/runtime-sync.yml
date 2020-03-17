@@ -1,7 +1,7 @@
 name: AspNetCore-Runtime Code Sync
 on:
   # Test this script using on: push
-  # push:
+  push:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
@@ -10,6 +10,8 @@ on:
 
 jobs:
   compare_repos:
+    # Comment out this line to test the scripts in a fork
+    if: github.repository == 'dotnet/aspnetcore'
     name: Compare the shared code in the AspNetCore and Runtime repos and notify if they're out of sync.
     runs-on: windows-latest
     steps:
