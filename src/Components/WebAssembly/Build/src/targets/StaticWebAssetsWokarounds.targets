@@ -1,0 +1,47 @@
+<Project>
+  <!--
+    We're attempting to work around a behavior in the Razor SDK with publishing + static web assets for 3.1 applications.
+
+    Some assets such as dlls can appear both as part of a .NET project's publish output as well as the output of the wwwroot. For instance, consider the
+    MyApp.Shared.dll. The target in the RazorSDK: https://github.com/dotnet/aspnetcore-tooling/blob/fae9a5fdbc19edcf5b59a093ce347897a78b0386/src/Razor/src/Microsoft.NET.Sdk.Razor/build/netstandard2.0/Microsoft.NET.Sdk.Razor.StaticWebAssets.targets#L493-L519
+    unconditionally retargets these items to the wwwroot sub-directory of the publish folder.
+
+    The behavior we want is for these items to appear in both places.
+  -->
+  <Target
+    Name="_BlazorStashStaticWebAssets"
+    BeforeTargets="_StaticWebAssetsComputeFilesToPublish"
+    Condition="'$(RazorSdkSupportPublishingSharedBinaries)' == ''">
+
+    <ItemGroup>
+      <!-- These are all static web assets that are to be copied to the publish output -->
+      <_BlazorExternalPublishStaticWebAssets
+        Include="%(StaticWebAsset.FullPath)"
+        Condition="'%(StaticWebAsset.SourceType)' != ''" />
+
+      <!--
+        We want the intersection of static web assets and ResolvedFilesToPublish that are to be copied to the publish root.
+        _BlazorNonSharedFilesToPublish - set of items that only appear in ResolvedFileToPublish
+        _BlazorSharedFilesToPublish - set of items that appear in both groups are are copied to the publish root.
+      -->
+      <_BlazorNonSharedFilesToPublish Include="@(ResolvedFileToPublish)" Exclude="@(_BlazorExternalPublishStaticWebAssets)" />
+
+      <_BlazorSharedFilesToPublish
+        Include="@(ResolvedFileToPublish)"
+        Exclude="@(_BlazorNonSharedFilesToPublish)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)' == '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)'"
+        />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_BlazorUnstashStaticWebAssets"
+    AfterTargets="_StaticWebAssetsComputeFilesToPublish"
+    Condition="'$(RazorSdkSupportPublishingSharedBinaries)' == '' AND '@(_BlazorSharedFilesToPublish->Count())' != '0'">
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(_BlazorSharedFilesToPublish)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

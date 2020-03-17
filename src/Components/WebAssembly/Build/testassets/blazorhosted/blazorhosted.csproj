@@ -6,6 +6,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\standalone\standalone.csproj" />
+    <ProjectReference Include="..\razorclasslibrary\RazorClassLibrary.csproj" />
   </ItemGroup>
+
+  <!-- Approximating a build transitive reference -->
+  <Import Project="$(BlazorBuildRoot)buildTransitive\netstandard1.0\Microsoft.AspNetCore.Components.WebAssembly.Build.targets" />
 
 </Project>

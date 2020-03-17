@@ -198,6 +198,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+            // Verify project references appear as static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "RazorClassLibrary.dll");
+            // Also verify project references to the server project appear in the publish output
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
