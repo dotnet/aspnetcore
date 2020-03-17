@@ -118,7 +118,7 @@ param(
     [ValidateSet('Debug', 'Release')]
     $Configuration,
 
-    [ValidateSet('x64', 'x86', 'arm')]
+    [ValidateSet('x64', 'x86', 'arm', 'arm64')]
     $Architecture = 'x64',
 
     # A list of projects which should be built.
@@ -157,7 +157,7 @@ param(
 
     # Other lifecycle targets
     [switch]$Help, # Show help
-    
+
     # Optional arguments that enable downloading an internal
     # runtime or runtime from a non-default location
     [string]$DotNetRuntimeSourceFeed,
