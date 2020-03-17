@@ -21,7 +21,8 @@
     <Error Text="blazor.webassembly.js file could not be found at $(_BlazorJsPath)" Condition="!Exists($(_BlazorJsPath))" />
   </Target>
 
-  <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
-  <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)build\netstandard1.0\Microsoft.AspNetCore.Components.WebAssembly.Build.props" />
+  <Import Project="$(MSBuildThisFileDirectory)build\netstandard1.0\Microsoft.AspNetCore.Components.WebAssembly.Build.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)buildTransitive\netstandard1.0\Microsoft.AspNetCore.Components.WebAssembly.Build.targets" />
 
 </Project>
