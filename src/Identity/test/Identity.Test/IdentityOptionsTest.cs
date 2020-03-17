@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Identity.Test
     {
         [Fact]
         public void IHang() {
-            Thread.Sleep(190000);
+            Thread.Sleep(100000);
+            Assert.True(false);
         }
         
         [Fact]
