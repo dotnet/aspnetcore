@@ -139,14 +139,14 @@ NONQUARANTINE_FILTER="Quarantined!=true"
 QUARANTINE_FILTER="Quarantined=true"
 if [ "$quarantined" == true ]; then
     echo "Running all tests including quarantined."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$QUARANTINE_FILTER"
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --settings helixtests.runsettings --logger:xunit --TestCaseFilter:"$QUARANTINE_FILTER"
     if [ $? != 0 ]; then
         echo "Quarantined tests failed!" 1>&2
         # DO NOT EXIT
     fi
 else
     echo "Running non-quarantined tests."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$NONQUARANTINE_FILTER"
+    $DOTNET_ROOT/dotnet vstest $test_binary_path --settings helixtests.runsettings --logger:xunit --TestCaseFilter:"$NONQUARANTINE_FILTER"
     exit_code=$?
     if [ $exit_code != 0 ]; then
         echo "Non-quarantined tests failed!" 1>&2
