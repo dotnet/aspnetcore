@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Claims;
+using System.Threading;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,11 @@ namespace Microsoft.AspNetCore.Identity.Test
 {
     public class IdentityOptionsTest
     {
+        [Fact]
+        public void IHang() {
+            Thread.Sleep(190000);
+        }
+        
         [Fact]
         public void VerifyDefaultOptions()
         {
