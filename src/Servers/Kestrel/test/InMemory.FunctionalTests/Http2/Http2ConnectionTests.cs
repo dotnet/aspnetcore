@@ -39,13 +39,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Wait before sending data
                 await tcs.Task;
 
-                // Send large data (1 larger than window size)
-                await c.Response.Body.WriteAsync(new byte[65536]);
+                // Send large data (3 larger than window size)
+                await c.Response.Body.WriteAsync(new byte[65538]);
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             // Ensure the stream window size is large enough
-            await SendWindowUpdateAsync(streamId: 1, 65536);
+            await SendWindowUpdateAsync(streamId: 1, 65538);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 33,
@@ -71,18 +71,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            // 1 byte is remaining
+            // 3 byte is remaining on stream 1
 
             tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
             // Ensure the stream window size is large enough
-            await SendWindowUpdateAsync(streamId: 3, 65536);
+            await SendWindowUpdateAsync(streamId: 3, 65538);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 33,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
+
+            tcs.SetResult(null);
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
@@ -92,12 +94,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            tcs.SetResult(null);
+            await SendWindowUpdateAsync(streamId: 0, 1);
 
+            // Stream 3 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // Stream 1 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // Stream 3 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // Stream 1 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Stream 1 ends
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // Stream 3 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 3);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
@@ -13,6 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public abstract int ActiveCount { get; }
     }
 
+    /// <summary>
+    /// Provider returns multiple awaitables. Awaitables are completed FIFO.
+    /// </summary>
     internal class MultipleAwaitableProvider : AwaitableProvider
     {
         private Queue<ManualResetValueTaskSource<object>> _awaitableQueue;
@@ -40,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (_awaitableCache.TryDequeue(out var awaitable))
             {
                 // Reset previously used awaitable
+                Debug.Assert(awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
                 awaitable.Reset();
             }
             else
@@ -55,6 +60,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public override int ActiveCount => _awaitableQueue?.Count ?? 0;
     }
 
+    /// <summary>
+    /// Provider has a single awaitable.
+    /// </summary>
     internal class SingleAwaitableProvider : AwaitableProvider
     {
         private ManualResetValueTaskSource<object> _awaitable;
@@ -72,12 +80,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
             else
             {
+                Debug.Assert(_awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
                 _awaitable.Reset();
             }
 
             return _awaitable;
         }
 
-        public override int ActiveCount => _awaitable != null && _awaitable.GetStatus(_awaitable.Version) != ValueTaskSourceStatus.Succeeded ? 1 : 0;
+        public override int ActiveCount => _awaitable != null && _awaitable.GetStatus() != ValueTaskSourceStatus.Succeeded ? 1 : 0;
     }
 }

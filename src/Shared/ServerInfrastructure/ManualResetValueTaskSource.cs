@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public ValueTaskSourceStatus GetStatus(short token) => _core.GetStatus(token);
         public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags) => _core.OnCompleted(continuation, state, token, flags);
 
+        public ValueTaskSourceStatus GetStatus() => _core.GetStatus(_core.Version);
+
         public void TrySetResult(T result)
         {
             if (_core.GetStatus(_core.Version) == ValueTaskSourceStatus.Pending)
