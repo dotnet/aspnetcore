@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
