@@ -124,7 +124,7 @@ namespace InteropTestsClient
 
                     using (var interopClient = new InteropClient(options))
                     {
-                        interopClient.Run().Wait();
+                        interopClient.Run().GetAwaiter().GetResult();
                     }
                 });
         }
@@ -158,7 +158,7 @@ namespace InteropTestsClient
             {
                 var pem = File.ReadAllText("Certs/ca.pem");
                 var certData = GetBytesFromPem(pem, "CERTIFICATE");
-                var cert = new X509Certificate2(certData);
+                var cert = new X509Certificate2(certData!);
 
                 httpClientHandler.ClientCertificates.Add(cert);
             }

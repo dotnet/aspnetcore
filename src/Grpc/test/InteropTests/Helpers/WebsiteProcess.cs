@@ -36,7 +36,7 @@ namespace InteropTests.Helpers
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 FileName = "dotnet.exe",
-                Arguments = $"run --no-build -p {path} -c {attributes.Single(a => a.Key == "Configuration").Value}"
+                Arguments = path
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;

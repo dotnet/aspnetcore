@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -14,7 +14,7 @@
 
     <Reference Include="CommandLineParser" />
     <Reference Include="Google.Protobuf" />
-    <Reference Include="Grpc.Auth" PrivateAssets="All" />
+    <Reference Include="Grpc.Auth" />
     <Reference Include="Grpc.Net.Client" />
     <Reference Include="Grpc.Tools" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />

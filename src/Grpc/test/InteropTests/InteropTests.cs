@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace InteropTests
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
-        private readonly string _clientPath;
+        private readonly string _clientPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropClient", "InteropClient.dll");
         private readonly InteropTestsFixture _fixture;
         private readonly ITestOutputHelper _output;
 
@@ -26,8 +27,7 @@ namespace InteropTests
             var attributes = Assembly.GetExecutingAssembly()
                 .GetCustomAttributes<AssemblyMetadataAttribute>();
 
-            fixture.Path = attributes.Single(a => a.Key == "InteropTestsWebsiteDir").Value;
-            _clientPath = attributes.Single(a => a.Key == "InteropTestsClientDir").Value;
+            fixture.Path = Path.Combine(Directory.GetCurrentDirectory(), "InteropWebsite", "InteropWebsite.dll");
 
             _fixture = fixture;
             _output = output;

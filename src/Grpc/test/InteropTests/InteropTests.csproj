@@ -1,41 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\..\Shared\Process\ProcessEx.cs" Link="Helpers\ProcessEx.cs" />
     <Compile Include="..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <InteropTestsAssestsDir>$(RepoRoot)src\Grpc\test\testassets</InteropTestsAssestsDir>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>InteropTestsWebsiteDir</_Parameter1>
-      <_Parameter2>$(InteropTestsAssestsDir)\InteropWebsite</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>InteropTestsClientDir</_Parameter1>
-      <_Parameter2>$(InteropTestsAssestsDir)\InteropClient</_Parameter2>
-    </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ServerLogPath</_Parameter1>
       <_Parameter2>$(ArtifactsLogDir)InteropServer.log</_Parameter2>
     </AssemblyAttribute>
 
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Configuration</_Parameter1>
-      <_Parameter2>$(Configuration)</_Parameter2>
-    </AssemblyAttribute>
-
-    <ProjectReference Include="..\testassets\InteropClient\InteropClient.csproj" ReferenceOutputAssembly="false"/>
-    <ProjectReference Include="..\testassets\InteropWebsite\InteropWebsite.csproj" ReferenceOutputAssembly="false"/>
+    <FunctionalTestAssetProjectReference Include="..\testassets\InteropClient\InteropClient.csproj" />
+    <FunctionalTestAssetProjectReference Include="..\testassets\InteropWebsite\InteropWebsite.csproj" />
   </ItemGroup>
 
 </Project>

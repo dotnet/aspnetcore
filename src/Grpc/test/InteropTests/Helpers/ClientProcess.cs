@@ -23,7 +23,7 @@ namespace InteropTests.Helpers
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 FileName = "dotnet.exe",
-                Arguments = @$"run -p {path} --use_tls false --server_port {serverPort} --client_type httpclient --test_case {testCase}"
+                Arguments = @$"{path} --use_tls false --server_port {serverPort} --client_type httpclient --test_case {testCase}"
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
