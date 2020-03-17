@@ -197,17 +197,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void Remove_Is_Case_Insensitive()
         {
             var projectPath = _fixture.GetTempSecretProject();
             var secretManager = CreateProgram();
-            secretManager.RunInternal("set", "SeCreT1", "value", "-p", projectPath);
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("set", "SeCreT1", "value", "-p", projectPath, "--verbose");
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
             Assert.Contains("SeCreT1 = value", _console.GetOutput());
-            secretManager.RunInternal("remove", "secret1", "-p", projectPath);
+            secretManager.RunInternal("remove", "secret1", "-p", projectPath, "--verbose");
 
             _console.ClearOutput();
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
 
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
