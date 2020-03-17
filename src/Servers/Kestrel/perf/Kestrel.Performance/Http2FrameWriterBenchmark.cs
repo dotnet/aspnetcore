@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 new NullPipeWriter(),
                 connectionContext: null,
                 http2Connection: null,
-                new OutputFlowControl(initialWindowSize: uint.MaxValue),
+                new OutputFlowControl(new SingleAwaitableProvider(), initialWindowSize: uint.MaxValue),
                 timeoutControl: null,
                 minResponseDataRate: null,
                 "TestConnectionId",

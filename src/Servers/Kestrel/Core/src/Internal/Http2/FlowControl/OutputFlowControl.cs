@@ -3,17 +3,19 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
     internal class OutputFlowControl
     {
         private FlowControl _flow;
-        private ReusableQueue<ManualResetValueTaskSource<object>> _awaitableQueue;
+        private readonly AwaitableProvider _awaitableProvider;
 
-        public OutputFlowControl(uint initialWindowSize)
+        public OutputFlowControl(AwaitableProvider awaitableProvider, uint initialWindowSize)
         {
             _flow = new FlowControl(initialWindowSize);
+            _awaitableProvider = awaitableProvider;
         }
 
         public int Available => _flow.Available;
@@ -26,24 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
                 Debug.Assert(!_flow.IsAborted, $"({nameof(AvailabilityAwaitable)} accessed after abort.");
                 Debug.Assert(_flow.Available <= 0, $"({nameof(AvailabilityAwaitable)} accessed with {Available} bytes available.");
 
-                if (_awaitableQueue == null)
-                {
-                    _awaitableQueue = new ReusableQueue<ManualResetValueTaskSource<object>>();
-                }
-
-                // First attempt to reuse an existing awaitable in the queue
-                // to save allocating a new instance.
-                if (_awaitableQueue.TryEnqueueExisting(out var awaitable))
-                {
-                    awaitable.Reset();
-                }
-                else
-                {
-                    awaitable = new ManualResetValueTaskSource<object>();
-                    _awaitableQueue.Enqueue(awaitable);
-                }
-
-                return awaitable;
+                return _awaitableProvider.GetAwaitable();
             }
         }
 
@@ -52,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // When output flow control is reused the client window size needs to be reset.
             // The client might have changed the window size before the stream is reused.
             _flow = new FlowControl(initialWindowSize);
-            Debug.Assert((_awaitableQueue?.Count ?? 0) == 0, "Queue should have been emptied by the previous stream.");
+            Debug.Assert(_awaitableProvider.ActiveCount == 0, "Queue should have been emptied by the previous stream.");
         }
 
         public void Advance(int bytes)
@@ -67,9 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         {
             if (_flow.TryUpdateWindow(bytes))
             {
-                while (_flow.Available > 0 && _awaitableQueue?.Count > 0)
+                while (_flow.Available > 0 && _awaitableProvider.ActiveCount > 0)
                 {
-                    _awaitableQueue.Dequeue().TrySetResult(null);
+                    _awaitableProvider.CompleteCurrent();
                 }
 
                 return true;
@@ -83,9 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // Make sure to set the aborted flag before running any continuations.
             _flow.Abort();
 
-            while (_awaitableQueue?.Count > 0)
+            while (_awaitableProvider.ActiveCount > 0)
             {
-                _awaitableQueue.Dequeue().TrySetResult(null);
+                _awaitableProvider.CompleteCurrent();
             }
         }
     }

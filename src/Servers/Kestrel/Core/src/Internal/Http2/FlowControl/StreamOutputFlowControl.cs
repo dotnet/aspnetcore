@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public StreamOutputFlowControl(OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
         {
             _connectionLevelFlowControl = connectionLevelFlowControl;
-            _streamLevelFlowControl = new OutputFlowControl(initialWindowSize);
+            _streamLevelFlowControl = new OutputFlowControl(new SingleAwaitableProvider(), initialWindowSize);
         }
 
         public int Available => Math.Min(_connectionLevelFlowControl.Available, _streamLevelFlowControl.Available);
