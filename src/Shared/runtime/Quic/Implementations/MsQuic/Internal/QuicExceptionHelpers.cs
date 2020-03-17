@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
     internal static class QuicExceptionHelpers
     {
-        internal static void ThrowIfFailed(uint status, string message = null, Exception innerException = null)
+        internal static void ThrowIfFailed(uint status, string? message = null, Exception? innerException = null)
         {
             if (!MsQuicStatusHelper.SuccessfulStatusCode(status))
             {

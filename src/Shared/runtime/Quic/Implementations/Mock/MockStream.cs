@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -17,9 +18,9 @@ namespace System.Net.Quic.Implementations.Mock
         private bool _canRead;
         private bool _canWrite;
 
-        private MockConnection _connection;
+        private MockConnection? _connection;
 
-        private Socket _socket = null;
+        private Socket? _socket = null;
 
         // Constructor for outbound streams
         internal MockStream(MockConnection connection, long streamId, bool bidirectional)
@@ -69,7 +70,7 @@ namespace System.Net.Quic.Implementations.Mock
                 throw new NotSupportedException();
             }
 
-            return _socket.Receive(buffer);
+            return _socket!.Receive(buffer);
         }
 
         internal override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
@@ -86,7 +87,7 @@ namespace System.Net.Quic.Implementations.Mock
                 await ConnectAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            return await _socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+            return await _socket!.ReceiveAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
         }
 
         internal override bool CanWrite => _canWrite;
@@ -100,7 +101,7 @@ namespace System.Net.Quic.Implementations.Mock
                 throw new NotSupportedException();
             }
 
-            _socket.Send(buffer);
+            _socket!.Send(buffer);
         }
 
         internal override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
@@ -121,11 +122,11 @@ namespace System.Net.Quic.Implementations.Mock
             {
                 await ConnectAsync(cancellationToken).ConfigureAwait(false);
             }
-            await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+            await _socket!.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
 
             if (endStream)
             {
-                _socket.Shutdown(SocketShutdown.Send);
+                _socket!.Shutdown(SocketShutdown.Send);
             }
         }
 
@@ -149,12 +150,12 @@ namespace System.Net.Quic.Implementations.Mock
 
             foreach (ReadOnlyMemory<byte> buffer in buffers)
             {
-                await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                await _socket!.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
             }
 
             if (endStream)
             {
-                _socket.Shutdown(SocketShutdown.Send);
+                _socket!.Shutdown(SocketShutdown.Send);
             }
         }
 
@@ -178,12 +179,12 @@ namespace System.Net.Quic.Implementations.Mock
 
             foreach (ReadOnlyMemory<byte> buffer in buffers.ToArray())
             {
-                await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                await _socket!.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
             }
 
             if (endStream)
             {
-                _socket.Shutdown(SocketShutdown.Send);
+                _socket!.Shutdown(SocketShutdown.Send);
             }
         }
 
@@ -221,7 +222,7 @@ namespace System.Net.Quic.Implementations.Mock
         {
             CheckDisposed();
 
-            _socket.Shutdown(SocketShutdown.Send);
+            _socket!.Shutdown(SocketShutdown.Send);
         }
 
         private void CheckDisposed()

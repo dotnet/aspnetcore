@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,7 +24,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private StreamCallbackDelegate _callback;
+        private StreamCallbackDelegate? _callback;
 
         // Backing for StreamId
         private long _streamId = -1;
@@ -424,7 +425,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
-            return default;
+            return default!;
         }
 
         public override ValueTask DisposeAsync()
@@ -500,7 +501,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             ref StreamEvent streamEvent)
         {
             var handle = GCHandle.FromIntPtr(context);
-            var quicStream = (MsQuicStream)handle.Target;
+            var quicStream = (MsQuicStream)handle.Target!;
 
             return quicStream.HandleEvent(ref streamEvent);
         }

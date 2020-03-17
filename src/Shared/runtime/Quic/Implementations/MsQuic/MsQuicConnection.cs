@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.IO;
 using System.Net.Quic.Implementations.MsQuic.Internal;
 using System.Net.Security;
@@ -16,7 +17,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 {
     internal sealed class MsQuicConnection : QuicConnectionProvider
     {
-        private MsQuicSession _session;
+        private MsQuicSession? _session;
 
         // Pointer to the underlying connection
         // TODO replace all IntPtr with SafeHandles
@@ -27,10 +28,10 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         // Delegate that wraps the static function that will be called when receiving an event.
         // TODO investigate if the delegate can be static instead.
-        private ConnectionCallbackDelegate _connectionDelegate;
+        private ConnectionCallbackDelegate? _connectionDelegate;
 
         // Endpoint to either connect to or the endpoint already accepted.
-        private IPEndPoint _localEndPoint;
+        private IPEndPoint? _localEndPoint;
         private readonly IPEndPoint _remoteEndPoint;
 
         private readonly ResettableCompletionSource<uint> _connectTcs = new ResettableCompletionSource<uint>();
@@ -38,7 +39,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private bool _disposed;
         private bool _connected;
-        private MsQuicSecurityConfig _securityConfig;
+        private MsQuicSecurityConfig? _securityConfig;
         private long _abortErrorCode = -1;
 
         // Queue for accepted streams
@@ -70,7 +71,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             // Creating a session per connection isn't ideal.
             _session = new MsQuicSession();
             _ptr = _session.ConnectionOpen(options);
-            _remoteEndPoint = options.RemoteEndPoint;
+            _remoteEndPoint = options.RemoteEndPoint!;
 
             SetCallbackHandler();
             SetIdleTimeout(options.IdleTimeout);
@@ -82,15 +83,15 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             get
             {
-                return new IPEndPoint(_localEndPoint.Address, _localEndPoint.Port);
+                return new IPEndPoint(_localEndPoint!.Address, _localEndPoint.Port);
             }
         }
 
-        internal async ValueTask SetSecurityConfigForConnection(X509Certificate cert, string certFilePath, string privateKeyFilePath)
+        internal async ValueTask SetSecurityConfigForConnection(X509Certificate cert, string? certFilePath, string? privateKeyFilePath)
         {
             _securityConfig = await MsQuicApi.Api.CreateSecurityConfig(cert, certFilePath, privateKeyFilePath);
             // TODO this isn't being set correctly
-            MsQuicParameterHelpers.SetSecurityConfig(MsQuicApi.Api, _ptr, (uint)QUIC_PARAM_LEVEL.CONNECTION, (uint)QUIC_PARAM_CONN.SEC_CONFIG, _securityConfig.NativeObjPtr);
+            MsQuicParameterHelpers.SetSecurityConfig(MsQuicApi.Api, _ptr, (uint)QUIC_PARAM_LEVEL.CONNECTION, (uint)QUIC_PARAM_CONN.SEC_CONFIG, _securityConfig!.NativeObjPtr);
         }
 
         internal override IPEndPoint RemoteEndPoint => new IPEndPoint(_remoteEndPoint.Address, _remoteEndPoint.Port);
@@ -355,7 +356,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             ref ConnectionEvent connectionEventStruct)
         {
             GCHandle handle = GCHandle.FromIntPtr(context);
-            MsQuicConnection quicConnection = (MsQuicConnection)handle.Target;
+            MsQuicConnection quicConnection = (MsQuicConnection)handle.Target!;
             return quicConnection.HandleEvent(ref connectionEventStruct);
         }
 

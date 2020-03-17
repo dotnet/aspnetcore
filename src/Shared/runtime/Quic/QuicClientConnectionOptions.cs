@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Net.Security;
 
 namespace System.Net.Quic
@@ -14,17 +15,17 @@ namespace System.Net.Quic
         /// <summary>
         /// Client authentication options to use when establishing a <see cref="QuicConnection"/>.
         /// </summary>
-        public SslClientAuthenticationOptions ClientAuthenticationOptions { get; set; }
+        public SslClientAuthenticationOptions? ClientAuthenticationOptions { get; set; }
 
         /// <summary>
         /// The local endpoint that will be bound to.
         /// </summary>
-        public IPEndPoint LocalEndPoint { get; set; }
+        public IPEndPoint? LocalEndPoint { get; set; }
 
         /// <summary>
         /// The endpoint to connect to.
         /// </summary>
-        public IPEndPoint RemoteEndPoint { get; set; }
+        public IPEndPoint? RemoteEndPoint { get; set; }
 
         /// <summary>
         /// Limit on the number of bidirectional streams the peer connection can create

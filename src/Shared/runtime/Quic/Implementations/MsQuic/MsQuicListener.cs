@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Net.Quic.Implementations.MsQuic.Internal;
 using System.Net.Security;
 using System.Runtime.InteropServices;
@@ -25,7 +26,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private ListenerCallbackDelegate _listenerDelegate;
+        private ListenerCallbackDelegate? _listenerDelegate;
 
         // Ssl listening options (ALPN, cert, etc)
         private SslServerAuthenticationOptions _sslOptions;
@@ -46,8 +47,8 @@ namespace System.Net.Quic.Implementations.MsQuic
             });
 
             _options = options;
-            _sslOptions = options.ServerAuthenticationOptions;
-            _listenEndPoint = options.ListenEndPoint;
+            _sslOptions = options.ServerAuthenticationOptions!;
+            _listenEndPoint = options.ListenEndPoint!;
 
             _ptr = _session.ListenerOpen(options);
         }
@@ -77,7 +78,7 @@ namespace System.Net.Quic.Implementations.MsQuic
                 throw new QuicOperationAbortedException();
             }
 
-            await connection.SetSecurityConfigForConnection(_sslOptions.ServerCertificate,
+            await connection.SetSecurityConfigForConnection(_sslOptions.ServerCertificate!,
                 _options.CertificateFilePath,
                 _options.PrivateKeyFilePath);
 
@@ -187,7 +188,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             ref ListenerEvent connectionEventStruct)
         {
             GCHandle handle = GCHandle.FromIntPtr(context);
-            MsQuicListener quicListener = (MsQuicListener)handle.Target;
+            MsQuicListener quicListener = (MsQuicListener)handle.Target!;
 
             return quicListener.ListenerCallbackHandler(ref connectionEventStruct);
         }
