@@ -98,17 +98,22 @@ if [ -d "Microsoft.AspNetCore.App" ]
 then
     echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
     cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
-    
+
     echo "Adding current directory to nuget sources: $DIR"
     dotnet nuget add source $DIR
     dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
     dotnet nuget list source
-    
+
     dotnet tool install dotnet-ef --global --version $efVersion
-    
+
     # Ensure tools are on on PATH
     export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
-    
+fi
+
+# Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
+if [ ! -f "xunit.runner.json" ]
+then
+    cp default.runner.json xunit.runner.json
 fi
 
 if [ -e /proc/self/coredump_filter ]; then

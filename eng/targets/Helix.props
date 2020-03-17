@@ -5,7 +5,7 @@
   <ItemDefinitionGroup>
     <HelixContent>
       <CopyToBuildDirectory>Never</CopyToBuildDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </HelixContent>
   </ItemDefinitionGroup>
 
