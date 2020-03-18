@@ -86,6 +86,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             tcs.SetResult(null);
 
+            // Pause to ensure that data from the second stream is queued
+            // and waiting for window updates
+            await Task.Delay(200);
+
             await SendWindowUpdateAsync(streamId: 0, 1);
 
             // FIFO means stream 1 returns data first
