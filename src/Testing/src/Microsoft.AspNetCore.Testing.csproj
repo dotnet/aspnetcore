@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
@@ -19,7 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Win32.Registry" />
+    <Reference Include="Serilog.Extensions.Logging" />
+    <Reference Include="Serilog.Sinks.File" />
     <Reference Include="System.ValueTuple" />
 
     <!--
@@ -34,7 +37,7 @@
     <Reference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>

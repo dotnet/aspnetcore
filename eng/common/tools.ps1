@@ -635,7 +635,7 @@ function MSBuild-Core() {
   $exitCode = Exec-Process $buildTool.Path $cmdArgs
 
   if ($exitCode -ne 0) {
-    Write-PipelineTelemetryError Category 'Build' -Message 'Build failed.'
+    Write-PipelineTelemetryError -Category 'Build' -Message 'Build failed.'
 
     $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
     if ($buildLog -ne $null) {

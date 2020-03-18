@@ -10,7 +10,7 @@ namespace System.Net.Quic.Implementations.Mock
     {
         internal override QuicListenerProvider CreateListener(QuicListenerOptions options)
         {
-            return new MockListener(options.ListenEndPoint, options.ServerAuthenticationOptions);
+            return new MockListener(options.ListenEndPoint!, options.ServerAuthenticationOptions);
         }
 
         internal override QuicConnectionProvider CreateConnection(QuicClientConnectionOptions options)

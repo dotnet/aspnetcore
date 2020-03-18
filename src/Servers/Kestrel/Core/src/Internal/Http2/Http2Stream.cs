@@ -17,12 +17,13 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem, IDisposable
     {
         private Http2StreamContext _context;
         private Http2OutputProducer _http2Output;
         private StreamInputFlowControl _inputFlowControl;
         private StreamOutputFlowControl _outputFlowControl;
+        private Http2MessageBody _messageBody;
 
         private bool _decrementCalled;
 
@@ -170,7 +171,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this);
+        {
+            if (ReceivedEmptyRequestBody)
+            {
+                return MessageBody.ZeroContentLengthClose;
+            }
+
+            if (_messageBody != null)
+            {
+                _messageBody.Reset();
+            }
+            else
+            {
+                _messageBody = new Http2MessageBody(this);
+            }
+
+            return _messageBody;
+        }
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -587,6 +604,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
         public abstract void Execute();
+
+        public void Dispose()
+        {
+            _http2Output.Dispose();
+        }
 
         [Flags]
         private enum StreamCompletionFlags

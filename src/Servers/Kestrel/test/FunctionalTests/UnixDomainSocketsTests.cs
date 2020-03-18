@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #endif
         [ConditionalFact]
         [CollectDump]
-        [QuarantinedTest]
         public async Task TestUnixDomainSocket()
         {
             var path = Path.GetTempFileName();

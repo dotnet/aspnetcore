@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -184,7 +185,8 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCancelledTask_TreatAsFailure()
+        [QuarantinedTest]
+        public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCanceledTask_TreatAsFailure()
         {
             // Arrange
             var validationTcs = new TaskCompletionSource<bool>();
@@ -200,11 +202,11 @@ namespace Microsoft.AspNetCore.Components
             var firstRevalidationCall = provider.RevalidationCallLog.Single();
             Assert.Equal(0, authenticationStateChangedCount);
 
-            // Act: ValidateAuthenticationStateAsync returns cancelled task, but the cancellation
+            // Act: ValidateAuthenticationStateAsync returns canceled task, but the cancellation
             // is unrelated to the CT we supplied
             validationTcs.TrySetCanceled(new CancellationTokenSource().Token);
 
-            // Assert: Since we didn't ask for that operation to be cancelled, this is treated as
+            // Assert: Since we didn't ask for that operation to be canceled, this is treated as
             // a failure to validate, so we force a logout
             Assert.Equal(1, authenticationStateChangedCount);
             var newAuthState = await provider.GetAuthenticationStateAsync();

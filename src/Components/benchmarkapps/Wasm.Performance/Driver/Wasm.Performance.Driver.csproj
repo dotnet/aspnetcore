@@ -6,6 +6,8 @@
 
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>

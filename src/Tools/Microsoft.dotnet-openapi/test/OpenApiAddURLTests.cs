@@ -17,7 +17,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         public OpenApiAddURLTests(ITestOutputHelper output) : base(output){ }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_WithContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -50,7 +49,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenAPI_Add_Url_NoContentDisposition()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -84,7 +82,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenAPI_Add_Url_NoExtension_AssumesJson()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -118,7 +115,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_NoSegment()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -152,7 +148,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -185,7 +180,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_SameName_UniqueFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -246,7 +240,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_NSwagCSharp()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -279,7 +272,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -312,7 +304,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_Url_OutputFile()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -345,7 +336,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -404,7 +394,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void OpenApi_Add_URL_MultipleTimes_OnlyOneReference()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -431,7 +420,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task OpenAPi_Add_URL_InvalidUrl()
         {
             var project = CreateBasicProject(withOpenApi: false);
@@ -459,7 +447,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.False(File.Exists(jsonFile));
         }
 
-        [QuarantinedTest]
         [Fact]
         public void OpenApi_Add_URL_ActualResponse()
         {

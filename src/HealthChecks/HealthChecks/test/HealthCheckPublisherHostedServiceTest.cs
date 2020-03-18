@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             };
 
             var service = CreateService(publishers);
-            
+
             try
             {
                 await service.StartAsync();
@@ -214,7 +214,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
                 entry => { Assert.Contains(entry.EventId, new[] { DefaultHealthCheckService.EventIds.HealthCheckBegin, DefaultHealthCheckService.EventIds.HealthCheckEnd }); },
                 entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); }, 
+                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); },
                 entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherBegin, entry.EventId); },
                 entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherEnd, entry.EventId); },
                 entry => { Assert.Equal(HealthCheckPublisherHostedService.EventIds.HealthCheckPublisherProcessingEnd, entry.EventId); });
@@ -274,6 +274,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task RunAsync_PublishersCanTimeout()
         {
             // Arrange
@@ -440,7 +441,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         private HealthCheckPublisherHostedService CreateService(
-            IHealthCheckPublisher[] publishers, 
+            IHealthCheckPublisher[] publishers,
             Action<HealthCheckPublisherOptions> configure = null,
             TestSink sink = null)
         {

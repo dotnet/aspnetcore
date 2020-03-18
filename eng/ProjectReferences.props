@@ -6,8 +6,6 @@
 <Project>
   <ItemGroup>
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepoRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" ProjectPath="$(RepoRoot)src\DataProtection\AzureKeyVault\src\Microsoft.AspNetCore.DataProtection.AzureKeyVault.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.AzureStorage" ProjectPath="$(RepoRoot)src\DataProtection\AzureStorage\src\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" ProjectPath="$(RepoRoot)src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" ProjectPath="$(RepoRoot)src\DataProtection\StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.TestHost" ProjectPath="$(RepoRoot)src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj"  />
@@ -18,7 +16,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.Specification.Tests" ProjectPath="$(RepoRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.UI" ProjectPath="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Facebook" ProjectPath="$(RepoRoot)src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Google" ProjectPath="$(RepoRoot)src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj"  />

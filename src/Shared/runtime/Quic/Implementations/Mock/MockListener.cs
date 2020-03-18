@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Threading.Tasks;
@@ -13,11 +14,11 @@ namespace System.Net.Quic.Implementations.Mock
     internal sealed class MockListener : QuicListenerProvider
     {
         private bool _disposed = false;
-        private SslServerAuthenticationOptions _sslOptions;
+        private SslServerAuthenticationOptions? _sslOptions;
         private IPEndPoint _listenEndPoint;
-        private TcpListener _tcpListener = null;
+        private TcpListener _tcpListener;
 
-        internal MockListener(IPEndPoint listenEndPoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
+        internal MockListener(IPEndPoint listenEndPoint, SslServerAuthenticationOptions? sslServerAuthenticationOptions)
         {
             if (listenEndPoint == null)
             {
@@ -49,7 +50,7 @@ namespace System.Net.Quic.Implementations.Mock
             } while (bytesRead != buffer.Length);
 
             int peerListenPort = BinaryPrimitives.ReadInt32LittleEndian(buffer);
-            IPEndPoint peerListenEndPoint = new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address, peerListenPort);
+            IPEndPoint peerListenEndPoint = new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint!).Address, peerListenPort);
 
             // Listen on a new local endpoint for inbound streams
             TcpListener inboundListener = new TcpListener(_listenEndPoint.Address, 0);
@@ -96,7 +97,7 @@ namespace System.Net.Quic.Implementations.Mock
                 if (disposing)
                 {
                     _tcpListener?.Stop();
-                    _tcpListener = null;
+                    _tcpListener = null!;
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

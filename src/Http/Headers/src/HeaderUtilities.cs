@@ -562,6 +562,11 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value to be formatted must be non-negative.");
             }
 
+            if (value == 0)
+            {
+                return "0";
+            }
+
             var position = _int64MaxStringLength;
             char* charBuffer = stackalloc char[_int64MaxStringLength];
 

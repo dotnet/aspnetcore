@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public ConnectionReference(KestrelConnection connection)
         {
             _weakReference = new WeakReference<KestrelConnection>(connection);
-            ConnectionId = connection.GetTransport().ConnectionId;
+            ConnectionId = connection.TransportConnection.ConnectionId;
         }
 
         public string ConnectionId { get; }

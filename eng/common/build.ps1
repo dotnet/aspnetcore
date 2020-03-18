@@ -26,6 +26,11 @@ Param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
+# Unset 'Platform' environment variable to avoid unwanted collision in InstallDotNetCore.targets file
+# some computer has this env var defined (e.g. Some HP)
+if($env:Platform) {
+  $env:Platform=""  
+}
 function Print-Usage() {
   Write-Host "Common settings:"
   Write-Host "  -configuration <value>  Build configuration: 'Debug' or 'Release' (short: -c)"

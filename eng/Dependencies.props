@@ -94,6 +94,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.osx-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
@@ -161,10 +162,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4StoragePackageVersion)" />
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Azure.Storage.Blob" Version="$(MicrosoftAzureStorageBlobPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />

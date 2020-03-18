@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var complete = await connection.ReadSentJsonAsync().OrTimeout();
                 Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
                 Assert.EndsWith("canceled by client.", ((string)complete["error"]));
-            } 
+            }
         }
 
         [Fact]
@@ -409,6 +409,59 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.True(false);
                 }
                 catch (Exception)
+                {
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanAwaitInvokeFromOnHandlerWithServerClosingConnection()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.On<string>("Echo", async msg =>
+                {
+                    try
+                    {
+                        // This should be canceled when the connection is closed
+                        await hubConnection.InvokeAsync<string>("Echo", msg).OrTimeout();
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                        return;
+                    }
+
+                    tcs.SetResult(null);
+                });
+
+                var closedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.Closed += _ =>
+                {
+                    closedTcs.SetResult(null);
+
+                    return Task.CompletedTask;
+                };
+
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target = "Echo", arguments = new object[] { "42" } });
+
+                // Read sent message first to make sure invoke has been processed and is waiting for a response
+                await connection.ReadSentJsonAsync().OrTimeout();
+                await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType });
+
+                await closedTcs.Task.OrTimeout();
+
+                try
+                {
+                    await tcs.Task.OrTimeout();
+                    Assert.True(false);
+                }
+                catch (TaskCanceledException)
                 {
                 }
             }

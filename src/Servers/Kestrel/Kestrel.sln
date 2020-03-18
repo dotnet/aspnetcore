@@ -86,7 +86,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http2cat", "samples\http2ca
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleApp", "samples\QuicSampleApp\QuicSampleApp.csproj", "{53A8634C-DFC5-4A5B-8864-9EF1707E3F18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic", "Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj", "{62CFF861-807E-43F6-9403-22AA7F06C9A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic", "Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj", "{62CFF861-807E-43F6-9403-22AA7F06C9A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleClient", "samples\QuicSampleClient\QuicSampleClient.csproj", "{F39A942B-85A8-4C1B-A5BC-435555E79F20}"
 EndProject

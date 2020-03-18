@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public abstract BaseConnectionContext GetTransport();
+        public abstract BaseConnectionContext TransportConnection { get; }
 
         public void OnHeartbeat(Action<object> action, object state)
         {

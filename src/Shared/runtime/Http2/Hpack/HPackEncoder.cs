@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace System.Net.Http.HPack
@@ -370,7 +372,7 @@ namespace System.Net.Http.HPack
             return false;
         }
 
-        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string? separator, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = 0;
 
@@ -393,6 +395,7 @@ namespace System.Net.Http.HPack
                     valueLength = checked((int)(valueLength + part.Length));
                 }
 
+                Debug.Assert(separator != null);
                 valueLength = checked((int)(valueLength + (values.Length - 1) * separator.Length));
 
                 destination[0] = 0;
