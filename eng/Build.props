@@ -135,6 +135,7 @@
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
+                          $(RepoRoot)src\Grpc\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
                           $(RepoRoot)src\Html\**\*.*proj;
