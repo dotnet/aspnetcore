@@ -52,7 +52,6 @@ namespace Microsoft.AspNetCore.Builder
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
             };
-            RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
             var debugProxyProcess = Process.Start(processStartInfo);
             CompleteTaskWhenServerIsReady(debugProxyProcess, tcs);
@@ -63,20 +62,6 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             return await tcs.Task;
-        }
-
-        private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string> environment)
-        {
-            // Generally we expect to pass through most environment variables, since dotnet might
-            // need them for arbitrary reasons to function correctly. However, we specifically don't
-            // want to pass through any ASP.NET Core hosting related ones, since the child process
-            // shouldn't be trying to use the same port numbers, etc. In particular we need to break
-            // the association with IISExpress and the MS-ASPNETCORE-TOKEN check.
-            var keysToRemove = environment.Keys.Where(key => key.StartsWith("ASPNETCORE_")).ToList();
-            foreach (var key in keysToRemove)
-            {
-                environment.Remove(key);
-            }
         }
 
         private static string LocateDebugProxyExecutable(IWebHostEnvironment environment)
