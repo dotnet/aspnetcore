@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _streamLevelFlowControl.Advance(bytes);
         }
 
-        public int AdvanceUpToAndWait(long bytes, out ManualResetValueTaskSource<object> awaitable)
+        public int AdvanceUpToAndWait(long bytes, out ValueTask<object> availabilityTask)
         {
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;
@@ -55,19 +56,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _connectionLevelFlowControl.Advance(actual);
             _streamLevelFlowControl.Advance(actual);
 
-            awaitable = null;
+            availabilityTask = default;
             _currentConnectionLevelAwaitable = null;
             _currentConnectionLevelAwaitableVersion = -1;
 
             if (actual < bytes)
             {
-                awaitable = leastAvailableFlow.AvailabilityAwaitable;
+                var awaitable = leastAvailableFlow.AvailabilityAwaitable;
 
                 if (leastAvailableFlow == _connectionLevelFlowControl)
                 {
                     _currentConnectionLevelAwaitable = awaitable;
                     _currentConnectionLevelAwaitableVersion = awaitable.Version;
                 }
+
+                availabilityTask = new ValueTask<object>(awaitable, awaitable.Version);
             }
 
             return actual;
@@ -91,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (_currentConnectionLevelAwaitable != null &&
                 _currentConnectionLevelAwaitable.Version == _currentConnectionLevelAwaitableVersion)
             {
-                _currentConnectionLevelAwaitable.TrySetResult(null);
+                _currentConnectionLevelAwaitable.SetResult(null);
             }
         }
 

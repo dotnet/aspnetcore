@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             while (dataLength > 0)
             {
-                ManualResetValueTaskSource<object> availabilityAwaitable;
+                ValueTask<object> availabilityTask;
                 var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
-                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
+                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityTask);
 
                     if (actual > 0)
                     {
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
-                if (availabilityAwaitable == null && writeTask.IsCompleted)
+                if (availabilityTask.IsCompleted && writeTask.IsCompleted)
                 {
                     continue;
                 }
@@ -417,9 +417,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 // This awaitable releases continuations in FIFO order when the window updates.
                 // It should be very rare for a continuation to run without any availability.
-                if (availabilityAwaitable != null)
+                if (!availabilityTask.IsCompleted)
                 {
-                    await new ValueTask<object>(availabilityAwaitable, availabilityAwaitable.Version);
+                    await availabilityTask;
                 }
 
                 flushResult = await writeTask;
