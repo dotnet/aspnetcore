@@ -39,8 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
-        // Internal for testing
-        internal readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
+        private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();

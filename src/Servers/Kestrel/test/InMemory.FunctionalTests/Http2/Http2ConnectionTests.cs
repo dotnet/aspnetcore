@@ -29,18 +29,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async c =>
             {
                 // Send headers
                 await c.Response.Body.FlushAsync();
 
-                // Wait before sending data
-                await tcs.Task;
-
                 // Send large data (3 larger than window size)
-                await c.Response.Body.WriteAsync(new byte[65538]);
+                var writeTask = c.Response.Body.WriteAsync(new byte[65538]);
+
+                // Notify test that write has started
+                writeTcs.SetResult(null);
+
+                // Wait for write to complete
+                await writeTask;
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
 
-            tcs.SetResult(null);
+            await writeTcs.Task;
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // 3 byte is remaining on stream 1
 
-            tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
             // Ensure the stream window size is large enough
@@ -84,14 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
 
-            tcs.SetResult(null);
-
-            // Pause to ensure that data from the second stream is queued
-            // and waiting for window updates
-            while (_connection._outputFlowControl.ActiveAwaitableCount < 2)
-            {
-                await Task.Delay(1);
-            }
+            await writeTcs.Task;
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
