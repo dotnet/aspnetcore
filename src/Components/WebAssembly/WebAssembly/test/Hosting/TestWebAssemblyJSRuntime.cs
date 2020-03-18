@@ -1,25 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop.WebAssembly;
-using Moq;
+using System;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
-    public class TestWebAssemblyJSRuntime
+    internal class TestWebAssemblyJSRuntimeInvoker : WebAssemblyJSRuntimeInvoker
     {
-        public static WebAssemblyJSRuntime Create(string environment = "Production")
+        private readonly string _environment;
+
+        public TestWebAssemblyJSRuntimeInvoker(string environment = "Production")
         {
-            var jsRuntime = new Mock<WebAssemblyJSRuntime>();
-            jsRuntime.Setup(j => j.InvokeUnmarshalled<object, object, object, string>("Blazor._internal.getApplicationEnvironment", null, null, null))
-                .Returns(environment)
-                .Verifiable();
+            _environment = environment;
+        }
 
-            jsRuntime.Setup(j => j.InvokeUnmarshalled<string, object, object, byte[]>("Blazor._internal.getConfig", It.IsAny<string>(), null, null))
-                .Returns((byte[])null)
-                .Verifiable();
-
-            return jsRuntime.Object;
+        public override TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        {
+            switch (identifier)
+            {
+                case "Blazor._internal.getApplicationEnvironment":
+                    return (TResult)(object)_environment;
+                case "Blazor._internal.getConfig":
+                    return (TResult)(object)null;
+                default:
+                    throw new NotImplementedException($"{nameof(TestWebAssemblyJSRuntimeInvoker)} has no implementation for '{identifier}'.");
+            }
         }
     }
 }
