@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components
                  call => Assert.Equal("different user", call.AuthenticationState.User.Identity.Name));
         }
 
-        [Fact(Skip = "Skipping as the tests were running too long")]
+        [Fact]
         [QuarantinedTest]
         public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCanceledTask_TreatAsFailure()
         {

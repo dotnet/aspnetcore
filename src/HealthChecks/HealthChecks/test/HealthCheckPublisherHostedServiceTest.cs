@@ -273,7 +273,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
         }
 
-        [Fact(Skip="This test resulted in the build job to time out")]
+        [Fact]
         [QuarantinedTest]
         public async Task RunAsync_PublishersCanTimeout()
         {
