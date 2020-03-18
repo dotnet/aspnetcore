@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2ConnectionTests : Http2TestBase
     {
         [Fact]
+        [QuarantinedTest]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
