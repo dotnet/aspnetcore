@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             }
         }
 
+        // Internal for testing
+        internal int ActiveAwaitableCount => _awaitableProvider.ActiveCount;
+
         public void Reset(uint initialWindowSize)
         {
             // When output flow control is reused the client window size needs to be reset.

@@ -88,7 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Pause to ensure that data from the second stream is queued
             // and waiting for window updates
-            await Task.Delay(200);
+            while (_connection._outputFlowControl.ActiveAwaitableCount < 2)
+            {
+                await Task.Delay(1);
+            }
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
