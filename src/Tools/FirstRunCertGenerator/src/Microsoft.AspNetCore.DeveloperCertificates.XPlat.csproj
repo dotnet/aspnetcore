@@ -10,7 +10,7 @@
     
     <!-- Our publishing logic depends on this particular package being NonShipping - if this ever becomes a Shipping project, we will incorrectly calculate the repo's version string,
          which will cause us to publish installers & checksums to the wrong place. If this ever becomes a Shipping project, we also need to update the following line to reference a different NonShipping project:
-         https://github.com/dotnet/aspnetcore/blob/99c9b8ace1d1d916109882d3f983a26ea4e9b66a/eng/Publishing.props#L38 -->
+         https://github.com/dotnet/aspnetcore/blob/6301eefbc346b9ef00ede83ce223d8240b71942a/eng/Publishing.props#L39 -->
     <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
