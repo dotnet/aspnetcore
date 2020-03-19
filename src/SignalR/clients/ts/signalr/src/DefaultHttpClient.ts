@@ -6,7 +6,7 @@ import { FetchHttpClient } from "./FetchHttpClient";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { MessageHeaders } from "./IHubProtocol";
 import { ILogger } from "./ILogger";
-import { NodeHttpClient } from "./NodeHttpClient";
+import { Platform } from "./Utils";
 import { XhrHttpClient } from "./XhrHttpClient";
 
 /** Default implementation of {@link @microsoft/signalr.HttpClient}. */
@@ -20,12 +20,12 @@ export class DefaultHttpClient extends HttpClient {
 
         this.headers = headers;
 
-        if (typeof fetch !== "undefined") {
+        if (typeof fetch !== "undefined" || Platform.isNode) {
             this.httpClient = new FetchHttpClient(logger);
         } else if (typeof XMLHttpRequest !== "undefined") {
             this.httpClient = new XhrHttpClient(logger);
         } else {
-            this.httpClient = new NodeHttpClient(logger);
+            throw new Error("No usable HttpClient found.");
         }
     }
 
