@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             var msgPackOptions = options.Value;
             var resolver = SignalRResolver.Instance;
-            var hasCustomFormatterResovler = false;
+            var hasCustomFormatterResolver = false;
 
             // if counts don't match then we know users customized resolvers so we set up the options with the provided resolvers
             if (msgPackOptions.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
             {
-                hasCustomFormatterResovler = true;
+                hasCustomFormatterResolver = true;
             }
             else
             {
@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     // check if the user customized the resolvers
                     if (msgPackOptions.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
                     {
-                        hasCustomFormatterResovler = true;
+                        hasCustomFormatterResolver = true;
                         break;
                     }
                 }
             }
 
-            if (hasCustomFormatterResovler)
+            if (hasCustomFormatterResolver)
             {
                 resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)msgPackOptions.FormatterResolvers);
             }
