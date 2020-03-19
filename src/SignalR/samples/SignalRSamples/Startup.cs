@@ -25,7 +25,7 @@ namespace SignalRSamples
             _logger = logger;
         }
 
-        public async Task<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next)
+        public async ValueTask<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next)
         {
             try
             {
