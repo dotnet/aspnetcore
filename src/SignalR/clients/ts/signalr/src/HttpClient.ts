@@ -81,9 +81,6 @@ export class HttpResponse {
  * This class provides an abstraction over an HTTP client so that a different implementation can be provided on different platforms.
  */
 export abstract class HttpClient {
-    /** {@link @microsoft/signalr.MessageHeaders} containing custom headers to be sent with every HTTP request. */
-    protected headers?: MessageHeaders;
-
     /** Issues an HTTP GET request to the specified URL, returning a Promise that resolves with an {@link @microsoft/signalr.HttpResponse} representing the result.
      *
      * @param {string} url The URL for the request.
@@ -165,15 +162,5 @@ export abstract class HttpClient {
     // @ts-ignore
     public getCookieString(url: string): string {
         return "";
-    }
-
-    /** Gets all headers that apply to requests. */
-    public getHeaders(): MessageHeaders {
-        return this.headers || {};
-    }
-
-    /** Sets custom headers that will be applied to HTTP requests. */
-    public setHeaders(headers: MessageHeaders = {}): void {
-        this.headers = headers;
     }
 }

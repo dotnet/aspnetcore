@@ -4,6 +4,7 @@
 import { AbortError } from "./Errors";
 import { FetchHttpClient } from "./FetchHttpClient";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger } from "./ILogger";
 import { NodeHttpClient } from "./NodeHttpClient";
 import { XhrHttpClient } from "./XhrHttpClient";
@@ -11,10 +12,13 @@ import { XhrHttpClient } from "./XhrHttpClient";
 /** Default implementation of {@link @microsoft/signalr.HttpClient}. */
 export class DefaultHttpClient extends HttpClient {
     private readonly httpClient: HttpClient;
+    private readonly headers: MessageHeaders;
 
     /** Creates a new instance of the {@link @microsoft/signalr.DefaultHttpClient}, using the provided {@link @microsoft/signalr.ILogger} to log messages. */
-    public constructor(logger: ILogger) {
+    public constructor(logger: ILogger, headers: MessageHeaders) {
         super();
+
+        this.headers = headers;
 
         if (typeof fetch !== "undefined") {
             this.httpClient = new FetchHttpClient(logger);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
@@ -85,8 +86,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
-                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean): Promise<void> {
-    let headers = httpClient.getHeaders();
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, headers: MessageHeaders): Promise<void> {
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
