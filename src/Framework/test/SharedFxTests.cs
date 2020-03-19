@@ -23,7 +23,10 @@ namespace Microsoft.AspNetCore
             _output = output;
             _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _sharedFxRoot = Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"));
+            var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+                ? TestData.GetTestDataValue("SharedFrameworkLayoutRoot") 
+                : Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            _sharedFxRoot = Path.Combine(root, "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
         }
 
         [Fact]
