@@ -79,7 +79,8 @@ describe("hubConnection", () => {
             });
 
             if (shouldRunHttpsTests) {
-                it("using https, can invoke server method and receive result", (done) => {
+                // xit will skip the test
+                xit("using https, can invoke server method and receive result", (done) => {
                     const message = "你好，世界！";
 
                     const hubConnection = getConnectionBuilder(transportType, TESTHUBENDPOINT_HTTPS_URL, { httpClient })
