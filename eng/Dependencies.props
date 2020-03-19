@@ -132,6 +132,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+    <LatestPackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryPackageVersion)" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
