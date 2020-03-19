@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
             else
             {
-                //Compare each "reference" in the FormatterResolvers IList<> against the default "SignalRResolver.Resolvers" IList<>
+                // Compare each "reference" in the FormatterResolvers IList<> against the default "SignalRResolver.Resolvers" IList<>
                 for (var i = 0; i < msgPackOptions.FormatterResolvers.Count; i++)
                 {
                     // check if the user customized the resolvers
