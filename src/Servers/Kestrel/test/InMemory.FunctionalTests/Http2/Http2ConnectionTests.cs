@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [QuarantinedTest]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
+            // Increase response buffer size so there is no delay in writing to it.
+            // We only want to hit flow control back-pressure and not pipe back-pressure.
+            // This fixes flakyness https://github.com/dotnet/aspnetcore/pull/19949
+            _serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 128 * 1024;
+
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async c =>
