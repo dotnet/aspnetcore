@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -44,10 +47,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.Hosting
                 // By default we bind to a dyamic port
                 // This can be overridden using an option like "--urls http://localhost:9500"
                 webBuilder.UseUrls("http://127.0.0.1:0");
-            })
-            .UseDefaultServiceProvider((context, options) =>
-            {
-                options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
             })
             .ConfigureServices(serviceCollection =>
             {
