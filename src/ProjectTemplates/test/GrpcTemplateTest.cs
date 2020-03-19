@@ -24,7 +24,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "This test run for over an hour")]
         [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task GrpcTemplate()
