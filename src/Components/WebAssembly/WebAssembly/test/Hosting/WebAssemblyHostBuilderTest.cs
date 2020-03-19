@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.WebAssembly;
@@ -132,12 +133,25 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
 
-            builder.Services.AddScoped<StringBuilder>();
-            builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
-
             // Assert
             Assert.NotNull(builder.HostEnvironment);
             Assert.True(WebAssemblyHostEnvironmentExtensions.IsDevelopment(builder.HostEnvironment));
+        }
+
+        [Fact]
+        public void Builder_CreatesNavigationManager()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            var navigationManager = host.Services.GetRequiredService<NavigationManager>();
+            Assert.NotNull(navigationManager);
+            Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
+            Assert.Equal("https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool", navigationManager.Uri);
         }
 
         private class TestServiceThatTakesStringBuilder

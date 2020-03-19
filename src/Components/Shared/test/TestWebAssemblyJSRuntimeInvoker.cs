@@ -23,6 +23,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     return (TResult)(object)_environment;
                 case "Blazor._internal.getConfig":
                     return (TResult)(object)null;
+                case "Blazor._internal.navigationManager.getBaseURI":
+                    var testUri = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests";
+                    return (TResult)(object)testUri;
+                case "Blazor._internal.navigationManager.getLocationHref":
+                    var testHref = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
+                    return (TResult)(object)testHref;
                 default:
                     throw new NotImplementedException($"{nameof(TestWebAssemblyJSRuntimeInvoker)} has no implementation for '{identifier}'.");
             }
