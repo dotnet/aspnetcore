@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,10 +24,9 @@ namespace Microsoft.AspNetCore
             _output = output;
             _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
-                ? TestData.GetTestDataValue("SharedFrameworkLayoutRoot") 
-                : Environment.GetEnvironmentVariable("DOTNET_ROOT");
-            _sharedFxRoot = Path.Combine(root, "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
+            _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
+                ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", TestData.GetTestDataValue("RuntimePackageVersion"))
+                : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
         }
 
         [Fact]
@@ -131,7 +131,8 @@ namespace Microsoft.AspNetCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("missing file from sfx builds")]
         public void ItContainsVersionFile()
         {
             var versionFile = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.versions.txt");

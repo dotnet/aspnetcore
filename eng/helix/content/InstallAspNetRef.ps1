@@ -13,7 +13,7 @@ param(
     $RefPath,
     
     [Parameter(Mandatory = $true)]
-    $InstallDir,
+    $InstallDir
 )
 
 $ErrorActionPreference = 'Stop'

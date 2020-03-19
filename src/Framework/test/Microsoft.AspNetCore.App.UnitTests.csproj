@@ -5,6 +5,10 @@
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnAspNetRef>true</TestDependsOnAspNetRef>
+    
+    <!-- Some tests still do not work on Helix, so continue running these on azdo for now as well -->
+    <SkipTests>false</SkipTests>    
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +51,7 @@
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
