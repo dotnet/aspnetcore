@@ -35,7 +35,7 @@ namespace InteropTests.Helpers
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                FileName = "dotnet.exe",
+                FileName = "dotnet",
                 Arguments = path
             };
             _process.EnableRaisingEvents = true;

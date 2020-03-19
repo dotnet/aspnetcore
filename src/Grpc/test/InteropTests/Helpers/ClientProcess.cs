@@ -22,7 +22,7 @@ namespace InteropTests.Helpers
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                FileName = "dotnet.exe",
+                FileName = "dotnet",
                 Arguments = @$"{path} --use_tls false --server_port {serverPort} --client_type httpclient --test_case {testCase}"
             };
             _process.EnableRaisingEvents = true;
