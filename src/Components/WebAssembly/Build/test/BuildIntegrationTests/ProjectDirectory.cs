@@ -141,7 +141,9 @@ $@"<Project>
             static void CopyRepositoryAssets(string projectRoot)
             {
                 const string GlobalJsonFileName = "global.json";
-                var globalJsonPath = Path.Combine(RepoRoot, GlobalJsonFileName);
+                var path = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+                    ? RepoRoot : Directory.GetCurrentDirectory();
+                var globalJsonPath = Path.Combine(path, GlobalJsonFileName);
 
                 var destinationFile = Path.Combine(projectRoot, GlobalJsonFileName);
                 File.Copy(globalJsonPath, destinationFile);
