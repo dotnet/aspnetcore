@@ -203,6 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
         {
             // Parameters
