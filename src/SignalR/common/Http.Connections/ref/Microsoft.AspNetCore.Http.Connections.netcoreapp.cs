@@ -15,11 +15,6 @@ namespace Microsoft.AspNetCore.Builder
         public static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
         public static Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
     }
-    public static partial class ConnectionsAppBuilderExtensions
-    {
-        [System.ObsoleteAttribute("This method is obsolete and will be removed in a future version. The recommended alternative is to use MapConnections or MapConnectionHandler<TConnectionHandler> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseConnections(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder> configure) { throw null; }
-    }
 }
 namespace Microsoft.AspNetCore.Http.Connections
 {
@@ -33,15 +28,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         public static System.TimeSpan DefaultDisconectTimeout;
         public ConnectionOptionsSetup() { }
         public void Configure(Microsoft.AspNetCore.Http.Connections.ConnectionOptions options) { }
-    }
-    [System.ObsoleteAttribute("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapConnection and MapConnectionHandler<TConnectionHandler> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
-    public partial class ConnectionsRouteBuilder
-    {
-        internal ConnectionsRouteBuilder() { }
-        public void MapConnectionHandler<TConnectionHandler>(Microsoft.AspNetCore.Http.PathString path) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { }
-        public void MapConnectionHandler<TConnectionHandler>(Microsoft.AspNetCore.Http.PathString path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { }
-        public void MapConnections(Microsoft.AspNetCore.Http.PathString path, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { }
-        public void MapConnections(Microsoft.AspNetCore.Http.PathString path, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { }
     }
     public static partial class HttpConnectionContextExtensions
     {
