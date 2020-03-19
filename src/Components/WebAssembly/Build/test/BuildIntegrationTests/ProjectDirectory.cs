@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 #error Configuration not supported
 #endif
 
-        private static readonly string RepoRoot = GetTestAttribute("Testing.RepoRoot");
+        private static readonly string RepoRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
+            ? GetTestAttribute("Testing.RepoRoot") : Directory.GetCurrentDirectory();
 
         public static ProjectDirectory Create(string projectName, string baseDirectory = "", string[] additionalProjects = null)
         {
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     throw new InvalidOperationException("RepoRoot was not specified.");
                 }
 
-                var testAppsRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+                var testAppsRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
                     ? Path.Combine(RepoRoot, "src", "Components", "Blazor", "Build", "testassets")
                     : Directory.GetCurrentDirectory();
 
@@ -141,7 +142,7 @@ $@"<Project>
             static void CopyRepositoryAssets(string projectRoot)
             {
                 const string GlobalJsonFileName = "global.json";
-                var path = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+                var path = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
                     ? RepoRoot : Directory.GetCurrentDirectory();
                 var globalJsonPath = Path.Combine(path, GlobalJsonFileName);
 
