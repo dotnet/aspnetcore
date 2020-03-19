@@ -78,7 +78,7 @@ namespace InteropTests.Helpers
 
         public void Dispose()
         {
-            File.WriteAllText(_serverLogPath, _consoleOut.ToString());
+            File.WriteAllText(_serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
             _processEx.Dispose();
         }
     }
