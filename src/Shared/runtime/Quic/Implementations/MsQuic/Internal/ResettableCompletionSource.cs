@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 
@@ -35,7 +36,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
             return _valueTaskSource.GetStatus(token);
         }
 
-        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        public void OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags)
         {
             _valueTaskSource.OnCompleted(continuation, state, token, flags);
         }

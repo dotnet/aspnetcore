@@ -108,7 +108,12 @@ then
 
     # Ensure tools are on on PATH
     export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
+fi
 
+# Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
+if [ ! -f "xunit.runner.json" ]
+then
+    cp default.runner.json xunit.runner.json
 fi
 
 if [ -e /proc/self/coredump_filter ]; then

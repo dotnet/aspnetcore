@@ -27,13 +27,13 @@ echo "Checking for Microsoft.AspNetCore.App"
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
-    
+
     echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
     dotnet nuget add source %HELIX_WORKITEM_ROOT%
     dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
     dotnet nuget list source
     dotnet tool install dotnet-ef --global --version %$efVersion%
-    
+
     set PATH=!PATH!;%DOTNET_CLI_HOME%\.dotnet\tools
 )
 
@@ -48,6 +48,11 @@ echo "Setting HELIX_DIR: %HELIX_DIR%"
 echo Creating nuget restore directory: %NUGET_RESTORE%
 mkdir %NUGET_RESTORE%
 mkdir logs
+
+REM "Rename default.runner.json to xunit.runner.json if there is not a custom one from the project"
+if not EXIST ".\xunit.runner.json" (
+    copy default.runner.json xunit.runner.json
+)
 
 dir
 
