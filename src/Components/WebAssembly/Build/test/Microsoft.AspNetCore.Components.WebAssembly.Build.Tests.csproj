@@ -38,7 +38,8 @@
 
   <ItemGroup>
     <HelixContent Include="..\testassets\**\*" />
-    <HelixContent Include="..\..\..\..\..\global.json" />
+    <HelixContent Include="$(RepoRoot)global.json" />
+    <HelixContent Include="$(RepoRoot)eng\Versions.props" />
   </ItemGroup>
 
   <ItemGroup>
