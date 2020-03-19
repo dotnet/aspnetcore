@@ -78,7 +78,17 @@ namespace InteropTests.Helpers
 
         public void Dispose()
         {
-            File.WriteAllText(_serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
+            if (!string.IsNullOrEmpty(_serverLogPath))
+            {
+                File.WriteAllText(_serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
+            }
+            else
+            {
+                var consoleOutString = _consoleOut.ToString();
+                var helixDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                File.WriteAllText(Path.Combine(helixDirectory, "InteropServer.log"), consoleOutString);
+                File.WriteAllText(Path.Combine(helixDirectory, "..", "InteropServer.log"), consoleOutString);
+            }
             _processEx.Dispose();
         }
     }
