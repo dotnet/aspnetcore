@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
+            var builder = new WebAssemblyHostBuilder(WebAssemblyJSRuntimeInvoker.Instance);
 
             // Right now we don't have conventions or behaviors that are specific to this method
             // however, making this the default for the template allows us to add things like that
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(WebAssemblyJSRuntime jsRuntime)
+        internal WebAssemblyHostBuilder(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             InitializeDefaultServices();
 
-            var hostEnvironment = InitializeEnvironment(jsRuntime);
+            var hostEnvironment = InitializeEnvironment(jsRuntimeInvoker);
 
             _createServiceProvider = () =>
             {
@@ -66,9 +65,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             };
         }
 
-        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntime jsRuntime)
+        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
         {
-            var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            var applicationEnvironment = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(
+                "Blazor._internal.getApplicationEnvironment", null, null, null);
             var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment);
 
             Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
@@ -81,9 +81,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             foreach (var configFile in configFiles)
             {
-                var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
-                    "Blazor._internal.getConfig",
-                    configFile);
+                var appSettingsJson = jsRuntimeInvoker.InvokeUnmarshalled<string, object, object, byte[]>(
+                    "Blazor._internal.getConfig", configFile, null, null);
 
                 if (appSettingsJson != null)
                 {
