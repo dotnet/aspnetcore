@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                 }
             }
-            Assert.True(false); // See if logs show up REMOVE 
         }
 
         [Fact]
