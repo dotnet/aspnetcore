@@ -17,7 +17,7 @@
     </PropertyGroup>
 
     <Import Project="$(RepoRoot)eng\Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' == ''" />
-    <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="Exist('$(MSBuildThisFileDirectory)Versions.props')" />
+    <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="Exists('$(MSBuildThisFileDirectory)Versions.props')" />
   
     <ItemGroup>
       <!-- Use the sample compiler \ SDK that the rest of our build uses-->
