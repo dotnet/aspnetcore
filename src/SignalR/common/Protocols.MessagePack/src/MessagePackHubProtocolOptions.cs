@@ -9,24 +9,24 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class MessagePackHubProtocolOptions
     {
-        private IList<IFormatterResolver> _formatterResolvers;
+        private MessagePackSerializerOptions _messagePackSerializerOptions;
 
-        public IList<IFormatterResolver> FormatterResolvers
+        public MessagePackSerializerOptions SerializerOptions
         {
             get
             {
-                if (_formatterResolvers == null)
+                if (_messagePackSerializerOptions == null)
                 {
                     // The default set of resolvers trigger a static constructor that throws on AOT environments.
                     // This gives users the chance to use an AOT friendly formatter.
-                    _formatterResolvers = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
+                    _messagePackSerializerOptions = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
                 }
 
-                return _formatterResolvers;
+                return _messagePackSerializerOptions;
             }
             set
             {
-                _formatterResolvers = value;
+                _messagePackSerializerOptions = value;
             }
         }
     }
