@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
-            var args = null;
+            string[] args = null;
 
             // Act / Assert
             Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
-            var args = new string[] { null };
+            string[] args = new string[] { null };
 
             // Act / Assert
             Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
