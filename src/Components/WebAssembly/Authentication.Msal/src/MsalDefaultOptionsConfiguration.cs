@@ -40,11 +40,6 @@ namespace Microsoft.Authentication.WebAssembly.Msal
             }
 
             options.ProviderOptions.Authentication.NavigateToLoginRequestUrl = false;
-            options.ProviderOptions.Cache = new MsalCacheOptions
-            {
-                CacheLocation = "localStorage",
-                StoreAuthStateInCookie = true
-            };
         }
 
         public void PostConfigure(string name, RemoteAuthenticationOptions<MsalProviderOptions> options)
