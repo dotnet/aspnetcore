@@ -79,11 +79,11 @@ namespace InteropTests.Helpers
             var serverLogPath = attributes.SingleOrDefault(a => a.Key == "ServerLogPath")?.Value;
             if (!string.IsNullOrEmpty(serverLogPath))
             {
-                File.WriteAllText(serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
+                File.WriteAllText(serverLogPath, _consoleOut.ToString());
             }
             else
             {
-                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
+                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "logs", "InteropServer.log"), _consoleOut.ToString());
             }
             _processEx.Dispose();
         }
