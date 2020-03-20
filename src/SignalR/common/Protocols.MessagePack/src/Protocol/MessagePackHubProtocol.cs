@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             public static readonly IFormatterResolver Instance = new SignalRResolver();
 
-            public static readonly IList<IFormatterResolver> Resolvers = new IFormatterResolver[]
+            public static readonly IReadOnlyList<IFormatterResolver> Resolvers = new IFormatterResolver[]
             {
                 DynamicEnumAsStringResolver.Instance,
                 ContractlessStandardResolver.Instance,
