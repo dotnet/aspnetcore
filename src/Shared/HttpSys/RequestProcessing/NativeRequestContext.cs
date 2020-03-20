@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 // No size limit
                 _backingBuffer = MemoryPool<byte>.Shared.Rent(newSize);
             }
-            _backingBuffer.Memory.Span.Fill(0);// Zero the buffer
+            _backingBuffer.Memory.Span.Clear();
             _memoryHandle = _backingBuffer.Memory.Pin();
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
 

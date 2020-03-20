@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
-            padding.Fill(0);
+            padding.Clear();
 
             frame.PayloadLength = extendedHeaderLength + length + padLength;
 
