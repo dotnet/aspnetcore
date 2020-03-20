@@ -96,8 +96,9 @@ if %$quarantined%==true (
 echo "Copying TestResults\TestResults.xml to ."
 copy TestResults\TestResults.xml testResults.xml
 echo "Copying artifacts/logs to %HELIX_WORKITEM_UPLOAD_ROOT%/../"
-for /R artifacts/log %%f in (*.log) do copy %%f %HELIX_WORKITEM_UPLOAD_ROOT%/../
-for /R artifacts/log %%f in (*.log) do copy %%f %HELIX_WORKITEM_UPLOAD_ROOT%/
+echo "for /R artifacts/log %%f in (*.log) do copy %%f %HELIX_WORKITEM_UPLOAD_ROOT%/../"
+for /R artifacts/log %%f in (*.log) do echo "copy %%f %HELIX_WORKITEM_UPLOAD_ROOT%/../"
+for /R artifacts/log %%f in (*.log) do echo "copy %%f %HELIX_WORKITEM_UPLOAD_ROOT%/"
 
 exit /b %exit_code%
 
