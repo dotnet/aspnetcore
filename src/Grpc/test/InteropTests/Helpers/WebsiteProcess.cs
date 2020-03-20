@@ -83,10 +83,7 @@ namespace InteropTests.Helpers
             }
             else
             {
-                var consoleOutString = _consoleOut.ToString();
-                var helixDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-                File.WriteAllText(Path.Combine(helixDirectory, "InteropServer.log"), consoleOutString);
-                File.WriteAllText(Path.Combine(helixDirectory, "..", "InteropServer.log"), consoleOutString);
+                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
             }
             _processEx.Dispose();
         }
