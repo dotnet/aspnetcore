@@ -126,6 +126,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Assert.NotNull(host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
         }
 
+        [Fact]
+        public void Builder_InDevelopment_SetsHostEnvironmentProperty()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
+
+            builder.Services.AddScoped<StringBuilder>();
+            builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
+
+            // Assert
+            Assert.NotNull(builder.HostEnvironment);
+            Assert.True(WebAssemblyHostEnvironmentExtensions.IsDevelopment(builder.HostEnvironment));
+        }
+
         private class TestServiceThatTakesStringBuilder
         {
             public TestServiceThatTakesStringBuilder(StringBuilder builder) { }

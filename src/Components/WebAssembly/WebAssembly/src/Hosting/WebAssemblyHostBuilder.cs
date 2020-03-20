@@ -58,10 +58,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             InitializeDefaultServices();
 
             var hostEnvironment = InitializeEnvironment(jsRuntimeInvoker);
+            HostEnvironment = hostEnvironment;
 
             _createServiceProvider = () =>
             {
-                return Services.BuildServiceProvider(validateScopes: hostEnvironment.Environment == "Development");
+                return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
             };
         }
 
@@ -110,6 +111,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the service collection.
         /// </summary>
         public IServiceCollection Services { get; }
+
+        /// <summary>
+        /// Gets information about the app's host environment.
+        /// </summary>
+        public IWebAssemblyHostEnvironment HostEnvironment { get; }
 
         /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
