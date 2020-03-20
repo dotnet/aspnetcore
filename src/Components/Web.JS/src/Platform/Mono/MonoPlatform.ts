@@ -170,16 +170,21 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.postRun = [];
   (module as any).preloadPlugins = [];
 
+  // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
+  const dotnetWasmResourceName = 'dotnet.wasm';
+  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`);
+  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/_bin/${filename}`);
+  const wasmBeingLoaded = resourceLoader.loadResource(
+    /* name */ dotnetWasmResourceName,
+    /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
+    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
+
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
   module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
     (async () => {
       let compiledInstance: WebAssembly.Instance;
       try {
-        const dotnetWasmResourceName = 'dotnet.wasm';
-        const dotnetWasmResource = await resourceLoader.loadResource(
-          /* name */ dotnetWasmResourceName,
-          /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-          /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
+        const dotnetWasmResource = await wasmBeingLoaded;
         compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
       } catch (ex) {
         module.printErr(ex);
@@ -200,12 +205,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
     // Mono requires the assembly filenames to have a '.dll' extension, so supply such names regardless
     // of the extensions in the URLs. This allows loading assemblies with arbitrary filenames.
-    resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`)
-      .forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
-    if (resources.pdb) {
-      resourceLoader.loadResources(resources.pdb, filename => `_framework/_bin/${filename}`)
-        .forEach(r => addResourceAsAssembly(r, r.name));
-    }
+    assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
+    pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
   });
 
   module.postRun.push(() => {
