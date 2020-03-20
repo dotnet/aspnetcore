@@ -16,7 +16,7 @@
       <DeterministicSourcePaths>false</DeterministicSourcePaths>
     </PropertyGroup>
 
-    <Import Project="$(RepoRoot)eng\Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' == ''')" />
+    <Import Project="$(RepoRoot)eng\Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' == '')" />
     <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' != ''" />
   
     <ItemGroup>
