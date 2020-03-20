@@ -54,6 +54,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </remarks>
         public CorsPolicyBuilder WithOrigins(params string[] origins)
         {
+            if (origins is null)
+            {
+                throw new ArgumentNullException(nameof(origins));
+            }
+
             foreach (var origin in origins)
             {
                 var normalizedOrigin = GetNormalizedOrigin(origin);
