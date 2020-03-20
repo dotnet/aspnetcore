@@ -20,16 +20,12 @@ namespace InteropTests.Helpers
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
         private readonly StringBuilder _consoleOut = new StringBuilder();
-        private readonly string _serverLogPath;
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: .*:(?<port>\d*)$");
 
         public string ServerPort { get; private set; }
 
         public WebsiteProcess(string path, ITestOutputHelper output)
         {
-            var attributes = Assembly.GetExecutingAssembly()
-                .GetCustomAttributes<AssemblyMetadataAttribute>();
-            _serverLogPath = attributes.Single(a => a.Key == "ServerLogPath").Value;
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo
             {
@@ -78,9 +74,12 @@ namespace InteropTests.Helpers
 
         public void Dispose()
         {
-            if (!string.IsNullOrEmpty(_serverLogPath))
+            var attributes = Assembly.GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>();
+            var serverLogPath = attributes.SingleOrDefault(a => a.Key == "ServerLogPath")?.Value;
+            if (!string.IsNullOrEmpty(serverLogPath))
             {
-                File.WriteAllText(_serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
+                File.WriteAllText(serverLogPath ?? Path.Combine(Directory.GetCurrentDirectory(), "InteropServer.log"), _consoleOut.ToString());
             }
             else
             {
