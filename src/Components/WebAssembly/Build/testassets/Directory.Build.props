@@ -16,8 +16,8 @@
       <DeterministicSourcePaths>false</DeterministicSourcePaths>
     </PropertyGroup>
 
-    <Import Project="$(RepoRoot)eng\Versions.props" Condition="Exists('$(RepoRoot)eng\Versions.props)')" />
-    <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="Exists('$(MSBuildThisFileDirectory)Versions.props)')" />
+    <Import Project="$(RepoRoot)eng\Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' == ''')" />
+    <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' != ''" />
   
     <ItemGroup>
       <!-- Use the sample compiler \ SDK that the rest of our build uses-->
