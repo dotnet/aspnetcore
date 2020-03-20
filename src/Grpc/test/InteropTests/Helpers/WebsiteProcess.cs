@@ -69,7 +69,7 @@ namespace InteropTests.Helpers
                     ServerPort = m.Groups["port"].Value;
                 }
 
-                if (data.Contains("Application started."))
+                if (data.Contains("Application started. Press Ctrl+C to shut down."))
                 {
                     _startTcs.TrySetResult(null);
                 }
