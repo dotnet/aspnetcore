@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        internal static MessagePackSerializerOptions CreateDefaultFormatterResolvers() =>
+        internal static MessagePackSerializerOptions CreateDefaultMessagePackSerializerOptions() =>
             MessagePackSerializerOptions
                 .Standard
                 .WithResolver(SignalRResolver.Instance)
