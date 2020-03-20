@@ -1251,6 +1251,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
