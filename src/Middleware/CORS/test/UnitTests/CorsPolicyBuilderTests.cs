@@ -139,13 +139,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Equal(new List<string>() { "http://www.example.com", "https://example2.com" }, corsPolicy.Origins);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(new string[] { null })]
-        public void WithOrigins_ThrowsIfArgumentNull(string[] args)
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentNull()
         {
             // Arrange
             var builder = new CorsPolicyBuilder();
+            var args = null;
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentArrayContainsNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            var args = new string[] { null };
 
             // Act / Assert
             Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
