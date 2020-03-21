@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Templates.Test.Helpers
 {
     internal class ProcessEx : IDisposable
     {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
-
+            
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
                 startInfo.EnvironmentVariables["NUGET_FALLBACK_PACKAGES"] = Environment.GetEnvironmentVariable("NUGET_FALLBACK_PACKAGES");
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE")))
+        private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE"))) 
             ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "TestPackageRestorePath")
