@@ -83,7 +83,9 @@ namespace InteropTests.Helpers
             }
             else
             {
-                File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "logs", "InteropServer.log"), _consoleOut.ToString());
+                var logDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "logs");
+                Directory.CreateDirectory(logDir);
+                File.WriteAllText(Path.Combine(logDir, "InteropServer.log"), _consoleOut.ToString());
             }
             _processEx.Dispose();
         }
