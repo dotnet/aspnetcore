@@ -16,9 +16,9 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)runtime\*.cs" Link="Shared\runtime\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" Link="Shared\runtime\Http2\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)runtime\Http3\**\*.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)runtime\*.cs" Link="Shared\runtime\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" Link="Shared\runtime\Http2\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http3\**\*.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>

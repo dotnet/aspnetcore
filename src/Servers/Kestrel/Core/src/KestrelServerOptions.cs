@@ -56,6 +56,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool DisableStringReuse { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value that controls whether dynamic compression of response headers is enabled across HTTP/2 and HTTP/3 requests.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DisableResponseDynamicHeaderCompression { get; set; } = false;
+
+        /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
         /// Typically initialized by UseKestrel()"/>.
         /// </summary>
