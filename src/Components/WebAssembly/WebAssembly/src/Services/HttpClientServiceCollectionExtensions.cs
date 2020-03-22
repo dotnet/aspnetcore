@@ -27,5 +27,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 };
             });
         }
+        /// <summary>
+        /// Adds a <see cref="HttpClient" /> instance to the <paramref name="serviceCollection" /> that is
+        /// configured to set the application's <see cref="HttpClient" />.
+        /// </summary>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection" />.</param>
+        /// <param name="HttpClient">The <see cref="HttpClient" /></param>
+        /// <returns>The configured <see cref="IServiceCollection" />.</returns>
+        public static IServiceCollection AddBaseAddressHttpClient(this IServiceCollection serviceCollection, HttpClient httpClient)
+        {
+            return serviceCollection.AddSingleton(s =>
+            {
+                return httpClient;
+            });
+        }
     }
 }
