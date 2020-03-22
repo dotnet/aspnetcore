@@ -27,5 +27,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 };
             });
         }
+        /// <summary>
+        /// Adds a <see cref="HttpClient" /> instance to the <paramref name="serviceCollection" /> that is
+        /// configured to set the application's <see cref="HttpClient.BaseAddress" />.
+        /// </summary>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection" />.</param>
+        /// <param name="baseAddress">The <see cref="HttpClient.BaseAddress" /></param>
+        /// <returns>The configured <see cref="IServiceCollection" />.</returns>
+        public static IServiceCollection AddBaseAddressHttpClient(this IServiceCollection serviceCollection, string baseAddress)
+        {
+            return serviceCollection.AddSingleton(s =>
+            {
+                // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
+                return new HttpClient
+                {
+                    BaseAddress = new Uri(baseAddress)
+                };
+            });
+        }
     }
 }
