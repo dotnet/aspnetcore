@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +46,80 @@ namespace Microsoft.AspNetCore.TestHost.Tests
             var response = await host.GetTestServer().CreateClient().GetAsync("/");
             var bytes = await response.Content.ReadAsByteArrayAsync();
             Assert.Equal(length, bytes.Length);
+        }
+
+        [Fact]
+        public async Task BodyStream_fails_synchronous_write_when_not_enabled()
+        {
+            var contentBytes = new byte[] {32};
+            using var host = await CreateHost(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                httpContext.Response.Body.Write(contentBytes, 0, contentBytes.Length);
+                await httpContext.Response.CompleteAsync();
+            });
+
+            var client = host.GetTestServer().CreateClient();
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(()=> client.GetAsync("/"));
+            Assert.Contains("Synchronous operations are disallowed.", ex.Message);
+        }
+
+        [Fact]
+        public async Task BodyStream_succeeds_synchronous_write_when_enabled()
+        {
+            var contentBytes = new byte[] {32};
+            using var host = await CreateHost(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                httpContext.Response.Body.Write(contentBytes, 0, contentBytes.Length);
+                await httpContext.Response.CompleteAsync();
+            });
+
+            host.GetTestServer().AllowSynchronousIO = true;
+
+            var client = host.GetTestServer().CreateClient();
+            var response = await client.GetAsync("/");
+            var responseBytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal(contentBytes, responseBytes);
+        }
+
+        [Fact]
+        public async Task BodyStream_fails_synchronous_flush_when_not_enabled()
+        {
+            var contentBytes = new byte[] {32};
+            using var host = await CreateHost(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.Body.WriteAsync(contentBytes, 0, contentBytes.Length);
+                httpContext.Response.Body.Flush();
+                await httpContext.Response.CompleteAsync();
+            });
+
+            var client = host.GetTestServer().CreateClient();
+            var requestException = await Assert.ThrowsAsync<HttpRequestException>(()=> client.GetAsync("/"));
+            var ex = (InvalidOperationException) requestException?.InnerException?.InnerException;
+            Assert.NotNull(ex);
+            Assert.Contains("Synchronous operations are disallowed.", ex.Message);
+        }
+
+        [Fact]
+        public async Task BodyStream_succeeds_synchronous_flush_when_enabled()
+        {
+            var contentBytes = new byte[] {32};
+            using var host = await CreateHost(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.Body.WriteAsync(contentBytes, 0, contentBytes.Length);
+                httpContext.Response.Body.Flush();
+                await httpContext.Response.CompleteAsync();
+            });
+
+            host.GetTestServer().AllowSynchronousIO = true;
+
+            var client = host.GetTestServer().CreateClient();
+            var response = await client.GetAsync("/");
+            var responseBytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.Equal(contentBytes, responseBytes);
         }
 
         private Task<IHost> CreateHost(RequestDelegate appDelegate)
