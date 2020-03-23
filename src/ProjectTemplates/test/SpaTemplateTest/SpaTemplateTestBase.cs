@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Internal;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using Templates.Test.Helpers;
