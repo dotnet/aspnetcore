@@ -69,6 +69,11 @@
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
+      <_Parameter1>true</_Parameter1>
+      <_Parameter2>$(TargetFramework)</_Parameter2>
+      <_Parameter3>$(LoggingTestingFileLoggingDirectory)</_Parameter3>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">

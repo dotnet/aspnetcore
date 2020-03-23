@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,6 +31,11 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task GrpcTemplate()
         {
+            // Setup AssemblyTestLog
+            var assemblyLog = AssemblyTestLog.Create(Assembly.GetExecutingAssembly(), baseDirectory: Project.ArtifactsLogDir);
+            using var testLog = assemblyLog.StartTestLog(Output, nameof(GrpcTemplateTest), out var loggerFactory);
+            var logger = loggerFactory.CreateLogger("TestLogger");
+
             Project = await ProjectFactory.GetOrCreateProject("grpc", Output);
 
             var createResult = await Project.RunDotNetNewAsync("grpc");
@@ -44,8 +51,9 @@ namespace Templates.Test
             var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
             var unsupported = isOsx || isWindowsOld;
 
-            using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported))
+            using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: logger))
             {
+                logger.LogInformation($"GrpcTemplateTest.cs - isOsx: {isOsx} unsupported: {unsupported} Process.HasExited: {serverProcess.Process.HasExited}");
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
