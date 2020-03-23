@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services = new ServiceCollection();
 
             // Retrieve required attributes from JSRuntimeInvoker
-
             InitializeNavigationManager(jsRuntimeInvoker);
             InitializeDefaultServices();
 
