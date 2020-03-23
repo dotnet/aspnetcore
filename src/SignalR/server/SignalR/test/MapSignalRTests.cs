@@ -33,40 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             builder
                 .UseKestrel()
-                .Configure(app =>
-                {
-                    executedConfigure = true;
-
-                    var ex = Assert.Throws<InvalidOperationException>(() =>
-                    {
-                        app.UseRouting();
-                        app.UseEndpoints(routes =>
-                        {
-                            routes.MapHub<AuthHub>("/overloads");
-                        });
-                    });
-
-                    Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
-                                 "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.", ex.Message);
-                })
-                .UseUrls("http://127.0.0.1:0");
-
-            using (var host = builder.Build())
-            {
-                host.Start();
-            }
-
-            Assert.True(executedConfigure);
-        }
-
-        [Fact]
-        public void NotAddingSignalRServiceThrowsWhenUsingEndpointRouting()
-        {
-            var executedConfigure = false;
-            var builder = new WebHostBuilder();
-
-            builder
-                .UseKestrel()
                 .ConfigureServices(services =>
                 {
                     services.AddRouting();
