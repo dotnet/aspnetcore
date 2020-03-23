@@ -84,6 +84,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logger = _loggerFactory.CreateLogger<InProcessTestServer<TStartup>>();
         }
 
+        public IList<LogRecord> GetLogs() => _logSinkProvider.GetLogs();
+
         private async Task StartServerInner()
         {
             // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
