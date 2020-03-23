@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
