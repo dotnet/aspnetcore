@@ -9,19 +9,5 @@ namespace Microsoft.AspNetCore.SignalR
         {
             return new ValueTask<object>(next(invocationContext));
         }
-
-        public object OnAfterIncoming(object result, HubInvocationContext invocationContext)
-        {
-            return result;
-        }
-
-        public bool OnBeforeIncoming(HubInvocationContext invocationContext)
-        {
-            return true;
-        }
-
-        public void OnIncomingError(Exception ex, HubInvocationContext invocationContext)
-        {
-        }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace SignalRSamples
 {
@@ -27,47 +28,37 @@ namespace SignalRSamples
 
         public async ValueTask<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next)
         {
+            var isReadonly = invocationContext.Context.Items["readonly"];
+            if (isReadonly != null && (bool)isReadonly == true)
+            {
+                throw new HubException("Client is in readonly mode and trying to invoke methods");
+            }
+
             try
             {
                 _logger.LogInformation("Starting invoke");
-                if (false)
+                var res = await next(invocationContext);
+                if (invocationContext.HubMethodName == nameof(Chat.Echo))
                 {
-                    //var method = GetMethod(hub, invocationContext.HubMethodName);
-                    //if (method.HasResult)
-                    //{
-                    //    return await method.Invoke(invocationContext.HubMethodArguments);
-                    //}
-                    //else
-                    //{
-                    //    await method.Invoke(invocationContext.HubMethodArguments);
-                    //    return null;
-                    //}
+                    return "test";
                 }
-                else
+                else if (invocationContext.HubMethodName == nameof(Streaming.AsyncEnumerableCounter))
                 {
-                    var res = await next(invocationContext);
-                    if (invocationContext.HubMethodName == nameof(Chat.Echo))
-                    {
-                        return "test";
-                    }
-                    else if (invocationContext.HubMethodName == nameof(Streaming.AsyncEnumerableCounter))
-                    {
-                        return Add((IAsyncEnumerable<int>)res);
+                    return Add((IAsyncEnumerable<int>)res);
 
-                        async IAsyncEnumerable<int> Add(IAsyncEnumerable<int> enumerable)
+                    static async IAsyncEnumerable<int> Add(IAsyncEnumerable<int> enumerable)
+                    {
+                        await foreach(var item in enumerable)
                         {
-                            await foreach(var item in enumerable)
-                            {
-                                yield return item + 5;
-                            }
+                            yield return item + 5;
                         }
                     }
-                    return res;
                 }
+                return res;
             }
-            catch
+            catch (Exception ex)
             {
-                throw new HubException("some error");
+                throw new HubException($"some error: {ex.Message}");
             }
             finally
             {
@@ -76,25 +67,22 @@ namespace SignalRSamples
         }
 
         private readonly Random _rand = new Random();
+        private int _connectionCount;
 
-        public object OnAfterIncoming(object result, HubInvocationContext invocationContext)
+        public Task OnConnectedAsync(HubCallerContext context, Func<Task> next)
         {
-            if (invocationContext.HubMethodName == nameof(Streaming.ObservableCounter))
+            var incremented = Interlocked.Increment(ref _connectionCount);
+            if (incremented > 2)
             {
-                // modifying a channelreader/iasyncenumberable is difficult, especially without async
-                return null;
+                context.Items["readonly"] = true;
             }
-            return result;
+            return next();
         }
 
-        public bool OnBeforeIncoming(HubInvocationContext invocationContext)
+        public Task OnDisconnectedAsync(HubCallerContext context, Func<Task> next)
         {
-            return true;
-            //return (_rand.Next() % 3) != 0;
-        }
-
-        public void OnIncomingError(Exception ex, HubInvocationContext invocationContext)
-        {
+            Interlocked.Decrement(ref _connectionCount);
+            return next();
         }
     }
 

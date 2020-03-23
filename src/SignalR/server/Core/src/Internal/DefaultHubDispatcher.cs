@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await hub.OnConnectedAsync();
+                    await _hubPipeline.OnConnectedAsync(connection.HubCallerContext, () => hub.OnConnectedAsync());
+                    //await hub.OnConnectedAsync();
                 }
                 finally
                 {
@@ -79,7 +80,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await hub.OnDisconnectedAsync(exception);
+                    await _hubPipeline.OnDisconnectedAsync(connection.HubCallerContext, () => hub.OnDisconnectedAsync(exception));
+                    //await hub.OnDisconnectedAsync(exception);
                 }
                 finally
                 {
@@ -231,13 +233,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return;
                 }
 
-                if (!_hubPipeline.OnBeforeIncoming(new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments)))
-                {
-                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                        $"'{hubMethodInvocationMessage.Target}' not invoked because server rejected it.");
-                    return;
-                }
-
                 if (!await ValidateInvocationMode(descriptor, isStreamResponse, hubMethodInvocationMessage, connection))
                 {
                     return;
@@ -310,8 +305,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
 
-                        result = _hubPipeline.OnAfterIncoming(result, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
-
                         if (result == null)
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
@@ -337,12 +330,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             try
                             {
                                 result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
-                                result = _hubPipeline.OnAfterIncoming(result, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
                             {
-                                _hubPipeline.OnIncomingError(ex, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
                                 Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
@@ -382,14 +373,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
                 catch (TargetInvocationException ex)
                 {
-                    _hubPipeline.OnIncomingError(ex, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex.InnerException, _enableDetailedErrors));
                 }
                 catch (Exception ex)
                 {
-                    _hubPipeline.OnIncomingError(ex, new HubInvocationContext(connection.HubCallerContext, typeof(THub), descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments));
                     Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
@@ -435,13 +424,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             catch (ChannelClosedException ex)
             {
-                _hubPipeline.OnIncomingError(ex, new HubInvocationContext(connection.HubCallerContext, typeof(THub), "", hubMethodInvocationMessage.Arguments));
                 // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
                 error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
             }
             catch (Exception ex)
             {
-                _hubPipeline.OnIncomingError(ex, new HubInvocationContext(connection.HubCallerContext, typeof(THub), "", hubMethodInvocationMessage.Arguments));
                 // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
                 if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
                     && cts.IsCancellationRequested))
