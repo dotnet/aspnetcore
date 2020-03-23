@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -33,7 +32,7 @@ namespace Templates.Test
         public async Task GrpcTemplate()
         {
             // Setup AssemblyTestLog
-            var assemblyLog = AssemblyTestLog.Create(Assembly.GetExecutingAssembly(), baseDirectory: Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "logs"));
+            var assemblyLog = AssemblyTestLog.Create(Assembly.GetExecutingAssembly(), baseDirectory: Project.ArtifactsLogDir);
             using var testLog = assemblyLog.StartTestLog(Output, nameof(GrpcTemplateTest), out var loggerFactory);
             var logger = loggerFactory.CreateLogger("TestLogger");
 
