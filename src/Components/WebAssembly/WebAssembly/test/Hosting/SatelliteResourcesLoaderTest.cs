@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     {
         [Theory]
         [InlineData("fr-FR", new[] { "fr-FR", "fr" })]
-        [InlineData("zh-CN", new[] { "zh-CN", "zh-Hans", "zh" })]
         [InlineData("tzm-Latn-DZ", new[] { "tzm-Latn-DZ", "tzm-Latn", "tzm" })]
         public void GetCultures_ReturnsCultureClosure(string cultureName, string[] expected)
         {
