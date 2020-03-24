@@ -100,7 +100,7 @@
       </_BlazorOutputWithTargetPath>
 
       <_BlazorOutputWithTargetPath Include="@(ReferenceSatellitePaths)">
-        <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\'))</Culture>
+        <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\').Trim('/'))</Culture>
         <BootManifestResourceType>satellite</BootManifestResourceType>
         <BootManifestResourceName>%(ReferenceSatellitePaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
         <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(ReferenceSatellitePaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>

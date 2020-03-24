@@ -140,8 +140,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var satelliteResources = bootJson.resources.satelliteResources;
             Assert.NotNull(satelliteResources);
+
+            Assert.Contains("es-ES", satelliteResources.Keys);
             Assert.Contains("es-ES/classlibrarywithsatelliteassemblies.resources.dll", satelliteResources["es-ES"].Keys);
+            Assert.Contains("fr", satelliteResources.Keys);
             Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
+            Assert.Contains("ja", satelliteResources.Keys);
             Assert.Contains("ja/standalone.resources.dll", satelliteResources["ja"].Keys);
         }
     }
