@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             var resolvedUrl = ResolveWebSocketsUrl(url);
 
-            var isWasm = RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
-
             // We don't need to capture to a local because we never change this delegate.
             if (_accessTokenProvider != null)
             {
@@ -117,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     // We can't use request headers in the browser, so instead append the token as a query string if running WASM
-                    if (isWasm)
+                    if (Utils.IsRunningBlazorWasm())
                     {
                         var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
                         accessTokenEncoded = "access_token=" + accessTokenEncoded;
