@@ -4,10 +4,12 @@ import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import { Pointer } from './Platform/Platform';
 import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
+import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
+import { BootConfigResult } from './Platform/BootConfig';
+import { Pointer } from './Platform/Platform';
 
 let started = false;
 
@@ -38,7 +40,12 @@ async function boot(options?: any): Promise<void> {
   });
 
   // Fetch the resources and prepare the Mono runtime
-  const resourceLoader = await WebAssemblyResourceLoader.initAsync();
+  const bootConfigResult = await BootConfigResult.initAsync();
+
+  const [resourceLoader] = await Promise.all([
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig),
+    WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
+
   try {
     await platform.start(resourceLoader);
   } catch (ex) {

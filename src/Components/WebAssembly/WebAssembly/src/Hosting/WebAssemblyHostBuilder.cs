@@ -3,14 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -32,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder();
+            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
 
             // Right now we don't have conventions or behaviors that are specific to this method
             // however, making this the default for the template allows us to add things like that
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        private WebAssemblyHostBuilder()
+        internal WebAssemblyHostBuilder(WebAssemblyJSRuntime jsRuntime)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -55,10 +58,42 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             InitializeDefaultServices();
 
+            var hostEnvironment = InitializeEnvironment(jsRuntime);
+
             _createServiceProvider = () =>
             {
-                return Services.BuildServiceProvider();
+                return Services.BuildServiceProvider(validateScopes: hostEnvironment.Environment == "Development");
             };
+        }
+
+        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntime jsRuntime)
+        {
+            var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment);
+
+            Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
+
+            var configFiles = new[]
+            {
+                "appsettings.json",
+                $"appsettings.{applicationEnvironment}.json"
+            };
+
+            foreach (var configFile in configFiles)
+            {
+                var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
+                    "Blazor._internal.getConfig",
+                    configFile);
+
+                if (appSettingsJson != null)
+                {
+                    // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
+                    // for Configuration, of where there are several.
+                    Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
+                }
+            }
+
+            return hostEnvironment;
         }
 
         /// <summary>
@@ -130,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());
         }
 
-        private void InitializeDefaultServices()
+        internal void InitializeDefaultServices()
         {
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);

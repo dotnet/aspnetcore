@@ -1,0 +1,10 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment HostEnvironment
+
+<ul>
+    <li id="key1">@Config["key1"]</li>
+    <li id="key2">@Config["key2"]</li>
+    <li id="key3">@Config["key3"]</li>
+</ul>
+
+<div id="environment">@HostEnvironment.Environment</div>

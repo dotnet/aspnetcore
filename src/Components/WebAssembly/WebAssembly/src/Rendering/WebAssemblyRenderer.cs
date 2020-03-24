@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     /// </summary>
     internal class WebAssemblyRenderer : Renderer
     {
+        private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
 
         private bool isDispatchingEvent;
@@ -31,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         {
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
+            _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -101,17 +104,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override void HandleException(Exception exception)
         {
-            Console.Error.WriteLine($"Unhandled exception rendering component:");
             if (exception is AggregateException aggregateException)
             {
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {
-                    Console.Error.WriteLine(innerException);
+                    Log.UnhandledExceptionRenderingComponent(_logger, innerException);
                 }
             }
             else
             {
-                Console.Error.WriteLine(exception);
+                Log.UnhandledExceptionRenderingComponent(_logger, exception);
             }
         }
 
@@ -190,6 +192,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
                 TaskCompletionSource = new TaskCompletionSource<object>();
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
+
+            private static class EventIds
+            {
+                public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
+            }
+
+            static Log()
+            {
+                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
+                    LogLevel.Critical,
+                    EventIds.UnhandledExceptionRenderingComponent,
+                    "Unhandled exception rendering component: {Message}");
+            }
+
+            public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
+            {
+                _unhandledExceptionRenderingComponent(
+                    logger,
+                    exception.Message,
+                    exception);
             }
         }
     }

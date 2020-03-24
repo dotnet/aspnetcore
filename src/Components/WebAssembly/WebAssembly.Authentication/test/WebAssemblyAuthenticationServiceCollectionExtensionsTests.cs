@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Net;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop.WebAssembly;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_AccessTokenProvider()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_IRemoteAuthenticationService()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_DefaultsCanBeOverriden()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.AddApiAuthorization(options =>
             {
                 options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.Replace(ServiceDescriptor.Singleton<NavigationManager, TestNavigationManager>());
             builder.Services.AddOidcAuthentication(options => { });
             var host = builder.Build();
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_DefaultsCanBeOverriden()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
             builder.Services.AddOidcAuthentication(options =>
             {
                 options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
@@ -243,6 +243,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             protected override void NavigateToCore(string uri, bool forceLoad) => throw new System.NotImplementedException();
+        }
+
+        private WebAssemblyJSRuntime GetJSRuntime(string environment = "Production")
+        {
+            var jsRuntime = new Mock<WebAssemblyJSRuntime>();
+            jsRuntime.Setup(j => j.InvokeUnmarshalled<object, object, object, string>("Blazor._internal.getApplicationEnvironment", null, null, null))
+                .Returns(environment)
+                .Verifiable();
+
+            jsRuntime.Setup(j => j.InvokeUnmarshalled<string, object, object, byte[]>("Blazor._internal.getConfig", It.IsAny<string>(), null, null))
+                .Returns((byte[])null)
+                .Verifiable();
+
+            return jsRuntime.Object;
         }
     }
 }

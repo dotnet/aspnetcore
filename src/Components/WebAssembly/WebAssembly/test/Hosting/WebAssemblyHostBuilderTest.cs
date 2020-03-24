@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringConfiguration()
         {
             // Arrange
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Configuration.AddInMemoryCollection(new[]
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringServices()
         {
             // Arrange
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             // This test also verifies that we create a scope.
             builder.Services.AddScoped<StringBuilder>();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringContainer()
         {
             // Arrange
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Services.AddScoped<StringBuilder>();
             var factory = new MyFakeServiceProviderFactory();
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringContainer_WithDelegate()
         {
             // Arrange
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Services.AddScoped<StringBuilder>();
 
@@ -91,6 +91,46 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
             Assert.NotNull(host.Services.GetRequiredService<List<string>>());
         }
+
+        [Fact]
+        public void Build_InDevelopment_ConfiguresWithServiceProviderWithScopeValidation()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create(environment: "Development"));
+
+            builder.Services.AddScoped<StringBuilder>();
+            builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
+            Assert.Throws<InvalidOperationException>(() => host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
+        }
+
+        [Fact]
+        public void Build_InProduction_ConfiguresWithServiceProviderWithScopeValidation()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
+
+            builder.Services.AddScoped<StringBuilder>();
+            builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
+            Assert.NotNull(host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
+        }
+
+        private class TestServiceThatTakesStringBuilder
+        {
+            public TestServiceThatTakesStringBuilder(StringBuilder builder) { }
+        }
+
 
         private class MyFakeDIBuilderThing
         {
@@ -125,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AddsConfigurationToServices()
         {
             // Arrange
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Configuration.AddInMemoryCollection(new[]
             {
@@ -151,6 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     typeof(INavigationInterception),
                     typeof(ILoggerFactory),
                     typeof(ILogger<>),
+                    typeof(IWebAssemblyHostEnvironment),
                 };
             }
         }
@@ -159,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Constructor_AddsDefaultServices()
         {
             // Arrange & Act
-            var builder = WebAssemblyHostBuilder.CreateDefault();
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             // Assert
             Assert.Equal(DefaultServiceTypes.Count, builder.Services.Count);

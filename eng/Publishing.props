@@ -13,6 +13,10 @@
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)\symbols\**\*.pdb" />
 
+    <!-- Ensure the PDBArtifacts artifact isn't empty, avoiding irrelevant build warnings. -->
+    <FilesToPublishToSymbolServer Include="$(RepoRoot)\README.md"
+      Condition=" @(FilesToPublishToSymbolServer) == '' " />
+
     <!-- Prepare for _PublishInstallers target. -->
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
     <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.jar" UploadPathSegment="jar" />
