@@ -210,7 +210,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
     // startup sequence to load satellite assemblies for the application's culture.
-    window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>) : Pointer =>  {
+    window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
       const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
 

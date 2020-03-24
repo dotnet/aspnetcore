@@ -1,5 +1,5 @@
 import { BootConfigResult } from './BootConfig';
-import { System_String, Pointer } from './Platform';
+import { System_String, System_Object } from './Platform';
 
 export class WebAssemblyConfigLoader {
   static async initAsync(bootConfigResult: BootConfigResult): Promise<void> {
@@ -9,7 +9,7 @@ export class WebAssemblyConfigLoader {
       .filter(name => name === 'appsettings.json' || name === `appsettings.${bootConfigResult.applicationEnvironment}.json`)
       .map(async name => ({ name, content: await getConfigBytes(name) })));
 
-    window['Blazor']._internal.getConfig = (dotNetFileName: System_String) : Pointer | undefined => {
+    window['Blazor']._internal.getConfig = (dotNetFileName: System_String) : System_Object | undefined => {
       const fileName = BINDING.conv_string(dotNetFileName);
       const resolvedFile = configFiles.find(f => f.name === fileName);
       return resolvedFile ? BINDING.js_typed_array_to_array(resolvedFile.content) : undefined;
