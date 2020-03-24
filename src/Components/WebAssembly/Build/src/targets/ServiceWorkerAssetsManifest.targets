@@ -49,7 +49,7 @@
       <ServiceWorkerAssetsManifestItem Remove="@(_CompressedStaticWebAsset->'%(FullPath)')" />
 
       <!-- Don't include the service worker files in the manifest, as the service worker doesn't need to fetch itself -->
-      <ServiceWorkerAssetsManifestItem Remove="@(_ServiceWorkerIntermediateFile->'%(FullPath)')" />
+      <ServiceWorkerAssetsManifestItem Remove="%(_ServiceWorkerIntermediateFile.FullPath)" />
     </ItemGroup>
 
     <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
