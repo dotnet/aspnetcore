@@ -1123,7 +1123,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var uploadStreamSource = new CancellationTokenSource();
             connectionState.UploadStreamToken = uploadStreamSource.Token;
             var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
-            var invocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
+
+            // We can't safely wait for this task when closing without introducing deadlock potential when calling StopAsync in a .On method
+            _ = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
 
             async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
             {
@@ -1218,9 +1220,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await timerTask;
                 uploadStreamSource.Cancel();
                 await HandleConnectionClose(connectionState);
-
-                // await after the connection has been closed, otherwise could deadlock on a user's .On callback(s)
-                await invocationMessageReceiveTask;
             }
         }
 
