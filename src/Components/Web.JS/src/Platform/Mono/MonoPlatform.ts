@@ -216,9 +216,9 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
-            .filter(culture => Object.keys(satelliteResources).indexOf(culture) != -1)
+            .filter(culture => satelliteResources.hasOwnProperty(culture))
             .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`))
-            .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
+            .flat()
             .map(async resource => (await resource.response).arrayBuffer()));
 
         return BINDING.js_to_mono_obj(
