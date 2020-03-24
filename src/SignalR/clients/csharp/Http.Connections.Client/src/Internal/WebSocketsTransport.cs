@@ -120,6 +120,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     if (isWasm)
                     {
                         var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
+                        accessTokenEncoded = "access_token=" + accessTokenEncoded;
                         var builder = new UriBuilder(resolvedUrl);
                         builder.Query += builder.Query.Length == 0 ? ("?" + accessTokenEncoded) : ("&" + accessTokenEncoded);
                         resolvedUrl = builder.Uri;
