@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
     <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="${MicrosoftAuthenticationWebAssemblyMsalPackageVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
   </ItemGroup>
+
   <!--#if Hosted -->
   <ItemGroup>
     <ProjectReference Include="..\Shared\ComponentsWebAssembly-CSharp.Shared.csproj" />
@@ -23,10 +24,8 @@
 
   <!--#endif -->
   <!--#if PWA -->
-  <!-- When publishing, swap service-worker.published.js in place of service-worker.js -->
-  <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
-    <Content Remove="wwwroot\service-worker.js" />
-    <Content Update="wwwroot\service-worker.published.js" Link="wwwroot\service-worker.js" />
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
   <!--#endif -->
