@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             return builder.Uri;
         }
 
-        internal static bool IsRunningBlazorWasm()
+        internal static bool IsRunningInBrowser()
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
         }

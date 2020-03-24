@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
+        private bool _isRunningInBrowser;
 
         private IDuplexPipe _transport;
 
@@ -88,6 +89,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
+
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -114,14 +117,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 var accessToken = await _accessTokenProvider();
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    // We can't use request headers in the browser, so instead append the token as a query string if running WASM
-                    if (Utils.IsRunningBlazorWasm())
+                    // We can't use request headers in the browser, so instead append the token as a query string in that case
+                    if (_isRunningInBrowser)
                     {
                         var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
                         accessTokenEncoded = "access_token=" + accessTokenEncoded;
-                        var builder = new UriBuilder(resolvedUrl);
-                        builder.Query += builder.Query.Length == 0 ? ("?" + accessTokenEncoded) : ("&" + accessTokenEncoded);
-                        resolvedUrl = builder.Uri;
+                        resolvedUrl = Utils.AppendQueryString(resolvedUrl, accessTokenEncoded);
                     }
                     else
                     {
