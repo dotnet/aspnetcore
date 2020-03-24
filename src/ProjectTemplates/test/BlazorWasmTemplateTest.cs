@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -118,6 +119,17 @@ namespace Templates.Test
             Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
             Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
             Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
+
+            // We automatically append the SWAM version as a comment in the published service worker file
+            var serviceWorkerAssetsManifestContents = ReadFile(publishDir, "service-worker-assets.js");
+            var serviceWorkerContents = ReadFile(publishDir, "service-worker.js");
+
+            // Parse the "version": "..." value from the SWAM, and check it's in the service worker
+            var serviceWorkerAssetsManifestVersionMatch = new Regex(@"^\s*\""version\"":\s*\""([^\""]+)\""", RegexOptions.Multiline)
+                .Match(serviceWorkerAssetsManifestContents);
+            Assert.True(serviceWorkerAssetsManifestVersionMatch.Success);
+            var serviceWorkerAssetsManifestVersion = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0];
+            Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
 
             using (var serverProcess = RunPublishedStandaloneBlazorProject(project))
             {
