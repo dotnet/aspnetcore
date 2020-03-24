@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -163,9 +164,12 @@ namespace Wasm.Performance.Driver
                 });
             }
 
-            Console.WriteLine("#StartJobStatistics");
-            Console.WriteLine(JsonSerializer.Serialize(output));
-            Console.WriteLine("#EndJobStatistics");
+            var builder = new StringBuilder();
+            builder.AppendLine("#StartJobStatistics");
+            builder.AppendLine(JsonSerializer.Serialize(output));
+            builder.AppendLine("#EndJobStatistics");
+
+            Console.WriteLine(builder);
         }
 
         static IHost StartTestApp()

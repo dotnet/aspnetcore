@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +15,7 @@ namespace Wasm.Performance.Driver
     {
         const int SeleniumPort = 4444;
         static bool RunHeadlessBrowser = true;
-        static bool PoolForBrowserLogs = true;
+        static bool PoolForBrowserLogs = false;
 
         private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
         {
