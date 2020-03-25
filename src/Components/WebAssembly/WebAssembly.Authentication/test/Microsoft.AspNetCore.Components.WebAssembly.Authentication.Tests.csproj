@@ -11,4 +11,8 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)\test\TestWebAssemblyJSRuntimeInvoker.cs" Link="Shared\TestWebAssemblyJSRuntimeInvoker.cs" />
+  </ItemGroup>
+
 </Project>

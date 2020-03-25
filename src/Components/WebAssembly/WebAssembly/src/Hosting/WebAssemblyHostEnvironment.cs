@@ -5,8 +5,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
     internal sealed class WebAssemblyHostEnvironment : IWebAssemblyHostEnvironment
     {
-        public WebAssemblyHostEnvironment(string environment) => Environment = environment;
+        public WebAssemblyHostEnvironment(string environment, string baseAddress)
+        {
+            Environment = environment;
+            BaseAddress = baseAddress;
+        }
 
         public string Environment { get; }
+
+        public string BaseAddress { get; }
     }
 }
