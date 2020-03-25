@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
-// https://github.com/aspnet/AspNetCore/issues/8247
+// https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = Tfm.NetCoreApp31,
+                    TargetFramework = Tfm.NetCoreApp50,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false

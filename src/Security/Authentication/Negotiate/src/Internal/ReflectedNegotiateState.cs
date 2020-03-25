@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         errorCode = SecurityStatusPalErrorCode.UnknownCredentials;
                     }
 
-                    error = new Exception($"An authentication exception occured (0x{majorStatus:X}/0x{minorStatus:X}).", error);
+                    error = new Exception($"An authentication exception occurred (0x{majorStatus:X}/0x{minorStatus:X}).", error);
                 }
 
                 if (errorCode == SecurityStatusPalErrorCode.OK

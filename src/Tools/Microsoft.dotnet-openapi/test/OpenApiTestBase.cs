@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.Tools.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.OpenApi.Tests
@@ -21,8 +22,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
         protected readonly TextWriter _output = new StringWriter();
         protected readonly TextWriter _error = new StringWriter();
         protected readonly ITestOutputHelper _outputHelper;
-        protected const string TestTFM = "netcoreapp3.1";
-
+        protected const string TestTFM = "netcoreapp5.0";
 
         protected const string Content = @"{""x-generator"": ""NSwag""}";
         protected const string ActualUrl = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/api-with-examples.yaml";
@@ -110,6 +110,12 @@ namespace Microsoft.DotNet.OpenApi.Tests
             };
         }
 
+        protected void AssertNoErrors(int appExitCode)
+        {
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.Equal(0, appExitCode);
+        }
+
         public void Dispose()
         {
             _outputHelper.WriteLine(_output.ToString());
@@ -151,7 +157,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             return true;
         }
 
-        private ContentDispositionHeaderValue _contentDisposition;
+        private readonly ContentDispositionHeaderValue _contentDisposition;
 
         public TestHttpResponseMessageWrapper(
             MemoryStream stream,

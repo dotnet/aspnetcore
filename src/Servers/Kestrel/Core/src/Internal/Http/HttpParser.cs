@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteTab = (byte)'\t';
         private const byte ByteQuestionMark = (byte)'?';
         private const byte BytePercentage = (byte)'%';
+        private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
 
         public unsafe bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             examined = buffer.End;
 
             // Prepare the first span
-            var span = buffer.First.Span;
+            var span = buffer.FirstSpan;
             var lineIndex = span.IndexOf(ByteLF);
             if (lineIndex >= 0)
             {
@@ -211,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             }
 
                             // Double CRLF found, so end of headers.
-                            handler.OnHeadersComplete();
+                            handler.OnHeadersComplete(endStream: false);
                             return true;
                         }
                         else if (readAhead == 1)
@@ -239,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 TakeSingleHeader(pHeader, length, handler);
                             }
-                            // Read the header sucessfully, skip the reader forward past the header line.
+                            // Read the header successfully, skip the reader forward past the header line.
                             reader.Advance(length);
                             span = span.Slice(length);
                         }
@@ -415,9 +417,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new Span<byte>(data, methodLength);
         }
 
+        private unsafe bool IsTlsHandshake(byte* data, int length)
+        {
+            const byte SslRecordTypeHandshake = (byte)0x16;
+
+            // Make sure we can check at least for the existence of a TLS handshake - we check the first byte
+            // See https://serializethoughts.com/2014/07/27/dissecting-tls-client-hello-message/
+
+            return (length >= MinTlsRequestSize && data[0] == SslRecordTypeHandshake);
+        }
+
         [StackTraceHidden]
         private unsafe void RejectRequestLine(byte* requestLine, int length)
-            => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
+        {
+            // Check for incoming TLS handshake over HTTP
+            if (IsTlsHandshake(requestLine, length))
+            {
+                throw GetInvalidRequestException(RequestRejectionReason.TlsOverHttpError, requestLine, length);
+            }
+            else
+            {
+                throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
+            }
+        }
 
         [StackTraceHidden]
         private unsafe void RejectRequestHeader(byte* headerLine, int length)

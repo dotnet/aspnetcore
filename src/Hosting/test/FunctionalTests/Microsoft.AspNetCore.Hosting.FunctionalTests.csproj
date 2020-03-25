@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/8247 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8247 -->
     <BuildHelixPayload>false</BuildHelixPayload>
     <BaseOutputPath />
     <OutputPath />
@@ -21,7 +21,6 @@
 
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
 </Project>

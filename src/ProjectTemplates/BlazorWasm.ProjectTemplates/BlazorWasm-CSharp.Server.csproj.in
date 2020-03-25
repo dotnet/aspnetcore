@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="${MicrosoftAspNetCoreBlazorServerPackageVersion}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Client\BlazorWasm-CSharp.Client.csproj" />
+    <ProjectReference Include="..\Shared\BlazorWasm-CSharp.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

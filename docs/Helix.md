@@ -12,17 +12,10 @@ For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/maste
 To run Helix tests for one particular test project:
 
 ```
-cd src/MyCode/test
-dotnet msbuild /t:Helix
+.\eng\scripts\RunHelix.ps1 -Project path\mytestproject.csproj
 ```
 
-To run tests for the entire repo, run:
-
-```
-.\eng\scripts\TestHelix.ps1
-```
-
-This will restore, and then publish all of the test projects including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assemblies on the helix machine, and upload the job to helix.
+This will restore, and then publish all the test project including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assembly on the helix machine(s), and upload the job to helix.
 
 
 ## How do I look at the results of a helix run on Azure Pipelines?

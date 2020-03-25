@@ -4,7 +4,7 @@ variables:
   - group: DotNet-DotNetCli-Storage
   - group: DotNet-MSRC-Storage
   - group: Publish-Build-Assets
-
+    
   # .NET Core 3.1 Dev
   - name: PublicDevRelease_31_Channel_Id
     value: 128
@@ -48,6 +48,10 @@ variables:
   # .NET Core 3.1 Blazor Features
   - name: NetCore_31_Blazor_Features_Channel_Id
     value: 531
+
+  # .NET Core Experimental
+  - name: NetCore_Experimental_Channel_Id
+    value: 562
 
   # Whether the build is internal or not
   - name: IsInternalBuild

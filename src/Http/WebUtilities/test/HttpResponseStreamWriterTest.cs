@@ -258,6 +258,64 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
+        public void WriteReadOnlySpanChar_WritesToStream(int byteLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var span = new ReadOnlySpan<char>(array);
+                writer.Write(span);
+            }
+
+            // Assert
+            Assert.Equal(byteLength, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(1022, "\n")]
+        [InlineData(1023, "\n")]
+        [InlineData(1024, "\n")]
+        [InlineData(1050, "\n")]
+        [InlineData(2047, "\n")]
+        [InlineData(2048, "\n")]
+        [InlineData(1021, "\r\n")]
+        [InlineData(1022, "\r\n")]
+        [InlineData(1023, "\r\n")]
+        [InlineData(1024, "\r\n")]
+        [InlineData(1050, "\r\n")]
+        [InlineData(2046, "\r\n")]
+        [InlineData(2048, "\r\n")]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, "\r\n")]
+        public void WriteLineReadOnlySpanChar_WritesToStream(int byteLength, string newLine)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            writer.NewLine = newLine;
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var span = new ReadOnlySpan<char>(array);
+                writer.WriteLine(span);
+            }
+
+            // Assert
+            Assert.Equal(byteLength + newLine.Length, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(1023)]
+        [InlineData(1024)]
+        [InlineData(1050)]
+        [InlineData(2048)]
         public async Task WriteCharAsync_WritesToStream(int byteLength)
         {
             // Arrange
@@ -296,6 +354,106 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Assert
             Assert.Equal(byteLength, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1023)]
+        [InlineData(1024)]
+        [InlineData(1050)]
+        [InlineData(2048)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
+        public async Task WriteReadOnlyMemoryAsync_WritesToStream(int byteLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var memory = new ReadOnlyMemory<char>(array);
+                await writer.WriteAsync(memory);
+            }
+
+            // Assert
+            Assert.Equal(byteLength, stream.Length);
+        }
+
+        [Fact]
+        public async Task WriteReadOnlyMemoryAsync_TokenCanceled_ReturnsCanceledTask()
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            using var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+            var memory = new ReadOnlyMemory<char>(new char[] { 'a' });
+            var cancellationToken = new CancellationToken(true);
+
+            // Act
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await writer.WriteAsync(memory, cancellationToken));
+
+            // Assert
+            Assert.Equal(0, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(0, 1)]
+        [InlineData(1022, 1)]
+        [InlineData(1023, 1)]
+        [InlineData(1024, 1)]
+        [InlineData(1050, 1)]
+        [InlineData(2047, 1)]
+        [InlineData(2048, 1)]
+        [InlineData(1021, 2)]
+        [InlineData(1022, 2)]
+        [InlineData(1023, 2)]
+        [InlineData(1024, 2)]
+        [InlineData(1024, 1023)]
+        [InlineData(1024, 1024)]
+        [InlineData(1024, 1050)]
+        [InlineData(1050, 2)]
+        [InlineData(2046, 2)]
+        [InlineData(2048, 2)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 2)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, HttpResponseStreamWriter.DefaultBufferSize)]
+        public async Task WriteLineReadOnlyMemoryAsync_WritesToStream(int byteLength, int newLineLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+            writer.NewLine = new string('\n', newLineLength);
+
+            // Act
+            using (writer)
+            {
+                var array = new string('a', byteLength).ToCharArray();
+                var memory = new ReadOnlyMemory<char>(array);
+                await writer.WriteLineAsync(memory);
+            }
+
+            // Assert
+            Assert.Equal(byteLength + newLineLength, stream.Length);
+        }
+
+        [Fact]
+        public async Task WriteLineReadOnlyMemoryAsync_TokenCanceled_ReturnsCanceledTask()
+        {
+            // Arrange
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+            var memory = new ReadOnlyMemory<char>(new char[] { 'a' });
+            var cancellationToken = new CancellationToken(true);
+
+            // Act
+            using (writer)
+            {
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writer.WriteLineAsync(memory, cancellationToken));
+            }
+
+            // Assert
+            Assert.Equal(0, stream.Length);
         }
 
         [Theory]
@@ -539,11 +697,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  httpResponseStreamWriter.Write(new char[] { 'a', 'b' }, 0, 1);
             })};
-
             yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
             {
                 httpResponseStreamWriter.Write("hello");
             })};
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                httpResponseStreamWriter.Write(new ReadOnlySpan<char>(new char[] { 'a', 'b' }));
+            })};
+
             yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
             {
                 httpResponseStreamWriter.Flush();
@@ -560,11 +722,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 await httpResponseStreamWriter.WriteAsync(new char[] { 'a', 'b' }, 0, 1);
             })};
-
             yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
                 await httpResponseStreamWriter.WriteAsync("hello");
             })};
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteAsync(new ReadOnlyMemory<char>(new char[] { 'a', 'b' }));
+            })};
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteLineAsync(new ReadOnlyMemory<char>(new char[] { 'a', 'b' }));
+            })};
+
             yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
                 await httpResponseStreamWriter.FlushAsync();

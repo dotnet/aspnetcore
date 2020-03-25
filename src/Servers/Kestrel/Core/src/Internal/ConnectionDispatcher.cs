@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                         // Add the connection to the connection manager before we queue it for execution
                         var id = Interlocked.Increment(ref _lastConnectionId);
-                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+                        var kestrelConnection = new KestrelConnection<ConnectionContext>(id, _serviceContext, c => _connectionDelegate(c), connection, Log);
 
                         _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
 

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A simple object pool implementation.</Description>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>pooling</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ObjectPool.Tests" />
+  </ItemGroup>
+
+</Project>

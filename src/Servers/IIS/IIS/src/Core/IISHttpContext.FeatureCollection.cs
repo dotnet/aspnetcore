@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
-        private string _httpProtocolVersion = null;
+        private string _httpProtocolVersion;
         private X509Certificate2 _certificate;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
@@ -86,30 +87,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         string IHttpRequestFeature.Protocol
         {
-            get
-            {
-                if (_httpProtocolVersion == null)
-                {
-                    var protocol = HttpVersion;
-                    if (protocol.Major == 1 && protocol.Minor == 1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol.Major == 1 && protocol.Minor == 0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
-                }
-                return _httpProtocolVersion;
-            }
-            set
-            {
-                _httpProtocolVersion = value;
-            }
+            get => _httpProtocolVersion ??= HttpProtocol.GetHttpProtocol(HttpVersion);
+            set => _httpProtocolVersion = value;
         }
 
         string IHttpRequestFeature.Scheme

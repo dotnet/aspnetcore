@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationSchemeProviderTests
     {
@@ -131,6 +131,23 @@ namespace Microsoft.AspNetCore.Authentication
             var error = Assert.Throws<InvalidOperationException>(() => services.GetRequiredService<IAuthenticationSchemeProvider>());
 
             Assert.Contains("Scheme already exists: signin", error.Message);
+        }
+
+        [Fact]
+        public void CanSafelyTryAddSchemes()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+            }).BuildServiceProvider();
+
+            var o = services.GetRequiredService<IAuthenticationSchemeProvider>();
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin", "whatever", typeof(Handler))));
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
+            Assert.False(o.TryAddScheme(new AuthenticationScheme("signin", "whatever", typeof(Handler))));
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin3", "whatever", typeof(Handler))));
+            Assert.False(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
+            o.RemoveScheme("signin2");
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
         }
 
         [Fact]

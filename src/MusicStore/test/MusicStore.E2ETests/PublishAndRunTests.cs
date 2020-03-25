@@ -16,7 +16,7 @@ namespace E2ETests
     {
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels()
                 .WithAllArchitectures();

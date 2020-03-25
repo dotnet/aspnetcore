@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Authentication
         private const string CorrelationMarker = "N";
         private const string AuthSchemeKey = ".AuthScheme";
 
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         protected string SignInScheme => Options.SignInScheme;
 
         /// <summary>
@@ -194,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var bytes = new byte[32];
-            CryptoRandom.GetBytes(bytes);
+            RandomNumberGenerator.Fill(bytes);
             var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
             var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);

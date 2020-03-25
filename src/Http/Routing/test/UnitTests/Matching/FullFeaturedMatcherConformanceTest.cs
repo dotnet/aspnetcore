@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // Historically catchall segments don't match an empty segment, but only if it's
         // the first one. So `/a/b//` would match, but `/a//` would not. This is pretty
-        // wierd and inconsistent with the intent of using a catch all. The DfaMatcher
+        // weird and inconsistent with the intent of using a catch all. The DfaMatcher
         // fixes this issue.
         [Theory]
         [InlineData("/{a}/{*b=b}", "/a///", new[] { "a", "b", }, new[] { "a", "//" })]
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [InlineData("(Controller).mvc", "/(Controller).mvc", new string[] { }, new string[] { })]
         [InlineData("Controller.mvc/ ", "/Controller.mvc/ ", new string[] { }, new string[] { })]
         [InlineData("Controller.mvc ", "/Controller.mvc ", new string[] { }, new string[] { })]
-        public virtual async Task Match_WierdCharacterCases(string template, string path, string[] keys, string[] values)
+        public virtual async Task Match_WeirdCharacterCases(string template, string path, string[] keys, string[] values)
         {
             // Arrange
             var (matcher, endpoint) = CreateMatcher(template);

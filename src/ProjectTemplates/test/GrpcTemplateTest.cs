@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +24,9 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact(Skip = "This test run for over an hour")]
+        [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task GrpcTemplate()
         {
             Project = await ProjectFactory.GetOrCreateProject("grpc", Output);
@@ -40,7 +43,7 @@ namespace Templates.Test
             using (var serverProcess = Project.StartBuiltProjectAsync())
             {
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-                // https://github.com/aspnet/AspNetCore/issues/11061
+                // https://github.com/dotnet/aspnetcore/issues/11061
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     Assert.True(serverProcess.Process.HasExited, "built");
@@ -64,7 +67,7 @@ namespace Templates.Test
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
-                // https://github.com/aspnet/AspNetCore/issues/11061
+                // https://github.com/dotnet/aspnetcore/issues/11061
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     Assert.True(aspNetProcess.Process.HasExited, "published");

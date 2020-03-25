@@ -62,6 +62,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
+            // Check if EndPoint is a FileHandleEndpoint before attempting to access EndPoint.AddressFamily
+            // since that will throw an NotImplementedException.
+            if (EndPoint is FileHandleEndPoint)
+            {
+                throw new NotSupportedException(SocketsStrings.FileHandleEndPointNotSupported);
+            }
+
             Socket listenSocket;
 
             // Unix domain sockets are unspecified
@@ -86,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             EndPoint = listenSocket.LocalEndPoint;
 
-            listenSocket.Listen(512);
+            listenSocket.Listen(_options.Backlog);
 
             _listenSocket = listenSocket;
         }
@@ -105,7 +112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace, _options.MaxReadBufferSize, _options.MaxWriteBufferSize);
+                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace,
+                        _options.MaxReadBufferSize, _options.MaxWriteBufferSize, _options.WaitForDataBeforeAllocatingBuffer);
 
                     connection.Start();
 

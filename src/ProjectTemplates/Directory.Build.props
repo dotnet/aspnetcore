@@ -8,4 +8,10 @@
   </PropertyGroup>
 
   <Import Project="TemplateProjects.props" Condition="'$(IsTestProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'" />
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

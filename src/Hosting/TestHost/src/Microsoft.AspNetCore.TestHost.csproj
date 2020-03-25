@@ -6,13 +6,14 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting;testing</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Reference Include="System.IO.Pipelines" />
+
+    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
   </ItemGroup>
 
 </Project>

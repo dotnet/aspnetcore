@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection
+    public partial class HubConnection : IAsyncDisposable
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
@@ -292,8 +291,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
-        public async Task DisposeAsync()
+        /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
+        public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -501,11 +500,24 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     connectionState.Stopping = true;
                 }
+                else
+                {
+                    // Reset StopCts if there isn't an active connection so that the next StartAsync wont immediately fail due to the token being canceled
+                    _state.StopCts = new CancellationTokenSource();
+                }
 
                 if (disposing)
                 {
-                    (_serviceProvider as IDisposable)?.Dispose();
+                    // Must set this before calling DisposeAsync because the service provider has a reference to the HubConnection and will try to dispose it again
                     _disposed = true;
+                    if (_serviceProvider is IAsyncDisposable asyncDispose)
+                    {
+                        await asyncDispose.DisposeAsync();
+                    }
+                    else
+                    {
+                        (_serviceProvider as IDisposable)?.Dispose();
+                    }
                 }
             }
             finally
@@ -1207,11 +1219,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             finally
             {
                 invocationMessageChannel.Writer.TryComplete();
-                await invocationMessageReceiveTask;
                 timer.Stop();
                 await timerTask;
                 uploadStreamSource.Cancel();
                 await HandleConnectionClose(connectionState);
+
+                // await after the connection has been closed, otherwise could deadlock on a user's .On callback(s)
+                await invocationMessageReceiveTask;
             }
         }
 
@@ -1626,6 +1640,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             private readonly HubConnection _hubConnection;
             private readonly ILogger _logger;
+            private readonly bool _hasInherentKeepAlive;
 
             private readonly object _lock = new object();
             private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
@@ -1637,7 +1652,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private long _nextActivationServerTimeout;
             private long _nextActivationSendPing;
-            private bool _hasInherentKeepAlive;
 
             public ConnectionContext Connection { get; }
             public Task ReceiveTask { get; set; }
@@ -1766,7 +1780,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
                 // The TimerLoop is started from the ReceiveLoop with the connection lock still acquired.
                 _hubConnection._state.AssertInConnectionLock();
-                await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                if (!_hasInherentKeepAlive)
+                {
+                    await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                }
 
                 // initialize the timers
                 timer.Start();
@@ -1796,7 +1813,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Internal for testing
             internal async Task RunTimerActions()
             {
-                if (!_hasInherentKeepAlive && DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
+                if (_hasInherentKeepAlive)
+                {
+                    return;
+                }
+
+                if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
                 {
                     OnServerTimeout();
                 }
