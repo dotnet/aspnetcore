@@ -178,12 +178,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
-        public async Task Publish_HostedApp_Works()
+        public async Task Publish_HostedApp_WithLinkOnBuildTrue_Works()
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
             project.TargetFramework = "netcoreapp3.1";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+            AddSiblingProjectFileContent(project, @"
+<PropertyGroup>
+    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
+</PropertyGroup>");
 
             Assert.BuildPassed(result);
 
@@ -228,7 +232,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
             project.TargetFramework = "netcoreapp3.1";
 
-            AddSiblingProjectFileContent(@"
+            AddSiblingProjectFileContent(project, @"
 <PropertyGroup>
     <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
 </PropertyGroup>");
@@ -245,13 +249,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Make sure the main project exists
             Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
 
+            // Verification for https://github.com/dotnet/aspnetcore/issues/19926. Verify binaries for projects
+            // referenced by the Hosted project appear in the publish directory
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
+            Assert.FileExists(result, publishDirectory, "standalone.dll");
+
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "RazorClassLibrary.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -272,14 +283,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
 
-            void AddSiblingProjectFileContent(string content)
-            {
-                var path = Path.Combine(project.SolutionPath, "standalone", "standalone.csproj");
-                var existing = File.ReadAllText(path);
-                var updated = existing.Replace("<!-- Test Placeholder -->", content);
-                File.WriteAllText(path, updated);
             }
-        }
 
         [Fact]
         public async Task Publish_HostedApp_WithNoBuild_Works()
@@ -321,6 +325,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        private static void AddSiblingProjectFileContent(ProjectDirectory project, string content)
+        {
+            var path = Path.Combine(project.SolutionPath, "standalone", "standalone.csproj");
+            var existing = File.ReadAllText(path);
+            var updated = existing.Replace("<!-- Test Placeholder -->", content);
+            File.WriteAllText(path, updated);
         }
 
         private static void VerifyBootManifestHashes(MSBuildResult result, string blazorPublishDirectory)
