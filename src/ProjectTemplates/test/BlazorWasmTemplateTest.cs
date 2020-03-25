@@ -172,7 +172,7 @@ namespace Templates.Test
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            ValidateAppWorksOffline(serverProject, listeningUri);
+            ValidateAppWorksOffline(project, listeningUri);
         }
 
         private void ValidatePublishedServiceWorker(Project project)
