@@ -5,6 +5,8 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <IsShippingPackage>true</IsShippingPackage>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- This package should be versioned 3.1.4-previewN until we move its changes back into release/3.1 -->
+    <VersionPrefix>3.1.4</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
