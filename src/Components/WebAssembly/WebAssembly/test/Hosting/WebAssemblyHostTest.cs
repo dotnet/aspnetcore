@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CanExitBasedOnCancellationToken()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
             var host = builder.Build();
 
             var cts = new CancellationTokenSource();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CallingTwiceCausesException()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
             var host = builder.Build();
 
             var cts = new CancellationTokenSource();
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
 

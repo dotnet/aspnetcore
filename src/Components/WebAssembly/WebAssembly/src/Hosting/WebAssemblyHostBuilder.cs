@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // We don't use the args for anything right now, but we want to accept them
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
-            var builder = new WebAssemblyHostBuilder(WebAssemblyJSRuntimeInvoker.Instance);
+            var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
 
             // Right now we don't have conventions or behaviors that are specific to this method
             // however, making this the default for the template allows us to add things like that
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        internal WebAssemblyHostBuilder(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
+        internal WebAssemblyHostBuilder(WebAssemblyJSRuntime jsRuntime)
         {
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
@@ -56,32 +56,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
 
-            // Retrieve required attributes from JSRuntimeInvoker
-            InitializeNavigationManager(jsRuntimeInvoker);
             InitializeDefaultServices();
 
-            var hostEnvironment = InitializeEnvironment(jsRuntimeInvoker);
-            HostEnvironment = hostEnvironment;
+            var hostEnvironment = InitializeEnvironment(jsRuntime);
 
             _createServiceProvider = () =>
             {
-                return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
+                return Services.BuildServiceProvider(validateScopes: hostEnvironment.Environment == "Development");
             };
         }
 
-        private void InitializeNavigationManager(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
+        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntime jsRuntime)
         {
-            var baseUri = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(BrowserNavigationManagerInterop.GetBaseUri, null, null, null);
-            var uri = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(BrowserNavigationManagerInterop.GetLocationHref, null, null, null);
-
-            WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
-        }
-
-        private WebAssemblyHostEnvironment InitializeEnvironment(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
-        {
-            var applicationEnvironment = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, string>(
-                "Blazor._internal.getApplicationEnvironment", null, null, null);
-            var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
+            var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+            var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment);
 
             Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
 
@@ -93,8 +81,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             foreach (var configFile in configFiles)
             {
-                var appSettingsJson = jsRuntimeInvoker.InvokeUnmarshalled<string, object, object, byte[]>(
-                    "Blazor._internal.getConfig", configFile, null, null);
+                var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
+                    "Blazor._internal.getConfig",
+                    configFile);
 
                 if (appSettingsJson != null)
                 {
@@ -124,11 +113,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Gets information about the app's host environment.
-        /// </summary>
-        public IWebAssemblyHostEnvironment HostEnvironment { get; }
-
-        /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="factory">The <see cref="IServiceProviderFactory{TBuilder}" />.</param>
@@ -140,11 +124,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <remarks>
         /// <para>
         /// <see cref="ConfigureContainer{TBuilder}(IServiceProviderFactory{TBuilder}, Action{TBuilder})"/> is called by <see cref="Build"/>
-        /// and so the delegate provided by <paramref name="configure"/> will run after all other services have been registered.
+        /// and so the delegate provided by <paramref name="configure"/> will run after all other services have been registered. 
         /// </para>
         /// <para>
         /// Multiple calls to <see cref="ConfigureContainer{TBuilder}(IServiceProviderFactory{TBuilder}, Action{TBuilder})"/> will replace
-        /// the previously stored <paramref name="factory"/> and <paramref name="configure"/> delegate.
+        /// the previously stored <paramref name="factory"/> and <paramref name="configure"/> delegate. 
         /// </para>
         /// </remarks>
         public void ConfigureContainer<TBuilder>(IServiceProviderFactory<TBuilder> factory, Action<TBuilder> configure = null)

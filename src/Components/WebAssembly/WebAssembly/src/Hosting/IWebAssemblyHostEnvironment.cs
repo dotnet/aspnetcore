@@ -13,10 +13,5 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Configured to "Production" when not specified by the host.
         /// </summary>
         string Environment { get; }
-
-        /// <summary>
-        /// Gets the base address for the application. This is typically derived from the "<base href>" value in the host page.
-        /// </summary>
-        string BaseAddress { get; }
     }
 }

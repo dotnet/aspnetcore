@@ -15,10 +15,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <summary>
         /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.
         /// </summary>
-        public static WebAssemblyNavigationManager Instance { get; set; }
+        public static readonly WebAssemblyNavigationManager Instance = new WebAssemblyNavigationManager();
 
-        public WebAssemblyNavigationManager(string baseUri, string uri)
+        // For simplicity we force public consumption of the BrowserNavigationManager through
+        // a singleton. Only a single instance can be updated by the browser through
+        // interop. We can construct instances for testing.
+        internal WebAssemblyNavigationManager()
         {
+        }
+
+        protected override void EnsureInitialized()
+        {
+            // As described in the comment block above, BrowserNavigationManager is only for
+            // client-side (Mono) use, so it's OK to rely on synchronicity here.
+            var baseUri = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
+            var uri = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
             Initialize(baseUri, uri);
         }
 

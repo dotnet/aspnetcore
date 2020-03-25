@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
@@ -19,7 +18,7 @@ namespace ComponentsWebAssembly_CSharp
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddBaseAddressHttpClient();
 #if (IndividualLocalAuth)
     #if (Hosted)
             builder.Services.AddApiAuthorization();

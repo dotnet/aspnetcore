@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BasicTestApp.AuthTest;
@@ -37,7 +36,7 @@ namespace BasicTestApp
 
             builder.RootComponents.Add<Index>("root");
 
-            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddBaseAddressHttpClient();
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
             builder.Services.AddAuthorizationCore(options =>
             {

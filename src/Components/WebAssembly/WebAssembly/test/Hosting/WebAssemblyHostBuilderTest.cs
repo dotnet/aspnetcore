@@ -7,7 +7,6 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.WebAssembly;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringConfiguration()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Configuration.AddInMemoryCollection(new[]
             {
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringServices()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             // This test also verifies that we create a scope.
             builder.Services.AddScoped<StringBuilder>();
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringContainer()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Services.AddScoped<StringBuilder>();
             var factory = new MyFakeServiceProviderFactory();
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AllowsConfiguringContainer_WithDelegate()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Services.AddScoped<StringBuilder>();
 
@@ -97,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_InDevelopment_ConfiguresWithServiceProviderWithScopeValidation()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create(environment: "Development"));
 
             builder.Services.AddScoped<StringBuilder>();
             builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_InProduction_ConfiguresWithServiceProviderWithScopeValidation()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Services.AddScoped<StringBuilder>();
             builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
@@ -125,33 +124,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Assert
             Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
             Assert.NotNull(host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
-        }
-
-        [Fact]
-        public void Builder_InDevelopment_SetsHostEnvironmentProperty()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
-
-            // Assert
-            Assert.NotNull(builder.HostEnvironment);
-            Assert.True(WebAssemblyHostEnvironmentExtensions.IsDevelopment(builder.HostEnvironment));
-        }
-
-        [Fact]
-        public void Builder_CreatesNavigationManager()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker(environment: "Development"));
-
-            // Act
-            var host = builder.Build();
-
-            // Assert
-            var navigationManager = host.Services.GetRequiredService<NavigationManager>();
-            Assert.NotNull(navigationManager);
-            Assert.Equal("https://www.example.com/", navigationManager.BaseUri);
-            Assert.Equal("https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool", navigationManager.Uri);
         }
 
         private class TestServiceThatTakesStringBuilder
@@ -193,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Build_AddsConfigurationToServices()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             builder.Configuration.AddInMemoryCollection(new[]
             {
@@ -228,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public void Constructor_AddsDefaultServices()
         {
             // Arrange & Act
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(TestWebAssemblyJSRuntime.Create());
 
             // Assert
             Assert.Equal(DefaultServiceTypes.Count, builder.Services.Count);
