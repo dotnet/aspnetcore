@@ -97,17 +97,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         ParseFormValues(ref buffer, ref accumulator, readResult.IsCompleted);
                     }
-                    catch (InvalidOperationException ex)
-                    {
-                        throw new InvalidDataException("The path contains null characters.", ex);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                    finally
+                    catch
                     {
                         _pipeReader.AdvanceTo(buffer.Start);
+                        throw;
                     }
                 }
 
@@ -393,7 +386,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 catch (InvalidOperationException ex)
                 {
-                    throw new InvalidDataException("The path contains null characters.", ex);
+                    throw new InvalidDataException("The form value contains invalid characters.", ex);
                 }
             }
             else
