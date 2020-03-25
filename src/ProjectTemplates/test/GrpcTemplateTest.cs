@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -51,9 +50,8 @@ namespace Templates.Test
             var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
             var unsupported = isOsx || isWindowsOld;
 
-            using (var serverProcess = Project.StartBuiltProjectAsync(logger: logger))
+            using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: logger))
             {
-                logger.LogInformation($"GrpcTemplateTest.cs - isOsx: {isOsx} unsupported: {unsupported} Process.HasExited: {serverProcess.Process.HasExited}");
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
@@ -76,7 +74,7 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: !unsupported))
             {
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
