@@ -70,7 +70,6 @@
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.3.20169.13</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.3.20169.13</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.3.20169.13</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0-preview.3.20160.8</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.3.20169.13</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-preview.3.20169.13</MicrosoftWin32SystemEventsPackageVersion>
