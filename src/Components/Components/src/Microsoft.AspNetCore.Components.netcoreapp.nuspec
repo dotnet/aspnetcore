@@ -15,6 +15,6 @@
     <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" />
     <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\" />
     <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\" />
-    <file src="..\..\THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
+    <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
 </package>
