@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -95,9 +96,9 @@ namespace Templates.Test
         }
 
         [Fact]
-        public async Task BlazorWasmPwaTemplate_Works()
+        public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorpwa", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
             project.TargetFramework = "netstandard2.1";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
@@ -111,13 +112,7 @@ namespace Templates.Test
 
             await BuildAndRunTest(project.ProjectName, project);
 
-            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-
-            // When publishing the PWA template, we generate an assets manifest
-            // and move service-worker.published.js to overwrite service-worker.js
-            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
-            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
-            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
+            ValidatePublishedServiceWorker(project);
 
             using (var serverProcess = RunPublishedStandaloneBlazorProject(project))
             {
@@ -129,15 +124,86 @@ namespace Templates.Test
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            ValidateAppWorksOffline(project, listeningUri);
+            ValidateAppWorksOffline(project, listeningUri, skipFetchData: false);
         }
 
-        private void ValidateAppWorksOffline(Project project, string listeningUri)
+        [Fact]
+        public async Task BlazorWasmHostedPwaTemplate_Works()
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+
+            var publishResult = await serverProject.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+
+            var buildResult = await serverProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
+
+            await BuildAndRunTest(project.ProjectName, serverProject);
+
+            ValidatePublishedServiceWorker(serverProject);
+
+            string listeningUri;
+            using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
+
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+                if (BrowserFixture.IsHostAutomationSupported())
+                {
+                    aspNetProcess.VisitInBrowser(Browser);
+                    TestBasicNavigation(project.ProjectName);
+                }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
+                }
+
+                // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
+                var browserUri = new Uri(Browser.Url);
+                listeningUri = $"{browserUri.Scheme}://{browserUri.Authority}";
+            }
+
+            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+            // so we can continue working even without the server.
+            // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
+            ValidateAppWorksOffline(project, listeningUri, skipFetchData: true);
+        }
+
+        private void ValidatePublishedServiceWorker(Project project)
+        {
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+
+            // When publishing the PWA template, we generate an assets manifest
+            // and move service-worker.published.js to overwrite service-worker.js
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
+            Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
+
+            // We automatically append the SWAM version as a comment in the published service worker file
+            var serviceWorkerAssetsManifestContents = ReadFile(publishDir, "service-worker-assets.js");
+            var serviceWorkerContents = ReadFile(publishDir, "service-worker.js");
+
+            // Parse the "version": "..." value from the SWAM, and check it's in the service worker
+            var serviceWorkerAssetsManifestVersionMatch = new Regex(@"^\s*\""version\"":\s*\""([^\""]+)\""", RegexOptions.Multiline)
+                .Match(serviceWorkerAssetsManifestContents);
+            Assert.True(serviceWorkerAssetsManifestVersionMatch.Success);
+            var serviceWorkerAssetsManifestVersion = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0];
+            Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
+        }
+
+        private void ValidateAppWorksOffline(Project project, string listeningUri, bool skipFetchData)
         {
             Browser.Navigate().GoToUrl("about:blank"); // Be sure we're really reloading
             Output.WriteLine($"Opening browser without corresponding server at {listeningUri}...");
             Browser.Navigate().GoToUrl(listeningUri);
-            TestBasicNavigation(project.ProjectName);
+            TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
         [Theory]
@@ -333,7 +399,7 @@ namespace Templates.Test
             }
         }
 
-        private void TestBasicNavigation(string appName, bool usesAuth = false)
+        private void TestBasicNavigation(string appName, bool usesAuth = false, bool skipFetchData = false)
         {
             // Start fresh always
             if (usesAuth)
@@ -399,14 +465,17 @@ namespace Templates.Test
                 Browser.Equal(appName.Trim(), () => Browser.Title.Trim());
             }
 
-            // Can navigate to the 'fetch data' page
-            Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
-            Browser.Contains("fetchdata", () => Browser.Url);
-            Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            if (!skipFetchData)
+            {
+                // Can navigate to the 'fetch data' page
+                Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+                Browser.Contains("fetchdata", () => Browser.Url);
+                Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
 
-            // Asynchronously loads and displays the table of weather forecasts
-            Browser.Exists(By.CssSelector("table>tbody>tr"));
-            Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+                // Asynchronously loads and displays the table of weather forecasts
+                Browser.Exists(By.CssSelector("table>tbody>tr"));
+                Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+            }
         }
 
         private string ReadFile(string basePath, string path)
