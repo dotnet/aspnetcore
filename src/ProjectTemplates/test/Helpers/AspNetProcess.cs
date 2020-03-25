@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
@@ -38,7 +39,8 @@ namespace Templates.Test.Helpers
             string dllPath,
             IDictionary<string, string> environmentVariables,
             bool published = true,
-            bool hasListeningUri = true)
+            bool hasListeningUri = true,
+            ILogger logger = null)
         {
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
@@ -57,10 +59,18 @@ namespace Templates.Test.Helpers
             output.WriteLine("Running ASP.NET application...");
 
             var arguments = published ? $"exec {dllPath}" : "run";
+
+            logger?.LogInformation($"AspNetProcess - process: {DotNetMuxer.MuxerPathOrDefault()} arguments: {arguments}");
+
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
+
+            logger?.LogInformation("AspNetProcess - process started");
+
             if (hasListeningUri)
             {
+                logger?.LogInformation("AspNetProcess - Getting listening uri");
                 ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
+                logger?.LogInformation($"AspNetProcess - Got {ListeningUri.ToString()}");
             }
         }
 
