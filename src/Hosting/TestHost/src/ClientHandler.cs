@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = "HTTP/2";
+                    req.Protocol =  HttpProtocol.Http2;
                 }
                 else
                 {
@@ -111,7 +112,15 @@ namespace Microsoft.AspNetCore.TestHost
 
                 foreach (var header in request.Headers)
                 {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
+                    // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
+                    if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    }
+                    else
+                    {
+                        req.Headers.Append(header.Key, header.Value.ToArray());
+                    }
                 }
 
                 if (!req.Host.HasValue)
@@ -163,6 +172,7 @@ namespace Microsoft.AspNetCore.TestHost
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
+            response.Version = request.Version;
 
             response.Content = new StreamContent(httpContext.Response.Body);
 

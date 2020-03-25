@@ -21,6 +21,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
         public static readonly string Age = "Age";
         public static readonly string Allow = "Allow";
+        public static readonly string AltSvc = "Alt-Svc";
         public static readonly string Authority = ":authority";
         public static readonly string Authorization = "Authorization";
         public static readonly string CacheControl = "Cache-Control";
@@ -87,5 +88,6 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         public static readonly string WWWAuthenticate = "WWW-Authenticate";
         public static readonly string XFrameOptions = "X-Frame-Options";
+        public static readonly string XRequestedWith = "X-Requested-With";
     }
 }

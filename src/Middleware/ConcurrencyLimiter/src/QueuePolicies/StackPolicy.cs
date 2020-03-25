@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private readonly object _bufferLock = new Object();
 
-        private readonly static ValueTask<bool> _trueTask = new ValueTask<bool>(true);
-
         private int _freeServerSpots;
 
         public StackPolicy(IOptions<QueuePolicyOptions> options)
@@ -40,7 +38,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 if (_freeServerSpots > 0)
                 {
                     _freeServerSpots--;
-                    return _trueTask;
+                    return new ValueTask<bool>(true);
                 }
 
                 // if queue is full, cancel oldest request

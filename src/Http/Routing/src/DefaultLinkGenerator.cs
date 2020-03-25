@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Routing
                 LogLevel.Debug,
                 EventIds.TemplateFailedExpansion,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "The failure occured while expanding the template with values {Values} " +
+                "The failure occurred while expanding the template with values {Values} " +
                 "This is usually due to a missing or empty value in a complex segment");
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _linkGenerationSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
             }
 
-            public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string  uri)
+            public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string uri)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))

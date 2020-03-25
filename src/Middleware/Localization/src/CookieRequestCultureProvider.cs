@@ -109,8 +109,7 @@ namespace Microsoft.AspNetCore.Localization
                 // Value for culture but not for UI culture so default to culture value for both
                 uiCultureName = cultureName;
             }
-
-            if (cultureName == null && uiCultureName != null)
+            else if (cultureName == null && uiCultureName != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 cultureName = uiCultureName;

@@ -12,7 +12,7 @@ namespace System.Security.Claims
     public static class PrincipalExtensions
     {
         /// <summary>
-        /// Returns the value for the first claim of the specified type otherwise null the claim is not present.
+        /// Returns the value for the first claim of the specified type, otherwise null if the claim is not present.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
         /// <param name="claimType">The claim type whose first value should be returned.</param>

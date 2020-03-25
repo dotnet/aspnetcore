@@ -72,6 +72,23 @@ namespace Microsoft.AspNetCore.Authentication
         void AddScheme(AuthenticationScheme scheme);
 
         /// <summary>
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        /// <returns>true if the scheme was added successfully.</returns>
+        bool TryAddScheme(AuthenticationScheme scheme)
+        {
+            try
+            {
+                AddScheme(scheme);
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Removes a scheme, preventing it from being used by <see cref="IAuthenticationService"/>.
         /// </summary>
         /// <param name="name">The name of the authenticationScheme being removed.</param>

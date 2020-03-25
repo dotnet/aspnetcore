@@ -56,7 +56,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
     {
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
-            errorContext.generalErrorType = "ANCM In-Process Handler Load Failure";
+            errorContext.generalErrorType = "ASP.NET Core IIS hosting failure (in-process)";
             std::unique_ptr<HostFxrResolutionResult> options;
 
             RETURN_IF_FAILED(HostFxrResolutionResult::Create(
@@ -86,7 +86,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         }
         else
         {
-            errorContext.generalErrorType = "ANCM Out-Of-Process Handler Load Failure";
+            errorContext.generalErrorType = "ASP.NET Core IIS hosting failure (out-of-process)";
 
             if (FAILED_LOG(hr = FindNativeAssemblyFromGlobalLocation(pConfiguration, pstrHandlerDllName, handlerDllPath)))
             {
@@ -136,8 +136,8 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
             errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
             errorContext.statusCode = 500i16;
             errorContext.subStatusCode = 34i16;
-            errorContext.generalErrorType = "ANCM Mixed Hosting Models Not Supported";
-            errorContext.errorReason = "Select a different application pool to create another application.";
+            errorContext.generalErrorType = "ASP.NET Core does not support mixing hosting models";
+            errorContext.errorReason = "Select a different app pool to host this app.";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
@@ -154,8 +154,8 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
 
             errorContext.statusCode = 500i16;
             errorContext.subStatusCode = 35i16;
-            errorContext.generalErrorType = "ANCM Multiple In-Process Applications in same Process";
-            errorContext.errorReason = "Select a different application pool to create another in-process application.";
+            errorContext.generalErrorType = "ASP.NET Core does not support multiple apps in the same app pool";
+            errorContext.errorReason = "Select a different app pool to host this app.";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
@@ -251,8 +251,8 @@ try
         errorContext.detailedErrorContent = "Could not load hostfxr.dll.";
         errorContext.statusCode = 500i16;
         errorContext.subStatusCode = 32i16;
-        errorContext.generalErrorType = "ANCM Failed to Load dll";
-        errorContext.errorReason = "The application was likely published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
+        errorContext.generalErrorType = "Failed to load .NET Core host";
+        errorContext.errorReason = "The app was likely published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
         throw;
     }
     {
@@ -302,7 +302,7 @@ try
 
                 errorContext.statusCode = 500i16;
                 errorContext.subStatusCode = 31i16;
-                errorContext.generalErrorType = "ANCM Failed to Find Native Dependencies";
+                errorContext.generalErrorType = "Failed to load ASP.NET Core runtime";
                 errorContext.errorReason = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
                 EventLog::Error(
@@ -347,7 +347,7 @@ try
         // This only occurs if the request handler isn't referenced by the app, which rarely happens if they are targeting the shared framework.
         errorContext.statusCode = 500i16;
         errorContext.subStatusCode = 33i16;
-        errorContext.generalErrorType = "ANCM Request Handler Load Failure";
+        errorContext.generalErrorType = "Failed to load ASP.NET Core request handler";
         errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
                 ? s_pwzAspnetcoreInProcessRequestHandlerName
                 : handlerDllPath.c_str()),

@@ -41,6 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     {
                         new RequiredAttribute(),
                         typeof(RequiredAttributeAdapter)
+                    },
+                    {
+                        new CustomRegularExpressionAttribute("abc"),
+                        typeof(RegularExpressionAttributeAdapter)
                     }
                 };
             }
@@ -84,6 +88,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Assert
             var dataTypeAdapter = Assert.IsType<DataTypeAttributeAdapter>(adapter);
             Assert.Equal(expectedRuleName, dataTypeAdapter.RuleName);
+        }
+
+        class CustomRegularExpressionAttribute : RegularExpressionAttribute
+        {
+            public CustomRegularExpressionAttribute(string pattern) : base(pattern)
+            {
+                ErrorMessage = "Not valid.";
+            }
         }
     }
 }

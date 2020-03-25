@@ -19,6 +19,10 @@ namespace CodeGenerator
         {
             var requestPrimaryHeaders = new[]
             {
+                ":authority",
+                ":method",
+                ":path",
+                ":scheme",
                 "Accept",
                 "Connection",
                 "Host",
@@ -72,6 +76,10 @@ namespace CodeGenerator
             };
             RequestHeaders = commonHeaders.Concat(new[]
             {
+                ":authority",
+                ":method",
+                ":path",
+                ":scheme",
                 "Accept",
                 "Accept-Charset",
                 "Accept-Encoding",
@@ -145,6 +153,7 @@ namespace CodeGenerator
             {
                 "Accept-Ranges",
                 "Age",
+                "Alt-Svc",
                 "ETag",
                 "Location",
                 "Proxy-Authenticate",
@@ -246,7 +255,7 @@ namespace CodeGenerator
         {
             public string Name { get; set; }
             public int Index { get; set; }
-            public string Identifier => Name.Replace("-", "");
+            public string Identifier => ResolveIdentifier(Name);
 
             public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
             public int BytesOffset { get; set; }
@@ -262,6 +271,21 @@ namespace CodeGenerator
             public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
             public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
             public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
+
+            private string ResolveIdentifier(string name)
+            {
+                var identifer = name.Replace("-", "");
+
+                // Pseudo headers start with a colon. A colon isn't valid in C# names so
+                // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
+                // This identifier will match the names in HeadersNames.cs
+                if (identifer.StartsWith(':'))
+                {
+                    identifer = char.ToUpper(identifer[1]) + identifer.Substring(2);
+                }
+
+                return identifer;
+            }
 
             private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
             {
@@ -538,6 +562,9 @@ namespace CodeGenerator
 
             var responseTrailers = ResponseTrailers;
 
+            var allHeaderNames = RequestHeaders.Concat(ResponseHeaders).Concat(ResponseTrailers)
+                .Select(h => h.Identifier).Distinct().OrderBy(n => n).ToArray();
+
             var loops = new[]
             {
                 new
@@ -588,6 +615,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
+    internal enum KnownHeaderType
+    {{
+        Unknown,{Each(allHeaderNames, n => @"
+        " + n + ",")}
+    }}
 {Each(loops, loop => $@"
     internal partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
@@ -944,14 +976,14 @@ $@"        private void Clear(long bitsToClear)
                         if (value != null)
                         {{
                             output.Write(headerKey);
-                            output.WriteAsciiNoValidation(value);
+                            output.WriteAscii(value);
                         }}
                     }}
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(Span<byte> name, Span<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
@@ -985,7 +1017,7 @@ $@"        private void Clear(long bitsToClear)
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -1003,7 +1035,7 @@ $@"        private void Clear(long bitsToClear)
                 // The header was not one of the ""known"" headers.
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
                 // this method with rep stosd, which is slower than necessary.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(_useLatin1);
+                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
                 AppendUnknownHeaders(name, valueStr);
             }}
         }}" : "")}
@@ -1034,6 +1066,7 @@ $@"        private void Clear(long bitsToClear)
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
+                        _currentKnownType = KnownHeaderType.{header.Identifier};
                         _next = {header.Index + 1};
                         return true;
                     }}")}
@@ -1041,6 +1074,7 @@ $@"        private void Clear(long bitsToClear)
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _currentKnownType = KnownHeaderType.ContentLength;
                         _next = {loop.Headers.Count()};
                         return true;
                     }}" : "")}
@@ -1048,9 +1082,11 @@ $@"        private void Clear(long bitsToClear)
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);
+                        _currentKnownType = default;
                         return false;
                     }}
                     _current = _unknownEnumerator.Current;
+                    _currentKnownType = KnownHeaderType.Unknown;
                     return true;
             }}
         }}

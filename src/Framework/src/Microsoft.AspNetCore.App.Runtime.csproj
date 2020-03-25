@@ -7,7 +7,7 @@
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <!-- Do not exclude this project from source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <HasReferenceAssembly>false</HasReferenceAssembly>
@@ -97,15 +97,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
+    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm</CrossCompileDirectory>
+    <CrossCompileDirectory Condition=" '$(TargetArchitecture)' == 'arm64' AND '$(BuildArchitecture)' != 'arm64' ">x64_arm64</CrossCompileDirectory>
+    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm</CrossCompileDirectory>
+
     <!-- Crossgen executable name -->
     <CrossgenToolFileName>crossgen</CrossgenToolFileName>
     <CrossgenToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(CrossgenToolFileName).exe</CrossgenToolFileName>
     <!-- Default crossgen executable relative path -->
     <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
     <!-- Disambiguated RID-specific crossgen executable relative path -->
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <CrossgenToolPackagePath Condition=" '$(CrossCompileDirectory)' != '' ">$(CrossCompileDirectory)\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
     <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'microsoft.netcore.app.runtime.$(RuntimeIdentifier)', '$(MicrosoftNETCoreAppRuntimeVersion)'))</RuntimePackageRoot>
     <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
@@ -307,7 +309,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <PropertyGroup>
     <CrossgenToolDir>$(IntermediateOutputPath)crossgen\</CrossgenToolDir>
     <CrossgenPlatformAssembliesDir>$(IntermediateOutputPath)platformAssemblies\</CrossgenPlatformAssembliesDir>
-    <CoreCLRJitPath>$(CrossgenToolDir)$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+    <!-- Pick the right coreclr jit based on whether we are cross-compiling or not -->
+    <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' == ''">$(RuntimePackageRoot)runtimes\$(RuntimeIdentifier)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+    <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' != ''">$(RuntimepackageRoot)runtimes\$(CrossCompileDirectory)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
   </PropertyGroup>
 
   <ItemGroup>

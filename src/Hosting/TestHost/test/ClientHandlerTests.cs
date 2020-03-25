@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/1.1", context.Request.Protocol);
+                Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
                 Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 Assert.True(features.Get<IHttpRequestLifetimeFeature>().RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal(HttpProtocol.Http11, features.Get<IHttpRequestFeature>().Protocol);
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
                 Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);
@@ -83,6 +84,23 @@ namespace Microsoft.AspNetCore.TestHost
             }));
             var httpClient = new HttpClient(handler);
             return httpClient.GetAsync("https://example.com/");
+        }
+
+        [Fact]
+        public Task UserAgentHeaderWorks()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+                Assert.Equal(userAgent, actualResult);
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent);
+
+            return httpClient.GetAsync("http://example.com");
         }
 
         [Fact]

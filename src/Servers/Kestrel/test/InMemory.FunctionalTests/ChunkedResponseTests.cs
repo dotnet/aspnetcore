@@ -79,6 +79,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task IgnoresChangesToHttpProtocol()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Request.Protocol = "HTTP/2"; // Doesn't support chunking. This change should be ignored.
+                var response = httpContext.Response;
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
         public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests()
         {
             var testContext = new TestServiceContext(LoggerFactory);

@@ -321,10 +321,6 @@ namespace Microsoft.Extensions.DependencyInjection
 }
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    public partial class RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>, System.Collections.IEnumerable
-    {
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageConventionCollection Conventions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]internal set { } }
-    }
     internal static partial class PageLoggerExtensions
     {
         public const string PageFilter = "Page Filter";

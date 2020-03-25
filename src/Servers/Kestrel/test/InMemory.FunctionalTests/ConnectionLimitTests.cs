@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/KestrelHttpServer/issues/2282", FlakyOn.AzP.macOS)]
+        [QuarantinedTest("https://github.com/aspnet/KestrelHttpServer/issues/2282")]
         public async Task ConnectionCountingReturnsToZero()
         {
             const int count = 100;

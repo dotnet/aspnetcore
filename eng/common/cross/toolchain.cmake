@@ -31,6 +31,10 @@ else()
   message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64 and x86 are supported!")
 endif()
 
+if(DEFINED ENV{TOOLCHAIN})
+  set(TOOLCHAIN $ENV{TOOLCHAIN})
+endif()
+
 # Specify include paths
 if(TARGET_ARCH_NAME STREQUAL "armel")
   if(DEFINED TIZEN_TOOLCHAIN)
@@ -39,50 +43,47 @@ if(TARGET_ARCH_NAME STREQUAL "armel")
   endif()
 endif()
 
-# add_compile_param - adds only new options without duplicates.
-# arg0 - list with result options, arg1 - list with new options.
-# arg2 - optional argument, quick summary string for optional using CACHE FORCE mode.
-macro(add_compile_param)
-  if(NOT ${ARGC} MATCHES "^(2|3)$")
-    message(FATAL_ERROR "Wrong using add_compile_param! Two or three parameters must be given! See add_compile_param description.")
-  endif()
-  foreach(OPTION ${ARGV1})
-    if(NOT ${ARGV0} MATCHES "${OPTION}($| )")
-      set(${ARGV0} "${${ARGV0}} ${OPTION}")
-      if(${ARGC} EQUAL "3") # CACHE FORCE mode
-        set(${ARGV0} "${${ARGV0}}" CACHE STRING "${ARGV2}" FORCE)
-      endif()
+if("$ENV{__DistroRid}" MATCHES "android.*")
+    if(TARGET_ARCH_NAME STREQUAL "arm")
+        set(ANDROID_ABI armeabi-v7a)
+    elseif(TARGET_ARCH_NAME STREQUAL "arm64")
+        set(ANDROID_ABI arm64-v8a)
     endif()
-  endforeach()
-endmacro()
+
+    # extract platform number required by the NDK's toolchain
+    string(REGEX REPLACE ".*\\.([0-9]+)-.*" "\\1" ANDROID_PLATFORM "$ENV{__DistroRid}")
+
+    set(ANDROID_TOOLCHAIN clang)
+    set(FEATURE_EVENT_TRACE 0) # disable event trace as there is no lttng-ust package in termux repository
+    set(CMAKE_SYSTEM_LIBRARY_PATH "${CROSS_ROOTFS}/usr/lib")
+    set(CMAKE_SYSTEM_INCLUDE_PATH "${CROSS_ROOTFS}/usr/include")
+
+    # include official NDK toolchain script
+    include(${CROSS_ROOTFS}/../build/cmake/android.toolchain.cmake)
+else()
+    set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+
+    set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/usr")
+    set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/usr")
+    set(CMAKE_ASM_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/usr")
+endif()
 
 # Specify link flags
-add_compile_param(CROSS_LINK_FLAGS "--sysroot=${CROSS_ROOTFS}")
-add_compile_param(CROSS_LINK_FLAGS "--gcc-toolchain=${CROSS_ROOTFS}/usr")
-add_compile_param(CROSS_LINK_FLAGS "--target=${TOOLCHAIN}")
-add_compile_param(CROSS_LINK_FLAGS "-fuse-ld=gold")
 
 if(TARGET_ARCH_NAME STREQUAL "armel")
   if(DEFINED TIZEN_TOOLCHAIN) # For Tizen only
-    add_compile_param(CROSS_LINK_FLAGS "-B${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
-    add_compile_param(CROSS_LINK_FLAGS "-L${CROSS_ROOTFS}/lib")
-    add_compile_param(CROSS_LINK_FLAGS "-L${CROSS_ROOTFS}/usr/lib")
-    add_compile_param(CROSS_LINK_FLAGS "-L${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
+    add_link_options("-B${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
+    add_link_options("-L${CROSS_ROOTFS}/lib")
+    add_link_options("-L${CROSS_ROOTFS}/usr/lib")
+    add_link_options("-L${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
   endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
-  add_compile_param(CROSS_LINK_FLAGS "-m32")
+  add_link_options(-m32)
 endif()
 
-add_compile_param(CMAKE_EXE_LINKER_FLAGS "${CROSS_LINK_FLAGS}" "TOOLCHAIN_EXE_LINKER_FLAGS")
-add_compile_param(CMAKE_SHARED_LINKER_FLAGS "${CROSS_LINK_FLAGS}" "TOOLCHAIN_EXE_LINKER_FLAGS")
-add_compile_param(CMAKE_MODULE_LINKER_FLAGS "${CROSS_LINK_FLAGS}" "TOOLCHAIN_EXE_LINKER_FLAGS")
-
 # Specify compile options
-add_compile_options("--sysroot=${CROSS_ROOTFS}")
-add_compile_options("--target=${TOOLCHAIN}")
-add_compile_options("--gcc-toolchain=${CROSS_ROOTFS}/usr")
 
-if(TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$")
+if(TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*")
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})
@@ -90,7 +91,17 @@ endif()
 
 if(TARGET_ARCH_NAME MATCHES "^(arm|armel)$")
   add_compile_options(-mthumb)
-  add_compile_options(-mfpu=vfpv3)
+  if (NOT DEFINED CLR_ARM_FPU_TYPE)
+    set (CLR_ARM_FPU_TYPE vfpv3)
+  endif (NOT DEFINED CLR_ARM_FPU_TYPE)
+
+  add_compile_options (-mfpu=${CLR_ARM_FPU_TYPE})
+  if (NOT DEFINED CLR_ARM_FPU_CAPABILITY)
+    set (CLR_ARM_FPU_CAPABILITY 0x7)
+  endif (NOT DEFINED CLR_ARM_FPU_CAPABILITY)
+
+  add_definitions (-DCLR_ARM_FPU_CAPABILITY=${CLR_ARM_FPU_CAPABILITY})
+
   if(TARGET_ARCH_NAME STREQUAL "armel")
     add_compile_options(-mfloat-abi=softfp)
     if(DEFINED TIZEN_TOOLCHAIN)
@@ -103,7 +114,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
   add_compile_options(-Wno-error=unused-command-line-argument)
 endif()
 
-# Set LLDB include and library paths
+# Set LLDB include and library paths for builds that need lldb.
 if(TARGET_ARCH_NAME MATCHES "^(arm|armel|x86)$")
   if(TARGET_ARCH_NAME STREQUAL "x86")
     set(LLVM_CROSS_DIR "$ENV{LLVM_CROSS_HOME}")
@@ -131,7 +142,7 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel|x86)$")
   endif()
 endif()
 
-set(CMAKE_FIND_ROOT_PATH "${CROSS_ROOTFS}")
+
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

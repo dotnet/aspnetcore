@@ -53,4 +53,12 @@ export interface IHttpConnectionOptions {
      * @internal
      */
     EventSource?: EventSourceConstructor;
+
+    /**
+     * Default value is 'true'.
+     * This controls whether credentials such as cookies are sent in cross-site requests.
+     *
+     * Cookies are used by many load-balancers for sticky sessions which is required when your app is deployed with multiple servers.
+     */
+    withCredentials?: boolean;
 }

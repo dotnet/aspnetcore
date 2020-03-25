@@ -489,12 +489,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments)
         {
             // If there are no policies we don't need to run auth
-            if (!policies.Any())
+            if (policies.Count == 0)
             {
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, typeof(THub), hubMethodName, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
@@ -547,6 +547,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
+                if (methodInfo.IsGenericMethod)
+                {
+                    throw new NotSupportedException($"Method '{methodInfo.Name}' is a generic method which is not supported on a Hub.");
+                }
+
                 var methodName =
                     methodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
                     methodInfo.Name;

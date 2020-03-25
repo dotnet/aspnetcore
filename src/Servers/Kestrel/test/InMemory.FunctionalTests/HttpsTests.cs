@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -218,6 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Fact]
         [Repeat(20)]
+        [QuarantinedTest]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -371,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAsync<IOException>(() =>
+                    await Assert.ThrowsAnyAsync<Exception>(() =>
                         sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
                             enabledSslProtocols: SslProtocols.Tls,
                             checkCertificateRevocation: false));
@@ -393,14 +395,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+                    listenOptions.UseHttps(TestResources.GetTestCertificate("aspnetdevcert.pfx", "testPassword"));
                 }))
             {
                 using (var connection = server.CreateConnection())
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAsync<IOException>(() =>
+                    await Assert.ThrowsAnyAsync<Exception>(() =>
                         sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
                             enabledSslProtocols: SslProtocols.Tls,
                             checkCertificateRevocation: false));

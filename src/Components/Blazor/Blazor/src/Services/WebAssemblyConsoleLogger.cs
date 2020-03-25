@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.Blazor.Services
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
+            
             var formattedMessage = formatter(state, exception);
             Console.WriteLine($"[{logLevel}] {formattedMessage}");
         }

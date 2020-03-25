@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ListenPipe = new UvPipeHandle(Log);
             ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
-            ListenPipe.Listen(LibuvConstants.ListenBacklog,
+            ListenPipe.Listen(TransportContext.Options.Backlog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
         }
 
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     // This is an unexpected immediate termination of the dispatch pipe most likely caused by an
                     // external process scanning the pipe, so don't we don't log it too severely.
-                    // https://github.com/aspnet/AspNetCore/issues/4741
+                    // https://github.com/dotnet/aspnetcore/issues/4741
 
                     dispatchPipe.Dispose();
                     _bufHandle.Free();
