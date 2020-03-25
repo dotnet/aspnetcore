@@ -3,6 +3,5 @@
 
   <PropertyGroup>
     <ReferencesComponentsWebAssemblyBuild>true</ReferencesComponentsWebAssemblyBuild>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>

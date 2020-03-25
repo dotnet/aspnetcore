@@ -10,7 +10,7 @@ namespace blazorhosted.Server
         public static void Main(string[] args)
         {
             Console.WriteLine(typeof(IWebHost));
-            Console.WriteLine(typeof(RazorClassLibrary.RCLTest));
+            GC.KeepAlive(typeof(RazorClassLibrary.Class1));
         }
     }
 }
