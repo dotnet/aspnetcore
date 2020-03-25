@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/20154")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
