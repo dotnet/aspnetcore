@@ -13,8 +13,8 @@ export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
   navigateTo,
-  getBaseURI: () => document.baseURI,
-  getLocationHref: () => location.href,
+  getBaseURI: () => BINDING.js_string_to_mono_string(document.baseURI),
+  getLocationHref: () => BINDING.js_string_to_mono_string(location.href),
 };
 
 function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {

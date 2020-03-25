@@ -31,50 +31,43 @@ namespace TestServer
             }
 
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
-            app.Map("/subdir", app =>
+            app.Map("/subdir", subApp =>
             {
-                app.UseBlazorFrameworkFiles();
-                app.UseStaticFiles();
-            });
+                subApp.UseBlazorFrameworkFiles();
+                subApp.UseStaticFiles();
 
-            // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
-            app.Map("/filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
+                subApp.Map("/filepath", filepath =>
                 {
-                    endpoints.MapFallbackToFile("index.html");
+                    filepath.UseRouting();
+                    filepath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("index.html");
+                    });
                 });
-            });
-
-            app.Map("/pattern_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/pattern_filepath", patternFilePath =>
                 {
-                    endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    patternFilePath.UseRouting();
+                    patternFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    });
                 });
-            });
-
-            app.Map("/assemblypath_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/assemblypath_filepath", assemblyPathFilePath =>
                 {
-                    endpoints.MapFallbackToFile("index.html");
+                    assemblyPathFilePath.UseRouting();
+                    assemblyPathFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("index.html");
+                    });
                 });
-            });
-
-            app.Map("/assemblypath_pattern_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/assemblypath_pattern_filepath", assemblyPatternFilePath =>
                 {
-                    endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    assemblyPatternFilePath.UseRouting();
+                    assemblyPatternFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    });
                 });
             });
         }

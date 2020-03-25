@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_AccessTokenProvider()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void CanResolve_IRemoteAuthenticationService()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddApiAuthorization();
             var host = builder.Build();
 
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void ApiAuthorizationOptions_DefaultsCanBeOverriden()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddApiAuthorization(options =>
             {
                 options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_ConfigurationDefaultsGetApplied()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.Replace(ServiceDescriptor.Singleton<NavigationManager, TestNavigationManager>());
             builder.Services.AddOidcAuthentication(options => { });
             var host = builder.Build();
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         [Fact]
         public void OidcOptions_DefaultsCanBeOverriden()
         {
-            var builder = new WebAssemblyHostBuilder(GetJSRuntime());
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddOidcAuthentication(options =>
             {
                 options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
@@ -243,20 +244,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             protected override void NavigateToCore(string uri, bool forceLoad) => throw new System.NotImplementedException();
-        }
-
-        private WebAssemblyJSRuntime GetJSRuntime(string environment = "Production")
-        {
-            var jsRuntime = new Mock<WebAssemblyJSRuntime>();
-            jsRuntime.Setup(j => j.InvokeUnmarshalled<object, object, object, string>("Blazor._internal.getApplicationEnvironment", null, null, null))
-                .Returns(environment)
-                .Verifiable();
-
-            jsRuntime.Setup(j => j.InvokeUnmarshalled<string, object, object, byte[]>("Blazor._internal.getConfig", It.IsAny<string>(), null, null))
-                .Returns((byte[])null)
-                .Verifiable();
-
-            return jsRuntime.Object;
         }
     }
 }
