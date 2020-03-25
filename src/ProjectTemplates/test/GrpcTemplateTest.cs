@@ -56,12 +56,14 @@ namespace Templates.Test
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
                 {
+                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(serverProcess.Process.HasExited, "built");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
                 }
                 else if (isWindowsOld)
                 {
+                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(serverProcess.Process.HasExited, "built");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
@@ -80,12 +82,14 @@ namespace Templates.Test
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
                 {
+                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(aspNetProcess.Process.HasExited, "published");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
                 }
                 else if (isWindowsOld)
                 {
+                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(aspNetProcess.Process.HasExited, "published");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
