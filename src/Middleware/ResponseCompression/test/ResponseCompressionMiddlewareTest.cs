@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
-                        context.Response.Body.Flush();
+                        await context.Response.Body.FlushAsync();
                         await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         await context.Response.WriteAsync(new string('a', 100));
                     });
