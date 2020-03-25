@@ -18,7 +18,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup>
