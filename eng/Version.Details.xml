@@ -13,324 +13,324 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.3.20170.3">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.3.20167.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>dcbab464643d971765e77562d2d0854c6ae112f7</Sha>
+      <Sha>26dda13367ed4ab8dcba83799888839baa7c162a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.3.20170.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.3.20167.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>dcbab464643d971765e77562d2d0854c6ae112f7</Sha>
+      <Sha>26dda13367ed4ab8dcba83799888839baa7c162a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.3.20170.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.3.20167.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>dcbab464643d971765e77562d2d0854c6ae112f7</Sha>
+      <Sha>26dda13367ed4ab8dcba83799888839baa7c162a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20170.3">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20167.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>dcbab464643d971765e77562d2d0854c6ae112f7</Sha>
+      <Sha>26dda13367ed4ab8dcba83799888839baa7c162a</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="dotnet-ef" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.3.20174.8">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.3.20167.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>7d110c0e3b06d58fa5935fe90864ae862fc2322c</Sha>
+      <Sha>eeb9cf98538026bcb3735d5f9d0fddbe3495197d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Http" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.SystemEvents" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Win32.SystemEvents" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.ComponentModel.Annotations" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Diagnostics.EventLog" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Drawing.Common" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.IO.Pipelines" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.WinHttpHandler" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Net.Http.WinHttpHandler" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Reflection.Metadata" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Cng" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Security.Cryptography.Cng" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Security.Permissions" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Principal.Windows" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Security.Principal.Windows" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Text.Encodings.Web" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Text.Json" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.Channels" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Threading.Channels" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Windows.Extensions" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.3-runtime.20169.13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.2-runtime.20155.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.3.20160.8" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.2.20155.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>73268c790b7ff31c98a292efbc583e25562074d7</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-preview.3.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-preview.2.20155.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-preview.3.20170.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-preview.3.20166.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>8a574d2004260c3cd8e373937bb9659b81e6bc8d</Sha>
+      <Sha>5bcbaa2cd1b54da4d919841df815820185189a5c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20162.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
@@ -344,9 +344,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>16d4350184cf362cd59807b589d1c93803025abc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-2.20166.3" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.5.0-beta4-20153-05" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>c0fc88e0ddd03abbdac8fc7e0d280b70d7208382</Sha>
+      <Sha>20b9af913f1b8ce0a62f72bea9e75e4aa3cf6b0e</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
