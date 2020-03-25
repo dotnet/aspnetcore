@@ -1,0 +1,110 @@
+@using Microsoft.AspNetCore.Components.Rendering
+<div id="test-selector">
+    Select test:
+    <select id="test-selector-select" @bind=SelectedComponentTypeName>
+        <option value="none">Choose...</option>
+        <option value="BasicTestApp.AddRemoveChildComponents">Add/remove child components</option>
+        <option value="BasicTestApp.AfterRenderInteropComponent">After-render interop component</option>
+        <option value="BasicTestApp.AsyncEventHandlerComponent">Async event handlers</option>
+        <option value="BasicTestApp.AuthTest.AuthRouter">Auth cases</option>
+        <option value="BasicTestApp.AuthTest.CascadingAuthenticationStateParent">Cascading authentication state</option>
+        <option value="BasicTestApp.BindCasesComponent">bind cases</option>
+        <option value="BasicTestApp.CascadingValueTest.CascadingValueSupplier">Cascading values</option>
+        <option value="BasicTestApp.ComponentRefComponent">Component ref component</option>
+        <option value="BasicTestApp.ConcurrentRenderParent">Concurrent rendering</option>
+        <option value="BasicTestApp.CounterComponent">Counter</option>
+        <option value="BasicTestApp.CounterComponentUsingChild">Counter using child component</option>
+        <option value="BasicTestApp.CounterComponentWrapper">Counter wrapped in parent</option>
+        <option value="BasicTestApp.CulturePicker">Culture Picker</option>
+        <option value="BasicTestApp.DataDashComponent">data-* attribute rendering</option>
+        <option value="BasicTestApp.DispatchingComponent">Dispatching to sync context</option>
+        <option value="BasicTestApp.DuplicateAttributesComponent">Duplicate attributes</option>
+        <option value="BasicTestApp.ElementRefComponent">Element ref component</option>
+        <option value="BasicTestApp.ErrorComponent">Error throwing</option>
+        <option value="BasicTestApp.EventBubblingComponent">Event bubbling</option>
+        <option value="BasicTestApp.EventCallbackTest.EventCallbackCases">EventCallback</option>
+        <option value="BasicTestApp.EventCasesComponent">Event cases</option>
+        <option value="BasicTestApp.EventDisablingComponent">Event disabling</option>
+        <option value="BasicTestApp.EventPreventDefaultComponent">Event preventDefault</option>
+        <option value="BasicTestApp.ExternalContentPackage">External content package</option>
+        <option value="BasicTestApp.FocusEventComponent">Focus events</option>
+        <option value="BasicTestApp.FormsTest.NotifyPropertyChangedValidationComponent">INotifyPropertyChanged validation</option>
+        <option value="BasicTestApp.FormsTest.SimpleValidationComponent">Simple validation</option>
+        <option value="BasicTestApp.FormsTest.SimpleValidationComponentUsingExperimentalValidator">Simple validation using experimental validator</option>
+        <option value="BasicTestApp.FormsTest.TypicalValidationComponent">Typical validation</option>
+        <option value="BasicTestApp.FormsTest.TypicalValidationComponentUsingExperimentalValidator">Typical validation using experimental validator</option>
+        <option value="BasicTestApp.FormsTest.ExperimentalValidationComponent">Experimental validation</option>
+        <option value="BasicTestApp.GlobalizationBindCases">Globalization Bind Cases</option>
+        <option value="BasicTestApp.HierarchicalImportsTest.Subdir.ComponentUsingImports">Imports statement</option>
+        <option value="BasicTestApp.HtmlBlockChildContent">ChildContent HTML Block</option>
+        <option value="BasicTestApp.HtmlEncodedChildContent">ChildContent HTML Encoded Block</option>
+        <option value="BasicTestApp.HtmlMixedChildContent">ChildContent Mixed Block</option>
+        <option value="BasicTestApp.HttpClientTest.BinaryHttpRequestsComponent">Binary HttpClient tester</option>
+        <option value="BasicTestApp.HttpClientTest.CookieCounterComponent">HttpClient cookies</option>
+        <option value="BasicTestApp.HttpClientTest.HttpRequestsComponent">HttpClient tester</option>
+        <option value="BasicTestApp.InputEventComponent">Input events</option>
+        <option value="BasicTestApp.InteropComponent">Interop component</option>
+        <option value="BasicTestApp.InteropOnInitializationComponent">Interop on initialization</option>
+        <option value="BasicTestApp.KeyCasesComponent">Key cases</option>
+        <option value="BasicTestApp.KeyPressEventComponent">Key press event</option>
+        <option value="BasicTestApp.LaggyTypingComponent">Laggy typing</option>
+        <option value="BasicTestApp.LimitCounterComponent">Limit counter component</option>
+        <option value="BasicTestApp.LocalizedText">Localized Text</option>
+        <option value="BasicTestApp.LogicalElementInsertionCases">Logical element insertion cases</option>
+        <option value="BasicTestApp.LongRunningInterop">Long running interop</option>
+        <option value="BasicTestApp.MarkupBlockComponent">Markup blocks</option>
+        <option value="BasicTestApp.MouseEventComponent">Mouse events</option>
+        <option value="BasicTestApp.MovingCheckboxesComponent">Moving checkboxes diff case</option>
+        <option value="BasicTestApp.MultipleChildContent">Multiple child content</option>
+        <option value="BasicTestApp.NavigationFailureComponent">Navigation failure</option>
+        <option value="BasicTestApp.ParentChildComponent">Parent component with child</option>
+        <option value="BasicTestApp.PropertiesChangedHandlerParent">Parent component that changes parameters on child</option>
+        <option value="BasicTestApp.RazorTemplates">Razor Templates</option>
+        <option value="BasicTestApp.RedTextComponent">Red text</option>
+        <option value="BasicTestApp.ReliabilityComponent">Server reliability component</option>
+        <option value="BasicTestApp.RenderFragmentToggler">Render fragment renderer</option>
+        <option value="BasicTestApp.Reconnection.ReconnectionComponent">Reconnection server-side blazor</option>
+        <option value="BasicTestApp.ReorderingFocusComponent">Reordering focus retention</option>
+        <option value="BasicTestApp.RouterTest.NavigationManagerComponent">NavigationManager Test</option>
+        <option value="BasicTestApp.RouterTest.TestRouter">Router</option>
+        <option value="BasicTestApp.RouterTest.TestRouterWithAdditionalAssembly">Router with additional assembly</option>
+        <option value="BasicTestApp.SvgComponent">SVG</option>
+        <option value="BasicTestApp.SvgWithChildComponent">SVG with child component</option>
+        <option value="BasicTestApp.TextOnlyComponent">Plain text</option>
+        <option value="BasicTestApp.TouchEventComponent">Touch events</option>
+    </select>
+
+    <span id="runtime-info"><code><tt>@System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</tt></code></span>
+
+    @if (SelectedComponentType != null)
+    {
+        <span id="source-info"><code><tt>@(SelectedComponentType.Name.Replace(".", "/")).razor</tt></code></span>
+    }
+    <hr />
+</div>
+
+<app>
+    @((RenderFragment)RenderSelectedComponent)
+</app>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href class='reload'>Reload</a>
+    <a class='dismiss' style="cursor: pointer;">🗙</a>
+</div>
+
+@code {
+    string SelectedComponentTypeName { get; set; } = "none";
+
+    Type SelectedComponentType
+        => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName);
+
+    void RenderSelectedComponent(RenderTreeBuilder builder)
+    {
+        if (SelectedComponentType != null)
+        {
+            builder.OpenComponent(0, SelectedComponentType);
+            builder.CloseComponent();
+        }
+    }
+}

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)"
+    <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)"
              Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
         <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="$(var.EmbedCab)" />
 
         <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.rtf" />
@@ -13,7 +13,7 @@
         <FeatureRef Id="FT_DepProvider" />
         <FeatureRef Id="FT_AspNetCoreSharedFramework" />
         <FeatureRef Id="FT_ProductInfo" />
-	</Product>
+    </Product>
 
     <?ifdef PFilesFolder?>
     <?undef PFilesFolder?>
@@ -27,15 +27,15 @@
     <?error Invalid Platform ($(var.Platform))?>
     <?endif?>
 
-	<Fragment>
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="$(var.PFilesFolder)">
-                <Directory Id="DotNetFolder" Name="dotnet">
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="$(var.PFilesFolder)">
+                <Directory Id="DOTNETHOME" Name="dotnet">
                     <Directory Id="SharedFolder" Name="shared" />
                 </Directory>
-			</Directory>
-		</Directory>
-	</Fragment>
+            </Directory>
+        </Directory>
+    </Fragment>
 
     <Fragment>
         <Feature Id="FT_AspNetCoreSharedFramework" Absent="allow" Description="!(loc.FT_AspNetCoreSharedFrameworkDescription)" Display="2" Level="1" Title="!(loc.FT_AspNetCoreSharedFrameworkTitle)">
@@ -73,7 +73,7 @@
 
             <Component Id="C_ProductInstallDir">
                 <RegistryKey Key="SOFTWARE\Microsoft\ASP.NET Core\Shared Framework" Root="HKLM">
-                    <RegistryValue Name="InstallDir" Type="string" Value="[DotNetFolder]" />
+                    <RegistryValue Name="InstallDir" Type="string" Value="[DOTNETHOME]" />
                 </RegistryKey>
             </Component>
         </DirectoryRef>

@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal class SegmentReadStream : Stream
     {
@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         internal SegmentReadStream(List<byte[]> segments, long length)
         {
-            if (segments == null)
-            {
-                throw new ArgumentNullException(nameof(segments));
-            }
-
-            _segments = segments;
+            _segments = segments ?? throw new ArgumentNullException(nameof(segments));
             _length = length;
         }
 

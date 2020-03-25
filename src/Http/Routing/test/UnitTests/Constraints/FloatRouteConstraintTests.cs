@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [InlineData(3.14, true)]
         [InlineData("not-parseable-as-float", false)]
         [InlineData(false, false)]
-        [InlineData("1.79769313486232E+300", false)]
+        [InlineData("1.79769313486232E+300", true)] // Parses as infinity
         public void FloatRouteConstraint_ApplyConstraint(object parameterValue, bool expected)
         {
             // Arrange

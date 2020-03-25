@@ -1,24 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionDispatcher : IConnectionDispatcher
+    internal class ConnectionDispatcher
     {
+        private static long _lastConnectionId = long.MinValue;
+
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionDelegate _connectionDelegate;
+        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
         {
@@ -28,86 +26,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public void OnConnection(TransportConnection connection)
+        public Task StartAcceptingConnections(IConnectionListener listener)
         {
-            // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
-            // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, connection.MemoryPool, connection.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, connection.MemoryPool, connection.OutputReaderScheduler);
-
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-
-            // Set the transport and connection id
-            connection.ConnectionId = CorrelationIdGenerator.GetNextId();
-            connection.Transport = pair.Transport;
-
-            // This *must* be set before returning from OnConnection
-            connection.Application = pair.Application;
-
-            // REVIEW: This task should be tracked by the server for graceful shutdown
-            // Today it's handled specifically for http but not for aribitrary middleware
-            _ = Execute(connection);
+            ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
+            return _acceptLoopTcs.Task;
         }
 
-        private async Task Execute(ConnectionContext connectionContext)
+        private void StartAcceptingConnectionsCore(IConnectionListener listener)
         {
-            using (BeginConnectionScope(connectionContext))
+            // REVIEW: Multiple accept loops in parallel?
+            _ = AcceptConnectionsAsync();
+
+            async Task AcceptConnectionsAsync()
             {
                 try
                 {
-                    await _connectionDelegate(connectionContext);
+                    while (true)
+                    {
+                        var connection = await listener.AcceptAsync();
+
+                        if (connection == null)
+                        {
+                            // We're done listening
+                            break;
+                        }
+
+                        // Add the connection to the connection manager before we queue it for execution
+                        var id = Interlocked.Increment(ref _lastConnectionId);
+                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+
+                        _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
+
+                        Log.ConnectionAccepted(connection.ConnectionId);
+
+                        ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                    // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+                    Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+                }
+                finally
+                {
+                    _acceptLoopTcs.TrySetResult(null);
                 }
             }
-        }
-
-        private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
-        {
-            if (Log.IsEnabled(LogLevel.Critical))
-            {
-                return Log.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
-            }
-
-            return null;
-        }
-
-        // Internal for testing
-        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: serviceContext.Scheduler,
-            writerScheduler: writerScheduler,
-            pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: readerScheduler,
-            writerScheduler: serviceContext.Scheduler,
-            pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
-        {
-            var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
-            if (bufferSize == 0)
-            {
-                // 0 = no buffering so we need to configure the pipe so the the writer waits on the reader directly
-                return 1;
-            }
-
-            // null means that we have no back pressure
-            return bufferSize ?? 0;
         }
     }
 }

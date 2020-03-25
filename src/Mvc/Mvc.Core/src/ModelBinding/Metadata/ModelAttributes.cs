@@ -13,31 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class ModelAttributes
     {
-        private static readonly IEnumerable<object> _emptyAttributesCollection = Enumerable.Empty<object>();
-
-        /// <summary>
-        /// Creates a new <see cref="ModelAttributes"/> for a <see cref="Type"/>.
-        /// </summary>
-        /// <param name="typeAttributes">The set of attributes for the <see cref="Type"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is " + nameof(ModelAttributes) + "." + nameof(GetAttributesForType) + ".")]
-        public ModelAttributes(IEnumerable<object> typeAttributes)
-            : this(typeAttributes, null, null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ModelAttributes"/> for a property.
-        /// </summary>
-        /// <param name="propertyAttributes">The set of attributes for the property.</param>
-        /// <param name="typeAttributes">
-        /// The set of attributes for the property's <see cref="Type"/>. See <see cref="PropertyInfo.PropertyType"/>.
-        /// </param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is " + nameof(ModelAttributes) + "." + nameof(GetAttributesForProperty) + ".")]
-        public ModelAttributes(IEnumerable<object> propertyAttributes, IEnumerable<object> typeAttributes)
-            : this(typeAttributes, propertyAttributes, null)
-        {
-        }
-
         /// <summary>
         /// Creates a new <see cref="ModelAttributes"/>.
         /// </summary>
@@ -149,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="ModelAttributes"/> instance with the attributes of the property and its <see cref="Type"/>.
         /// </returns>
-        internal static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
+        public static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
         {
             if (containerType == null)
             {
@@ -231,7 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="ModelAttributes"/> instance with the attributes of the parameter and its <see cref="Type"/>.
         /// </returns>
-        internal static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
+        public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
         {
             if (parameterInfo == null)
             {

@@ -1,0 +1,185 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+    <p>
+        This component is used to verify the use of the experimental ObjectGraphDataAnnotationsValidator type with IValidatableObject and deep validation, as well
+        as the ComparePropertyAttribute.
+    </p>
+
+<EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
+    <ObjectGraphDataAnnotationsValidator />
+
+    <p class="name">
+        Name: <InputText @bind-Value="model.Recipient" placeholder="Enter the recipient" />
+        <ValidationMessage For="@(() => model.Recipient)" />
+    </p>
+
+    <p class="email">
+        Email: <InputText @bind-Value="model.EmailAddress" />
+        <ValidationMessage For="@(() => model.EmailAddress)" />
+    </p>
+
+    <p class="confirm-email">
+        Confirm Email: <InputText @bind-Value="model.ConfirmEmailAddress" />
+        <ValidationMessage For="@(() => model.ConfirmEmailAddress)" />
+    </p>
+
+    <fieldset>
+        <legend>Items to deliver</legend>
+        <p>
+            <button id="addItem" type="button" @onclick="AddItem">Add Item</button>
+        </p>
+        <ul class="items">
+        @foreach (var item in model.Items)
+        {
+            <li>
+                <div  style="display: inline-flex; flex-direction: row">
+                    <div style="flex-grow: 1" class="description">
+                        <InputText @bind-Value="item.Description" placeholder="Description" />
+                        <ValidationMessage For="@(() => item.Description)" />
+                    </div>
+
+                    <div style="flex-grow: 1" class="weight">
+                        <InputNumber @bind-Value="item.Weight" />
+                        <ValidationMessage For="@(() => item.Weight)" />
+                    </div>
+                    <div style="flex-grow: 1" class="item-error">
+                        <ValidationSummary Model="item" />
+                    </div>
+                </div>
+            </li>
+        }
+        </ul>
+    </fieldset>
+
+    <fieldset>
+        <legend>Shipping details</legend>
+        <p class="street">
+            Street Address: <InputText @bind-Value="model.Address.Street" />
+            <ValidationMessage For="@(() => model.Address.Street)" />
+        </p>
+        <p class="zip">
+            Zip Code: <InputText @bind-Value="model.Address.ZipCode" />
+            <ValidationMessage For="@(() => model.Address.ZipCode)" />
+        </p>
+        <p class="country">
+            Country:
+            <InputSelect @bind-Value="model.Address.Country">
+                <option></option>
+                <option value="@Country.Gondor">@Country.Gondor</option>
+                <option value="@Country.Mordor">@Country.Mordor</option>
+                <option value="@Country.Rohan">@Country.Rohan</option>
+                <option value="@Country.Shire">@Country.Shire</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => model.Address.Country)" />
+        </p>
+        <p class="address-validation">
+            <ValidationSummary Model="model.Address" />
+        </p>
+    </fieldset>
+
+    <div class="model-errors">
+        <ValidationSummary Model="model"/>
+    </div>
+    <button type="submit">Submit</button>
+
+    <div class="all-errors">
+        <ValidationSummary />
+    </div>
+
+</EditForm>
+
+<ul class="submission-log">
+    @foreach (var entry in submissionLog)
+    {
+        <li>@entry</li>
+    }
+</ul>
+
+@code {
+    Delivery model = new Delivery();
+
+    public class Delivery : IValidatableObject
+    {
+        [Required(ErrorMessage = "Enter a name")]
+        public string Recipient { get; set; }
+
+        [Required(ErrorMessage = "Enter an email")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address")]
+        public string EmailAddress { get; set; }
+
+        [CompareProperty(nameof(EmailAddress))]
+        [Display(Name = "Confirm email address")]
+        public string ConfirmEmailAddress { get; set; }
+
+        [ValidateComplexType]
+        public Address Address { get; } = new Address();
+
+        [ValidateComplexType]
+        public List<Item> Items { get; } = new List<Item>
+        {
+            new Item(),
+        };
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        {
+            if (Address.Street == "Mount Doom" && Items.Any(i => i.Description == "The One Ring"))
+            {
+                yield return new ValidationResult("Some items in your list cannot be delivered.");
+            }
+        }
+    }
+
+    public class Address : IValidatableObject
+    {
+        [Required(ErrorMessage = "A street address is required.")]
+        public string Street { get; set; }
+
+        public string ZipCode { get; set; }
+
+        [EnumDataType(typeof(Country))]
+        public Country Country { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        {
+            if (Country == Country.Mordor && string.IsNullOrEmpty(ZipCode))
+            {
+                yield return new ValidationResult("A ZipCode is required", new[] { nameof(ZipCode) });
+            }
+        }
+    }
+
+    [CustomValidation(typeof(Item), nameof(Item.CustomValidate))]
+    public class Item
+    {
+        [Required(ErrorMessage = "Description is required.")]
+        public string Description { get; set; }
+
+        [Range(0.1, 50, ErrorMessage = "Items must weigh between 0.1 and 5")]
+        public double Weight { get; set; } = 1;
+
+        public static ValidationResult CustomValidate(Item item, ValidationContext context)
+        {
+            if (item.Weight < 2.0 && item.Description.StartsWith("Fragile"))
+            {
+                return new ValidationResult("Fragile items must be placed in secure containers");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    public enum Country { Gondor, Mordor, Rohan, Shire }
+
+    List<string> submissionLog = new List<string>();
+
+    void HandleValidSubmit()
+    {
+        submissionLog.Add("OnValidSubmit");
+    }
+
+    void AddItem()
+    {
+        model.Items.Add(new Item());
+    }
+}

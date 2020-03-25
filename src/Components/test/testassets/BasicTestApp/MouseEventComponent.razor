@@ -1,0 +1,103 @@
+@using System.Collections.Generic
+@using System.Text.Json
+
+<div>
+    <h2>Mouse position</h2>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+    <p>
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" />
+    </p>
+    <p>
+        <span id="mousemove_input" @onmousemove="OnMouseMove">Mousemove city!</span>
+    </p>
+    <p>
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseDown" @onmouseup="OnMouseUp" />
+    </p>
+    <p>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerDown" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
+        <button @onclick="Clear">Clear</button>
+    </p>
+
+    <p>
+        Another input (to distract you) <input id="other" />
+    </p>
+</div>
+
+@code {
+
+    string message;
+
+    void OnMouseOver(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseover,";
+        StateHasChanged();
+    }
+
+    void OnMouseOut(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseout,";
+        StateHasChanged();
+    }
+
+    void OnMouseMove(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousemove,";
+        StateHasChanged();
+    }
+
+    void OnMouseDown(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousedown,";
+        StateHasChanged();
+    }
+
+    void OnMouseUp(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseup,";
+        StateHasChanged();
+    }
+
+    void OnPointerDown(PointerEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onpointerdown";
+        StateHasChanged();
+    }
+
+    void OnDragStart(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondragstart,";
+        StateHasChanged();
+    }
+
+    void OnDrop(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondrop,";
+        StateHasChanged();
+    }
+
+    void DumpEvent(MouseEventArgs e)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(e));
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+}

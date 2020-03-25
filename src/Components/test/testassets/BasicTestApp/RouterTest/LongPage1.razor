@@ -1,0 +1,11 @@
+@page "/LongPage1"
+@inject NavigationManager NavigationManager
+<div id="test-info">This is a long page you can scroll.</div>
+
+<div style="border: 2px dashed red; margin: 1rem; padding: 1rem; height: 1500px;">
+    Scroll past me to find the links
+</div>
+
+<button id="go-to-longpage2" @onclick="@(() => NavigationManager.NavigateTo("LongPage2"))">
+    Navigate programmatically to long page 2
+</button>

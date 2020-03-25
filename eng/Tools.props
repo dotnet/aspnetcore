@@ -1,0 +1,14 @@
+<Project>
+  <ItemGroup>
+    <!--
+      This is here to workaround flakiness in the NuGet SDK resolver in MSBuild.
+      Arcade will run a pre-restore for these packages. This works more consistently than the SDK resolution which uses global.json.
+      Without this here, we see regular failures with 'error MSB4236: The SDK 'Yarn.MSBuild' specified could not be found.'
+      Since this project is evaluated before .npmproj files are loaded, this should cause the package to end
+      up in the NuGet cache ahead of time.
+
+      This is not needed in source build.
+    -->
+    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Yarn.MSBuild" Version="1.15.2" />
+  </ItemGroup>
+</Project>

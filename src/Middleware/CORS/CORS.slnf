@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "D:\\work\\aspnetcore\\src\\Middleware\\Middleware.sln",
+    "projects": [
+      "CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
+      "CORS\\test\\UnitTests\\Microsoft.AspNetCore.Cors.Test.csproj",
+      "CORS\\test\\testassets\\CorsMiddlewareWebSite\\CorsMiddlewareWebSite.csproj"
+    ]
+  }
+}

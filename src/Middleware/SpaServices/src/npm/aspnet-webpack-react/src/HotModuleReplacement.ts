@@ -1,11 +1,9 @@
 import * as webpack from 'webpack';
 
-const reactHotLoaderWebpackLoader = 'react-hot-loader/webpack';
-const reactHotLoaderPatch = 'react-hot-loader/patch';
 const supportedTypeScriptLoaders = ['ts-loader', 'awesome-typescript-loader'];
 
 export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Configuration) {
-    const moduleConfig = webpackConfig.module as webpack.NewModule;
+    const moduleConfig = webpackConfig.module as webpack.Module;
     const moduleRules = moduleConfig.rules;
     if (!moduleRules) {
         return; // Unknown rules list format. Might be Webpack 1.x, which is not supported.
@@ -15,24 +13,18 @@ export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Config
     // to its array of loaders
     for (let ruleIndex = 0; ruleIndex < moduleRules.length; ruleIndex++) {
         // We only support NewUseRule (i.e., { use: ... }) because OldUseRule doesn't accept array values
-        const rule = moduleRules[ruleIndex] as webpack.NewUseRule;
+        const rule = moduleRules[ruleIndex] as webpack.RuleSetRule;
         if (!rule.use) {
             continue;
         }
 
         // We're looking for the first 'use' value that's a TypeScript loader
-        const loadersArray = rule.use instanceof Array ? rule.use : [rule.use];
+        const loadersArray: webpack.RuleSetUseItem[] = rule.use instanceof Array ? rule.use : [rule.use as webpack.RuleSetUseItem];
         const isTypescriptLoader = supportedTypeScriptLoaders.some(typeScriptLoaderName => containsLoader(loadersArray, typeScriptLoaderName));
         if (!isTypescriptLoader) {
             continue;
         }
 
-        // This is the one - prefix it with the react-hot-loader loader
-        // (unless it's already in there somewhere)
-        if (!containsLoader(loadersArray, reactHotLoaderWebpackLoader)) {
-            loadersArray.unshift(reactHotLoaderWebpackLoader);
-            rule.use = loadersArray; // In case we normalised it to an array
-        }
         break;
     }
 
@@ -48,19 +40,14 @@ export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Config
             // Normalise to array
             entryConfig[entrypointName] = [entryConfig[entrypointName] as string];
         }
-
-        let entryValueArray = entryConfig[entrypointName] as string[];
-        if (entryValueArray.indexOf(reactHotLoaderPatch) < 0) {
-            entryValueArray.unshift(reactHotLoaderPatch);
-        }
     });
 }
 
-function containsLoader(loadersArray: webpack.Loader[], loaderName: string) {
+function containsLoader(loadersArray: webpack.RuleSetUseItem[], loaderName: string) {
     return loadersArray.some(loader => {
         // Allow 'use' values to be either { loader: 'name' } or 'name'
         // No need to support legacy webpack.OldLoader
-        const actualLoaderName = (loader as webpack.NewLoader).loader || (loader as string);
+        const actualLoaderName = (loader as webpack.RuleSetLoader).loader || (loader as string);
         return actualLoaderName && new RegExp(`\\b${ loaderName }\\b`).test(actualLoaderName);
     });
 }

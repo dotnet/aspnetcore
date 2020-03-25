@@ -81,6 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        private string DebuggerDisplayString() => $"{{ViewEnginePath = {nameof(ViewEnginePath)}, RelativePath = {nameof(RelativePath)}}}";
+        private string DebuggerDisplayString => $"{nameof(ViewEnginePath)} = {ViewEnginePath}, {nameof(RelativePath)} = {RelativePath}";
     }
 }

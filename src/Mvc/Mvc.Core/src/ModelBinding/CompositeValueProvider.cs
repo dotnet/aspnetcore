@@ -80,6 +80,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new CompositeValueProvider(valueProviderFactoryContext.ValueProviders);
         }
 
+        internal static async ValueTask<(bool success, CompositeValueProvider valueProvider)> TryCreateAsync(
+            ActionContext actionContext,
+            IList<IValueProviderFactory> factories)
+        {
+            try
+            {
+                var valueProvider = await CreateAsync(actionContext, factories);
+                return (true, valueProvider);
+            }
+            catch (ValueProviderException exception)
+            {
+                actionContext.ModelState.TryAddModelException(key: string.Empty, exception);
+                return (false, null);
+            }
+        }
+
         /// <inheritdoc />
         public virtual bool ContainsPrefix(string prefix)
         {

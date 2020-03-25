@@ -114,6 +114,18 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        public static bool ReadAsBoolean(JsonTextReader reader, string propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonToken.Boolean || reader.Value == null)
+            {
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Boolean}.");
+            }
+
+            return Convert.ToBoolean(reader.Value, CultureInfo.InvariantCulture);
+        }
+
         public static int? ReadAsInt32(JsonTextReader reader, string propertyName)
         {
             reader.Read();
@@ -155,7 +167,7 @@ namespace Microsoft.AspNetCore.Internal
 
         public static bool ReadForType(JsonTextReader reader, Type type)
         {
-            // Explicity read values as dates from JSON with reader.
+            // Explicitly read values as dates from JSON with reader.
             // We do this because otherwise dates are read as strings
             // and the JsonSerializer will use a conversion method that won't
             // preserve UTC in DateTime.Kind for UTC ISO8601 dates

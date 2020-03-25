@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConfigureServicesBuilder
+    internal class ConfigureServicesBuilder
     {
         public ConfigureServicesBuilder(MethodInfo configureServices)
         {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public MethodInfo MethodInfo { get; }
 
-        public Func<Func<IServiceCollection, IServiceProvider>, Func<IServiceCollection, IServiceProvider>> StartupServiceFilters { get; set; }
+        public Func<Func<IServiceCollection, IServiceProvider>, Func<IServiceCollection, IServiceProvider>> StartupServiceFilters { get; set; } = f => f;
 
         public Func<IServiceCollection, IServiceProvider> Build(object instance) => services => Invoke(instance, services);
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 arguments[0] = services;
             }
 
-            return MethodInfo.Invoke(instance, arguments) as IServiceProvider;
+            return MethodInfo.InvokeWithoutWrappingExceptions(instance, arguments) as IServiceProvider;
         }
     }
 }

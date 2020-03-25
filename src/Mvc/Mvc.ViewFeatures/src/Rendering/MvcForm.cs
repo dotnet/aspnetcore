@@ -4,7 +4,7 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
 {
@@ -76,19 +76,18 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 return;
             }
 
-            var viewBufferWriter = _viewContext.Writer as ViewBufferTextWriter;
-            if (viewBufferWriter == null)
+            if (_viewContext.Writer is ViewBufferTextWriter viewBufferWriter)
             {
                 foreach (var content in formContext.EndOfFormContent)
                 {
-                    content.WriteTo(_viewContext.Writer, _htmlEncoder);
+                    viewBufferWriter.Write(content);
                 }
             }
             else
             {
                 foreach (var content in formContext.EndOfFormContent)
                 {
-                    viewBufferWriter.Write(content);
+                    content.WriteTo(_viewContext.Writer, _htmlEncoder);
                 }
             }
         }

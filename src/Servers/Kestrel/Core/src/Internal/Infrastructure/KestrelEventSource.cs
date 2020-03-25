@@ -1,14 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     [EventSource(Name = "Microsoft-AspNetCore-Server-Kestrel")]
-    public sealed class KestrelEventSource : EventSource
+    internal sealed class KestrelEventSource : EventSource
     {
         public static readonly KestrelEventSource Log = new KestrelEventSource();
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
         [NonEvent]
-        public void ConnectionStart(HttpConnection connection)
+        public void ConnectionStart(ConnectionContext connection)
         {
             // avoid allocating strings unless this event source is enabled
             if (IsEnabled())
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void ConnectionStop(HttpConnection connection)
+        public void ConnectionStop(ConnectionContext connection)
         {
             if (IsEnabled())
             {

@@ -29,12 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(Type type, int statusCode)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
         }
 

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Add<TProp>(Expression<Func<TModel, TProp>> path, TProp value)
         {
             if (path == null)
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
         /// <param name="position">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Add<TProp>(
             Expression<Func<TModel, IList<TProp>>> path,
             TProp value,
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Add<TProp>(Expression<Func<TModel, IList<TProp>>> path, TProp value)
         {
             if (path == null)
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// { "op": "remove", "path": "/a/b/c" }
         /// </summary>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Remove<TProp>(Expression<Func<TModel, TProp>> path)
         {
             if (path == null)
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
         /// <param name="position">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Remove<TProp>(Expression<Func<TModel, IList<TProp>>> path, int position)
         {
             if (path == null)
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Remove<TProp>(Expression<Func<TModel, IList<TProp>>> path)
         {
             if (path == null)
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Replace<TProp>(Expression<Func<TModel, TProp>> path, TProp value)
         {
             if (path == null)
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
         /// <param name="position">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Replace<TProp>(Expression<Func<TModel, IList<TProp>>> path,
             TProp value, int position)
         {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Replace<TProp>(Expression<Func<TModel, IList<TProp>>> path, TProp value)
         {
             if (path == null)
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, TProp>> path, TProp value)
         {
             if (path == null)
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
         /// <param name="position">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, IList<TProp>>> path,
             TProp value, int position)
         {
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
         /// <param name="value">value</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, IList<TProp>>> path, TProp value)
         {
             if (path == null)
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
             Expression<Func<TModel, TProp>> from,
             Expression<Func<TModel, TProp>> path)
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="positionFrom">position</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
             Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
         /// <param name="positionTo">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
             Expression<Func<TModel, TProp>> from,
             Expression<Func<TModel, IList<TProp>>> path,
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="positionFrom">position (source)</param>
         /// <param name="path">target location</param>
         /// <param name="positionTo">position (target)</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
             Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="positionFrom">position</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
             Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp"></typeparam>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Move<TProp>(
            Expression<Func<TModel, TProp>> from,
            Expression<Func<TModel, IList<TProp>>> path)
@@ -503,12 +503,12 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// Copy the value at specified location to the target location.  Willr esult in, for example:
+        /// Copy the value at specified location to the target location.  Will result in, for example:
         /// { "op": "copy", "from": "/a/b/c", "path": "/a/b/e" }
         /// </summary>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
            Expression<Func<TModel, TProp>> from,
            Expression<Func<TModel, TProp>> path)
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="positionFrom">position</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
            Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
         /// <param name="positionTo">position</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
             Expression<Func<TModel, TProp>> from,
             Expression<Func<TModel, IList<TProp>>> path,
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="positionFrom">position (source)</param>
         /// <param name="path">target location</param>
         /// <param name="positionTo">position (target)</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
             Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="from">source location</param>
         /// <param name="positionFrom">position</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
             Expression<Func<TModel, IList<TProp>>> from,
             int positionFrom,
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <typeparam name="TProp"></typeparam>
         /// <param name="from">source location</param>
         /// <param name="path">target location</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="JsonPatchDocument{TModel}"/> for chaining.</returns>
         public JsonPatchDocument<TModel> Copy<TProp>(
             Expression<Func<TModel, TProp>> from,
             Expression<Func<TModel, IList<TProp>>> path)
@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction: null));
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, null, new AdapterFactory()));
         }
 
         /// <summary>
@@ -707,12 +707,27 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="logErrorAction">Action to log errors</param>
         public void ApplyTo(TModel objectToApplyTo, Action<JsonPatchError> logErrorAction)
         {
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction, new AdapterFactory()), logErrorAction);
+        }
+
+        /// <summary>
+        /// Apply this JsonPatchDocument
+        /// </summary>
+        /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
+        /// <param name="adapter">IObjectAdapter instance to use when applying</param>
+        /// <param name="logErrorAction">Action to log errors</param>
+        public void ApplyTo(TModel objectToApplyTo, IObjectAdapter adapter, Action<JsonPatchError> logErrorAction)
+        {
             if (objectToApplyTo == null)
             {
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            var adapter = new ObjectAdapter(ContractResolver, logErrorAction);
+            if (adapter == null)
+            {
+                throw new ArgumentNullException(nameof(adapter));
+            }
+
             foreach (var op in Operations)
             {
                 try
@@ -853,7 +868,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
         }
 
-        // Evaluates the value of the key or index which may be an int or a string, 
+        // Evaluates the value of the key or index which may be an int or a string,
         // or some other expression type.
         // The expression is converted to a delegate and the result of executing the delegate is returned as a string.
         private static string EvaluateExpression(Expression expression)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
@@ -30,7 +30,8 @@ namespace Identity.DefaultUI.WebSite
                 .AddUserManager<UserManager<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
             services.AddSingleton<IUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>, InMemoryUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddNewtonsoftJson();
         }
     }
 }

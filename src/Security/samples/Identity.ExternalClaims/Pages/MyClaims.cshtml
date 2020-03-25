@@ -1,4 +1,4 @@
-﻿@page
+@page
 @using Microsoft.AspNetCore.Authentication;
 @model MyClaimsModel
 @{
@@ -16,11 +16,21 @@
 </dl>
 
 <h2>AuthenticationProperties</h2>
+@{
+    var authenticateResult = await HttpContext.AuthenticateAsync();
+}
 
-<dl>
-    @foreach (var prop in (await HttpContext.AuthenticateAsync()).Properties.Items)
-    {
-        <dt>@prop.Key</dt>
-        <dd>@prop.Value</dd>
-    }
-</dl>
+@if (authenticateResult.Succeeded)
+{
+    <dl>
+        @foreach (var prop in authenticateResult.Properties.Items)
+        {
+            <dt>@prop.Key</dt>
+            <dd>@prop.Value</dd>
+        }
+    </dl>
+}
+else
+{
+    <h1>Not Authenticated!</h1>
+}

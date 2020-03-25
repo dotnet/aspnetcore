@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get
             {
-                return ValidationState == ModelValidationState.Valid || ValidationState == ModelValidationState.Skipped;
+                var state = ValidationState;
+                return state == ModelValidationState.Valid || state == ModelValidationState.Skipped;
             }
         }
 
@@ -200,6 +201,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (exception == null)
             {
                 throw new ArgumentNullException(nameof(exception));
+            }
+
+            if ((exception is InputFormatterException || exception is ValueProviderException)
+               && !string.IsNullOrEmpty(exception.Message))
+            {
+                // InputFormatterException, ValueProviderException is a signal that the message is safe to expose to clients
+                return TryAddModelError(key, exception.Message);
             }
 
             if (ErrorCount >= MaxAllowedErrors - 1)
@@ -310,9 +318,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 return TryAddModelError(key, errorMessage);
             }
-            else if (exception is InputFormatterException && !string.IsNullOrEmpty(exception.Message))
+            else if ((exception is InputFormatterException || exception is ValueProviderException)
+                && !string.IsNullOrEmpty(exception.Message))
             {
-                // InputFormatterException is a signal that the message is safe to expose to clients
+                // InputFormatterException, ValueProviderException is a signal that the message is safe to expose to clients
                 return TryAddModelError(key, exception.Message);
             }
 
@@ -796,6 +805,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        /// <summary>
+        /// <para>
+        /// This API supports the MVC's infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </para>
+        /// </summary>
         public static bool StartsWithPrefix(string prefix, string key)
         {
             if (prefix == null)
@@ -839,6 +854,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return false;
         }
 
+        /// <summary>
+        /// Gets a <see cref="PrefixEnumerable"/> that iterates over this instance of <see cref="ModelStateDictionary"/>
+        /// using the specified <paramref name="prefix"/>.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <returns>The <see cref="PrefixEnumerable"/>.</returns>
         public PrefixEnumerable FindKeysWithPrefix(string prefix)
         {
             if (prefix == null)
@@ -1003,11 +1024,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
+        /// <summary>
+        /// Enumerates over <see cref="ModelStateDictionary"/> to provide entries that start with the
+        /// specified prefix.
+        /// </summary>
+        public readonly struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
             private readonly string _prefix;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="PrefixEnumerable"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
+            /// <param name="prefix">The prefix.</param>
             public PrefixEnumerable(ModelStateDictionary dictionary, string prefix)
             {
                 if (dictionary == null)
@@ -1024,6 +1054,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _prefix = prefix;
             }
 
+            /// <inheritdoc />
             public Enumerator GetEnumerator() => new Enumerator(_dictionary, _prefix);
 
             IEnumerator<KeyValuePair<string, ModelStateEntry>>
@@ -1032,6 +1063,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// An <see cref="IEnumerator{T}"/> for <see cref="PrefixEnumerable"/>.
+        /// </summary>
         public struct Enumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateNode _rootNode;
@@ -1040,6 +1074,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             private int _index;
             private bool _visitedRoot;
 
+            /// <summary>
+            /// Intializes a new instance of <see cref="Enumerator"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
+            /// <param name="prefix">The prefix.</param>
             public Enumerator(ModelStateDictionary dictionary, string prefix)
             {
                 if (dictionary == null)
@@ -1059,15 +1098,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _visitedRoot = false;
             }
 
+            /// <inheritdoc />
             public KeyValuePair<string, ModelStateEntry> Current =>
                 new KeyValuePair<string, ModelStateEntry>(_modelStateNode.Key, _modelStateNode);
 
             object IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public void Dispose()
             {
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 if (_rootNode == null)
@@ -1127,6 +1169,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return false;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _index = -1;
@@ -1136,15 +1179,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct KeyEnumerable : IEnumerable<string>
+        /// <summary>
+        /// A <see cref="IEnumerable{T}"/> for keys in <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        public readonly struct KeyEnumerable : IEnumerable<string>
         {
             private readonly ModelStateDictionary _dictionary;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="KeyEnumerable"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
             public KeyEnumerable(ModelStateDictionary dictionary)
             {
                 _dictionary = dictionary;
             }
 
+            /// <inheritdoc />
             public KeyEnumerator GetEnumerator() => new KeyEnumerator(_dictionary, prefix: string.Empty);
 
             IEnumerator<string> IEnumerable<string>.GetEnumerator() => GetEnumerator();
@@ -1152,22 +1203,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// An <see cref="IEnumerator{T}"/> for keys in <see cref="ModelStateDictionary"/>.
+        /// </summary>
         public struct KeyEnumerator : IEnumerator<string>
         {
             private Enumerator _prefixEnumerator;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="KeyEnumerable"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
+            /// <param name="prefix">The prefix.</param>
             public KeyEnumerator(ModelStateDictionary dictionary, string prefix)
             {
                 _prefixEnumerator = new Enumerator(dictionary, prefix);
                 Current = null;
             }
 
+            /// <inheritdoc />
             public string Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public void Dispose() => _prefixEnumerator.Dispose();
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 var result = _prefixEnumerator.MoveNext();
@@ -1184,6 +1246,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return result;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _prefixEnumerator.Reset();
@@ -1191,15 +1254,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct ValueEnumerable : IEnumerable<ModelStateEntry>
+        /// <summary>
+        /// An <see cref="IEnumerable"/> for <see cref="ModelStateEntry"/>.
+        /// </summary>
+        public readonly struct ValueEnumerable : IEnumerable<ModelStateEntry>
         {
             private readonly ModelStateDictionary _dictionary;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="ValueEnumerable"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
             public ValueEnumerable(ModelStateDictionary dictionary)
             {
                 _dictionary = dictionary;
             }
 
+            /// <inheritdoc />
             public ValueEnumerator GetEnumerator() => new ValueEnumerator(_dictionary, prefix: string.Empty);
 
             IEnumerator<ModelStateEntry> IEnumerable<ModelStateEntry>.GetEnumerator() => GetEnumerator();
@@ -1207,22 +1278,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// An enumerator for <see cref="ModelStateEntry"/>.
+        /// </summary>
         public struct ValueEnumerator : IEnumerator<ModelStateEntry>
         {
             private Enumerator _prefixEnumerator;
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="ValueEnumerator"/>.
+            /// </summary>
+            /// <param name="dictionary">The <see cref="ModelStateDictionary"/>.</param>
+            /// <param name="prefix">The prefix to enumerate.</param>
             public ValueEnumerator(ModelStateDictionary dictionary, string prefix)
             {
                 _prefixEnumerator = new Enumerator(dictionary, prefix);
                 Current = null;
             }
 
+            /// <inheritdoc />
             public ModelStateEntry Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public void Dispose() => _prefixEnumerator.Dispose();
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 var result = _prefixEnumerator.MoveNext();
@@ -1239,6 +1321,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return result;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _prefixEnumerator.Reset();

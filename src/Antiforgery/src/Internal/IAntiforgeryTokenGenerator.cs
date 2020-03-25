@@ -3,12 +3,12 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Generates and validates antiforgery tokens.
     /// </summary>
-    public interface IAntiforgeryTokenGenerator
+    internal interface IAntiforgeryTokenGenerator
     {
         /// <summary>
         /// Generates a new random cookie token.

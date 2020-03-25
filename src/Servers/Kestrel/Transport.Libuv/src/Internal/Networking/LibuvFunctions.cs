@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class LibuvFunctions
+    internal class LibuvFunctions
     {
         public LibuvFunctions()
         {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         [MethodImpl(MethodImplOptions.NoInlining)]
         private UvException GetError(int statusCode)
         {
-            // Note: method marked as NoInlining so it doesn't bloat either of the two preceeding functions
+            // Note: method marked as NoInlining so it doesn't bloat either of the two preceding functions
             // Check and ThrowError and alter their jit heuristics.
             var errorName = err_name(statusCode);
             var errorDescription = strerror(statusCode);

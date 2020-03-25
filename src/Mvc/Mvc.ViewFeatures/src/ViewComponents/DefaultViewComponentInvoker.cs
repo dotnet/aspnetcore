@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -16,11 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     /// <summary>
     /// Default implementation for <see cref="IViewComponentInvoker"/>.
     /// </summary>
-    public class DefaultViewComponentInvoker : IViewComponentInvoker
+    internal class DefaultViewComponentInvoker : IViewComponentInvoker
     {
         private readonly IViewComponentFactory _viewComponentFactory;
         private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -28,12 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// </summary>
         /// <param name="viewComponentFactory">The <see cref="IViewComponentFactory"/>.</param>
         /// <param name="viewComponentInvokerCache">The <see cref="ViewComponentInvokerCache"/>.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public DefaultViewComponentInvoker(
             IViewComponentFactory viewComponentFactory,
             ViewComponentInvokerCache viewComponentInvokerCache,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             ILogger logger)
         {
             if (viewComponentFactory == null)
@@ -46,9 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(viewComponentInvokerCache));
             }
 
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                throw new ArgumentNullException(nameof(diagnosticSource));
+                throw new ArgumentNullException(nameof(diagnosticListener));
             }
 
             if (logger == null)
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             _viewComponentFactory = viewComponentFactory;
             _viewComponentInvokerCache = viewComponentInvokerCache;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             _logger = logger;
         }
 
@@ -94,6 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             await result.ExecuteAsync(context);
         }
 
+#nullable enable
         private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
         {
             var component = _viewComponentFactory.CreateViewComponent(context);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
 
-                _diagnosticSource.BeforeViewComponent(context, component);
+                _diagnosticListener.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var stopwatch = ValueStopwatch.StartNew();
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
                 var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
-                _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
+                _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
                 _viewComponentFactory.ReleaseViewComponent(context, component);
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
 
-                _diagnosticSource.BeforeViewComponent(context, component);
+                _diagnosticListener.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var stopwatch = ValueStopwatch.StartNew();
@@ -162,13 +162,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
-                _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
+                _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
                 _viewComponentFactory.ReleaseViewComponent(context, component);
 
                 return viewComponentResult;
             }
         }
+#nullable restore
 
         private static IViewComponentResult CoerceToViewComponentResult(object value)
         {
@@ -177,20 +178,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
             }
 
-            var componentResult = value as IViewComponentResult;
-            if (componentResult != null)
+            if (value is IViewComponentResult componentResult)
             {
                 return componentResult;
             }
 
-            var stringResult = value as string;
-            if (stringResult != null)
+            if (value is string stringResult)
             {
                 return new ContentViewComponentResult(stringResult);
             }
 
-            var htmlContent = value as IHtmlContent;
-            if (htmlContent != null)
+            if (value is IHtmlContent htmlContent)
             {
                 return new HtmlContentViewComponentResult(htmlContent);
             }

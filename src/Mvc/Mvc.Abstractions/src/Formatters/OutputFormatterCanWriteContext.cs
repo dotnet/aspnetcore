@@ -13,20 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public abstract class OutputFormatterCanWriteContext
     {
         /// <summary>
-        /// <para>
-        /// This constructor is obsolete and will be removed in a future version.
-        /// Please use <see cref="OutputFormatterCanWriteContext(Http.HttpContext)"/> instead.
-        /// </para>
-        /// <para>
-        /// Creates a new <see cref="OutputFormatterCanWriteContext"/>.
-        /// </para>
-        /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. Please use the constructor taking a HttpContext instead.")]
-        protected OutputFormatterCanWriteContext()
-        {
-        }
-
-        /// <summary>
         /// Creates a new <see cref="OutputFormatterCanWriteContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>

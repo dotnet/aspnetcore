@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.Extensions.Primitives;
 
@@ -42,7 +45,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _bufferAlignment = 0;
             _permanentlyPinned = true;
         }
-
 
         internal SafeNativeOverlapped NativeOverlapped => _nativeOverlapped;
 
@@ -87,6 +89,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     SslStatus.ClientCert;
             }
         }
+
+        internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
 
         internal uint Size
         {
@@ -136,17 +140,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal byte[] GetRawUrlInBytes()
+        internal Span<byte> GetRawUrlInBytes()
         {
             if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
             {
-                var result = new byte[NativeRequest->RawUrlLength];
-                Marshal.Copy((IntPtr)NativeRequest->pRawUrl, result, 0, NativeRequest->RawUrlLength);
-
-                return result;
+                return new Span<byte>(NativeRequest->pRawUrl, NativeRequest->RawUrlLength);
             }
 
-            return null;
+            return default;
         }
 
         internal CookedUrl GetCookedUrl()
@@ -156,6 +157,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal Version GetVersion()
         {
+            if (IsHttp2)
+            {
+                return Constants.V2;
+            }
             var major = NativeRequest->Version.MajorVersion;
             var minor = NativeRequest->Version.MinorVersion;
             if (major == 1 && minor == 1)
@@ -178,10 +183,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    return true;
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -196,20 +204,42 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    // Duplicates AccessToken
-                    var identity = new WindowsIdentity(info->pInfo->AccessToken, GetAuthTypeFromRequest(info->pInfo->AuthType));
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        // Duplicates AccessToken
+                        var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
 
-                    // Close the original
-                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(info->pInfo->AccessToken);
+                        // Close the original
+                        UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(authInfo->AccessToken);
 
-                    return new WindowsPrincipal(identity);
+                        return new WindowsPrincipal(identity);
+                    }
                 }
             }
 
             return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
+        }
+
+        internal HttpApiTypes.HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
+        {
+            var requestInfo = NativeRequestV2->pRequestInfo;
+            var infoCount = NativeRequestV2->RequestInfoCount;
+
+            for (int i = 0; i < infoCount; i++)
+            {
+                var info = &requestInfo[i];
+                if (info != null
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
+                {
+                    var authInfo = (HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
+                    return *authInfo;
+                }
+            }
+
+            return default;
         }
 
         private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)
@@ -450,6 +480,88 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 dataChunkIndex = -1;
             }
             return dataRead;
+        }
+
+        internal IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetRequestInfo(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var count = nativeRequest->RequestInfoCount;
+            if (count == 0)
+            {
+                return ImmutableDictionary<int, ReadOnlyMemory<byte>>.Empty;
+            }
+
+            var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var requestInfo = nativeRequest->pRequestInfo[i];
+                var offset = (long)requestInfo.pInfo - (long)baseAddress;
+                info.Add(
+                    (int)requestInfo.InfoType,
+                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength));
+            }
+
+            return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
+        }
+
+        internal X509Certificate2 GetClientCertificate()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetClientCertificate(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        // Throws CryptographicException
+        private X509Certificate2 GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var request = nativeRequest->Request;
+            long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+            if (request.pSslInfo == null)
+            {
+                return null;
+            }
+
+            var sslInfo = (HttpApiTypes.HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
+            if (sslInfo->SslClientCertNegotiated == 0 || sslInfo->pClientCertInfo == null)
+            {
+                return null;
+            }
+
+            var clientCertInfo = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
+            if (clientCertInfo->pCertEncoded == null)
+            {
+                return null;
+            }
+
+            var clientCert = clientCertInfo->pCertEncoded + fixup;
+            byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
+            Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
+            return new X509Certificate2(certEncoded);
         }
     }
 }

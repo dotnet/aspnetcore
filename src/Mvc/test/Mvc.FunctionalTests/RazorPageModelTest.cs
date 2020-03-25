@@ -11,16 +11,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPageModelTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+    public class RazorPageModelTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
     {
-        public RazorPageModelTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
+        public RazorPageModelTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<RazorPagesWebSite.Startup>();
+            builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
         public HttpClient Client { get; }
 

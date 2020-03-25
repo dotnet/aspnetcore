@@ -1,10 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Package for the CLI first run experience.</Description>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
     <PackageTags>aspnet;cli</PackageTags>
+
+    <!-- This package contains API for the .NET CLI to generate the aspnet HTTPs dev cert during CLI first-run initialization. -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

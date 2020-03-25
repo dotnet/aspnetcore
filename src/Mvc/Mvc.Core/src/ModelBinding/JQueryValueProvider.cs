@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -80,8 +79,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValueProviderResult GetValue(string key)
         {
-            StringValues values;
-            if (_values.TryGetValue(key, out values) && values.Count > 0)
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (_values.TryGetValue(key, out var values) && values.Count > 0)
             {
                 return new ValueProviderResult(values, Culture);
             }

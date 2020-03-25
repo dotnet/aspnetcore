@@ -649,6 +649,9 @@ For the list of available options, please see [Webpack Hot Middleware docs](http
 
 ## Routing helper: MapSpaFallbackRoute
 
+*Note: this functionality has been superseded by `endpoints.MapFallbackToFile(...)` provided by endpoint routing.
+`MapFallbackToFile` behaves similarly to `MapSpaFallbackRoute`.*
+
 In most single-page applications, you'll want client-side routing as well as your server-side routing. Most of the time, the two routing systems work independently without interfering. However, there is one case where things get challenging: identifying 404s.
 
 If a request arrives for `/some/page`, and it doesn't match any server-side route, it's likely that you want to return HTML that starts up your client-side application, which probably understands the route `/some/page`. But if a request arrives for `/images/user-512.png`, and it doesn't match any server-side route or static file, it's **not** likely that your client-side application would handle it - you probably want to return a 404.

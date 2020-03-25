@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -14,47 +15,36 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIdConnectSample
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration config, IWebHostEnvironment env)
         {
+            Configuration = config;
             Environment = env;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath);
-
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; set; }
 
-        public IHostingEnvironment Environment { get; set; }
+        public IWebHostEnvironment Environment { get; }
 
         private void CheckSameSite(HttpContext httpContext, CookieOptions options)
         {
             if (options.SameSite == SameSiteMode.None)
             {
-                var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+                var userAgent = httpContext.Request.Headers["User-Agent"];
                 // TODO: Use your User Agent library of choice here.
                 if (userAgent.Contains("CPU iPhone OS 12") // Also covers iPod touch
                     || userAgent.Contains("iPad; CPU OS 12")
                     // Safari 12 and 13 are both broken on Mojave
                     || userAgent.Contains("Macintosh; Intel Mac OS X 10_14"))
                 {
-                    options.SameSite = (SameSiteMode)(-1);
+                    options.SameSite = SameSiteMode.Unspecified;
                 }
             }
         }
@@ -65,15 +55,14 @@ namespace OpenIdConnectSample
 
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.MinimumSameSitePolicy = (SameSiteMode)(-1);
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
                 options.OnAppendCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
                 options.OnDeleteCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
 
             services.AddAuthentication(sharedOptions =>
             {
-                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie()
@@ -92,8 +81,9 @@ namespace OpenIdConnectSample
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
+                o.AccessDeniedPath = "/access-denied-from-remote";
 
-                o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
+                // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
                 o.Events = new OpenIdConnectEvents()
                 {
@@ -152,6 +142,16 @@ namespace OpenIdConnectSample
                     await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
                     {
                         RedirectUri = "/signedout"
+                    });
+                    return;
+                }
+
+                if (context.Request.Path.Equals("/access-denied-from-remote"))
+                {
+                    await WriteHtmlAsync(response, async res =>
+                    {
+                        await res.WriteAsync($"<h1>Access Denied error received from the remote authorization server</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
                     });
                     return;
                 }
@@ -227,30 +227,31 @@ namespace OpenIdConnectSample
                     var tokenResponse = await options.Backchannel.PostAsync(metadata.TokenEndpoint, content, context.RequestAborted);
                     tokenResponse.EnsureSuccessStatusCode();
 
-                    var payload = JObject.Parse(await tokenResponse.Content.ReadAsStringAsync());
-
-                    // Persist the new acess token
-                    props.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
-                    props.UpdateTokenValue("refresh_token", payload.Value<string>("refresh_token"));
-                    if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
+                    using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                     {
-                        var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                        props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                        // Persist the new acess token
+                        props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                        props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
+                        if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                        {
+                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                            props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                        }
+                        await context.SignInAsync(user, props);
+
+                        await WriteHtmlAsync(response, async res =>
+                        {
+                            await res.WriteAsync($"<h1>Refreshed.</h1>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
+
+                            await res.WriteAsync("<h2>Tokens:</h2>");
+                            await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
+
+                            await res.WriteAsync("<h2>Payload:</h2>");
+                            await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                        });
                     }
-                    await context.SignInAsync(user, props);
-
-                    await WriteHtmlAsync(response, async res =>
-                    {
-                        await res.WriteAsync($"<h1>Refreshed.</h1>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
-
-                        await res.WriteAsync("<h2>Tokens:</h2>");
-                        await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
-
-                        await res.WriteAsync("<h2>Payload:</h2>");
-                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
-                    });
 
                     return;
                 }
@@ -291,7 +292,7 @@ namespace OpenIdConnectSample
 
         private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
         {
-            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">";
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css\" integrity=\"sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu\" crossorigin=\"anonymous\">";
 
             response.ContentType = "text/html";
             await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");
