@@ -72,6 +72,19 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Append the given query keys and values to the URI.
         /// </summary>
         /// <param name="uri">The base URI.</param>
+        /// <param name="queryString">A collection of query names and values to append.</param>
+        /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
+        public static string AddQueryString(
+            string uri,
+            IEnumerable<KeyValuePair<string, StringValues>> queryString)
+            => AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v.ToString())));
+
+        /// <summary>
+        /// Append the given query keys and values to the URI.
+        /// </summary>
+        /// <param name="uri">The base URI.</param>
         /// <param name="queryString">A collection of name value query pairs to append.</param>
         /// <returns>The combined result.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
