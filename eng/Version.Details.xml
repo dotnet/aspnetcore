@@ -317,10 +317,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>35df31cc5564964617669cb0d6bcce48b90998b4</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.3.20160.8" CoherentParentDependency="Microsoft.Extensions.Logging">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>73268c790b7ff31c98a292efbc583e25562074d7</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
