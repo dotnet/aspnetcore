@@ -96,7 +96,7 @@ namespace Templates.Test
         }
 
         [Fact]
-        public async Task BlazorWasmPwaTemplate_Works()
+        public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorpwa", Output);
             project.TargetFramework = "netstandard2.1";
@@ -112,6 +112,69 @@ namespace Templates.Test
 
             await BuildAndRunTest(project.ProjectName, project);
 
+            ValidatePublishedServiceWorker(project);
+
+            using (var serverProcess = RunPublishedStandaloneBlazorProject(project))
+            {
+                // We want to use this form to ensure that it gets disposed right after the test.
+            }
+
+            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
+            var listeningUri = "https://localhost:8080";
+
+            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+            // so we can continue working even without the server.
+            ValidateAppWorksOffline(project, listeningUri);
+        }
+
+        [Fact]
+        public async Task BlazorWasmHostedPwaTemplate_Works()
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+
+            var publishResult = await serverProject.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+
+            var buildResult = await serverProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
+
+            await BuildAndRunTest(project.ProjectName, serverProject);
+
+            ValidatePublishedServiceWorker(serverProject);
+
+            string listeningUri;
+            using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
+
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+                if (BrowserFixture.IsHostAutomationSupported())
+                {
+                    aspNetProcess.VisitInBrowser(Browser);
+                    TestBasicNavigation(project.ProjectName);
+                }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
+                }
+
+                listeningUri = aspNetProcess.ListeningUri.ToString();
+            }
+
+            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+            // so we can continue working even without the server.
+            ValidateAppWorksOffline(serverProject, listeningUri);
+        }
+
+        private void ValidatePublishedServiceWorker(Project project)
+        {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
             // When publishing the PWA template, we generate an assets manifest
@@ -130,18 +193,6 @@ namespace Templates.Test
             Assert.True(serviceWorkerAssetsManifestVersionMatch.Success);
             var serviceWorkerAssetsManifestVersion = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0];
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
-
-            using (var serverProcess = RunPublishedStandaloneBlazorProject(project))
-            {
-                // We want to use this form to ensure that it gets disposed right after the test.
-            }
-
-            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
-            var listeningUri = "https://localhost:8080";
-
-            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
-            // so we can continue working even without the server.
-            ValidateAppWorksOffline(project, listeningUri);
         }
 
         private void ValidateAppWorksOffline(Project project, string listeningUri)
