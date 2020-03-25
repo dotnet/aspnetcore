@@ -98,7 +98,7 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorpwa", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
             project.TargetFramework = "netstandard2.1";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
@@ -130,7 +130,7 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmHostedPwaTemplate_Works()
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
