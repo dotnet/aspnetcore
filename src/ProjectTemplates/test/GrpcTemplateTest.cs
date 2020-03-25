@@ -51,21 +51,19 @@ namespace Templates.Test
             var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
             var unsupported = isOsx || isWindowsOld;
 
-            using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: logger))
+            using (var serverProcess = Project.StartBuiltProjectAsync(logger: logger))
             {
                 logger.LogInformation($"GrpcTemplateTest.cs - isOsx: {isOsx} unsupported: {unsupported} Process.HasExited: {serverProcess.Process.HasExited}");
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
                 {
-                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(serverProcess.Process.HasExited, "built");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
                 }
                 else if (isWindowsOld)
                 {
-                    serverProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(serverProcess.Process.HasExited, "built");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
@@ -78,20 +76,18 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: !unsupported))
+            using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
                 {
-                    aspNetProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(aspNetProcess.Process.HasExited, "published");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
                 }
                 else if (isWindowsOld)
                 {
-                    aspNetProcess.Process.WaitForExit(assertSuccess: false);
                     Assert.True(aspNetProcess.Process.HasExited, "published");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
