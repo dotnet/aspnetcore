@@ -592,13 +592,16 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
-                        await context.Response.Body.FlushAsync();
+                        context.Response.Body.Flush();
                         await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         await context.Response.WriteAsync(new string('a', 100));
                     });
                 });
 
-            var server = new TestServer(builder);
+            var server = new TestServer(builder)
+            {
+                AllowSynchronousIO = true // needed for synchronous flush
+            };
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
