@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <Compile Include="Microsoft.AspNetCore.Components.WebAssembly.netstandard2.1.cs" />

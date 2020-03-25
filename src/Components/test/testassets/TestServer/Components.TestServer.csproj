@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
     <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
-    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
