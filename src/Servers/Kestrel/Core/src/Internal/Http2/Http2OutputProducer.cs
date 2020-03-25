@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IValueTaskSource<FlushResult>, IDisposable
     {
         private int StreamId => _stream.StreamId;
+
+        public bool HasWriterCompletedSuccessfully { get; private set; }
+
         private readonly Http2FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
         private readonly IKestrelTrace _log;
@@ -86,10 +89,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _streamEnded = false;
             _suffixSent = false;
-            _suffixSent = false;
             _startedWritingDataFrames = false;
             _streamCompleted = false;
             _writerComplete = false;
+            HasWriterCompletedSuccessfully = false;
 
             _pipe.Reset();
             _pipeWriter.Reset();
@@ -456,6 +459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
                 }
 
+                HasWriterCompletedSuccessfully = readResult.IsCompleted;
                 _pipeReader.Complete();
 
                 // Signal via WriteStreamSuffixAsync to the stream that output has finished.
