@@ -218,7 +218,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     typeof(NavigationManager),
                     typeof(INavigationInterception),
                     typeof(ILoggerFactory),
-                    typeof(ILogger<>),
                     typeof(IWebAssemblyHostEnvironment),
                 };
             }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -14,8 +15,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace BasicTestApp
 {
@@ -44,19 +47,22 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
-            // Replace the default logger with a custom one that wraps it
-            var originalLoggerDescriptor = builder.Services.Single(d => d.ServiceType == typeof(ILoggerFactory));
-            builder.Services.AddSingleton<ILoggerFactory>(services =>
+
+            var inMemoryConfiguration = new Dictionary<string, string>
             {
-                var originalLogger = (ILoggerFactory)Activator.CreateInstance(
-                    originalLoggerDescriptor.ImplementationType,
-                    new object[] { services });
-                return new PrependMessageLoggerFactory("Custom logger", originalLogger);
-            });
+                ["Logging:PrependMessage:Message"] = "Custom logger"
+            };
+            builder.Configuration.AddInMemoryCollection(inMemoryConfiguration);
 
             var host = builder.Build();
+
             ConfigureCulture(host);
 
+            var loggerFactory = host.Services.GetService<ILoggerFactory>();
+            var configuration = host.Services.GetService<IConfiguration>();
+            var runtime = host.Services.GetService<IJSRuntime>();
+            loggerFactory.AddProvider(new PrependMessageLoggerProvider(configuration, runtime));
+       
             await host.RunAsync();
         }
 
