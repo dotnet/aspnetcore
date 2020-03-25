@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         }
 
         [Fact]
-        public async Task BodyStream_fails_synchronous_write_when_not_enabled()
+        public async Task BodyStream_SyncDisabled_WriteThrows()
         {
             var contentBytes = new byte[] {32};
             using var host = await CreateHost(async httpContext =>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         }
 
         [Fact]
-        public async Task BodyStream_succeeds_synchronous_write_when_enabled()
+        public async Task BodyStream_SyncEnabled_WriteSucceeds()
         {
             var contentBytes = new byte[] {32};
             using var host = await CreateHost(async httpContext =>
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         }
 
         [Fact]
-        public async Task BodyStream_fails_synchronous_flush_when_not_enabled()
+        public async Task BodyStream_SyncDisabled_FlushThrows()
         {
             var contentBytes = new byte[] {32};
             using var host = await CreateHost(async httpContext =>
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         }
 
         [Fact]
-        public async Task BodyStream_succeeds_synchronous_flush_when_enabled()
+        public async Task BodyStream_SyncEnabled_FlushSucceeds()
         {
             var contentBytes = new byte[] {32};
             using var host = await CreateHost(async httpContext =>
