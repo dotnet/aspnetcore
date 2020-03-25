@@ -165,7 +165,9 @@ namespace Templates.Test
                     BrowserFixture.EnforceSupportedConfigurations();
                 }
 
-                listeningUri = aspNetProcess.ListeningUri.ToString();
+                // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
+                var browserUri = new Uri(Browser.Url);
+                listeningUri = $"{browserUri.Scheme}://{browserUri.Authority}";
             }
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
