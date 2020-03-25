@@ -124,7 +124,7 @@ namespace Templates.Test
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            ValidateAppWorksOffline(project, listeningUri);
+            ValidateAppWorksOffline(project, listeningUri, skipFetchData: false);
         }
 
         [Fact]
@@ -172,7 +172,8 @@ namespace Templates.Test
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            ValidateAppWorksOffline(project, listeningUri);
+            // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
+            ValidateAppWorksOffline(project, listeningUri, skipFetchData: true);
         }
 
         private void ValidatePublishedServiceWorker(Project project)
@@ -197,12 +198,12 @@ namespace Templates.Test
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
-        private void ValidateAppWorksOffline(Project project, string listeningUri)
+        private void ValidateAppWorksOffline(Project project, string listeningUri, bool skipFetchData)
         {
             Browser.Navigate().GoToUrl("about:blank"); // Be sure we're really reloading
             Output.WriteLine($"Opening browser without corresponding server at {listeningUri}...");
             Browser.Navigate().GoToUrl(listeningUri);
-            TestBasicNavigation(project.ProjectName);
+            TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
         [Theory]
@@ -398,7 +399,7 @@ namespace Templates.Test
             }
         }
 
-        private void TestBasicNavigation(string appName, bool usesAuth = false)
+        private void TestBasicNavigation(string appName, bool usesAuth = false, bool skipFetchData = false)
         {
             // Start fresh always
             if (usesAuth)
@@ -464,14 +465,17 @@ namespace Templates.Test
                 Browser.Equal(appName.Trim(), () => Browser.Title.Trim());
             }
 
-            // Can navigate to the 'fetch data' page
-            Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
-            Browser.Contains("fetchdata", () => Browser.Url);
-            Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            if (!skipFetchData)
+            {
+                // Can navigate to the 'fetch data' page
+                Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+                Browser.Contains("fetchdata", () => Browser.Url);
+                Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
 
-            // Asynchronously loads and displays the table of weather forecasts
-            Browser.Exists(By.CssSelector("table>tbody>tr"));
-            Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+                // Asynchronously loads and displays the table of weather forecasts
+                Browser.Exists(By.CssSelector("table>tbody>tr"));
+                Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+            }
         }
 
         private string ReadFile(string basePath, string path)
