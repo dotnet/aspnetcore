@@ -581,45 +581,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [Fact]
         [LogLevel(LogLevel.Trace)]
-        public async Task UnauthorizedHubConnectionDoesNotConnectWithEndpoints()
-        {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
-                       writeContext.EventId.Name == "ErrorWithNegotiation";
-            }
-
-            using (var server = await StartServer<Startup>(ExpectedErrors))
-            {
-                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
-
-                var url = server.Url + "/authHubEndpoints";
-                var connection = new HubConnectionBuilder()
-                        .WithLoggerFactory(LoggerFactory)
-                        .WithUrl(url, HttpTransportType.LongPolling)
-                        .Build();
-
-                try
-                {
-                    logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync().OrTimeout();
-                    Assert.True(false);
-                }
-                catch (Exception ex)
-                {
-                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
-                }
-                finally
-                {
-                    logger.LogInformation("Disposing Connection");
-                    await connection.DisposeAsync().OrTimeout();
-                    logger.LogInformation("Disposed Connection");
-                }
-            }
-        }
-
-        [Fact]
-        [LogLevel(LogLevel.Trace)]
         public async Task UnauthorizedHubConnectionDoesNotConnect()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -647,53 +608,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch (Exception ex)
                 {
                     Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
-                }
-                finally
-                {
-                    logger.LogInformation("Disposing Connection");
-                    await connection.DisposeAsync().OrTimeout();
-                    logger.LogInformation("Disposed Connection");
-                }
-            }
-        }
-
-        [Fact]
-        [LogLevel(LogLevel.Trace)]
-        public async Task AuthorizedHubConnectionCanConnectWithEndpoints()
-        {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
-                       writeContext.EventId.Name == "ErrorWithNegotiation";
-            }
-
-            using (var server = await StartServer<Startup>(ExpectedErrors))
-            {
-                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
-
-                string token;
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(server.Url);
-
-                    var response = await client.GetAsync("generatetoken?user=bob");
-                    token = await response.Content.ReadAsStringAsync();
-                }
-
-                var url = server.Url + "/authHubEndpoints";
-                var connection = new HubConnectionBuilder()
-                        .WithLoggerFactory(LoggerFactory)
-                        .WithUrl(url, HttpTransportType.LongPolling, o =>
-                        {
-                            o.AccessTokenProvider = () => Task.FromResult(token);
-                        })
-                        .Build();
-
-                try
-                {
-                    logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync().OrTimeout();
-                    logger.LogInformation("Connected to {url}", url);
                 }
                 finally
                 {

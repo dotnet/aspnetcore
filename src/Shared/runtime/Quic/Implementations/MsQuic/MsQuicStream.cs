@@ -129,9 +129,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlySequenceAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlySequenceAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -149,9 +149,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlyMemoryListAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlyMemoryListAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -164,9 +164,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlyMemoryAsync(buffer, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlyMemoryAsync(buffer, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -209,7 +209,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             // Make sure start has completed
             if (!_started)
             {
-                await _sendResettableCompletionSource.GetTypelessValueTask();
+                await _sendResettableCompletionSource.GetTypelessValueTask().ConfigureAwait(false);
                 _started = true;
             }
 
@@ -277,7 +277,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             // TODO there could potentially be a perf gain by storing the buffer from the inital read
             // This reduces the amount of async calls, however it makes it so MsQuic holds onto the buffers
             // longer than it needs to. We will need to benchmark this.
-            int length = (int)await _receiveResettableCompletionSource.GetValueTask();
+            int length = (int)await _receiveResettableCompletionSource.GetValueTask().ConfigureAwait(false);
 
             int actual = Math.Min(length, destination.Length);
 

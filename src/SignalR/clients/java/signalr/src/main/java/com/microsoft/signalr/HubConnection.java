@@ -518,6 +518,11 @@ public class HubConnection {
                 connectionState = null;
             }
 
+            if (pingTimer != null) {
+                pingTimer.cancel();
+                pingTimer = null;
+            }
+
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();

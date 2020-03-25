@@ -80,7 +80,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             await connection.SetSecurityConfigForConnection(_sslOptions.ServerCertificate!,
                 _options.CertificateFilePath,
-                _options.PrivateKeyFilePath);
+                _options.PrivateKeyFilePath).ConfigureAwait(false);
 
             if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
             return connection;

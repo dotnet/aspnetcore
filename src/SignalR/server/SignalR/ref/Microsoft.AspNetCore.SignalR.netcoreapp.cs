@@ -16,11 +16,6 @@ namespace Microsoft.AspNetCore.Builder
     public partial interface IHubEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
     {
     }
-    public static partial class SignalRAppBuilderExtensions
-    {
-        [System.ObsoleteAttribute("This method is obsolete and will be removed in a future version. The recommended alternative is to use MapHub<THub> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseSignalR(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.SignalR.HubRouteBuilder> configure) { throw null; }
-    }
 }
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -28,13 +23,6 @@ namespace Microsoft.AspNetCore.SignalR
     {
         public static Microsoft.AspNetCore.Http.HttpContext GetHttpContext(this Microsoft.AspNetCore.SignalR.HubCallerContext connection) { throw null; }
         public static Microsoft.AspNetCore.Http.HttpContext GetHttpContext(this Microsoft.AspNetCore.SignalR.HubConnectionContext connection) { throw null; }
-    }
-    [System.ObsoleteAttribute("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapHub<THub> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
-    public partial class HubRouteBuilder
-    {
-        public HubRouteBuilder(Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder routes) { }
-        public void MapHub<THub>(Microsoft.AspNetCore.Http.PathString path) where THub : Microsoft.AspNetCore.SignalR.Hub { }
-        public void MapHub<THub>(Microsoft.AspNetCore.Http.PathString path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where THub : Microsoft.AspNetCore.SignalR.Hub { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

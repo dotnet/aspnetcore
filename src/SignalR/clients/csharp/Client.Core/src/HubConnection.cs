@@ -500,6 +500,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     connectionState.Stopping = true;
                 }
+                else
+                {
+                    // Reset StopCts if there isn't an active connection so that the next StartAsync wont immediately fail due to the token being canceled
+                    _state.StopCts = new CancellationTokenSource();
+                }
 
                 if (disposing)
                 {
