@@ -1,4 +1,0 @@
-<Project>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\targets\All.targets" Condition="'$(ReferencesComponentsWebAssemblyBuild)' == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\targets\StaticWebAssetsWokarounds.targets" Condition="'$(ReferencesComponentsWebAssemblyBuild)' != 'true'" />
-</Project>

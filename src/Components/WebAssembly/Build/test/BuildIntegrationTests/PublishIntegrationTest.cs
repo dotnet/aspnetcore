@@ -164,6 +164,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var publishDirectory = project.PublishOutputDirectory;
             // Make sure the main project exists
             Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
 
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
@@ -226,7 +227,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "RazorClassLibrary.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
-
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
