@@ -26,6 +26,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
