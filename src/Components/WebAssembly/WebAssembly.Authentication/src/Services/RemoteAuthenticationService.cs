@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,12 +16,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// </summary>
     /// <typeparam name="TRemoteAuthenticationState">The state to preserve across authentication operations.</typeparam>
     /// <typeparam name="TProviderOptions">The options to be passed down to the underlying JavaScript library handling the authentication operations.</typeparam>
-    public class RemoteAuthenticationService<TRemoteAuthenticationState, TProviderOptions> :
+    public class RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions> :
         AuthenticationStateProvider,
         IRemoteAuthenticationService<TRemoteAuthenticationState>,
         IAccessTokenProvider
-         where TRemoteAuthenticationState : RemoteAuthenticationState
-         where TProviderOptions : new()
+        where TRemoteAuthenticationState : RemoteAuthenticationState
+        where TProviderOptions : new()
+        where TAccount : RemoteUserAccount
     {
         private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
 
@@ -43,6 +43,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         protected readonly NavigationManager _navigation;
 
         /// <summary>
+        /// The <see cref="UserFactory{TAccount}"/> to map accounts to <see cref="ClaimsPrincipal"/>.
+        /// </summary>
+        protected readonly UserFactory<TAccount> _userFactory;
+
+        /// <summary>
         /// The options for the underlying JavaScript library handling the authentication operations.
         /// </summary>
         protected readonly RemoteAuthenticationOptions<TProviderOptions> _options;
@@ -55,10 +60,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public RemoteAuthenticationService(
             IJSRuntime jsRuntime,
             IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
-            NavigationManager navigation)
+            NavigationManager navigation,
+            UserFactory<TAccount> userFactory)
         {
             _jsRuntime = jsRuntime;
             _navigation = navigation;
+            _userFactory = userFactory;
             _options = options.Value;
         }
 
@@ -74,7 +81,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -89,7 +98,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -104,7 +115,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -119,7 +132,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -196,40 +211,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Gets the current authenticated used using JavaScript interop.
         /// </summary>
         /// <returns>A <see cref="Task{ClaimsPrincipal}"/>that will return the current authenticated user when completes.</returns>
-        protected internal virtual async Task<ClaimsPrincipal> GetAuthenticatedUser()
+        protected internal virtual async ValueTask<ClaimsPrincipal> GetAuthenticatedUser()
         {
             await EnsureAuthService();
-            var user = await _jsRuntime.InvokeAsync<IDictionary<string, object>>("AuthenticationService.getUser");
+            var account = await _jsRuntime.InvokeAsync<TAccount>("AuthenticationService.getUser");
+            var user = await _userFactory.CreateUserAsync(account, _options.UserOptions);
 
-            var identity = user != null ? new ClaimsIdentity(
-                _options.UserOptions.AuthenticationType,
-                _options.UserOptions.NameClaim,
-                _options.UserOptions.RoleClaim) : new ClaimsIdentity();
-
-            if (user != null)
-            {
-                foreach (var kvp in user)
-                {
-                    var name = kvp.Key;
-                    var value = kvp.Value;
-                    if (value != null)
-                    {
-                        if (value is JsonElement element && element.ValueKind == JsonValueKind.Array)
-                        {
-                            foreach (var item in element.EnumerateArray())
-                            {
-                                identity.AddClaim(new Claim(name, JsonSerializer.Deserialize<object>(item.GetRawText()).ToString()));
-                            }
-                        }
-                        else
-                        {
-                            identity.AddClaim(new Claim(name, value.ToString()));
-                        }
-                    }
-                }
-            }
-
-            return new ClaimsPrincipal(identity);
+            return user;
         }
 
         private async ValueTask EnsureAuthService()

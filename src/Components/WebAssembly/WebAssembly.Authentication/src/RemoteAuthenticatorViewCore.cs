@@ -225,12 +225,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             {
                 State = AuthenticationState
             });
+
             switch (result.Status)
             {
                 case RemoteAuthenticationStatus.Redirect:
                     break;
                 case RemoteAuthenticationStatus.Success:
-                    await NavigateToReturnUrl(returnUrl);
+                    await OnLogInSucceeded.InvokeAsync(result.State);
+                    await NavigateToReturnUrl(GetReturnUrl(result.State, returnUrl));
                     break;
                 case RemoteAuthenticationStatus.Failure:
                     var uri = Navigation.ToAbsoluteUri($"{ApplicationPaths.LogInFailedPath}?message={Uri.EscapeDataString(result.ErrorMessage)}").ToString();
@@ -253,10 +255,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
-                    if (OnLogInSucceeded.HasDelegate)
-                    {
-                        await OnLogInSucceeded.InvokeAsync(result.State);
-                    }
+                    await OnLogInSucceeded.InvokeAsync(result.State);
                     await NavigateToReturnUrl(GetReturnUrl(result.State));
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
@@ -292,6 +291,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     case RemoteAuthenticationStatus.Redirect:
                         break;
                     case RemoteAuthenticationStatus.Success:
+                        await OnLogOutSucceeded.InvokeAsync(result.State);
                         await NavigateToReturnUrl(returnUrl);
                         break;
                     case RemoteAuthenticationStatus.OperationCompleted:
@@ -320,10 +320,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // is when we are doing a redirect sign in flow.
                     throw new InvalidOperationException("Should not redirect.");
                 case RemoteAuthenticationStatus.Success:
-                    if (OnLogOutSucceeded.HasDelegate)
-                    {
-                        await OnLogOutSucceeded.InvokeAsync(result.State);
-                    }
+                    await OnLogOutSucceeded.InvokeAsync(result.State);
                     await NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
