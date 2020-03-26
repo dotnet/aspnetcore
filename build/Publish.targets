@@ -175,6 +175,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <RedistPackageToPublish Include="$(InstallersOutputPath)(SharedFrameworkRedistPackageId)*" />
+    </ItemGroup>
+
+    <ItemGroup>
       <_MissingArtifactFile Include="@(FilesToPublish)" Condition="!Exists(%(FilesToPublish.Identity))" />
       <_MissingArtifactFile Include="@(NpmPackageToPublish)" Condition="!Exists(%(NpmPackageToPublish.Identity))" />
       <_MissingArtifactFile Include="@(PackageToPublish)" Condition="!Exists(%(PackageToPublish.Identity))" />
@@ -275,6 +279,10 @@
         Include="@(PackageToPublish)"
         ManifestArtifactData="NonShipping=true"
         Condition="'%(PackageToPublish.Category)' != 'ship'" />
+
+      <PackageToPublishToTransport
+        Include="@(RedistPackageToPublish)"
+        ManifestArtifactData="NonShipping=true" />
 
       <FilesToPublishToTransport Include="@(NpmPackageToPublish)"
         RelativeBlobPath="$(BlobFileRelativePathBase)%(NpmPackageToPublish.RelativeBlobPath)"

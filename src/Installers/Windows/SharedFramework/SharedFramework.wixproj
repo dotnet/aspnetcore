@@ -18,7 +18,6 @@
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ToolsetInstallerNuspecFile>$(RepositoryRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
-    <InstallersOutputPath>$(RepositoryRoot)artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -64,7 +63,8 @@
                       '$(PackageVersion)' ^
                       '$(RepositoryRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
-                      '$(AspNetCoreMinorVersion)'" />
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(SharedFrameworkRedistPackageId)'" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
