@@ -45,7 +45,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Publishing.targets & SharedFramework.wixproj both use this property, so putting it here in a common location -->
+    <!-- Publish.targets & SharedFramework.wixproj both use this property, so putting it here in a common location -->
     <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
   </PropertyGroup>
 
