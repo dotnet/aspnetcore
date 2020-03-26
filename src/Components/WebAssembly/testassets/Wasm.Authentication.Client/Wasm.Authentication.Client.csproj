@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
+    <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
   </ItemGroup>

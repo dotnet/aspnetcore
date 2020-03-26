@@ -13,6 +13,10 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>42941006ace24b5cb66a99ff52828a935f62ebcf</Sha>
     </Dependency>
+    <Dependency Name="System.Net.Http.Json" Version="3.2.0-preview3.20175.8">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>6ab82925fc3ca30b3c7e6ba060d0d5bd5ae76b06</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20124.2">
