@@ -86,7 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _streamEnded = false;
             _suffixSent = false;
-            _suffixSent = false;
             _startedWritingDataFrames = false;
             _streamCompleted = false;
             _writerComplete = false;
@@ -462,17 +461,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Stream state will move to RequestProcessingStatus.ResponseCompleted
                 _responseCompleteTaskSource.SetResult(flushResult);
 
-                if (readResult.IsCompleted)
-                {
-                    // Successfully read all data. Wait here for the stream to be reset.
-                    await new ValueTask(_resetAwaitable, _resetAwaitable.Version);
-                    _resetAwaitable.Reset();
-                }
-                else
-                {
-                    // Stream was aborted.
-                    break;
-                }
+                // Wait here for the stream to be reset or disposed.
+                await new ValueTask(_resetAwaitable, _resetAwaitable.Version);
+                _resetAwaitable.Reset();
             } while (!_disposed);
 
             static void ThrowUnexpectedState()
@@ -537,6 +528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             _disposed = true;
 
+            // Set awaitable after disposed is true to ensure ProcessDataWrites exits successfully.
             _resetAwaitable.SetResult(null);
         }
     }
