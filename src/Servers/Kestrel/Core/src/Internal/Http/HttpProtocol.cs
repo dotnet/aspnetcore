@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -83,8 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             Reset();
 
-            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
-
             HttpResponseControl = this;
         }
 
@@ -137,13 +136,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
 
-        protected string _parsedPath = null;
         public string Path { get; set; }
-
-        protected string _parsedQueryString = null;
         public string QueryString { get; set; }
-
-        protected string _parsedRawTarget = null;
         public string RawTarget { get; set; }
 
         public string HttpVersion
@@ -310,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; set; } = new HttpRequestHeaders();
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -372,6 +366,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
+            HttpRequestHeaders.UseLatin1 = ServerOptions.Latin1RequestHeaders;
+            HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
@@ -512,7 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
@@ -533,7 +529,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
             RequestTrailers.Append(key, valueStr);
         }
 
@@ -1193,11 +1189,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // TODO allow customization of this.
-            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3) 
+            if (ServerOptions.EnableAltSvc && _httpVersion < Http.HttpVersion.Http3)
             {
                 foreach (var option in ServerOptions.ListenOptions)
                 {
-                    if (option.Protocols == HttpProtocols.Http3)
+                    if ((option.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         responseHeaders.HeaderAltSvc = $"h3-25=\":{option.IPEndPoint.Port}\"; ma=84600";
                         break;

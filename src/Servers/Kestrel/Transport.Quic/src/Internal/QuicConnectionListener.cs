@@ -9,13 +9,15 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     /// <summary>
     /// Listens for new Quic Connections.
     /// </summary>
-    internal class QuicConnectionListener : IConnectionListener, IAsyncDisposable
+    internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
         private readonly IQuicTrace _log;
         private bool _disposed;
@@ -27,31 +29,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
+
+            var quicListenerOptions = new QuicListenerOptions();
             var sslConfig = new SslServerAuthenticationOptions();
             sslConfig.ServerCertificate = options.Certificate;
             sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
-            _listener = new QuicListener(QuicImplementationProviders.MsQuic, endpoint as IPEndPoint, sslConfig);
+
+            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
+            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
+            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+            quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+
+            _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();
         }
 
         public EndPoint EndPoint { get; set; }
 
-        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
-            var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
             try
             {
-                // Because the stream is wrapped with a quic connection provider,
-                // we need to check a property to check if this is null
-                // Will be removed once the provider abstraction is removed.
-                _ = quicConnection.LocalEndPoint;
+                var quicConnection = await _listener.AcceptConnectionAsync(cancellationToken);
+                return new QuicConnectionContext(quicConnection, _context);
             }
-            catch (Exception)
+            catch (QuicOperationAbortedException ex)
             {
-                return null;
+                _log.LogDebug($"Listener has aborted with exception: {ex.Message}");
             }
-
-            return new QuicConnectionContext(quicConnection, _context);
+            return null;
         }
 
         public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
@@ -68,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             _disposed = true;
 
+            _listener.Close();
             _listener.Dispose();
 
             return new ValueTask();

@@ -15,7 +15,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
@@ -24,6 +26,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" PrivateAssets="All" />
+    <!-- When updating this add the previous SiteExtension(s) to the list above -->
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" Version="$(PackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" Version="$(PackageVersion)" PrivateAssets="All" />
   </ItemGroup>

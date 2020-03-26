@@ -7,9 +7,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -24,7 +27,15 @@ namespace Templates.Test.Helpers
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
-        public static string ArtifactsLogDir => GetAssemblyMetadata("ArtifactsLogDir");
+        public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR"))) 
+            ? GetAssemblyMetadata("ArtifactsLogDir")
+            : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "logs");
+        
+        public static string DotNetEfFullPath => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath"))) 
+            ? typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value
+            : Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -197,7 +208,7 @@ namespace Templates.Test.Helpers
             return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
         }
 
-        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true)
+        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
         {
             var environment = new Dictionary<string, string>
             {
@@ -210,7 +221,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri, logger: logger);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
@@ -297,20 +308,24 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            var assembly = typeof(ProjectFactoryFixture).Assembly;
-
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build migrations add {migrationName}";
-
+            var args = $"--verbose --no-build migrations add {migrationName}";
+            
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
             await DotNetNewLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    args = $"\"{DotNetEfFullPath}\" " + args;
+                }
+                else
+                {
+                    command = "dotnet-ef";
+                }
+                
+                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return result;
             }
@@ -322,20 +337,24 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
         {
-            var assembly = typeof(ProjectFactoryFixture).Assembly;
-
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+            var args = "--verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
             await DotNetNewLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    args = $"\"{DotNetEfFullPath}\" " + args;
+                }
+                else
+                {
+                    command = "dotnet-ef";
+                }
+                
+                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return result;
             }

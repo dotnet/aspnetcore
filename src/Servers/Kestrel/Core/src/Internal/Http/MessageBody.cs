@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -72,6 +73,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnStopAsync() => Task.CompletedTask;
 
+        public virtual void Reset()
+        {
+            _send100Continue = true;
+            _consumedBytes = 0;
+            _stopped = false;
+            _timingEnabled = false;
+            _backpressure = false;
+            _alreadyTimedBytes = 0;
+            _examinedUnconsumedBytes = 0;
+        }
+
         protected void TryProduceContinue()
         {
             if (_send100Continue)
@@ -93,7 +105,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID.
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
                 if (_context.MinRequestBodyDataRate != null)
                 {
@@ -116,7 +133,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!RequestUpgrade)
             {
-                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                // Accessing TraceIdentifier will lazy-allocate a string ID
+                // Don't access TraceIdentifer unless logging is enabled.
+                if (Log.IsEnabled(LogLevel.Debug))
+                {
+                    Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                }
 
                 if (_timingEnabled)
                 {

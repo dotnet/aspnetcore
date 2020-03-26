@@ -5,9 +5,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.ResponseCompression.netcoreapp.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
+    <Compile Include="Microsoft.AspNetCore.ResponseCompression.Manual.cs" />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>

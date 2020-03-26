@@ -6,6 +6,7 @@ dotnet_runtime_version="$3"
 helix_queue_name="$4"
 target_arch="$5"
 quarantined="$6"
+efVersion="$7"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -31,6 +32,16 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Used by SkipOnHelix attribute
 export helix="$helix_queue_name"
+export HELIX_DIR="$DIR"
+export NUGET_FALLBACK_PACKAGES="$DIR"
+export DotNetEfFullPath=$DIR\nugetRestore\dotnet-ef\$efVersion\tools\netcoreapp3.1\any\dotnet-ef.dll
+echo "Set DotNetEfFullPath: $DotNetEfFullPath"
+export NUGET_RESTORE="$DIR/nugetRestore"
+echo "Creating nugetRestore directory: $NUGET_RESTORE"
+mkdir $NUGET_RESTORE
+mkdir logs
+
+ls -laR
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -82,6 +93,29 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+# Copy over any local shared fx if found
+if [ -d "Microsoft.AspNetCore.App" ]
+then
+    echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
+    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+
+    echo "Adding current directory to nuget sources: $DIR"
+    dotnet nuget add source $DIR
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
+    dotnet nuget list source
+
+    dotnet tool install dotnet-ef --global --version $efVersion
+
+    # Ensure tools are on on PATH
+    export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
+fi
+
+# Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
+if [ ! -f "xunit.runner.json" ]
+then
+    cp default.runner.json xunit.runner.json
+fi
+
 if [ -e /proc/self/coredump_filter ]; then
   # Include memory in private and shared file-backed mappings in the dump.
   # This ensures that we can see disassembly from our shared libraries when
@@ -100,11 +134,9 @@ fi
 
 exit_code=0
 
-# We need to specify all possible quarantined filters that apply to this environment, because the quarantine attribute
-# only puts the explicit filter traits the user provided in the flaky attribute
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONQUARANTINE_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$helix_queue_name!=true"
-QUARANTINE_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
+NONQUARANTINE_FILTER="Quarantined!=true"
+QUARANTINE_FILTER="Quarantined=true"
 if [ "$quarantined" == true ]; then
     echo "Running all tests including quarantined."
     $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --TestCaseFilter:"$QUARANTINE_FILTER"

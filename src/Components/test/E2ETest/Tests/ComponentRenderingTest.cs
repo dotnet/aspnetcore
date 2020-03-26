@@ -12,6 +12,7 @@ using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -579,7 +580,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanDispatchAsyncWorkToSyncContext()
+        public virtual void CanDispatchAsyncWorkToSyncContext()
         {
             var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));

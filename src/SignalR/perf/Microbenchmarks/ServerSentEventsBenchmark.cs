@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _parser = new ServerSentEventsMessageParser();
             _rawData = new ReadOnlySequence<byte>(protocol.GetMessageBytes(hubMessage));
             var ms = new MemoryStream();
-            ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms).GetAwaiter().GetResult();
+            ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms, default).GetAwaiter().GetResult();
             _sseFormattedData = ms.ToArray();
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public Task WriteSingleMessage()
         {
-            return ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, Stream.Null);
+            return ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, Stream.Null, default);
         }
 
         public enum Message

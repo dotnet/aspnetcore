@@ -5,11 +5,21 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     internal class TestWebSocketConnectionFeature : IHttpWebSocketFeature, IDisposable
     {
+        public TestWebSocketConnectionFeature()
+        { }
+        public TestWebSocketConnectionFeature(SyncPoint sync)
+        {
+            _sync = sync;
+        }
+
+        private readonly SyncPoint _sync;
         private readonly TaskCompletionSource<object> _accepted = new TaskCompletionSource<object>();
 
         public bool IsWebSocketRequest => true;
@@ -27,8 +37,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var clientToServer = Channel.CreateUnbounded<WebSocketMessage>();
             var serverToClient = Channel.CreateUnbounded<WebSocketMessage>();
 
-            var clientSocket = new WebSocketChannel(serverToClient.Reader, clientToServer.Writer);
-            var serverSocket = new WebSocketChannel(clientToServer.Reader, serverToClient.Writer);
+            var clientSocket = new WebSocketChannel(serverToClient.Reader, clientToServer.Writer, _sync);
+            var serverSocket = new WebSocketChannel(clientToServer.Reader, serverToClient.Writer, _sync);
 
             Client = clientSocket;
             SubProtocol = context.SubProtocol;
@@ -45,16 +55,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             private readonly ChannelReader<WebSocketMessage> _input;
             private readonly ChannelWriter<WebSocketMessage> _output;
+            private readonly SyncPoint _sync;
 
             private WebSocketCloseStatus? _closeStatus;
             private string _closeStatusDescription;
             private WebSocketState _state;
             private WebSocketMessage _internalBuffer = new WebSocketMessage();
 
-            public WebSocketChannel(ChannelReader<WebSocketMessage> input, ChannelWriter<WebSocketMessage> output)
+            public WebSocketChannel(ChannelReader<WebSocketMessage> input, ChannelWriter<WebSocketMessage> output, SyncPoint sync = null)
             {
                 _input = input;
                 _output = output;
+                _sync = sync;
             }
 
             public override WebSocketCloseStatus? CloseStatus => _closeStatus;
@@ -173,11 +185,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 throw new InvalidOperationException("Unexpected close");
             }
 
-            public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
             {
+                if (_sync != null)
+                {
+                    await _sync.WaitToContinue();
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var copy = new byte[buffer.Count];
                 Buffer.BlockCopy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
-                return SendMessageAsync(new WebSocketMessage
+                await SendMessageAsync(new WebSocketMessage
                 {
                     Buffer = copy,
                     MessageType = messageType,

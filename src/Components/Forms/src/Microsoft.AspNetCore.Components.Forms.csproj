@@ -6,7 +6,6 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Description>Forms and validation support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

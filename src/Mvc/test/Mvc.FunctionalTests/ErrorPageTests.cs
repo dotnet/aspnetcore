@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +10,9 @@ using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -27,6 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             "If you're seeing this in a published application, set 'CopyRefAssembliesToPublishDirectory' to true in your project file to ensure files in the refs directory are published.");
         private readonly AssemblyTestLog _assemblyTestLog;
 
+        private readonly MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> _fixture;
+
         public ErrorPageTests(
             MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture,
             ITestOutputHelper testOutputHelper)
@@ -41,6 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 .CreateDefaultClient();
             // These tests want to verify runtime compilation and formatting in the HTML of the error page
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+
+            _fixture = fixture;
         }
 
         public HttpClient Client { get; }
@@ -49,12 +57,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CompilationFailuresAreListedByErrorPageMiddleware()
         {
             // Arrange
+            var factory = _fixture.Factories.FirstOrDefault() ?? _fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+            factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
+
+            var client = factory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+
             var action = "CompilationFailure";
             var expected = "Cannot implicitly convert type &#x27;int&#x27; to &#x27;string&#x27;";
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
-            var response = await Client.GetAsync("http://localhost/" + action);
+            var response = await client.GetAsync("http://localhost/" + action);
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -63,6 +77,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains($"{action}.cshtml", content);
             Assert.Contains(expected, content);
             Assert.DoesNotContain(PreserveCompilationContextMessage, content);
+
+            static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
+            {
+                // Workaround for incorrectly generated deps file. The build output has all of the binaries required to compile. We'll grab these and
+                // add it to the list of assemblies runtime compilation uses.
+                foreach (var path in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
+                {
+                    options.AdditionalReferencePaths.Add(path);
+                }
+            }
         }
 
         [Fact]

@@ -63,6 +63,12 @@ namespace Microsoft.AspNetCore.E2ETesting
                 return result;
             }, timeout);
 
+        public static void Click(this IWebDriver driver, By selector)
+            => WaitAssertCore(driver, () =>
+            {
+                driver.FindElement(selector).Click();
+            });
+
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
         {
             WaitAssertCore<object>(driver, () => { assertion(); return null; }, timeout);

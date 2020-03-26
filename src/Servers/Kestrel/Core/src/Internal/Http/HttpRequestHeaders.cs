@@ -16,12 +16,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private long _previousBits = 0;
 
-        public HttpRequestHeaders(bool reuseHeaderValues = true)
+        public bool ReuseHeaderValues { get; set; }
+        public bool UseLatin1 { get; set; }
+
+        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
         {
             ReuseHeaderValues = reuseHeaderValues;
+            UseLatin1 = useLatin1;
         }
-
-        public bool ReuseHeaderValues { get; set; }
 
         public void OnHeadersComplete()
         {
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetAsciiOrUTF8StringNonNullCharacters());
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
             }
 
             _contentLength = parsed;
@@ -125,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private readonly long _bits;
             private int _next;
             private KeyValuePair<string, StringValues> _current;
+            private KnownHeaderType _currentKnownType;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
 
@@ -134,6 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _bits = collection._bits;
                 _next = 0;
                 _current = default;
+                _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
                     ? collection.MaybeUnknown.GetEnumerator()
@@ -141,6 +145,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             public KeyValuePair<string, StringValues> Current => _current;
+
+            internal KnownHeaderType CurrentKnownType => _currentKnownType;
 
             object IEnumerator.Current => _current;
 

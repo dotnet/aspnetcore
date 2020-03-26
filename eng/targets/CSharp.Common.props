@@ -25,7 +25,10 @@
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
+    <Reference Include="NETStandard.Library" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
 
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Content>

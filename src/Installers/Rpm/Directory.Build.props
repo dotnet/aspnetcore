@@ -11,7 +11,7 @@
 
     <!-- All installers are shipping assets. -->
     <IsShipping>true</IsShipping>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
 </Project>

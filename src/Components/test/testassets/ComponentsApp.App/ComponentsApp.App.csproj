@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <ProjectReference Include="..\..\..\Components\src\Microsoft.AspNetCore.Components.csproj" />
-    <ProjectReference Include="..\..\..\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
 </Project>

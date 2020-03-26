@@ -1,6 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.
-// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
 using System.Text;
@@ -21,11 +21,8 @@ namespace System.Net.Http.HPack
             // We should revisit our allocation strategy here so we don't need to allocate per entry
             // and we have a cap to how much allocation can happen per dynamic table
             // (without limiting the number of table entries a server can provide within the table size limit).
-            Name = new byte[name.Length];
-            name.CopyTo(Name);
-
-            Value = new byte[value.Length];
-            value.CopyTo(Value);
+            Name = name.ToArray();
+            Value = value.ToArray();
         }
 
         public byte[] Name { get; }

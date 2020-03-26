@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
     }
 }";
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
             Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private async Task<(bool result, IList<ActualApiResponseMetadata> responseMetadatas, TestSource testSource)> TryGetActualResponseMetadata(string typeName, string methodName)
         {
             var testSource = MvcTestSource.Read(GetType().Name, "TryGetActualResponseMetadataTests");
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await GetCompilation("TryGetActualResponseMetadataTests");
 
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax(string source, string test)
         {
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
             Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private Task<Compilation> GetCompilation(string test)
         {
             var testSource = MvcTestSource.Read(GetType().Name, test);
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();
         }

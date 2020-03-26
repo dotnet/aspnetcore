@@ -1,11 +1,11 @@
 ﻿{
   "iisSettings": {
-    //#if (WindowsAuth) 
-    "windowsAuthentication": true, 
-    "anonymousAuthentication": false, 
-    //#else 
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    //#if (WindowsAuth)
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+    //#else
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
@@ -21,7 +21,12 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        //#if(RazorRuntimeCompilation)
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
+        //#else
         "ASPNETCORE_ENVIRONMENT": "Development"
+        //#endif
       }
     },
     "Company.WebApplication1": {
@@ -33,7 +38,12 @@
       "applicationUrl": "http://localhost:5000",
       //#endif
       "environmentVariables": {
+        //#if(RazorRuntimeCompilation)
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
+        //#else
         "ASPNETCORE_ENVIRONMENT": "Development"
+        //#endif
       }
     }
   }

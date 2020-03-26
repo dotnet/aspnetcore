@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task DetectsOverriddenServer()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -229,6 +230,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task LogsStartupExceptionExitError()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -707,6 +709,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [InlineData("DOTNET_ENVIRONMENT", "deVelopment")]
         [InlineData("ASPNETCORE_DETAILEDERRORS", "1")]
         [InlineData("ASPNETCORE_DETAILEDERRORS", "TRUE")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled(string environmentVariable, string value)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -731,6 +734,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabledViaWebConfig()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -758,6 +762,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [RequiresNewHandler]
         [InlineData("ThrowInStartup")]
         [InlineData("ThrowInStartupGenericHost")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseDuringHostingStartupProcess(string startupType)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -780,6 +785,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -802,6 +808,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -878,6 +885,39 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/StackSizeLarge");
             Assert.True(result.IsSuccessStatusCode);
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherPathIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_PATH"] = _dotnetLocation;
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nope"));
+
+            await StartAsync(deploymentParameters);
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherArgsIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            using var publishedApp = await deploymentParameters.ApplicationPublisher.Publish(deploymentParameters, LoggerFactory.CreateLogger("test"));
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_ARGS"] = Path.ChangeExtension(Path.Combine(publishedApp.Path, deploymentParameters.ApplicationPublisher.ApplicationPath), ".dll");
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", "nope"));
+
+            await StartAsync(deploymentParameters);
         }
 
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)

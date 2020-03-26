@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BenchmarkDotNet.Attributes;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (uint i = 0; i < Iterations; i++)
             {
-                HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(_utf8Bytes);
+                HttpUtilities.GetRequestHeaderStringNonNullCharacters(_utf8Bytes, useLatin1: false);
             }
         }
 

@@ -88,5 +88,6 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         public static readonly string WWWAuthenticate = "WWW-Authenticate";
         public static readonly string XFrameOptions = "X-Frame-Options";
+        public static readonly string XRequestedWith = "X-Requested-With";
     }
 }

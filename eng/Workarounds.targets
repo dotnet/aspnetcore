@@ -67,4 +67,15 @@
       <TransitiveFrameworkReference Remove="NETStandard.Library" />
     </ItemGroup>
   </Target>
+
+  <!-- Work around https://github.com/dotnet/aspnetcore/issues/18393 -->
+  <Target Name="_UpdateRazorGenerateAssemblyReferences"
+          AfterTargets="ResolveAssemblyReferenceRazorGenerateInputs"
+          DependsOnTargets="FindReferenceAssembliesForReferences"
+          Condition="'$(CompileUsingReferenceAssemblies)' != 'false'">
+    <ItemGroup>
+      <RazorReferencePath Remove="@(ReferencePath)" />
+      <RazorReferencePath Include="@(ReferencePathWithRefAssemblies)" />
+    </ItemGroup>
+  </Target>
 </Project>

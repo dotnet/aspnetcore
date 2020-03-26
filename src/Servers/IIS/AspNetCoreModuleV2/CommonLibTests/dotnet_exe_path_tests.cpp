@@ -16,7 +16,6 @@ namespace InprocessTests
 
     TEST(Dotnet_EXE_Path_Tests, EndWith_dotnet)
     {
-        HostFxrResolver resolver;
         std::filesystem::path hostFxrDllPath;
         std::vector<std::wstring> arguments;
         ErrorContext errorContext;

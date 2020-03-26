@@ -6,7 +6,6 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Description>Support for rendering ASP.NET Core components for browsers.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsShippingPackage>true</IsShippingPackage>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
   </PropertyGroup>
 

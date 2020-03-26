@@ -258,6 +258,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
         public void WriteReadOnlySpanChar_WritesToStream(int byteLength)
         {
             // Arrange
@@ -290,6 +291,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1050, "\r\n")]
         [InlineData(2046, "\r\n")]
         [InlineData(2048, "\r\n")]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, "\r\n")]
         public void WriteLineReadOnlySpanChar_WritesToStream(int byteLength, string newLine)
         {
             // Arrange
@@ -360,6 +362,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
         public async Task WriteReadOnlyMemoryAsync_WritesToStream(int byteLength)
         {
             // Arrange
@@ -412,6 +415,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData(1050, 2)]
         [InlineData(2046, 2)]
         [InlineData(2048, 2)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 2)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, HttpResponseStreamWriter.DefaultBufferSize)]
         public async Task WriteLineReadOnlyMemoryAsync_WritesToStream(int byteLength, int newLineLength)
         {
             // Arrange

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers;
 using System.Diagnostics;
 using System.Net.Http.HPack;
@@ -118,7 +119,7 @@ namespace System.Net.Http.QPack
         private bool _huffman;
         private int? _index;
 
-        private byte[] _headerName;
+        private byte[]? _headerName;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;
@@ -130,7 +131,7 @@ namespace System.Net.Http.QPack
         private static void ReturnAndGetNewPooledArray(ref byte[] buffer, int newSize)
         {
             byte[] old = buffer;
-            buffer = null;
+            buffer = null!;
 
             Pool.Return(old, clearArray: true);
             buffer = Pool.Rent(newSize);
@@ -151,19 +152,19 @@ namespace System.Net.Http.QPack
             if (_stringOctets != null)
             {
                 Pool.Return(_stringOctets, true);
-                _stringOctets = null;
+                _stringOctets = null!;
             }
 
             if (_headerNameOctets != null)
             {
                 Pool.Return(_headerNameOctets, true);
-                _headerNameOctets = null;
+                _headerNameOctets = null!;
             }
 
             if (_headerValueOctets != null)
             {
                 Pool.Return(_headerValueOctets, true);
-                _headerValueOctets = null;
+                _headerValueOctets = null!;
             }
         }
 
@@ -269,6 +270,10 @@ namespace System.Net.Http.QPack
 
                             if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
                             {
+                                if (intResult == 0)
+                                {
+                                    throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                                }
                                 OnStringLength(intResult, State.HeaderName);
                             }
                             else
@@ -303,6 +308,10 @@ namespace System.Net.Http.QPack
                 case State.HeaderNameLength:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
+                        if (intResult == 0)
+                        {
+                            throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                        }
                         OnStringLength(intResult, nextState: State.HeaderName);
                     }
                     break;

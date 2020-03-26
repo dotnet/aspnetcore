@@ -342,6 +342,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         [Theory]
         [MemberData(nameof(MessageSizeDataNames))]
+        // These tests check that the message size doesn't change without us being aware of it and making a conscious decision to increase the size
         public void VerifyMessageSize(string testDataName)
         {
             var testData = MessageSizeData[testDataName];

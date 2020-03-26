@@ -5,11 +5,13 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.StaticFiles.netcoreapp.cs" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
-    <Reference Include="Microsoft.AspNetCore.Routing"  />
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.WebEncoders"  />
+    <Compile Include="Microsoft.AspNetCore.StaticFiles.Manual.cs" />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>
 </Project>

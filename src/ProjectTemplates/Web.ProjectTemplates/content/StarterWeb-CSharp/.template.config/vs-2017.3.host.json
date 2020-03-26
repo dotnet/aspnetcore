@@ -59,6 +59,15 @@
       "useHttps": true
     }
   ],
+  "symbolInfo": [
+    {
+      "id": "RazorRuntimeCompilation",
+      "name": {
+        "text": "Enable _Razor runtime compilation"
+      },
+      "isVisible": "true"
+    }
+  ],
   "excludeLaunchSettings": false,
   "azureReplyUrlPortName": "HttpsPort",
   "minFullFrameworkVersion": "4.6.1",

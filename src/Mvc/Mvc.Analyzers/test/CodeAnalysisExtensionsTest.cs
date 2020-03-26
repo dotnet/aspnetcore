@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         private Task<Compilation> GetCompilation([CallerMemberName] string testMethod = "")
         {
             var testSource = MvcTestSource.Read(GetType().Name, testMethod);
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             return project.GetCompilationAsync();
         }

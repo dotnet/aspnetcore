@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public Task RestoreAsync(string project)
         {
             _logger?.WriteLine($"Restoring msbuild project in {project}");
-            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore");
+            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore", "--ignore-failed-sources");
         }
 
         public Task BuildAsync(string project)
@@ -147,15 +147,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
-        }
-
-        private string GetMetadata(string key)
-        {
-            return typeof(ProjectToolScenario)
-                .Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(a => string.Equals(a.Key, key, StringComparison.Ordinal))
-                .Value;
         }
 
         public void Dispose()

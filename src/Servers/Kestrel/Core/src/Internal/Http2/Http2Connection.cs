@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
-        private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(Http2PeerSettings.DefaultInitialWindowSize);
+        private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _highestOpenedStreamId;
         private bool _gracefulCloseStarted;
 
-        private readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         private int _clientActiveStreamCount = 0;
         private int _serverActiveStreamCount = 0;
 
@@ -65,7 +64,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _gracefulCloseInitiator;
         private int _isClosed;
 
-        private Http2StreamStack _streamPool;
+        // Internal for testing
+        internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
+        internal Http2StreamStack StreamPool;
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 40;
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
-            _streamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
+            StreamPool = new Http2StreamStack(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
 
             _inputTask = ReadInputAsync();
         }
@@ -301,6 +302,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         await _streamCompletionAwaitable;
                         UpdateCompletedStreams();
+                    }
+
+                    while (StreamPool.TryPop(out var pooledStream))
+                    {
+                        pooledStream.Dispose();
                     }
 
                     // This cancels keep-alive and request header timeouts, but not the response drain timeout.
@@ -572,7 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Http2Stream GetStream<TContext>(IHttpApplication<TContext> application)
         {
-            if (_streamPool.TryPop(out var stream))
+            if (StreamPool.TryPop(out var stream))
             {
                 stream.InitializeWithExistingContext(_incomingFrame.StreamId);
                 return stream;
@@ -606,9 +612,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ReturnStream(Http2Stream stream)
         {
-            if (_streamPool.Count < MaxStreamPoolSize)
+            // We're conservative about what streams we can reuse.
+            // If there is a chance the stream is still in use then don't attempt to reuse it.
+            Debug.Assert(stream.CanReuse);
+
+            if (StreamPool.Count < MaxStreamPoolSize)
             {
-                _streamPool.Push(stream);
+                StreamPool.Push(stream);
             }
         }
 
@@ -904,6 +914,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Http2StreamErrorException)
             {
+                _currentHeadersStream.Dispose();
                 ResetRequestHeaderParsingState();
                 throw;
             }
@@ -972,8 +983,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (Http2StreamErrorException)
             {
                 MakeSpaceInDrainQueue();
-                // Tracked for draining
-                _completedStreams.Enqueue(_currentHeadersStream);
+
+                // Because this stream isn't being queued, OnRequestProcessingEnded will not be
+                // automatically called and the stream won't be completed.
+                // Manually complete stream to ensure pipes are completed.
+                // Completing the stream will add it to the completed stream queue.
+                _currentHeadersStream.DecrementActiveClientStreamCount();
+                _currentHeadersStream.CompleteStream(errored: true);
                 throw;
             }
 
@@ -1059,8 +1075,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
                     }
 
-                    _streams.Remove(stream.StreamId);
-                    ReturnStream(stream);
+                    RemoveStream(stream);
                 }
                 else
                 {
@@ -1071,6 +1086,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     _completedStreams.Enqueue(stream);
                 }
+            }
+        }
+
+        private void RemoveStream(Http2Stream stream)
+        {
+            _streams.Remove(stream.StreamId);
+            if (stream.CanReuse)
+            {
+                ReturnStream(stream);
+            }
+            else
+            {
+                stream.Dispose();
             }
         }
 
@@ -1086,8 +1114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _serverActiveStreamCount--;
                 }
 
-                _streams.Remove(stream.StreamId);
-                ReturnStream(stream);
+                RemoveStream(stream);
             }
         }
 
@@ -1443,7 +1470,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Status = 0x10,
             Unknown = 0x40000000
         }
-
 
         private static class GracefulCloseInitiator
         {

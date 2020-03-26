@@ -102,6 +102,8 @@
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)' ^
-                      '$(PackageIconFullPath)'" />
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
   </Target>
 </Project>

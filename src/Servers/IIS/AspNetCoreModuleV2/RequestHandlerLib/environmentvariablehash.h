@@ -13,6 +13,7 @@
 #define ASPNETCORE_IIS_AUTH_BASIC                   L"basic;"
 #define ASPNETCORE_IIS_AUTH_ANONYMOUS               L"anonymous;"
 #define ASPNETCORE_IIS_AUTH_NONE                    L"none"
+#define ANCM_PREFER_ENVIRONMENT_VARIABLES_ENV_STR   L"ANCM_PREFER_ENVIRONMENT_VARIABLES"
 
 //
 // The key used for hash-table lookups, consists of the port on which the http process is created.

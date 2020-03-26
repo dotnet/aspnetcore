@@ -24,7 +24,9 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
@@ -79,9 +81,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnHelix("ef restore no worky")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -146,17 +149,17 @@ namespace Templates.Test
             Browser.Equal("Hello, world!", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Can navigate to the counter page
-            Browser.FindElement(By.PartialLinkText("Counter")).Click();
+            Browser.Click(By.PartialLinkText("Counter"));
             Browser.Contains("counter", () => Browser.Url);
             Browser.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Clicking the counter button works
             Browser.Equal("Current count: 0", () => Browser.FindElement(By.CssSelector("h1 + p")).Text);
-            Browser.FindElement(By.CssSelector("p+button")).Click();
+            Browser.Click(By.CssSelector("p+button"));
             Browser.Equal("Current count: 1", () => Browser.FindElement(By.CssSelector("h1 + p")).Text);
 
             // Can navigate to the 'fetch data' page
-            Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+            Browser.Click(By.PartialLinkText("Fetch data"));
             Browser.Contains("fetchdata", () => Browser.Url);
             Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
 

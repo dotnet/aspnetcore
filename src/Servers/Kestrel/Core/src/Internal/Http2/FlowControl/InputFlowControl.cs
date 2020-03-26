@@ -26,6 +26,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 
         public bool IsAvailabilityLow => _flow.Available < _minWindowSizeIncrement;
 
+        public void Reset()
+        {
+            _flow = new FlowControl((uint)_initialWindowSize);
+            _pendingUpdateSize = 0;
+            _windowUpdatesDisabled = false;
+        }
+
         public bool TryAdvance(int bytes)
         {
             lock (_flowLock)

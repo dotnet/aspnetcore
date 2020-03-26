@@ -63,7 +63,7 @@ case $cpuname in
   amd64|x86_64)
     buildarch=x64
     ;;
-  armv7l)
+  armv*l)
     buildarch=arm
     ;;
   i686)

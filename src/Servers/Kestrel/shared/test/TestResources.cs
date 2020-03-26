@@ -40,5 +40,10 @@ namespace Microsoft.AspNetCore.Testing
                 importPfxMutex?.ReleaseMutex();
             }
         }
+
+        public static X509Certificate2 GetTestCertificate(string certName, string password)
+        {
+            return new X509Certificate2(GetCertPath(certName), password);
+        }
     }
 }

@@ -42,6 +42,11 @@
 
     <ItemGroup>
       <_TemplateFiles Include="$(MSBuildThisFileDirectory)\HostingStartup\*.cs*" />
+      <!--
+        Always use Major.Minor.0 so that if we have to produce a new SiteExtension during a patch build it will still work for non-patch runtimes.
+        i.e. 3.0.0 dotnet will search for 3.0.0 and below and wouldn't find a 3.0.1 folder path
+        Side effect, also removes the -ci or -servicing label.
+      -->
       <_HostingStartupPackageReference
         Include="%(HostingStartupPackageReference.Identity)"
         Source="%(HostingStartupPackageReference.Source)"
@@ -50,7 +55,7 @@
         Project="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\HostingStartup.csproj"
         DepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\p\HostingStartup.deps.json"
         TrimmedDepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\%(HostingStartupPackageReference.Identity).deps.json"
-        PackagePath="$(_BasePackagePath)\shared\Microsoft.AspNetCore.App\$(MicrosoftAspNetCoreAppPackageVersion)\"
+        PackagePath="$(_BasePackagePath)\shared\Microsoft.AspNetCore.App\$(AspNetCoreMajorMinorVersion).0\"
          />
     </ItemGroup>
     <MakeDir Directories="$(_DepsOutputDirectory)" />

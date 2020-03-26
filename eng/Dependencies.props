@@ -30,10 +30,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
     <LatestPackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
@@ -41,7 +39,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
@@ -49,20 +46,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)"  />
-    <LatestPackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
@@ -71,39 +61,40 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.ValueStopWatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
     <LatestPackageReference Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
     <LatestPackageReference Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <LatestPackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandlineExperimentalPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel" Version="$(SystemComponentModelPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
+    <LatestPackageReference Include="System.Drawing.Common" Version="$(SystemDrawingCommonPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <LatestPackageReference Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsPackageVersion)" />
     <LatestPackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
+    <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
     <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
+    <LatestPackageReference Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
+    <LatestPackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
 
     <!-- Runtime packages required for crossgen -->
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.win-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.osx-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
     <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
@@ -117,9 +108,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Analyzer.Testing" Version="$(MicrosoftAspNetCoreAnalyzerTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
@@ -141,6 +132,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+    <LatestPackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryPackageVersion)" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
@@ -162,8 +154,13 @@ and are generated based on the last package release.
   <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
+    <LatestPackageReference Include="CommandLineParser" Version="$(CommandLineParserPackageVersion)" />
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
-    <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
+    <LatestPackageReference Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
+    <LatestPackageReference Include="Grpc.AspNetCore" Version="$(GrpcAspNetCorePackageVersion)" />
+    <LatestPackageReference Include="Grpc.Auth" Version="$(GrpcAuthPackageVersion)" />
+    <LatestPackageReference Include="Grpc.Net.Client" Version="$(GrpcNetClientPackageVersion)" />
+    <LatestPackageReference Include="Grpc.Tools" Version="$(GrpcToolsPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
@@ -171,10 +168,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4StoragePackageVersion)" />
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Azure.Storage.Blob" Version="$(MicrosoftAzureStorageBlobPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
+    <LatestPackageReference Include="MessagePackAnalyzer" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />

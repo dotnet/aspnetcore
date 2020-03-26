@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [ConditionalFact(Skip = "Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627")]
+        [ConditionalFact]
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsUserAgent()
         {
@@ -86,7 +87,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     .Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client/" + assemblyVersion.InformationalVersion, userAgent);
+                var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
+                var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
+
+                Assert.StartsWith($"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; ", userAgent);
             }
         }
 
@@ -100,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
-                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("X-Requested-With"));
+                await webSocketsTransport.Output.WriteAsync(Encoding.UTF8.GetBytes(HeaderNames.XRequestedWith));
 
                 // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();

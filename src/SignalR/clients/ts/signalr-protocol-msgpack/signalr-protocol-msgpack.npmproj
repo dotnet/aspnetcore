@@ -5,7 +5,7 @@
     <PackageId>@microsoft/signalr-protocol-msgpack</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
     <PackOnBuild>true</PackOnBuild>
   </PropertyGroup>
 

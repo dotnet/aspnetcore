@@ -19,7 +19,6 @@ export class DefaultHttpClient extends HttpClient {
         super();
 
         this.headers = headers;
-
         if (typeof fetch !== "undefined" || Platform.isNode) {
             this.httpClient = new FetchHttpClient(logger);
         } else if (typeof XMLHttpRequest !== "undefined") {

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     internal interface IQuicTrace : ILogger
     {
@@ -15,5 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         void StreamPause(string streamId);
         void StreamResume(string streamId);
         void StreamShutdownWrite(string streamId, Exception ex);
+        void StreamAbort(string streamId, Exception ex);
     }
 }

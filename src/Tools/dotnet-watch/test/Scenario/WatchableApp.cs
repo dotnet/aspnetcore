@@ -104,11 +104,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 WorkingDirectory = SourceDirectory,
                 EnvironmentVariables =
                 {
-                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
-                    ["DOTNET_ROOT"] = Directory.GetParent(dotnetPath).FullName,
                 },
             };
+
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                spec.EnvironmentVariables["DOTNET_ROOT"] = Directory.GetParent(dotnetPath).FullName;
+            }
 
             Process = new AwaitableProcess(spec, _logger);
             Process.Start();

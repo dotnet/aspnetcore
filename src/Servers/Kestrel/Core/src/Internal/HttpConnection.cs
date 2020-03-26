@@ -68,10 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         requestProcessor = new Http2Connection(_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
-                    case HttpProtocols.Http3:
-                        requestProcessor = new Http3Connection(_context);
-                        _protocolSelectionState = ProtocolSelectionState.Selected;
-                        break;
                     case HttpProtocols.None:
                         // An error was already logged in SelectProtocol(), but we should close the connection.
                         break;
@@ -204,11 +200,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private HttpProtocols SelectProtocol()
         {
-            if (_context.Protocols == HttpProtocols.Http3)
-            {
-                return HttpProtocols.Http3;
-            }
-
             var hasTls = _context.ConnectionFeatures.Get<ITlsConnectionFeature>() != null;
             var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol
                 ?? new ReadOnlyMemory<byte>();

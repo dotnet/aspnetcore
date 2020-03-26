@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
     public class QuicTransportOptions
     {
@@ -25,14 +25,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         public string Alpn { get; set; }
 
         /// <summary>
-        /// The registration name to use in Quic.
-        /// </summary>
-        public string RegistrationName { get; set; }
-
-        /// <summary>
         /// The certificate that MsQuic will use.
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
+
+        /// <summary>
+        /// Optional path to certificate file to configure the security configuration.
+        /// </summary>
+        public string CertificateFilePath { get; set; }
+
+        /// <summary>
+        /// Optional path to private key file to configure the security configuration.
+        /// </summary>
+        public string PrivateKeyFilePath { get; set; }
 
         /// <summary>
         /// Sets the idle timeout for connections and streams.
@@ -48,11 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
         /// The maximum write size.
         /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
-
-        /// <summary>
-        /// The error code to abort with
-        /// </summary>
-        public long AbortErrorCode { get; set; } = 0;
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 

@@ -25,7 +25,8 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -93,9 +94,11 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory(Skip = "This test run for over an hour")]
         [InlineData(false)]
         [InlineData(true)]
+        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -209,6 +212,30 @@ namespace Templates.Test
                 await aspNetProcess.AssertPagesOk(pages);
             }
         }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
+        {
+            Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);
+
+            var createResult = await Project.RunDotNetNewAsync("razor", args: new[] { "--razor-runtime-compilation" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            // Verify building in debug works
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
+            buildResult = await Project.RunDotNetPublishAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, buildResult));
+
+            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
+
+            // Verify ref assemblies isn't published
+            var refsDirectory = Path.Combine(Project.TemplatePublishDir, "refs");
+            Assert.False(Directory.Exists(refsDirectory), $"{refsDirectory} should not be in the publish output.");
+       }
 
 
         private string ReadFile(string basePath, string path)

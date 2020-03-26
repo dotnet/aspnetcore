@@ -29,6 +29,8 @@ build_installers=''
 build_projects=''
 target_arch='x64'
 configuration=''
+dotnet_runtime_source_feed=''
+dotnet_runtime_source_feed_key=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -45,33 +47,36 @@ __usage() {
     echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <Arguments>...]
 
 Arguments:
-    <Arguments>...            Arguments passed to the command. Variable number of arguments allowed.
+    <Arguments>...                    Arguments passed to the command. Variable number of arguments allowed.
 
 Options:
-    --configuration|-c        The build configuration (Debug, Release). Default=Debug
-    --arch                    The CPU architecture to build for (x64, arm, arm64). Default=$target_arch
-    --os-name                 The base runtime identifier to build for (linux, osx, linux-musl). Default=$target_os_name
+    --configuration|-c                The build configuration (Debug, Release). Default=Debug
+    --arch                            The CPU architecture to build for (x64, arm, arm64). Default=$target_arch
+    --os-name                         The base runtime identifier to build for (linux, osx, linux-musl). Default=$target_os_name
 
-    --[no-]restore            Run restore.
-    --[no-]build              Compile projects. (Implies --no-restore)
-    --[no-]pack               Produce packages.
-    --[no-]test               Run tests.
+    --[no-]restore                    Run restore.
+    --[no-]build                      Compile projects. (Implies --no-restore)
+    --[no-]pack                       Produce packages.
+    --[no-]test                       Run tests.
 
-    --projects                A list of projects to build. (Must be an absolute path.)
-                              Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
-    --no-build-deps           Do not build project-to-project references and only build the specified project.
-    --no-build-repo-tasks     Suppress building RepoTasks.
+    --projects                        A list of projects to build. (Must be an absolute path.)
+                                      Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+    --no-build-deps                   Do not build project-to-project references and only build the specified project.
+    --no-build-repo-tasks             Suppress building RepoTasks.
 
-    --all                     Build all project types.
-    --[no-]build-native       Build native projects (C, C++).
-    --[no-]build-managed      Build managed projects (C#, F#, VB).
-    --[no-]build-nodejs       Build NodeJS projects (TypeScript, JS).
-    --[no-]build-java         Build Java projects.
-    --[no-]build-installers   Build Java projects.
+    --all                             Build all project types.
+    --[no-]build-native               Build native projects (C, C++).
+    --[no-]build-managed              Build managed projects (C#, F#, VB).
+    --[no-]build-nodejs               Build NodeJS projects (TypeScript, JS).
+    --[no-]build-java                 Build Java projects.
+    --[no-]build-installers           Build Java projects.
 
-    --ci                      Apply CI specific settings and environment variables.
-    --binarylog|-bl           Use a binary logger
-    --verbosity|-v            MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --ci                              Apply CI specific settings and environment variables.
+    --binarylog|-bl                   Use a binary logger
+    --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    
+    --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
+    --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -188,16 +193,26 @@ while [[ $# -gt 0 ]]; do
         -no-build-repo-tasks|-nobuildrepotasks)
             build_repo_tasks=false
             ;;
+        -arch)
+            shift
+            target_arch="${1:-}"
+            [ -z "$target_arch" ] && __error "Missing value for parameter --arch" && __usage
+            ;;
         -ci)
             ci=true
             ;;
         -binarylog|-bl)
             use_default_binary_log=true
             ;;
-        -verbosity|-v)
+        -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
             shift
-            [ -z "${1:-}" ] && __error "Missing value for parameter --verbosity" && __usage
-            verbosity="${1:-}"
+            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
+            dotnet_runtime_source_feed="${1:-}"
+            ;;
+        -dotnet-runtime-source-feed-key|-dotnetruntimesourcefeedkey)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed-key" && __usage
+            dotnet_runtime_source_feed_key="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
@@ -270,6 +285,17 @@ msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 echo "Setting msbuild verbosity to $verbosity"
 msbuild_args[${#msbuild_args[*]}]="-verbosity:$verbosity"
 
+# Set up additional runtime args
+toolset_build_args=()
+if [ ! -z "$dotnet_runtime_source_feed" ] || [ ! -z "$dotnet_runtime_source_feed_key" ]; then
+    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
+    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
+    msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
+    msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
+    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
+    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
+fi
+
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
 
@@ -325,7 +351,8 @@ if [ "$build_repo_tasks" = true ]; then
         -p:Configuration=Release \
         -p:Restore=$run_restore \
         -p:Build=true \
-        -clp:NoSummary
+        -clp:NoSummary \
+        ${toolset_build_args[@]+"${toolset_build_args[@]}"}
 fi
 
 # This incantation avoids unbound variable issues if msbuild_args is empty

@@ -22,6 +22,22 @@ parameters:
   publishDependsOn: 
   - Validate
 
+  # Channel ID's instantiated in this file.
+  # When adding a new channel implementation the call to `check-channel-consistency.ps1` 
+  # needs to be updated with the new channel ID
+  NetEngLatestChannelId: 2
+  NetEngValidationChannelId: 9
+  NetCoreDev5ChannelId: 131
+  GeneralTestingChannelId: 529
+  NETCoreToolingDevChannelId: 548
+  NETCoreToolingReleaseChannelId: 549
+  NETInternalToolingChannelId: 551
+  NETCoreExperimentalChannelId: 562
+  NetEngServicesIntChannelId: 678
+  NetEngServicesProdChannelId: 679
+  Net5Preview1ChannelId: 737
+  Net5Preview2ChannelId: 738
+  
 stages:
 - stage: Validate
   dependsOn: ${{ parameters.validateDependsOn }}
@@ -30,6 +46,24 @@ stages:
     - template: common-variables.yml
   jobs:
   - template: setup-maestro-vars.yml
+
+  - job:
+    displayName: Post-build Checks
+    dependsOn: setupMaestroVars
+    variables:
+      - name: InitialChannels
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'] ]
+      - name: PromoteToMaestroChannelId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.PromoteToMaestroChannelId'] ]
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: PowerShell@2
+        displayName: Maestro Channels Consistency
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
+          arguments: -PromoteToChannels "$(InitialChannels)[$(PromoteToMaestroChannelId)]"
+            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetCoreDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview1ChannelId}},${{parameters.Net5Preview2ChannelId}}
 
   - job:
     displayName: NuGet Validation
@@ -165,7 +199,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NetCore_Dev5_Publish'
     channelName: '.NET Core 5 Dev'
-    channelId: 131
+    akaMSChannelName: 'net5/dev'
+    channelId: ${{ parameters.NetCoreDev5ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -178,7 +213,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net5_Preview1_Publish'
     channelName: '.NET 5 Preview 1'
-    channelId: 737
+    akaMSChannelName: 'net5/preview1'
+    channelId: ${{ parameters.Net5Preview1ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -191,7 +227,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net5_Preview2_Publish'
     channelName: '.NET 5 Preview 2'
-    channelId: 738
+    akaMSChannelName: 'net5/preview2'
+    channelId: ${{ parameters.Net5Preview2ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -204,7 +241,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net_Eng_Latest_Publish'
     channelName: '.NET Eng - Latest'
-    channelId: 2
+    akaMSChannelName: 'eng/daily'
+    channelId: ${{ parameters.NetEngLatestChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
@@ -217,7 +255,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net_Eng_Validation_Publish'
     channelName: '.NET Eng - Validation'
-    channelId: 9
+    akaMSChannelName: 'eng/validation'
+    channelId: ${{ parameters.NetEngValidationChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
@@ -230,7 +269,8 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'General_Testing_Publish'
     channelName: 'General Testing'
-    channelId: 529
+    akaMSChannelName: 'generaltesting'
+    channelId: ${{ parameters.GeneralTestingChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing-symbols/nuget/v3/index.json'
@@ -243,7 +283,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NETCore_Tooling_Dev_Publishing'
     channelName: '.NET Core Tooling Dev'
-    channelId: 548
+    channelId: ${{ parameters.NETCoreToolingDevChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
@@ -256,7 +296,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NETCore_Tooling_Release_Publishing'
     channelName: '.NET Core Tooling Release'
-    channelId: 549
+    channelId: ${{ parameters.NETCoreToolingReleaseChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
@@ -269,7 +309,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NET_Internal_Tooling_Publishing'
     channelName: '.NET Internal Tooling'
-    channelId: 551
+    channelId: ${{ parameters.NETInternalToolingChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal-symbols/nuget/v3/index.json'
@@ -282,7 +322,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NETCore_Experimental_Publishing'
     channelName: '.NET Core Experimental'
-    channelId: 562
+    channelId: ${{ parameters.NETCoreExperimentalChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental-symbols/nuget/v3/index.json'
@@ -295,7 +335,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net_Eng_Services_Int_Publish'
     channelName: '.NET Eng Services - Int'
-    channelId: 678
+    channelId: ${{ parameters.NetEngServicesIntChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
@@ -308,7 +348,7 @@ stages:
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'Net_Eng_Services_Prod_Publish'
     channelName: '.NET Eng Services - Prod'
-    channelId: 679
+    channelId: ${{ parameters.NetEngServicesProdChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'

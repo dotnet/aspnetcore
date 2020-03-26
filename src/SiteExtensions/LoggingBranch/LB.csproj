@@ -31,6 +31,9 @@
     </ProjectReference>
   </ItemGroup>
 
+  <!-- No code in this project to compile. -->
+  <Target Name="Compile" />
+
   <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
   <Target Name="_GetHostingStartupPackageReference" BeforeTargets="GenerateHostingStartupDeps">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->

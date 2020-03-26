@@ -254,6 +254,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task CanHandleTwoAbsoluteFormRequestsInARow()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/18438
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET http://localhost/ HTTP/1.1",
+                        "Host: localhost",
+                        "",
+                        "GET http://localhost/ HTTP/1.1",
+                        "Host: localhost",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
         public async Task AppCanSetTraceIdentifier()
         {
             const string knownId = "xyz123";
@@ -357,7 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
         }
-
 
         [Fact]
         public async Task Http10NotKeptAliveByDefault()
@@ -759,7 +790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/2176", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -1645,6 +1676,124 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ReuseRequestHeaderStrings()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            string customHeaderValue = null;
+            string contentTypeHeaderValue = null;
+
+            await using (var server = new TestServer(context =>
+            {
+                customHeaderValue = context.Request.Headers["X-CustomHeader"];
+                contentTypeHeaderValue = context.Request.ContentType;
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // First request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    var initialCustomHeaderValue = customHeaderValue;
+                    var initialContentTypeValue = contentTypeHeaderValue;
+
+                    // Second request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    Assert.NotSame(initialCustomHeaderValue, customHeaderValue);
+                    Assert.Same(initialContentTypeValue, contentTypeHeaderValue);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Latin1HeaderValueAcceptedWhenLatin1OptionIsConfigured()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            testContext.ServerOptions.Latin1RequestHeaders = true;
+
+            await using (var server = new TestServer(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // The StreamBackedTestConnection will encode £ using the "iso-8859-1" aka Latin1 encoding.
+                    // It will be encoded as 0xA3 which isn't valid UTF-8.
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "X-Test: £",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Latin1HeaderValueRejectedWhenLatin1OptionIsNotConfigured()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(_ => Task.CompletedTask, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // The StreamBackedTestConnection will encode £ using the "iso-8859-1" aka Latin1 encoding.
+                    // It will be encoded as 0xA3 which isn't valid UTF-8.
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "X-Test: £",
+                        "",
+                        "");
+
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",

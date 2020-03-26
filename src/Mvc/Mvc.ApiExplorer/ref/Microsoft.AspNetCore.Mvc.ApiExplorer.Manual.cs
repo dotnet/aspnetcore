@@ -1,13 +1,26 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.CompilerServices;
+namespace Microsoft.AspNetCore.Mvc.ApiExplorer
+{
+    internal partial class ApiResponseTypeProvider
+    {
+        public ApiResponseTypeProvider(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper mapper, Microsoft.AspNetCore.Mvc.MvcOptions mvcOptions) { }
+        public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType> GetApiResponseTypes(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor action) { throw null; }
+    }
 
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat))]
-[assembly: TypeForwardedTo(typeof(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType))]
+    internal partial class ApiParameterContext
+    {
+        public ApiParameterContext(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor actionDescriptor, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Template.TemplatePart> routeParameters) { }
+        public Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider MetadataProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription> Results { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Template.TemplatePart> RouteParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+
+    public partial class DefaultApiDescriptionProvider : Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider
+    {
+        internal static void ProcessIsRequired(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterContext context) { }
+        internal static void ProcessParameterDefaultValue(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterContext context) { }
+    }
+}

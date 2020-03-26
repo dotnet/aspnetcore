@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.XPlat
         {
             var manager = new CertificateManager();
             var now = DateTimeOffset.Now;
-            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), isInteractive: false);
         }
     }
 }

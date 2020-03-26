@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.ResponseCaching.Abstractions.netcoreapp.cs" />
-    <Reference Include="Microsoft.Extensions.Primitives"  />
+    <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 </Project>

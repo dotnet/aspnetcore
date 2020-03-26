@@ -4,7 +4,11 @@
 This script runs a quick check for common errors, such as checking that Visual Studio solutions are up to date or that generated code has been committed to source.
 #>
 param(
-    [switch]$ci
+    [switch]$ci,
+    # Optional arguments that enable downloading an internal
+    # runtime or runtime from a non-default location
+    [string]$DotNetRuntimeSourceFeed,
+    [string]$DotNetRuntimeSourceFeedKey
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,7 +47,12 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/restore.cmd -ci -NoBuildNodeJS
+        if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
+            & $repoRoot/restore.cmd -ci -NoBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+        }
+        else{
+            & $repoRoot/restore.cmd -ci -NoBuildNodeJS
+        }
     }
 
     . "$repoRoot/activate.ps1"
@@ -172,12 +181,13 @@ try {
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
     $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-change --name-only 2>nul'
 
-    # Temporary: Disable check for blazor js file
-    $changedFilesExclusion = "src/Components/Web.JS/dist/Release/blazor.server.js"
+    # Temporary: Disable check for blazor js file and nuget.config (updated automatically for
+    # internal builds)
+    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "NuGet.config")
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
-            if ($file -eq $changedFilesExclusion) {continue}
+            if ($changedFilesExclusions -contains $file) {continue}
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
             & git --no-pager diff --ignore-space-change $filePath

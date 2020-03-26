@@ -160,7 +160,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var loadedEndpoints = new List<Endpoint>(endpoints);
                 for (var j = 0; j < loadedEndpoints.Count; j++)
                 {
-                    var compiled = await _loader.LoadAsync(loadedEndpoints[j].Metadata.GetMetadata<PageActionDescriptor>());
+                    var metadata = loadedEndpoints[j].Metadata;
+                    var pageActionDescriptor = metadata.GetMetadata<PageActionDescriptor>();
+
+                    CompiledPageActionDescriptor compiled;
+                    if (_loader is DefaultPageLoader defaultPageLoader)
+                    {
+                        compiled = await defaultPageLoader.LoadAsync(pageActionDescriptor, endpoint.Metadata);
+                    }
+                    else
+                    {
+                        compiled = await _loader.LoadAsync(pageActionDescriptor);
+                    }
+
                     loadedEndpoints[j] = compiled.Endpoint;
                 }
 

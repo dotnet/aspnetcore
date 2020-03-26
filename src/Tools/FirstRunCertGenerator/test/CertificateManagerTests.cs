@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     // Act
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-                var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, subject: TestCertificateSubject);
+                var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
                 // Assert
                 Assert.Equal(EnsureCertificateResult.Succeeded, result.ResultCode);
@@ -135,12 +135,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
             var httpsCertificate = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
 
             // Act
-            var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject);
+            var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject, isInteractive: false);
 
             // Assert
             Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result.ResultCode);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
             CertificateManager.AspNetHttpsCertificateVersion = 2;
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             CertificateManager.AspNetHttpsCertificateVersion = 0;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
             CertificateManager.AspNetHttpsCertificateVersion = 1;
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             CertificateManager.AspNetHttpsCertificateVersion = 0;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
             var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             Assert.NotEmpty(httpsCertificateList);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             CertificateManager.AspNetHttpsCertificateVersion = 2;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
             CertificateManager.AspNetHttpsCertificateVersion = 1;
             var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            var trustFailed = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject);
+            var trustFailed = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
 
             Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed.ResultCode);
         }
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
 
             _manager.CleanupHttpsCertificates(TestCertificateSubject);
 

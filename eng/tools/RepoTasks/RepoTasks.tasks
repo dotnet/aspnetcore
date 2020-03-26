@@ -10,4 +10,5 @@
   <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkDepsFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CreateFrameworkListFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.RemoveSharedFrameworkDependencies" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.DownloadFile" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>

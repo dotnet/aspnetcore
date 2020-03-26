@@ -500,6 +500,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     connectionState.Stopping = true;
                 }
+                else
+                {
+                    // Reset StopCts if there isn't an active connection so that the next StartAsync wont immediately fail due to the token being canceled
+                    _state.StopCts = new CancellationTokenSource();
+                }
 
                 if (disposing)
                 {
@@ -1214,11 +1219,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             finally
             {
                 invocationMessageChannel.Writer.TryComplete();
-                await invocationMessageReceiveTask;
                 timer.Stop();
                 await timerTask;
                 uploadStreamSource.Cancel();
                 await HandleConnectionClose(connectionState);
+
+                // await after the connection has been closed, otherwise could deadlock on a user's .On callback(s)
+                await invocationMessageReceiveTask;
             }
         }
 

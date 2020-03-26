@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        private MessagePackSerializerOptions _msgPackSerializerOptions;
+        private readonly MessagePackSerializerOptions _msgPackSerializerOptions;
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
 
@@ -53,34 +53,36 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public MessagePackHubProtocol(IOptions<MessagePackHubProtocolOptions> options)
         {
             var msgPackOptions = options.Value;
-            SetupResolver(msgPackOptions);
-            _msgPackSerializerOptions.WithSecurity(MessagePackSecurity.UntrustedData);
-        }
+            var resolver = SignalRResolver.Instance;
+            var hasCustomFormatterResolver = false;
 
-        private void SetupResolver(MessagePackHubProtocolOptions options)
-        {
-            // if counts don't match then we know users customized resolvers so we set up the options
-            // with the provided resolvers
-            if (options.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
+            // if counts don't match then we know users customized resolvers so we set up the options with the provided resolvers
+            if (msgPackOptions.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
             {
-                var resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)options.FormatterResolvers);
-                _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
-                return;
+                hasCustomFormatterResolver = true;
             }
-
-            for (var i = 0; i < options.FormatterResolvers.Count; i++)
+            else
             {
-                // check if the user customized the resolvers
-                if (options.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
+                // Compare each "reference" in the FormatterResolvers IList<> against the default "SignalRResolver.Resolvers" IList<>
+                for (var i = 0; i < msgPackOptions.FormatterResolvers.Count; i++)
                 {
-                    var resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)options.FormatterResolvers);
-                    _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(resolver);
-                    return;
+                    // check if the user customized the resolvers
+                    if (msgPackOptions.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
+                    {
+                        hasCustomFormatterResolver = true;
+                        break;
+                    }
                 }
             }
 
-            // Use optimized cached resolver if the default is chosen
-            _msgPackSerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(SignalRResolver.Instance);
+            if (hasCustomFormatterResolver)
+            {
+                resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)msgPackOptions.FormatterResolvers);
+            }
+
+            _msgPackSerializerOptions = MessagePackSerializerOptions.Standard
+                                                                    .WithResolver(resolver)
+                                                                    .WithSecurity(MessagePackSecurity.UntrustedData);
         }
 
         /// <inheritdoc />

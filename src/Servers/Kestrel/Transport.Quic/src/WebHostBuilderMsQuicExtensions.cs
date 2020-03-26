@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton<IConnectionListenerFactory, QuicTransportFactory>();
+                services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
             });
         }
 

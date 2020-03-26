@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             var depsElement = envNode.FirstChild;
             Assert.Equal("add", depsElement.Name);
             Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
-            Assert.Equal($@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
+            Assert.Equal($@"{XdtExtensionPath}\additionalDeps\;{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
                          @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
                 depsElement.Attributes["value"].Value);
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             Assert.Equal("add", depsElement.Name);
             Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
             Assert.Equal(@"ExistingValue1;"+
-                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
+                         $@"{XdtExtensionPath}\additionalDeps\;{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
                          @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
                 depsElement.Attributes["value"].Value);
 

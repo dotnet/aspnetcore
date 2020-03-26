@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task ProtocolError()
         {
-            return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+            return Clients.Caller.SendAsync("Send",  new SelfRef());
         }
 
         public void InvalidArgument(CancellationToken token)
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Self = this;
             }
 
-            public SelfRef Self;
+            public SelfRef Self { get; set; }
         }
 
         public async Task<string> StreamingConcat(ChannelReader<string> source)

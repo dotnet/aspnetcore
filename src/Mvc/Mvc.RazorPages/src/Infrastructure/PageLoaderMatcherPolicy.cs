@@ -78,7 +78,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     // We found an endpoint instance that has a PageActionDescriptor, but not a
                     // CompiledPageActionDescriptor. Update the CandidateSet.
-                    var compiled = _loader.LoadAsync(page);
+                    Task<CompiledPageActionDescriptor> compiled;
+                    if (_loader is DefaultPageLoader defaultPageLoader)
+                    {
+                        compiled = defaultPageLoader.LoadAsync(page, endpoint.Metadata);
+                    }
+                    else
+                    {
+                        compiled = _loader.LoadAsync(page);
+                    }
+
                     if (compiled.IsCompletedSuccessfully)
                     {
                         candidates.ReplaceEndpoint(i, compiled.Result.Endpoint, candidate.Values);

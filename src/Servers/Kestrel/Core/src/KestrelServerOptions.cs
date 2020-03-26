@@ -98,6 +98,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal bool IsDevCertLoaded { get; set; }
 
         /// <summary>
+        /// Treat request headers as Latin-1 or ISO/IEC 8859-1 instead of UTF-8.
+        /// </summary>
+        internal bool Latin1RequestHeaders { get; set; }
+
+        /// <summary>
         /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
         /// the prior action.
         /// </summary>

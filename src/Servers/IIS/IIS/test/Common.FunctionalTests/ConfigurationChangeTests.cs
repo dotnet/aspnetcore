@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/1794", FlakyOn.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1794")]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));

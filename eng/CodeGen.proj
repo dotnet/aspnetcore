@@ -3,6 +3,7 @@
   <PropertyGroup>
     <BuildManaged>true</BuildManaged>
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <BuildMainlyReferenceProviders>true</BuildMainlyReferenceProviders>
   </PropertyGroup>
 
   <Import Project="Build.props" />
@@ -15,13 +16,12 @@
              BuildInParallel="true"
              SkipNonexistentTargets="true"
              SkipNonexistentProjects="true" >
-
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
     </MSBuild>
 
     <ItemGroup>
-      <_SharedFrameworkAndPackageRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsShippingPackage', 'true')->Distinct())" />
-      <_SharedFrameworkRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsShippingPackage', 'false')->Distinct())" />
+      <_SharedFrameworkAndPackageRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'true')->Distinct())" />
+      <_SharedFrameworkRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'false')->Distinct())" />
       <_ProjectReferenceProviderWithRefAssembly Include="@(_ProjectReferenceProvider->HasMetadata('ReferenceAssemblyProjectFileRelativePath'))" />
       <_ProjectReferenceProvider Remove="@(_ProjectReferenceProviderWithRefAssembly)" />
     </ItemGroup>
@@ -58,7 +58,7 @@
 
   This file contains a complete list of the assemblies which are part of the shared framework.
 
-  This project is generated using the <IsAspNetCoreApp> and <IsShippingPackage> properties from each .csproj in this repository.
+  This project is generated using the <IsAspNetCoreApp> and <IsPackable> properties from each .csproj in this repository.
 -->
 <Project>
   <ItemGroup>

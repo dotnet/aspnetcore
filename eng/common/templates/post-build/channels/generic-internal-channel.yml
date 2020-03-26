@@ -84,6 +84,7 @@ stages:
   - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
+    timeoutInMinutes: 120
     variables:
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]

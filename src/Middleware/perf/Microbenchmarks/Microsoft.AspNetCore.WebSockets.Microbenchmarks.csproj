@@ -7,7 +7,8 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>
 </Project>
