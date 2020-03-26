@@ -125,7 +125,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         description: "A timeout occurred while running check.",
                         duration: duration,
                         exception: ex,
-                        data: null);
+                        data: null,
+                        tags: registration.Tags);
 
                     Log.HealthCheckError(_logger, registration, ex, duration);
                 }
@@ -139,7 +140,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         description: ex.Message,
                         duration: duration,
                         exception: ex,
-                        data: null);
+                        data: null,
+                        tags: registration.Tags);
 
                     Log.HealthCheckError(_logger, registration, ex, duration);
                 }
