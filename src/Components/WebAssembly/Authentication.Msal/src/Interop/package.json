@@ -1,4 +1,5 @@
 {
+  "private": true,
   "scripts": {
     "build": "npm run build:release",
     "build:release": "webpack --mode production --env.production --env.configuration=Release",

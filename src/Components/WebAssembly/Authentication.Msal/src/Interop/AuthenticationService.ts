@@ -92,16 +92,12 @@ class MsalAuthorizeService implements AuthorizeService {
             scopes: scopes || this._settings.defaultAccessTokenScopes
         };
 
-        try {
-            const response = await this._msalApplication.acquireTokenSilent(tokenScopes);
-            return {
-                value: response.accessToken,
-                grantedScopes: response.scopes,
-                expires: response.expiresOn
-            };
-        } catch (e) {
-            return undefined;
-        }
+        const response = await this._msalApplication.acquireTokenSilent(tokenScopes);
+        return {
+            value: response.accessToken,
+            grantedScopes: response.scopes,
+            expires: response.expiresOn
+        };
     }
 
     async signIn(state: any) {
@@ -236,7 +232,7 @@ class MsalAuthorizeService implements AuthorizeService {
         // msal.js doesn't support the state parameter on logout flows, which forces us to shim our own logout state.
         // The format then is different, as msal follows the pattern state=<<guid>>|<<user_state>> and our format
         // simple uses <<base64urlIdentifier>>.
-        const appState = !isLogout? this._msalApplication.getAccountState(state[0]): state[0];
+        const appState = !isLogout ? this._msalApplication.getAccountState(state[0]) : state[0];
         const stateKey = `${AuthenticationService._infrastructureKey}.AuthorizeService.${appState}`;
         const stateString = sessionStorage.getItem(stateKey);
         if (stateString) {
