@@ -63,9 +63,8 @@ export class LongPollingTransport implements ITransport {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
-        const headers = this.headers;
         const [name, value] = getUserAgentHeader();
-        headers[name] = value;
+        const headers = { [name]: value, ...this.headers };
 
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
