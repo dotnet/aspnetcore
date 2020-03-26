@@ -377,10 +377,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
 
-                var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
-                span = span.Slice(0, bytes);
+                try
+                {
+                    var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
+                    span = span.Slice(0, bytes);
 
-                return _encoding.GetString(span);
+                    return _encoding.GetString(span);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidDataException("The form value contains invalid characters.", ex);
+                }
             }
             else
             {
