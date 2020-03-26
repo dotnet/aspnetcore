@@ -6,7 +6,7 @@
     "sourceMap": true,
     "downlevelIteration": true,
     "target": "es5",
-    "lib": ["es2019", "dom"],
+    "lib": ["es2015", "dom"],
     "strict": true
   }
 }
