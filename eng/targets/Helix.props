@@ -5,7 +5,8 @@
   <ItemDefinitionGroup>
     <HelixContent>
       <CopyToBuildDirectory>Never</CopyToBuildDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(IsHelixJob)' == 'true'">Always</CopyToPublishDirectory>
+      <CopyToPublishDirectory Condition="'$(IsHelixJob)' != 'true'">Never</CopyToPublishDirectory>
     </HelixContent>
   </ItemDefinitionGroup>
 
