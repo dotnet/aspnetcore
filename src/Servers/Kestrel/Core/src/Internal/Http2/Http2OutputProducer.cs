@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private int StreamId => _stream.StreamId;
 
-        public bool HasWriterCompletedSuccessfully { get; private set; }
-
         private readonly Http2FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
         private readonly IKestrelTrace _log;
@@ -92,7 +90,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _startedWritingDataFrames = false;
             _streamCompleted = false;
             _writerComplete = false;
-            HasWriterCompletedSuccessfully = false;
 
             _pipe.Reset();
             _pipeWriter.Reset();
@@ -459,24 +456,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
                 }
 
-                HasWriterCompletedSuccessfully = readResult.IsCompleted;
                 _pipeReader.Complete();
 
                 // Signal via WriteStreamSuffixAsync to the stream that output has finished.
                 // Stream state will move to RequestProcessingStatus.ResponseCompleted
                 _responseCompleteTaskSource.SetResult(flushResult);
 
-                if (readResult.IsCompleted)
-                {
-                    // Successfully read all data. Wait here for the stream to be reset.
-                    await new ValueTask(_resetAwaitable, _resetAwaitable.Version);
-                    _resetAwaitable.Reset();
-                }
-                else
-                {
-                    // Stream was aborted.
-                    break;
-                }
+                // Wait here for the stream to be reset or disposed.
+                await new ValueTask(_resetAwaitable, _resetAwaitable.Version);
+                _resetAwaitable.Reset();
             } while (!_disposed);
 
             static void ThrowUnexpectedState()
@@ -541,6 +529,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             _disposed = true;
 
+            // Set awaitable after disposed is true to ensure ProcessDataWrites
+            // exits successfully.
             _resetAwaitable.SetResult(null);
         }
     }
