@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
