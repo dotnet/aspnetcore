@@ -18,11 +18,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     {
         private string _message;
         private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
+        private string _action;
 
         /// <summary>
         /// Gets or sets the <see cref="RemoteAuthenticationActions"/> action the component needs to handle.
         /// </summary>
-        [Parameter] public string Action { get; set; }
+        [Parameter] public string Action { get => _action; set => _action = value?.ToLowerInvariant(); }
 
         /// <summary>
         /// Gets or sets the <typeparamref name="TAuthenticationState"/> instance to be preserved during the authentication operation.

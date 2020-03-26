@@ -107,11 +107,11 @@ namespace ComponentsWebAssembly_CSharp.Server
 
             app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth)
-            app.UseAuthentication();
-#endif
 #if (IndividualLocalAuth)
             app.UseIdentityServer();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+            app.UseAuthentication();
 #endif
 #if (!NoAuth)
             app.UseAuthorization();

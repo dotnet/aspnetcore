@@ -24,7 +24,12 @@ namespace Microsoft.Authentication.WebAssembly.Msal.Models
         /// <summary>
         /// Gets or sets the msal.js cache options.
         /// </summary>
-        public MsalCacheOptions Cache { get; set; }
+        public MsalCacheOptions Cache { get; set; } = new MsalCacheOptions
+        {
+            // This matches the defaults in msal.js
+            CacheLocation = "sessionStorage",
+            StoreAuthStateInCookie = false
+        };
 
         /// <summary>
         /// Gets or set the list of default access tokens scopes to provision during the sign-in flow.

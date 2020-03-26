@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public string Authority { get; set; }
 
         /// <summary>
+        /// Gets or sets the metadata url of the oidc provider.
+        /// </summary>
+        public string MetadataUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the client of the application.
         /// </summary>
         [JsonPropertyName("client_id")]
