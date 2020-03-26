@@ -1,0 +1,28 @@
+@implements IDisposable
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.Routing
+<p>
+    This component is used to test the behaviour when you attach to NavigationManager.LocationChanged
+    and throw an exception. We have a special code path to recognize this case and treat it as a failure
+    in user code rather than invalid input.
+
+    This component is used headless tests for error handling. Markup that's provided here is for manually
+    testing this case in the browser.
+</p>
+
+<a href="test">Click here for some fireworks.</a>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += NavigationManager_LocationChanged;
+    }
+
+    private void NavigationManager_LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        throw new InvalidTimeZoneException();
+    }
+
+    void IDisposable.Dispose() => Navigation.LocationChanged -= NavigationManager_LocationChanged;
+}

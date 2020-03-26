@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite

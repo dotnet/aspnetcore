@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Dynamic;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
@@ -42,6 +44,26 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
 
             // Assert
             Assert.Equal("A", targetObject.AnotherStringProperty);
+        }
+
+        [Fact]
+        public void CopyNullStringProperty_ToAnotherStringProperty()
+        {
+            // Arrange
+            var targetObject = new SimpleObject()
+            {
+                StringProperty = null,
+                AnotherStringProperty = "B"
+            };
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Copy("StringProperty", "AnotherStringProperty");
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.Null(targetObject.AnotherStringProperty);
         }
 
         [Fact]
@@ -124,5 +146,30 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
             Assert.Equal(newGuid, targetObject.GuidValue);
         }
 
+        // https://github.com/aspnet/AspNetCore/issues/3634
+        [Fact]
+        public void Regression_AspNetCore3634()
+        {
+            // Assert
+            var document = new JsonPatchDocument();
+            document.Move("/Object", "/Object/goodbye");
+
+            dynamic @object = new ExpandoObject();
+            @object.hello = "world";
+
+            var target = new Regression_AspNetCore3634_Object();
+            target.Object = @object;
+
+            // Act 
+            var ex = Assert.Throws<JsonPatchException>(() => document.ApplyTo(target));
+
+            // Assert
+            Assert.Equal("For operation 'move', the target location specified by path '/Object/goodbye' was not found.", ex.Message);
+        }
+
+        private class Regression_AspNetCore3634_Object
+        {
+            public dynamic Object { get; set; }
+        }
     }
 }

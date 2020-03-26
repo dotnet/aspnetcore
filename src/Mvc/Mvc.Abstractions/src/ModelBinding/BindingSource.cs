@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <remarks>
         /// <para>
         /// For sources based on a <see cref="IValueProvider"/>, setting <see cref="IsGreedy"/> to <c>false</c>
-        /// will most closely describe the behavior. This value is used inside the default model binders to 
+        /// will most closely describe the behavior. This value is used inside the default model binders to
         /// determine whether or not to attempt to bind properties of a model.
         /// </para>
         /// <para>
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// When using this method, it is expected that the left-hand-side is metadata specified
         /// on a property or parameter for model binding, and the right hand side is a source of
         /// data used by a model binder or value provider.
-        /// 
+        ///
         /// This distinction is important as the left-hand-side may be a composite, but the right
         /// may not.
         /// </remarks>
@@ -196,7 +196,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentException(message, nameof(bindingSource));
             }
 
-            return this == bindingSource;
+            if (this == bindingSource)
+            {
+                return true;
+            }
+
+            if (this == ModelBinding)
+            {
+                return bindingSource == Form || bindingSource == Path || bindingSource == Query;
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -220,9 +230,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public static bool operator ==(BindingSource s1, BindingSource s2)
         {
-            if (object.ReferenceEquals(s1, null))
+            if (s1 is null)
             {
-                return object.ReferenceEquals(s2, null);
+                return s2 is null;
             }
 
             return s1.Equals(s2);

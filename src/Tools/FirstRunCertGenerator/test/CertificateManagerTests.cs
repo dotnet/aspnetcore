@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,16 +7,20 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 {
-    public class CertificateManagerTests
+    public class CertificateManagerTests : IClassFixture<CertFixture>
     {
-        public CertificateManagerTests(ITestOutputHelper output)
+        private CertFixture _fixture;
+        private CertificateManager _manager => _fixture.Manager;
+
+        public CertificateManagerTests(ITestOutputHelper output, CertFixture fixture)
         {
+            _fixture = fixture;
             Output = output;
         }
 
@@ -24,35 +28,31 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
             {
                 // Arrange
+                _fixture.CleanupCertificates();
+
                 const string CertificateName = nameof(EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates) + ".cer";
-                var manager = new CertificateManager();
 
-                manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, TestCertificateSubject);
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
-                }
-
-                // Act
+                    // Act
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-                var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, subject: TestCertificateSubject, isInteractive: false);
+                var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
                 // Assert
-                Assert.Equal(EnsureCertificateResult.Succeeded, result);
+                Assert.Equal(EnsureCertificateResult.Succeeded, result.ResultCode);
                 Assert.True(File.Exists(CertificateName));
 
                 var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
                 Assert.NotNull(exportedCertificate);
                 Assert.False(exportedCertificate.HasPrivateKey);
 
-                var httpsCertificates = manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false);
+                var httpsCertificates = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false);
                 var httpsCertificate = Assert.Single(httpsCertificates, c => c.Subject == TestCertificateSubject);
                 Assert.True(httpsCertificate.HasPrivateKey);
                 Assert.Equal(TestCertificateSubject, httpsCertificate.Subject);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e is X509KeyUsageExtension keyUsage &&
                         keyUsage.Critical == true &&
-                        keyUsage.KeyUsages == X509KeyUsageFlags.KeyEncipherment);
+                        keyUsage.KeyUsages == (X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature));
 
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == false &&
                         e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
-                        Encoding.ASCII.GetString(e.RawData) == "ASP.NET Core HTTPS development certificate");
+                        e.RawData[0] == CertificateManager.AspNetHttpsCertificateVersion);
 
                 Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
 
@@ -123,32 +123,27 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
             const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
             var certificatePassword = Guid.NewGuid().ToString();
 
-            var manager = new CertificateManager();
-
-            manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, TestCertificateSubject);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
-            }
+            _fixture.CleanupCertificates();
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
-            var httpsCertificate = manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+            var httpsCertificate = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
 
             // Act
-            var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject, isInteractive: false);
+            var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject, isInteractive: false);
 
             // Assert
-            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result.ResultCode);
             Assert.True(File.Exists(CertificateName));
 
             var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName), certificatePassword);
@@ -159,39 +154,125 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [Fact(Skip = "Requires user interaction")]
-        public void EnsureAspNetCoreHttpsDevelopmentCertificate_ReturnsCorrectResult_WhenUserCancelsTrustStepOnWindows()
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
         {
-            var manager = new CertificateManager();
-
-            manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, TestCertificateSubject);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
-            }
+            _fixture.CleanupCertificates();
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            var trustFailed = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
 
-            Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed);
+            CertificateManager.AspNetHttpsCertificateVersion = 2;
+
+            var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.Empty(httpsCertificateList);
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateForEmptyVersionField()
+        {
+            _fixture.CleanupCertificates();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            CertificateManager.AspNetHttpsCertificateVersion = 0;
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
+
+            CertificateManager.AspNetHttpsCertificateVersion = 1;
+
+            var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.Empty(httpsCertificateList);
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        public void EnsureCreateHttpsCertificate_ReturnsValidIfVersionIsZero()
+        {
+            _fixture.CleanupCertificates();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            CertificateManager.AspNetHttpsCertificateVersion = 0;
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
+
+            var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.NotEmpty(httpsCertificateList);
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
+        public void EnsureCreateHttpsCertificate_ReturnValidIfCertIsNewer()
+        {
+            _fixture.CleanupCertificates();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            CertificateManager.AspNetHttpsCertificateVersion = 2;
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject, isInteractive: false);
+
+            CertificateManager.AspNetHttpsCertificateVersion = 1;
+            var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.NotEmpty(httpsCertificateList);
+        }
+
+        [Fact(Skip = "Requires user interaction")]
+        public void EnsureAspNetCoreHttpsDevelopmentCertificate_ReturnsCorrectResult_WhenUserCancelsTrustStepOnWindows()
+        {
+            _fixture.CleanupCertificates();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var trustFailed = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
+
+            Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed.ResultCode);
         }
 
         [Fact(Skip = "Requires user interaction")]
         public void EnsureAspNetCoreHttpsDevelopmentCertificate_CanRemoveCertificates()
         {
-            var manager = new CertificateManager();
+            _fixture.CleanupCertificates();
 
             DateTimeOffset now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject, isInteractive: false);
 
-            manager.CleanupHttpsCertificates(TestCertificateSubject);
+            _manager.CleanupHttpsCertificates(TestCertificateSubject);
 
-            Assert.Empty(manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
+            Assert.Empty(CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Assert.Empty(manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
+                Assert.Empty(CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
+            }
+        }
+    }
+
+    public class CertFixture : IDisposable
+    {
+        public const string TestCertificateSubject = "CN=aspnet.test";
+
+        public CertFixture()
+        {
+            Manager = new CertificateManager();
+
+            CleanupCertificates();
+        }
+
+        internal CertificateManager Manager { get; set; }
+
+        public void Dispose()
+        {
+            CleanupCertificates();
+        }
+
+        internal void CleanupCertificates()
+        {
+            Manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, TestCertificateSubject);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
             }
         }
     }

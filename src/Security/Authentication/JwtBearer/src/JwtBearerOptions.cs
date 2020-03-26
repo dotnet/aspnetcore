@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public string Authority { get; set; }
 
         /// <summary>
-        /// Gets or sets the audience for any received OpenIdConnect token.
+        /// Gets or sets a single valid audience value for any received OpenIdConnect token.
+        /// This value is passed into TokenValidationParameters.ValidAudience if that property is empty.
         /// </summary>
         /// <value>
         /// The expected audience for any received OpenIdConnect token.
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         /// <summary>
         /// Defines whether the bearer token should be stored in the
-        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
         /// </summary>
         public bool SaveToken { get; set; } = true;
 

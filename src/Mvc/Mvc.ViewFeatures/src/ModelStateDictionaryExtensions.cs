@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -197,12 +197,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (IsConversionToObject(unaryExpression))
             {
-                return ExpressionHelper.GetExpressionText(Expression.Lambda(
+                return ExpressionHelper.GetUncachedExpressionText(Expression.Lambda(
                     unaryExpression.Operand,
                     expression.Parameters[0]));
             }
 
-            return ExpressionHelper.GetExpressionText(expression);
+            return ExpressionHelper.GetUncachedExpressionText(expression);
         }
 
         private static bool IsConversionToObject(UnaryExpression expression)

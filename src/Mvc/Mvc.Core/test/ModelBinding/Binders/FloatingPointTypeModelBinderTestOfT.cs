@@ -5,14 +5,13 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public abstract class FloatingPointTypeModelBinderTest<TFloatingPoint> where TFloatingPoint: struct
     {
-        public static TheoryData<Type> ConvertableTypeData
+        public static TheoryData<Type> ConvertibleTypeData
         {
             get
             {
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         protected abstract TFloatingPoint ThirtyTwoThousandPointOne { get; }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsFailure_IfAttemptedValueCannotBeParsed(Type destinationType)
         {
             // Arrange
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_IfAttemptedValueCannotBeParsed(Type destinationType)
         {
             // Arrange
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_IfAttemptedValueCannotBeCompletelyParsed(Type destinationType)
         {
             // Arrange
@@ -101,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_IfAttemptedValueContainsDisallowedWhitespace(Type destinationType)
         {
             // Arrange
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_IfAttemptedValueContainsDisallowedDecimal(Type destinationType)
         {
             // Arrange
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_CreatesError_IfAttemptedValueContainsDisallowedThousandsSeparator(Type destinationType)
         {
             // Arrange
@@ -173,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsFailed_IfValueProviderEmpty(Type destinationType)
         {
             // Arrange
@@ -237,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_Twelve(Type destinationType)
         {
             // Arrange
@@ -258,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         [ReplaceCulture("en-GB", "en-GB")]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_TwelvePointFive(Type destinationType)
         {
@@ -280,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_FrenchTwelvePointFive(Type destinationType)
         {
             // Arrange
@@ -301,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_ThirtyTwoThousand(Type destinationType)
         {
             // Arrange
@@ -322,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [MemberData(nameof(ConvertableTypeData))]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_ThirtyTwoThousandPointOne(Type destinationType)
         {
             // Arrange
@@ -342,9 +341,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/aspnet/AspNetCore-Internal/issues/2626")]
-        [MemberData(nameof(ConvertableTypeData))]
+        [Theory]
+        [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_FrenchThirtyTwoThousandPointOne(Type destinationType)
         {
             // Arrange

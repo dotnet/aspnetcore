@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_0
-// Rfc2898DeriveBytes in .NET Standard 2.0 only supports SHA1
-
+#if NETCOREAPP
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -64,8 +62,4 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
         }
     }
 }
-
-#elif NETSTANDARD2_0
-#else
-#error Update target frameworks
 #endif

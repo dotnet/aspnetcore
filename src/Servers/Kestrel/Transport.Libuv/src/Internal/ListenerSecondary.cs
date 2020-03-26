@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// A secondary listener is delegated requests from a primary listener via a named pipe or
     /// UNIX domain socket.
     /// </summary>
-    public class ListenerSecondary : ListenerContext, IAsyncDisposable
+    internal class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
         private string _pipeName;
         private byte[] _pipeMessage;
@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            IEndPointInformation endPointInformation,
+            EndPoint endPoint,
             LibuvThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
-            EndPointInformation = endPointInformation;
+            EndPoint = endPoint;
             Thread = thread;
             DispatchPipe = new UvPipeHandle(Log);
 
@@ -151,7 +151,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 DispatchPipe.Accept(acceptSocket);
-                HandleConnectionAsync(acceptSocket);
+
+                HandleConnection(acceptSocket);
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {
@@ -189,11 +190,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     listener._closed = true;
 
+                    listener.StopAcceptingConnections();
+
                 }, this).ConfigureAwait(false);
             }
             else
             {
                 FreeBuffer();
+
+                StopAcceptingConnections();
             }
         }
     }

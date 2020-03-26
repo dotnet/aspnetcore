@@ -66,6 +66,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<CollectionModelBinder<int>>(result);
         }
 
+        [Fact]
+        public void Create_ForSupportedType_ReturnsBinder()
+        {
+            // Arrange
+            var provider = new CollectionModelBinderProvider();
+
+            var context = new TestModelBinderProviderContext(typeof(List<int>));
+            context.OnCreatingBinder(m =>
+            {
+                Assert.Equal(typeof(int), m.ModelType);
+                return Mock.Of<IModelBinder>();
+            });
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var binder = Assert.IsType<CollectionModelBinder<int>>(result);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
+        }
+
         private class Person
         {
             public string Name { get; set; }

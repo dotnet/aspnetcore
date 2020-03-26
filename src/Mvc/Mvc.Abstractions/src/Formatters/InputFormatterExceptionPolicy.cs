@@ -7,8 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Defines the set of policies that determine how the model binding system interprets exceptions
-    /// thrown by an <see cref="IInputFormatter"/>. Applications should set 
-    /// <c>MvcOptions.InputFormatterExceptionPolicy</c> to configure this setting.
+    /// thrown by an <see cref="IInputFormatter"/>. <seealso cref="IInputFormatterExceptionPolicy"/>
     /// </summary>
     /// <remarks>
     /// <para>
@@ -25,12 +24,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// The policy associated with <see cref="InputFormatterExceptionPolicy.AllExceptions"/> treats
     /// all such categories of problems as model state errors, and usually will be reported to the client as
     /// an HTTP 400. This was the only policy supported by model binding in ASP.NET Core MVC 1.0, 1.1, and 2.0
-    /// and is still the default for historical reasons. 
+    /// and is still the default for historical reasons.
     /// </para>
     /// <para>
     /// The policy associated with <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/>
     /// treats only <see cref="InputFormatterException"/> and its subclasses as model state errors. This means that
-    /// exceptions that are not related to the content of the HTTP request (such as a disconnect) will be rethrown,
+    /// exceptions that are not related to the content of the HTTP request (such as a disconnect) will be re-thrown,
     /// which by default would cause an HTTP 500 response, unless there is exception-handling middleware enabled.
     /// </para>
     /// </remarks>
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// This value indicates that only <see cref="InputFormatterException"/> and subclasses will be treated
-        /// as model state errors. All other exceptions types will be rethrown and can be handled by a higher
+        /// as model state errors. All other exceptions types will be re-thrown and can be handled by a higher
         /// level exception handler, such as exception-handling middleware.
         /// </summary>
         MalformedInputExceptions = 1,

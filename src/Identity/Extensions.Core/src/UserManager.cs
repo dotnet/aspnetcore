@@ -105,15 +105,15 @@ namespace Microsoft.AspNetCore.Identity
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
                     var description = Options.Tokens.ProviderMap[providerName];
-                    
-                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType)) 
+
+                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType))
                         as IUserTwoFactorTokenProvider<TUser>;
                     if (provider != null)
                     {
                         RegisterTokenProvider(providerName, provider);
                     }
                 }
-            }
+            }                
 
             if (Options.Stores.ProtectPersonalData)
             {
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
         /// </summary>
         public ILookupNormalizer KeyNormalizer { get; set; }
-
+        
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
         /// </summary>
@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(userName));
             }
-            userName = NormalizeKey(userName);
+            userName = NormalizeName(userName);
 
             var user = await Store.FindByNameAsync(userName, CancellationToken);
 
@@ -603,15 +603,21 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Normalize a key (user name, email) for consistent comparisons.
+        /// Normalize user or role name for consistent comparisons.
         /// </summary>
-        /// <param name="key">The key to normalize.</param>
-        /// <returns>A normalized value representing the specified <paramref name="key"/>.</returns>
-        public virtual string NormalizeKey(string key)
-        {
-            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
-        }
+        /// <param name="name">The name to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
+        public virtual string NormalizeName(string name)
+            =>  (KeyNormalizer == null) ? name : KeyNormalizer.NormalizeName(name);
 
+        /// <summary>
+        /// Normalize email for consistent comparisons.
+        /// </summary>
+        /// <param name="email">The email to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
+        public virtual string NormalizeEmail(string email)
+            =>  (KeyNormalizer == null) ? email : KeyNormalizer.NormalizeEmail(email);
+        
         private string ProtectPersonalData(string data)
         {
             if (Options.Stores.ProtectPersonalData)
@@ -630,7 +636,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
         {
-            var normalizedName = NormalizeKey(await GetUserNameAsync(user));
+            var normalizedName = NormalizeName(await GetUserNameAsync(user));
             normalizedName = ProtectPersonalData(normalizedName);
             await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken);
         }
@@ -854,7 +860,13 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return await securityStore.GetSecurityStampAsync(user, CancellationToken);
+            var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken);
+            if (stamp == null) 
+            {
+                Logger.LogWarning(15, "GetSecurityStampAsync for user {userId} failed because stamp was null.", await GetUserIdAsync(user));
+                throw new InvalidOperationException(Resources.NullSecurityStamp);
+            }
+            return stamp;
         }
 
         /// <summary>
@@ -1199,7 +1211,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var normalizedRole = NormalizeKey(role);
+            var normalizedRole = NormalizeName(role);
             if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserAlreadyInRoleError(user, role);
@@ -1232,7 +1244,7 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles.Distinct())
             {
-                var normalizedRole = NormalizeKey(role);
+                var normalizedRole = NormalizeName(role);
                 if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserAlreadyInRoleError(user, role);
@@ -1260,7 +1272,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var normalizedRole = NormalizeKey(role);
+            var normalizedRole = NormalizeName(role);
             if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserNotInRoleError(user, role);
@@ -1305,7 +1317,7 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles)
             {
-                var normalizedRole = NormalizeKey(role);
+                var normalizedRole = NormalizeName(role);
                 if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserNotInRoleError(user, role);
@@ -1332,7 +1344,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role.
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the given named role.
         /// </summary>
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="role">The name of the role to be checked.</param>
@@ -1348,7 +1360,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return await userRoleStore.IsInRoleAsync(user, NormalizeKey(role), CancellationToken);
+            return await userRoleStore.IsInRoleAsync(user, NormalizeName(role), CancellationToken);
         }
 
         /// <summary>
@@ -1393,6 +1405,8 @@ namespace Microsoft.AspNetCore.Identity
 
         /// <summary>
         /// Gets the user, if any, associated with the normalized value of the specified email address.
+        /// Note: Its recommended that identityOptions.User.RequireUniqueEmail be set to true when using this method, otherwise
+        /// the store may throw if there are users with duplicate emails.
         /// </summary>
         /// <param name="email">The email address to return the user for.</param>
         /// <returns>
@@ -1407,7 +1421,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(email));
             }
 
-            email = NormalizeKey(email);
+            email = NormalizeEmail(email);
             var user = await store.FindByEmailAsync(email, CancellationToken);
 
             // Need to potentially check all keys
@@ -1442,7 +1456,7 @@ namespace Microsoft.AspNetCore.Identity
             if (store != null)
             {
                 var email = await GetEmailAsync(user);
-                await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeKey(email)), CancellationToken);
+                await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)), CancellationToken);
             }
         }
 
@@ -1931,7 +1945,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Retrieves a flag indicating whether user lockout can enabled for the specified user.
+        /// Retrieves a flag indicating whether user lockout can be enabled for the specified user.
         /// </summary>
         /// <param name="user">The user whose ability to be locked out should be returned.</param>
         /// <returns>
@@ -1950,7 +1964,7 @@ namespace Microsoft.AspNetCore.Identity
 
         /// <summary>
         /// Gets the last <see cref="DateTimeOffset"/> a user's last lockout expired, if any.
-        /// Any time in the past should be indicates a user is not locked out.
+        /// A time value in the past indicates a user is not currently locked out.
         /// </summary>
         /// <param name="user">The user whose lockout date should be retrieved.</param>
         /// <returns>
@@ -2095,7 +2109,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(roleName));
             }
 
-            return store.GetUsersInRoleAsync(NormalizeKey(roleName), CancellationToken);
+            return store.GetUsersInRoleAsync(NormalizeName(roleName), CancellationToken);
         }
 
         /// <summary>
@@ -2503,15 +2517,21 @@ namespace Microsoft.AspNetCore.Identity
         protected async Task<IdentityResult> ValidatePasswordAsync(TUser user, string password)
         {
             var errors = new List<IdentityError>();
+            var isValid = true;
             foreach (var v in PasswordValidators)
             {
                 var result = await v.ValidateAsync(this, user, password);
                 if (!result.Succeeded)
                 {
-                    errors.AddRange(result.Errors);
+                    if (result.Errors.Any())
+                    {
+                        errors.AddRange(result.Errors);
+                    }
+
+                    isValid = false;
                 }
             }
-            if (errors.Count > 0)
+            if (!isValid)
             {
                 Logger.LogWarning(14, "User {userId} password validation failed: {errors}.", await GetUserIdAsync(user), string.Join(";", errors.Select(e => e.Code)));
                 return IdentityResult.Failed(errors.ToArray());

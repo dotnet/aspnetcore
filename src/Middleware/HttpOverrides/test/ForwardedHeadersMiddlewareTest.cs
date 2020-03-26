@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -821,6 +822,110 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
             Assert.Equal("localhost", context.Request.Host.ToString());
             Assert.Equal("Protocol", context.Request.Scheme);
+        }
+
+        [Theory]
+        [InlineData("22.33.44.55,::ffff:127.0.0.1", "", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121", "172.123.142.121", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121", "::ffff:172.123.142.121", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121,172.32.24.23", "", "172.0.0.0/8", "22.33.44.55")]
+        [InlineData("2a00:1450:4009:802::200e,2a02:26f0:2d:183::356e,::ffff:172.123.142.121,172.32.24.23", "", "172.0.0.0/8,2a02:26f0:2d:183::1/64", "2a00:1450:4009:802::200e")]
+        [InlineData("22.33.44.55,2a02:26f0:2d:183::356e,::ffff:127.0.0.1", "2a02:26f0:2d:183::356e", "", "22.33.44.55")]
+        public async Task XForwardForIPv4ToIPv6Mapping(string forHeader, string knownProxies, string knownNetworks, string expectedRemoteIp)
+        {
+            var options = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                ForwardLimit = null,
+            };
+
+            foreach (var knownProxy in knownProxies.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var proxy = IPAddress.Parse(knownProxy);
+                options.KnownProxies.Add(proxy);
+            }
+            foreach (var knownNetwork in knownNetworks.Split(new string[] { "," }, options:StringSplitOptions.RemoveEmptyEntries))
+            {
+                var knownNetworkParts = knownNetwork.Split('/');
+                var networkIp = IPAddress.Parse(knownNetworkParts[0]);
+                var prefixLength = int.Parse(knownNetworkParts[1]);
+                options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
+            }
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(options);
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = forHeader;
+            });
+
+            Assert.Equal(expectedRemoteIp, context.Connection.RemoteIpAddress.ToString());
+        }
+
+        [Theory]
+        [InlineData(1, "httpa, httpb, httpc", "httpc", "httpa,httpb")]
+        [InlineData(2, "httpa, httpb, httpc", "httpb", "httpa")]
+        public async Task ForwardersWithDIOptionsRunsOnce(int limit, string header, string expectedScheme, string remainingHeader)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.Configure<ForwardedHeadersOptions>(options =>
+                    {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+                        options.KnownProxies.Clear();
+                        options.KnownNetworks.Clear();
+                        options.ForwardLimit = limit;
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders();
+                    app.UseForwardedHeaders();
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = header;
+            });
+
+            Assert.Equal(expectedScheme, context.Request.Scheme);
+            Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
+        }
+
+        [Theory]
+        [InlineData(1, "httpa, httpb, httpc", "httpb", "httpa")]
+        [InlineData(2, "httpa, httpb, httpc", "httpa", "")]
+        public async Task ForwardersWithDirectOptionsRunsTwice(int limit, string header, string expectedScheme, string remainingHeader)
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    var options = new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                        ForwardLimit = limit,
+                    };
+                    options.KnownProxies.Clear();
+                    options.KnownNetworks.Clear();
+                    app.UseForwardedHeaders(options);
+                    app.UseForwardedHeaders(options);
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = header;
+            });
+
+            Assert.Equal(expectedScheme, context.Request.Scheme);
+            Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
         }
     }
 }

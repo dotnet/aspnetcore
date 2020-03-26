@@ -1,0 +1,16 @@
+<div>
+    <h2>Error throwing button</h2>
+    <p>
+        <button @onclick="@(IncrementCount)">Click me</button>
+    </p>
+</div>
+
+@code {
+    int currentCount = 0;
+
+    void IncrementCount()
+    {
+        currentCount++;
+        throw new NotImplementedException("Doing something that won't work!");
+    }
+}

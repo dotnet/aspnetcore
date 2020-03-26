@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
@@ -632,22 +631,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheHeadersAsync_AddsDate_IfNoneSpecified()
         {
-            var clock = new TestClock
-            {
-                UtcNow = DateTimeOffset.UtcNow
-            };
+            var utcNow = DateTimeOffset.UtcNow;
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
-            {
-                SystemClock = clock
-            });
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink);
             var context = TestUtils.CreateTestContext();
+            // ResponseTime is the actual value that's used to set the Date header in FinalizeCacheHeadersAsync
+            context.ResponseTime = utcNow;
 
             Assert.True(StringValues.IsNullOrEmpty(context.HttpContext.Response.Headers[HeaderNames.Date]));
 
             await middleware.FinalizeCacheHeadersAsync(context);
 
-            Assert.Equal(HeaderUtilities.FormatDate(clock.UtcNow), context.HttpContext.Response.Headers[HeaderNames.Date]);
+            Assert.Equal(HeaderUtilities.FormatDate(utcNow), context.HttpContext.Response.Headers[HeaderNames.Date]);
             Assert.Empty(sink.Writes);
         }
 

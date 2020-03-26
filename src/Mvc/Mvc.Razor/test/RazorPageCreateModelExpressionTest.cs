@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -21,73 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class RazorPageCreateModelExpressionTest
     {
-        public static TheoryData IdentityExpressions
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions_ForModelGivesM()
         {
-            get
-            {
-                return new TheoryData<Func<IdentityRazorPage, ModelExpression>, string>
-                {
-                    // m => m
-                    { page => page.CreateModelExpression1(), string.Empty },
-                    // m => Model
-                    { page => page.CreateModelExpression2(), string.Empty },
-                };
-            }
-        }
-
-        public static TheoryData NotQuiteIdentityExpressions
-        {
-            get
-            {
-                return new TheoryData<Func<NotQuiteIdentityRazorPage, ModelExpression>, string, Type>
-                {
-                    // m => m.Model
-                    { page => page.CreateModelExpression1(), "Model", typeof(RecursiveModel) },
-                    // m => ViewData.Model
-                    { page => page.CreateModelExpression2(), "ViewData.Model", typeof(RecursiveModel) },
-                    // m => ViewContext.ViewData.Model
-                    // This property has type object because ViewData is not exposed as ViewDataDictionary<TModel>.
-                    { page => page.CreateModelExpression3(), "ViewContext.ViewData.Model", typeof(object) },
-                };
-            }
-        }
-
-        public static TheoryData<Expression<Func<RazorPageCreateModelExpressionModel, int>>, string> IntExpressions
-        {
-            get
-            {
-                var somethingElse = 23;
-                return new TheoryData<Expression<Func<RazorPageCreateModelExpressionModel, int>>, string>
-                {
-                    { model => somethingElse, "somethingElse" },
-                    { model => model.Id, "Id" },
-                    { model => model.SubModel.Id, "SubModel.Id" },
-                    { model => model.SubModel.SubSubModel.Id, "SubModel.SubSubModel.Id" },
-                };
-            }
-        }
-
-        public static TheoryData<Expression<Func<RazorPageCreateModelExpressionModel, string>>, string> StringExpressions
-        {
-            get
-            {
-                var somethingElse = "This is something else";
-                return new TheoryData<Expression<Func<RazorPageCreateModelExpressionModel, string>>, string>
-                {
-                    { model => somethingElse, "somethingElse" },
-                    { model => model.Name, "Name" },
-                    { model => model.SubModel.Name, "SubModel.Name" },
-                    { model => model.SubModel.SubSubModel.Name, "SubModel.SubSubModel.Name" },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(IdentityExpressions))]
-        public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions(
-            Func<IdentityRazorPage, ModelExpression> createModelExpression,
-            string expectedName)
-        {
+            // m => m
             // Arrange
             var viewContext = CreateViewContext();
             var modelExplorer = viewContext.ViewData.ModelExplorer.GetExplorerForProperty(
@@ -101,22 +36,78 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = CreateIdentityPage(viewContext);
 
             // Act
-            var modelExpression = createModelExpression(page);
+            var modelExpression = page.CreateModelExpression1();
 
             // Assert
             Assert.NotNull(modelExpression);
-            Assert.Equal(expectedName, modelExpression.Name);
+            Assert.Empty(modelExpression.Name);
             Assert.Same(modelExplorer, modelExpression.ModelExplorer);
         }
 
-        [Theory]
-        [MemberData(nameof(NotQuiteIdentityExpressions))]
-        public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions(
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions_ForModelGivesModel()
+        {
+            // m => m.Model
+            // Arrange
+            var viewContext = CreateViewContext();
+            var modelExplorer = viewContext.ViewData.ModelExplorer.GetExplorerForProperty(
+                nameof(RazorPageCreateModelExpressionModel.Name));
+            var viewData = new ViewDataDictionary<string>(viewContext.ViewData)
+            {
+                ModelExplorer = modelExplorer,
+            };
+            viewContext.ViewData = viewData;
+
+            var page = CreateIdentityPage(viewContext);
+
+            // Act
+            var modelExpression = page.CreateModelExpression2();
+
+            // Assert
+            Assert.NotNull(modelExpression);
+            Assert.Empty(modelExpression.Name);
+            Assert.Same(modelExplorer, modelExpression.ModelExplorer);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesMDotModel()
+        {
+            // m => m.Model
+            // Arrange
+            var expectedName = "Model";
+            var expectedType = typeof(RecursiveModel);
+
+            CreateModelExpression_NotQuiteIdentityExpressions(page => page.CreateModelExpression1(), expectedName, expectedType);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesViewDataDotModel()
+        {
+            // m => ViewData.Model
+            // Arrange
+            var expectedName = "ViewData.Model";
+            var expectedType = typeof(RecursiveModel);
+
+            CreateModelExpression_NotQuiteIdentityExpressions(page => page.CreateModelExpression2(), expectedName, expectedType);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions_ForModelGivesViewContextDotViewDataDotModel()
+        {
+            // m => ViewContext.ViewData.Model
+            // Arrange
+            var expectedName = "ViewContext.ViewData.Model";
+            // This property has type object because ViewData is not exposed as ViewDataDictionary<TModel>.
+            var expectedType = typeof(object);
+
+            CreateModelExpression_NotQuiteIdentityExpressions(page => page.CreateModelExpression3(), expectedName, expectedType);
+        }
+
+        private static void CreateModelExpression_NotQuiteIdentityExpressions(
             Func<NotQuiteIdentityRazorPage, ModelExpression> createModelExpression,
             string expectedName,
             Type expectedType)
         {
-            // Arrange
             var viewContext = CreateViewContext();
             var viewData = new ViewDataDictionary<RecursiveModel>(viewContext.ViewData);
             viewContext.ViewData = viewData;
@@ -137,38 +128,144 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Equal(expectedType, modelExpression.Metadata.ModelType);
         }
 
-        [Theory]
-        [MemberData(nameof(IntExpressions))]
-        public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions(
-            Expression<Func<RazorPageCreateModelExpressionModel, int>> expression,
-            string expectedName)
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSomethingElse()
         {
             // Arrange
+            var expected = "somethingElse";
+            var somethingElse = 23;
             var viewContext = CreateViewContext();
             var page = CreatePage(viewContext);
 
             // Act
-            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, expression);
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => somethingElse);
 
             // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Metadata);
             Assert.Equal(typeof(int), result.Metadata.ModelType);
-            Assert.Equal(expectedName, result.Name);
+            Assert.Equal(expected, result.Name);
         }
 
-        [Theory]
-        [MemberData(nameof(StringExpressions))]
-        public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions(
-            Expression<Func<RazorPageCreateModelExpressionModel, string>> expression,
-            string expectedName)
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesId()
         {
             // Arrange
+            var expected = "Id";
             var viewContext = CreateViewContext();
             var page = CreatePage(viewContext);
 
             // Act
-            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, expression);
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(int), result.Metadata.ModelType);
+            Assert.Equal(expected, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSubModelId()
+        {
+            // Arrange
+            var expected = "SubModel.Id";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.SubModel.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(int), result.Metadata.ModelType);
+            Assert.Equal(expected, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions_ForModelGivesSubSubModelId()
+        {
+            // Arrange
+            var expected = "SubModel.SubSubModel.Id";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.SubModel.SubSubModel.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(int), result.Metadata.ModelType);
+            Assert.Equal(expected, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSomethingElse()
+        {
+            // Arrange
+            var somethingElse = "This is something else";
+            var expectedName = "somethingElse";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => somethingElse);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(string), result.Metadata.ModelType);
+            Assert.Equal(expectedName, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesName()
+        {
+            // Arrange
+            var expectedName = "Name";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.Name);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(string), result.Metadata.ModelType);
+            Assert.Equal(expectedName, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSubmodelName()
+        {
+            // Arrange
+            var expectedName = "SubModel.SubSubModel.Name";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.SubModel.SubSubModel.Name);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Metadata);
+            Assert.Equal(typeof(string), result.Metadata.ModelType);
+            Assert.Equal(expectedName, result.Name);
+        }
+
+        [Fact]
+        public void CreateModelExpression_ReturnsExpectedMetadata_StringExpressions_ForModelGivesSubSubmodelName()
+        {
+            // Arrange
+            var expectedName = "SubModel.Name";
+            var viewContext = CreateViewContext();
+            var page = CreatePage(viewContext);
+
+            // Act
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, model => model.SubModel.Name);
 
             // Assert
             Assert.NotNull(result);
@@ -209,21 +306,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private static IModelExpressionProvider CreateModelExpressionProvider()
         {
-            var provider = new TestModelMetadataProvider();
-            var modelExpressionProvider = new ModelExpressionProvider(
-                provider,
-                new ExpressionTextCache());
+            var provider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(provider);
 
             return modelExpressionProvider;
         }
 
         private static ViewContext CreateViewContext()
         {
-            var provider = new TestModelMetadataProvider();
+            var provider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider, new ModelStateDictionary());
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelMetadataProvider>(provider);
-            serviceCollection.AddSingleton<ExpressionTextCache, ExpressionTextCache>();
 
             var httpContext = new DefaultHttpContext
             {

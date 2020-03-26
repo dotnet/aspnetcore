@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
     {
+        // Name chosen so as not to collide with Kestrel's "ConnectionId"
+        private const string ClientConnectionIdKey = "ClientConnectionId";
+
         private string _cachedToString;
         private string _connectionId;
 
@@ -29,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (Count == 1 && index == 0)
                 {
-                    return new KeyValuePair<string, object>("ClientConnectionId", ConnectionId);
+                    return new KeyValuePair<string, object>(ClientConnectionIdKey, ConnectionId);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -57,14 +60,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (!string.IsNullOrEmpty(ConnectionId))
                 {
-                    _cachedToString = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "ClientConnectionId:{0}",
-                        ConnectionId);
+                    _cachedToString = FormattableString.Invariant($"{ClientConnectionIdKey}:{ConnectionId}");
                 }
             }
 
-            return _cachedToString;
+            return _cachedToString ?? string.Empty;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void EmtpyQuotedHeaderSegmentsAreIgnored()
+        public void EmptyQuotedHeaderSegmentsAreIgnored()
         {
             var headers = new HeaderDictionary(
                new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)

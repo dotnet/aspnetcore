@@ -26,6 +26,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 expected);
         }
 
+        public static TheoryData<BindingSource> ModelBinding_MatchData
+        {
+            get
+            {
+                return new TheoryData<BindingSource>
+                {
+                    BindingSource.Form,
+                    BindingSource.ModelBinding,
+                    BindingSource.Path,
+                    BindingSource.Query,
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ModelBinding_MatchData))]
+        public void ModelBinding_CanAcceptDataFrom_Match(BindingSource bindingSource)
+        {
+            // Act
+            var result = BindingSource.ModelBinding.CanAcceptDataFrom(bindingSource);
+
+            // Assert
+            Assert.True(result);
+        }
+
         [Fact]
         public void BindingSource_CanAcceptDataFrom_Match()
         {
@@ -34,6 +59,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.True(result);
+        }
+
+        public static TheoryData<BindingSource> ModelBinding_NoMatchData
+        {
+            get
+            {
+                return new TheoryData<BindingSource>
+                {
+                    BindingSource.Body,
+                    BindingSource.Custom,
+                    BindingSource.FormFile,
+                    BindingSource.Header,
+                    BindingSource.Services,
+                    BindingSource.Special,
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ModelBinding_NoMatchData))]
+        public void ModelBinding_CanAcceptDataFrom_NoMatch(BindingSource bindingSource)
+        {
+            // Act
+            var result = BindingSource.ModelBinding.CanAcceptDataFrom(bindingSource);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]

@@ -9,13 +9,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -1028,10 +1028,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = controller.RedirectToPage(pageName, routeVaues);
+            var result = controller.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);
@@ -2190,7 +2190,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var contentController = new ContentController();
-            var expected = MediaTypeHeaderValue.Parse("text/plain; charset=utf-8");
 
             // Act
             var contentResult = (ContentResult)contentController.Content_WithNoEncoding();
@@ -2293,6 +2292,209 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(statusCode, result.StatusCode);
         }
 
+        [Fact]
+        public void ValidationProblemDetails_Works()
+        {
+            // Arrange
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
+                new RouteData(),
+                new ControllerActionDescriptor()));
+
+            context.ModelState.AddModelError("key1", "error1");
+
+            var options = GetApiBehaviorOptions();
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+                ControllerContext = context,
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem();
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(400, badRequestResult.StatusCode);
+            Assert.Equal(400, problemDetails.Status);
+            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
+            Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_UsesSpecifiedTitle()
+        {
+            // Arrange
+            var detail = "My detail";
+            var title = "Custom title";
+            var type = "http://custom-link";
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(detail: detail, title: title, type: type);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(title, problemDetails.Title);
+            Assert.Equal(type, problemDetails.Type);
+            Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_UsesSpecifiedStatusCode()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(statusCode: 405);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+            Assert.Equal(405, objectResult.StatusCode);
+            Assert.Equal(405, problemDetails.Status);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_StatusCode400_ReturnsBadRequestObjectResultFor2xCompatibility()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(statusCode: 400);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(400, badRequestResult.StatusCode);
+            Assert.Equal(400, problemDetails.Status);
+        }
+
+        [Fact]
+        public void ProblemDetails_Works()
+        {
+            // Arrange
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
+                new RouteData(),
+                new ControllerActionDescriptor()));
+
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+                ControllerContext = context,
+            };
+
+            // Act
+            var actionResult = controller.Problem();
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, actionResult.StatusCode);
+            Assert.Equal(500, problemDetails.Status);
+            Assert.Equal("An error occured while processing your request.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
+        }
+
+        [Fact]
+        public void ProblemDetails_UsesPassedInValues()
+        {
+            // Arrange
+            var title = "The website is down.";
+            var detail = "Try again in a few minutes.";
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.Problem(detail, title: title);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, actionResult.StatusCode);
+            Assert.Equal(500, problemDetails.Status);
+            Assert.Equal(title, problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+            Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ProblemDetails_UsesPassedInStatusCode()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.Problem(statusCode: 422);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(422, actionResult.StatusCode);
+            Assert.Equal(422, problemDetails.Status);
+            Assert.Equal("Unprocessable entity.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
+        }
+
+        private static ApiBehaviorOptions GetApiBehaviorOptions()
+        {
+            return new ApiBehaviorOptions
+            {
+                ClientErrorMapping =
+                {
+                    [400] = new ClientErrorData
+                    {
+                        Title = "One or more validation errors occurred.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+                    },
+                    [422] = new ClientErrorData
+                    {
+                        Title = "Unprocessable entity.",
+                        Link = "https://tools.ietf.org/html/rfc4918#section-11.2"
+                    },
+                    [500] = new ClientErrorData
+                    {
+                        Title = "An error occured while processing your request.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                    }
+                }
+            };
+        }
+
         public static IEnumerable<object[]> RedirectTestData
         {
             get
@@ -2327,7 +2529,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         public async Task TryUpdateModel_FallsBackOnEmptyPrefix_IfNotSpecified()
         {
             // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2356,7 +2558,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2403,6 +2605,31 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.NotEqual(0, binder.BindModelCount);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
+        {
+            // Arrange
+            var modelName = "mymodel";
+
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("some error"));
+
+            var controller = GetController(new StubModelBinder());
+            controller.ControllerContext.ValueProviderFactories.Add(valueProviderFactory.Object);
+            var model = new MyModel();
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, modelName);
+
+            // Assert
+            Assert.False(result);
+            var modelState = Assert.Single(controller.ModelState);
+            Assert.Empty(modelState.Key);
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal("some error", error.ErrorMessage);
         }
 
         [Fact]
@@ -2578,7 +2805,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2606,7 +2833,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2712,7 +2939,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { Mock.Of<IModelValidatorProvider>() });
+                new[] { Mock.Of<IModelValidatorProvider>() },
+                new MvcOptions());
 
             var model = new TryValidateModelModel();
 
@@ -2748,7 +2976,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
@@ -2784,7 +3013,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -2832,9 +3062,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 });
         }
 
-        private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
+        private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider = null)
         {
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
@@ -2851,11 +3081,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                     stringLocalizerFactory: null),
             };
 
-            valueProvider = valueProvider ?? new SimpleValueProvider();
+            valueProvider ??= new SimpleValueProvider();
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
-                ValueProviderFactories = new[] { new SimpleValueProviderFactory(valueProvider), },
+                ValueProviderFactories = new List<IValueProviderFactory> { new SimpleValueProviderFactory(valueProvider), },
             };
 
             var binderFactory = new Mock<IModelBinderFactory>();
@@ -2868,7 +3098,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
                 ModelBinderFactory = binderFactory.Object,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions()),
             };
 
             return controller;

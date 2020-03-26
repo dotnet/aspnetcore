@@ -4,11 +4,13 @@
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.Test;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.InMemory.Test
 {
-    public class InMemoryUserStoreTest : UserManagerSpecificationTestBase<PocoUser, string>
+    public class InMemoryUserStoreTest : UserManagerSpecificationTestBase<PocoUser, string>, IClassFixture<InMemoryUserStoreTest.Fixture>
     {
         protected override object CreateTestContext()
         {
@@ -41,5 +43,22 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
         protected override Expression<Func<PocoUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
 
         protected override Expression<Func<PocoUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+
+        public class Fixture : IDisposable
+        {
+            private readonly SqliteConnection _connection
+                = new SqliteConnection($"DataSource=:memory:");
+
+            public Fixture()
+            {
+                _connection.Open();
+            }
+
+            public void Dispose()
+            {
+                _connection.Close();
+                _connection.Dispose();
+            }
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void Copy_NameOnly_SuccesfullyCopied()
+        public void Copy_NameOnly_SuccessfullyCopied()
         {
             var pair0 = new NameValueHeaderValue("name");
             var pair1 = pair0.Copy();
@@ -95,7 +95,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void Copy_NameAndValue_SuccesfullyCopied()
+        public void Copy_NameAndValue_SuccessfullyCopied()
         {
             var pair0 = new NameValueHeaderValue("name", "value");
             var pair1 = pair0.Copy();
@@ -466,7 +466,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
+        public void ParseList_WithSomeInvalidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -502,7 +502,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        public void ParseStrictList_WithSomeInvalidValues_Throws()
         {
             var inputs = new[]
             {
@@ -520,7 +520,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
+        public void TryParseList_WithSomeInvalidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -557,7 +557,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
         {
             var inputs = new[]
             {

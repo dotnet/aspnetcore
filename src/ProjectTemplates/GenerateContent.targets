@@ -1,0 +1,54 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!-- Use for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
+    <_GenerateContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GenerateContentPropertiesHashFile>
+
+    <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
+    <GeneratedContentProperties>
+      $(GeneratedContentProperties);
+      MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <!--
+    Generates content using MSBuild variables.
+  -->
+  <Target Name="GetPackageVersionVariables">
+    <!-- This target is defined in eng/targets/Packaging.targets -->
+    <MSBuild Projects="@(PackageVersionVariableReference)"
+             BuildInParallel="true"
+             Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionVariableReference" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <GeneratedContentProperties>
+        $(GeneratedContentProperties);
+        @(_ResolvedPackageVersionVariableReference->'%(VersionVariableName)=%(PackageVersion)')</GeneratedContentProperties>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="$(GeneratedContentProperties)">
+      <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
+    </Hash>
+
+    <WriteLinesToFile Overwrite="true" Lines="$(_GeneratedContentPropertiesHash)" File="$(_GenerateContentPropertiesHashFile)" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <Target Name="GenerateContent"
+          DependsOnTargets="GetPackageVersionVariables"
+          BeforeTargets="CoreCompile"
+          Inputs="$(MSBuildAllProjects);$(_GenerateContentPropertiesHashFile);@(GeneratedContent)"
+          Outputs="@(GeneratedContent->'%(OutputPath)')">
+
+    <GenerateFileFromTemplate
+      TemplateFile="%(GeneratedContent.Identity)"
+      Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
+      OutputPath="%(GeneratedContent.OutputPath)">
+
+      <Output TaskParameter="OutputPath" ItemName="FileWrites" />
+      <Output TaskParameter="OutputPath" ItemName="Content" />
+    </GenerateFileFromTemplate>
+  </Target>
+</Project>

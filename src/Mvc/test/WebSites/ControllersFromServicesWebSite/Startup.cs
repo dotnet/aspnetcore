@@ -11,7 +11,7 @@ using ControllersFromServicesWebSite.Components;
 using ControllersFromServicesWebSite.TagHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +22,7 @@ namespace ControllersFromServicesWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             var builder = services
-                .AddMvc()
+                .AddControllersWithViews()
                 .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Clear())
                 .AddApplicationPart(typeof(TimeScheduleController).GetTypeInfo().Assembly)
                 .ConfigureApplicationPartManager(manager =>
@@ -32,11 +32,18 @@ namespace ControllersFromServicesWebSite
                       typeof(ComponentFromServicesViewComponent),
                       typeof(InServicesTagHelper)));
 
-                    manager.FeatureProviders.Add(new AssemblyMetadataReferenceFeatureProvider());
+                    var relatedAssenbly = RelatedAssemblyAttribute
+                        .GetRelatedAssemblies(GetType().Assembly, throwOnError: true)
+                        .SingleOrDefault();
+                    foreach (var part in CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts(relatedAssenbly))
+                    {
+                        manager.ApplicationParts.Add(part);
+                    }
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()
-                .AddTagHelpersAsServices();
+                .AddTagHelpersAsServices()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<QueryValueService>();
             services.AddTransient<ValueService>();
@@ -57,9 +64,10 @@ namespace ControllersFromServicesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default", "{controller}/{action}/{id}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

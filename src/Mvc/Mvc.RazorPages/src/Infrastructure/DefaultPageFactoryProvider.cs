@@ -6,14 +6,14 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageFactoryProvider : IPageFactoryProvider
+    internal class DefaultPageFactoryProvider : IPageFactoryProvider
     {
         private readonly IPageActivatorProvider _pageActivator;
         private readonly IModelMetadataProvider _modelMetadataProvider;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             IJsonHelper jsonHelper,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             HtmlEncoder htmlEncoder,
             IModelExpressionProvider modelExpressionProvider)
         {
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
                 JsonHelperAccessor = context => jsonHelper,
-                DiagnosticSourceAccessor = context => diagnosticSource,
+                DiagnosticSourceAccessor = context => diagnosticListener,
                 HtmlEncoderAccessor = context => htmlEncoder,
                 ModelExpressionProviderAccessor = context => modelExpressionProvider,
             };
         }
 
-        public virtual Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
+        public Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
         {
             if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -29,12 +30,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             if (Protocol == "json")
             {
-                protocol = new JsonHubProtocol();
+                protocol = new NewtonsoftJsonHubProtocol();
             }
             else
             {
                 // New line in result to trigger SSE formatting
-                protocol = new JsonHubProtocol
+                protocol = new NewtonsoftJsonHubProtocol
                 {
                     PayloadSerializer = { Formatting = Formatting.Indented }
                 };
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _parser = new ServerSentEventsMessageParser();
             _rawData = new ReadOnlySequence<byte>(protocol.GetMessageBytes(hubMessage));
             var ms = new MemoryStream();
-            ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms).GetAwaiter().GetResult();
+            ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, ms, default).GetAwaiter().GetResult();
             _sseFormattedData = ms.ToArray();
         }
 
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public Task WriteSingleMessage()
         {
-            return ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, Stream.Null);
+            return ServerSentEventsMessageFormatter.WriteMessageAsync(_rawData, Stream.Null, default);
         }
 
         public enum Message

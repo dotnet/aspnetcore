@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net.Http;
@@ -77,9 +77,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var goToManage = await Client.GetAsync(_manageLink.Href);
             var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
-            Context.ContosoLoginEnabled = true;
 
-            return new Account.Manage.Index(Client, manage, Context);
+            return new Account.Manage.Index(Client, manage, Context
+                .WithSocialLoginEnabled()
+                .WithSocialLoginProvider());
         }
     }
 }

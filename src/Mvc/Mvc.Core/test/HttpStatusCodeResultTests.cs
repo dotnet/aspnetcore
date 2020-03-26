@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,19 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public void HttpStatusCodeResult_ReturnsCorrectStatusCodeAsIStatusCodeActionResult()
+        {
+            // Arrange
+            var result = new StatusCodeResult(StatusCodes.Status404NotFound);
+
+            // Act
+            var statusResult = result as IStatusCodeActionResult;
+
+            // Assert
+            Assert.Equal(StatusCodes.Status404NotFound, statusResult?.StatusCode);
         }
 
         private static IServiceCollection CreateServices()

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -25,18 +24,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public void CannotCreateConnectionWithNoEndPoint()
+        {
+            var builder = new HubConnectionBuilder();
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+            Assert.Equal("Cannot create HubConnection instance. An EndPoint was not configured.", ex.Message);
+        }
+
+        [Fact]
         public void AddJsonProtocolSetsHubProtocolToJsonWithDefaultOptions()
         {
-            var serviceProvider = new HubConnectionBuilder().AddJsonProtocol().Services.BuildServiceProvider();
+            var serviceProvider = new HubConnectionBuilder().AddNewtonsoftJsonProtocol().Services.BuildServiceProvider();
 
-            var actualProtocol = Assert.IsType<JsonHubProtocol>(serviceProvider.GetService<IHubProtocol>());
+            var actualProtocol = Assert.IsType<NewtonsoftJsonHubProtocol>(serviceProvider.GetService<IHubProtocol>());
             Assert.IsType<CamelCasePropertyNamesContractResolver>(actualProtocol.PayloadSerializer.ContractResolver);
         }
 
         [Fact]
         public void AddJsonProtocolSetsHubProtocolToJsonWithProvidedOptions()
         {
-            var serviceProvider = new HubConnectionBuilder().AddJsonProtocol(options =>
+            var serviceProvider = new HubConnectionBuilder().AddNewtonsoftJsonProtocol(options =>
             {
                 options.PayloadSerializerSettings = new JsonSerializerSettings
                 {
@@ -44,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 };
             }).Services.BuildServiceProvider();
 
-            var actualProtocol = Assert.IsType<JsonHubProtocol>(serviceProvider.GetService<IHubProtocol>());
+            var actualProtocol = Assert.IsType<NewtonsoftJsonHubProtocol>(serviceProvider.GetService<IHubProtocol>());
             Assert.Equal("JUST A TEST", actualProtocol.PayloadSerializer.DateFormatString);
         }
 
@@ -53,6 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var builder = new HubConnectionBuilder();
             builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+            builder.WithUrl("http://example.com");
 
             Assert.NotNull(builder.Build());
 

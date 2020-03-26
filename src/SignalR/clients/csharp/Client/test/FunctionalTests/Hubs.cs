@@ -9,7 +9,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -36,6 +35,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
         }
+
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
 
         public string GetUserIdentifier()
         {
@@ -108,6 +118,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
+
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
     }
 
     public class TestHubT : Hub<ITestHub>
@@ -131,6 +152,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
+
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
     }
 
     internal static class TestHubMethodsImpl
@@ -154,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 for (var i = 0; i < count; i++)
                 {
                     await channel.Writer.WriteAsync(i);
-                    await Task.Delay(100);
+                    await Task.Delay(20);
                 }
 
                 channel.Writer.TryComplete();
@@ -169,6 +201,54 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         public static ChannelReader<string> StreamBroken() => null;
+
+        public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            var output = Channel.CreateUnbounded<string>();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    while (await source.WaitToReadAsync())
+                    {
+                        while (source.TryRead(out var item))
+                        {
+                            await output.Writer.WriteAsync(item);
+                        }
+                    }
+                }
+                finally
+                {
+                    output.Writer.TryComplete();
+                }
+            });
+
+            return output.Reader;
+        }
+
+        public static ChannelReader<int> StreamEchoInt(ChannelReader<int> source)
+        {
+            var output = Channel.CreateUnbounded<int>();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    while (await source.WaitToReadAsync())
+                    {
+                        while (source.TryRead(out var item))
+                        {
+                            await output.Writer.WriteAsync(item);
+                        }
+                    }
+                }
+                finally
+                {
+                    output.Writer.TryComplete();
+                }
+            });
+
+            return output.Reader;
+        }
     }
 
     public interface ITestHub
@@ -178,8 +258,24 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         Task NoClientHandler();
     }
 
+    public class VersionHub : Hub
+    {
+        public string Echo(string message) => message;
+
+        public Task NewProtocolMethodServer()
+        {
+            return Clients.Caller.SendAsync("NewProtocolMethodClient");
+        }
+    }
+
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]
     public class HubWithAuthorization : Hub
+    {
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+    }
+
+    // Authorization is added via endpoint routing in Startup
+    public class HubWithAuthorization2 : Hub
     {
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
     }

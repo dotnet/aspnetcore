@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Routing
     /// </remarks>
     public class RouteValueEqualityComparer : IEqualityComparer<object>
     {
+        public static readonly RouteValueEqualityComparer Default = new RouteValueEqualityComparer();
+
         /// <inheritdoc />
         public new bool Equals(object x, object y)
         {

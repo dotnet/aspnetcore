@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public class Listener : ListenerContext, IAsyncDisposable
+    internal class Listener : ListenerContext, IAsyncDisposable
     {
+        // REVIEW: This needs to be bounded and we need a strategy for what to do when the queue is full
         private bool _closed;
 
         public Listener(LibuvTransportContext transportContext) : base(transportContext)
@@ -25,10 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public ILibuvTrace Log => TransportContext.Log;
 
         public Task StartAsync(
-            IEndPointInformation endPointInformation,
+            EndPoint endPoint,
             LibuvThread thread)
         {
-            EndPointInformation = endPointInformation;
+            EndPoint = endPoint;
             Thread = thread;
 
             return Thread.PostAsync(listener =>
@@ -43,13 +46,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         /// </summary>
         private UvStreamHandle CreateListenSocket()
         {
-            switch (EndPointInformation.Type)
+            switch (EndPoint)
             {
-                case ListenType.IPEndPoint:
+                case IPEndPoint _:
                     return ListenTcp(useFileHandle: false);
-                case ListenType.SocketPath:
+                case UnixDomainSocketEndPoint _:
                     return ListenPipe(useFileHandle: false);
-                case ListenType.FileHandle:
+                case FileHandleEndPoint _:
                     return ListenHandle();
                 default:
                     throw new NotSupportedException();
@@ -63,18 +66,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                socket.NoDelay(EndPointInformation.NoDelay);
+                socket.NoDelay(TransportContext.Options.NoDelay);
 
                 if (!useFileHandle)
                 {
-                    socket.Bind(EndPointInformation.IPEndPoint);
+                    socket.Bind((IPEndPoint)EndPoint);
 
                     // If requested port was "0", replace with assigned dynamic port.
-                    EndPointInformation.IPEndPoint = socket.GetSockIPEndPoint();
+                    EndPoint = socket.GetSockIPEndPoint();
                 }
                 else
                 {
-                    socket.Open((IntPtr)EndPointInformation.FileHandle);
+                    socket.Open((IntPtr)((FileHandleEndPoint)EndPoint).FileHandle);
                 }
             }
             catch
@@ -96,11 +99,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 if (!useFileHandle)
                 {
-                    pipe.Bind(EndPointInformation.SocketPath);
+                    // UnixDomainSocketEndPoint.ToString() returns the path
+                    pipe.Bind(EndPoint.ToString());
                 }
                 else
                 {
-                    pipe.Open((IntPtr)EndPointInformation.FileHandle);
+                    pipe.Open((IntPtr)((FileHandleEndPoint)EndPoint).FileHandle);
                 }
             }
             catch
@@ -114,7 +118,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private UvStreamHandle ListenHandle()
         {
-            switch (EndPointInformation.HandleType)
+            var handleEndPoint = (FileHandleEndPoint)EndPoint;
+
+            switch (handleEndPoint.FileHandleType)
             {
                 case FileHandleType.Auto:
                     break;
@@ -130,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 handle = ListenTcp(useFileHandle: true);
-                EndPointInformation.HandleType = FileHandleType.Tcp;
+                EndPoint = new FileHandleEndPoint(handleEndPoint.FileHandle, FileHandleType.Tcp);
                 return handle;
             }
             catch (UvException exception) when (exception.StatusCode == LibuvConstants.ENOTSUP)
@@ -139,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             handle = ListenPipe(useFileHandle: true);
-            EndPointInformation.HandleType = FileHandleType.Pipe;
+            EndPoint = new FileHandleEndPoint(handleEndPoint.FileHandle, FileHandleType.Pipe);
             return handle;
         }
 
@@ -186,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            HandleConnectionAsync(socket);
+            HandleConnection(socket);
         }
 
         public virtual async Task DisposeAsync()
@@ -202,6 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     listener.ListenSocket.Dispose();
 
                     listener._closed = true;
+
+                    listener.StopAcceptingConnections();
 
                 }, this).ConfigureAwait(false);
             }
