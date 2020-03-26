@@ -96,47 +96,47 @@
     <!-- Packages from dotnet/blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from dotnet/extensions -->
-    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.3.20175.3</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.3.20175.3</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsCachingSqlServerPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsCachingSqlServerPackageVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationIniPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationIniPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsConfigurationXmlPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsFileProvidersCompositePackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsHttpPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.3.20175.3</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.3.20175.3</MicrosoftInternalExtensionsRefsPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.3.20175.7</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.3.20175.7</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsCachingSqlServerPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsCachingSqlServerPackageVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationIniPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationIniPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsConfigurationXmlPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsHttpPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.3.20175.7</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftInternalExtensionsRefsPackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-preview.3.20175.2</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.3.20175.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -146,10 +146,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.3.20175.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.3.20175.2</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from dotnet/aspnetcore-tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.3.20175.7</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.3.20175.7</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-preview.3.20175.7</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.0-preview.3.20175.7</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.3.20176.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.3.20176.1</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-preview.3.20176.1</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.0-preview.3.20176.1</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
