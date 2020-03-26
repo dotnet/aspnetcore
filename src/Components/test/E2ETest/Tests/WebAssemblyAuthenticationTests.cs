@@ -55,15 +55,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .Build();
         }
 
+        public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+
         protected override void InitializeAsyncCore()
         {
-            Browser.Navigate().GoToUrl("data:");
             Navigate("/", noReload: true);
             EnsureDatabaseCreated(_serverFixture.Host.Services);
-            Browser.ExecuteJavaScript("sessionStorage.clear()");
-            Browser.ExecuteJavaScript("localStorage.clear()");
-            Browser.Manage().Cookies.DeleteAllCookies();
-            Browser.Navigate().Refresh();
             WaitUntilLoaded();
         }
 
@@ -89,6 +86,50 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateFetchData();
         }
 
+        [Fact]
+        public void CanPreserveApplicationState_DuringLogIn()
+        {
+            var originalAppState = Browser.Exists(By.Id("app-state")).Text;
+
+            var link = By.PartialLinkText("Fetch data");
+            var page = "/Identity/Account/Login";
+
+            ClickAndNavigate(link, page);
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            FirstTimeRegister(userName, password);
+
+            ValidateFetchData();
+
+            var homeLink = By.PartialLinkText("Home");
+            var homePage = "/";
+            ClickAndNavigate(homeLink, homePage);
+
+            var restoredAppState = Browser.Exists(By.Id("app-state")).Text;
+            Assert.Equal(originalAppState, restoredAppState);
+        }
+
+        [Fact]
+        public void CanShareUserRolesBetweenClientAndServer()
+        {
+            ClickAndNavigate(By.PartialLinkText("Log in"), "/Identity/Account/Login");
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+            FirstTimeRegister(userName, password);
+
+            ClickAndNavigate(By.PartialLinkText("Make admin"), "/new-admin");
+
+            ClickAndNavigate(By.PartialLinkText("Settings"), "/admin-settings");
+
+            Browser.Exists(By.Id("admin-action")).Click();
+
+            Browser.Exists(By.Id("admin-success"));
+        }
+
+
         private void ClickAndNavigate(By link, string page)
         {
             Browser.FindElement(link).Click();
@@ -103,6 +144,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             RegisterCore(userName, password);
+            CompleteProfileDetails();
 
             // Need to navigate to fetch page
             Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
@@ -133,13 +175,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .OrderBy(o => o.Item1)
                 .ToArray();
 
-            Assert.Equal(4, claims.Length);
+            Assert.Equal(5, claims.Length);
 
             Assert.Equal(new[]
             {
                 ("amr", "pwd"),
                 ("idp", "local"),
                 ("name", userName),
+                ("NewUser", "true"),
                 ("preferred_username", userName)
             },
             claims);
@@ -173,9 +216,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             RegisterCore(userName, password);
+            CompleteProfileDetails();
 
-            Browser.Exists(By.PartialLinkText($"Hello, {userName}!")).Click();
-            Browser.Contains("/Identity/Account/Manage", () => Browser.Url);
+            ClickAndNavigate(By.PartialLinkText($"Hello, {userName}!"), "/Identity/Account/Manage");
 
             Browser.Navigate().Back();
             Browser.Equal("/", () => new Uri(Browser.Url).PathAndQuery);
@@ -215,6 +258,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             RegisterCore(userName, password);
+            CompleteProfileDetails();
 
             ValidateLogout();
         }
@@ -227,6 +271,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             RegisterCore(userName, password);
+            CompleteProfileDetails();
 
             ValidateLogout();
 
@@ -252,14 +297,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             RegisterCore(userName, password);
+            CompleteProfileDetails();
             ValidateLoggedIn(userName);
 
             // Clear the existing storage on the page and refresh
-            Browser.ExecuteJavaScript("sessionStorage.clear()");
-            Browser.Navigate().Refresh();
-            Browser.Exists(By.PartialLinkText("Log in"));
+            Browser.Exists(By.Id("test-clear-storage")).Click();
+            Browser.Exists(By.Id("test-refresh-page")).Click();
 
-            Browser.FindElement(By.PartialLinkText("Log in")).Click();
             ValidateLoggedIn(userName);
         }
 
@@ -268,6 +312,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/login?returnUrl=https%3A%2F%2Fwww.bing.com").AbsoluteUri);
             WaitUntilLoaded(skipHeader: true);
+            Browser.Exists(By.CssSelector("[style=\"display: block;\"]"));
             Assert.NotEmpty(Browser.GetBrowserLogs(LogLevel.Severe));
         }
 
@@ -322,6 +367,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.FindElement(By.PartialLinkText("Register as a new user")).Click();
             RegisterCore(userName, password);
+            CompleteProfileDetails();
+        }
+
+        private void CompleteProfileDetails()
+        {
+            Browser.Exists(By.PartialLinkText("Home"));
+            Browser.Contains("/preferences", () => Browser.Url);
+            Browser.FindElement(By.Id("color-preference")).SendKeys("Red");
+            Browser.FindElement(By.Id("submit-preference")).Click();
         }
 
         private void RegisterCore(string userName, string password)
@@ -412,9 +466,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public void Dispose()
         {
-            // Make the tests run faster by navigating back to the home page when we are done
-            // If we don't, then the next test will reload the whole page before it starts
-            Browser.FindElement(By.LinkText("Home")).Click();
+            try
+            {
+                // Make the tests run faster by navigating back to the home page when we are done
+                // If we don't, then the next test will reload the whole page before it starts
+                Browser.FindElement(By.LinkText("Home")).Click();
+            }
+            catch
+            {
+                // We don't care if this step fails.
+            }
         }
 
         private class JwtPayload
