@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.WebSockets
     public class ExtendedWebSocketAcceptContext : WebSocketAcceptContext
     {
         public override string SubProtocol { get; set; }
-                
-        [Obsolete("This is obsolete and will be removed in a future version")]
+
+        [Obsolete("Setting this property has no effect. It will be removed in a future version.")]
         public int? ReceiveBufferSize { get; set; }
 
         public TimeSpan? KeepAliveInterval { get; set; }

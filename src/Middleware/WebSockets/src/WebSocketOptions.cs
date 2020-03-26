@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Gets or sets the size of the protocol buffer used to receive and parse frames.
         /// The default is 4kb.
         /// </summary>
-        [Obsolete("This is obsolete and will be removed in a future version")]
+        [Obsolete("Setting this property has no effect. It will be removed in a future version.")]
         public int ReceiveBufferSize { get; set; }
 
         /// <summary>
