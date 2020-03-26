@@ -207,6 +207,37 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     // of the extensions in the URLs. This allows loading assemblies with arbitrary filenames.
     assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
     pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
+
+    // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
+    // startup sequence to load satellite assemblies for the application's culture.
+    window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
+      const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
+      const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
+
+      if (satelliteResources) {
+        const resourcePromises = Promise.all(culturesToLoad
+            .filter(culture => satelliteResources.hasOwnProperty(culture))
+            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`))
+            .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
+            .map(async resource => (await resource.response).arrayBuffer()));
+
+        return BINDING.js_to_mono_obj(
+          resourcePromises.then(resourcesToLoad => {
+            if (resourcesToLoad.length) {
+              window['Blazor']._internal.readSatelliteAssemblies = () => {
+                const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
+                for (var i = 0; i < resourcesToLoad.length; i++) {
+                  BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+                }
+                return array;
+            };
+          }
+
+          return resourcesToLoad.length;
+        }));
+      }
+      return BINDING.js_to_mono_obj(Promise.resolve(0));
+    }
   });
 
   module.postRun.push(() => {

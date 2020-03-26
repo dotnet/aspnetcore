@@ -16,32 +16,34 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         // entrypoint result to the JS caller. There's no requirement to do that today, and if we
         // do change this it will be non-breaking.
         public static void InvokeEntrypoint(string assemblyName, string[] args)
+            => InvokeEntrypoint(assemblyName, args, SatelliteResourcesLoader.Init());
+
+        internal static async void InvokeEntrypoint(string assemblyName, string[] args, SatelliteResourcesLoader satelliteResourcesLoader)
         {
-            object entrypointResult;
             try
             {
+                // Emscripten sets up the culture for the application based on the user's language preferences.
+                // Before we execute the app's entry point, load satellite assemblies for this culture.
+                // We'll allow users to configure their app culture as part of MainAsync. Loading satellite assemblies
+                // for the configured culture will happen as part of WebAssemblyHost.RunAsync.
+                await satelliteResourcesLoader.LoadCurrentCultureResourcesAsync();
+
                 var assembly = Assembly.Load(assemblyName);
                 var entrypoint = FindUnderlyingEntrypoint(assembly);
                 var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args ?? Array.Empty<string>() } : new object[] { };
-                entrypointResult = entrypoint.Invoke(null, @params);
+
+                var result = entrypoint.Invoke(null, @params);
+                if (result is Task resultTask)
+                {
+                    // In the default case, this Task is backed by the WebAssemblyHost.RunAsync that never completes.
+                    // Awaiting it is allows catching any exception thrown by user code in MainAsync.
+                    await resultTask;
+                }
             }
             catch (Exception syncException)
             {
                 HandleStartupException(syncException);
                 return;
-            }
-
-            // If the entrypoint is async, handle async exceptions in the same way that we would
-            // have handled sync ones
-            if (entrypointResult is Task entrypointTask)
-            {
-                entrypointTask.ContinueWith(task =>
-                {
-                    if (task.Exception != null)
-                    {
-                        HandleStartupException(task.Exception);
-                    }
-                });
             }
         }
 

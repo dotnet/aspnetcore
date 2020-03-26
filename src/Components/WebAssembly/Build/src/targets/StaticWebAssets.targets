@@ -7,7 +7,7 @@
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/').Replace('dist/',''))</RelativePath>
+        <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithTargetPath.TargetOutputPath)').Replace('\','/'))</RelativePath>
       </StaticWebAsset>
 
       <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'$(BlazorEnableDebugging)' != 'true' and '%(SourceType)' == '' and '%(Extension)' == '.pdb'" />
