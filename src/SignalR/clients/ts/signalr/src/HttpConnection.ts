@@ -299,7 +299,7 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        const headers = this.options.headers || {};
+        const headers = {};
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
             if (token) {
@@ -315,7 +315,7 @@ export class HttpConnection implements IConnection {
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
-                headers,
+                headers: { ...headers, ...this.options.headers },
                 withCredentials: this.options.withCredentials,
             });
 

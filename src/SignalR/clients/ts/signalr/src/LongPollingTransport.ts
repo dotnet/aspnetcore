@@ -203,12 +203,12 @@ export class LongPollingTransport implements ITransport {
             // Send DELETE to clean up long polling on the server
             this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
 
-            const headers = this.headers;
+            const headers = {};
             const [name, value] = getUserAgentHeader();
             headers[name] = value;
 
             const deleteOptions: HttpRequest = {
-                headers,
+                headers: { ...headers, ...this.headers },
                 withCredentials: this.withCredentials,
             };
             const token = await this.getAccessToken();

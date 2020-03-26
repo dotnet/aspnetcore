@@ -54,7 +54,7 @@ export class WebSocketTransport implements ITransport {
             let opened = false;
 
             if (Platform.isNode) {
-                const headers = { ...this.headers };
+                const headers = {};
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 
@@ -62,9 +62,9 @@ export class WebSocketTransport implements ITransport {
                     headers[`Cookie`] = `${cookies}`;
                 }
 
-                // Only pass cookies when in non-browser environments
+                // Only pass headers when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
-                    headers,
+                    headers: { ...headers, ...this.headers },
                 });
             }
 
