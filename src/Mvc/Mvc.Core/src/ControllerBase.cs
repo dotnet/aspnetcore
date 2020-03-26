@@ -1260,6 +1260,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType)
             => File(fileStream, contentType, fileDownloadName: null);
@@ -1274,6 +1277,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, bool enableRangeProcessing)
             => File(fileStream, contentType, fileDownloadName: null, enableRangeProcessing: enableRangeProcessing);
@@ -1289,6 +1295,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
             => new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
@@ -1305,6 +1314,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, bool enableRangeProcessing)
             => new FileStreamResult(fileStream, contentType)
@@ -1324,6 +1336,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
@@ -1346,6 +1361,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
@@ -1369,6 +1387,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
@@ -1393,6 +1414,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
@@ -1848,7 +1872,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
         /// </summary>
-        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />..</param>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
         /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>

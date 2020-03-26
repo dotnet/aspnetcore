@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         // Note: The Razor Compiler (including Components features) use the RZ prefix for diagnostics, so there's currently
         // no change of clashing between that and the BL prefix used here.
         //
-        // Tracking https://github.com/aspnet/AspNetCore/issues/10382 to rationalize this
+        // Tracking https://github.com/dotnet/aspnetcore/issues/10382 to rationalize this
         public static readonly DiagnosticDescriptor ComponentParameterSettersShouldBePublic = new DiagnosticDescriptor(
             "BL0001",
             new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),

@@ -3,11 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     {
                         context.ServerOptions.ApplicationServices = sp;
                         configureKestrel(context.ServerOptions);
-                        return new KestrelServer(_transportFactory, context);
+                        return new KestrelServer(new List<IConnectionListenerFactory>() { _transportFactory }, context);
                     });
                 });
 

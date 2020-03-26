@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public RenderFragment ChildContent { get; set; }
 
+        private readonly Type _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 validationErrorMessage = null;
                 return true;
             }
-            else if (typeof(TValue).IsEnum)
+            else if (typeof(TValue).IsEnum || (_nullableUnderlyingType != null && _nullableUnderlyingType.IsEnum))
             {
                 var success = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue);
                 if (success)

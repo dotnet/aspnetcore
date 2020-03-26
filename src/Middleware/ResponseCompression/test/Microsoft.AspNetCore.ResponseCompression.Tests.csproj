@@ -12,7 +12,6 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Description>Abstractions and features for interop between Mono WebAssembly and JavaScript code.</Description>
+    <PackageTags>wasm;javascript;interop</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+</Project>

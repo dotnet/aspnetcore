@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
@@ -68,6 +69,15 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                 }
             }
             return Task.CompletedTask;
+        }
+
+        public override string ToString()
+        {
+            var value = (AllowedValues == null || !AllowedValues.Any())
+                ? string.Empty
+                : $" and Claim.Value is one of the following values: ({string.Join("|", AllowedValues)})";
+
+            return $"{nameof(ClaimsAuthorizationRequirement)}:Claim.Type={ClaimType}{value}";
         }
     }
 }

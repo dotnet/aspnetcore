@@ -6,7 +6,7 @@ import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
 
 // Not exported from 'index', this type is internal.
 /** @private */
@@ -15,6 +15,7 @@ export class LongPollingTransport implements ITransport {
     private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logger: ILogger;
     private readonly logMessageContent: boolean;
+    private readonly withCredentials: boolean;
     private readonly pollAbort: AbortController;
 
     private url?: string;
@@ -30,12 +31,13 @@ export class LongPollingTransport implements ITransport {
         return this.pollAbort.aborted;
     }
 
-    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean) {
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger, logMessageContent: boolean, withCredentials: boolean) {
         this.httpClient = httpClient;
         this.accessTokenFactory = accessTokenFactory;
         this.logger = logger;
         this.pollAbort = new AbortController();
         this.logMessageContent = logMessageContent;
+        this.withCredentials = withCredentials;
 
         this.running = false;
 
@@ -58,10 +60,15 @@ export class LongPollingTransport implements ITransport {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
+        const headers = {};
+        const [name, value] = getUserAgentHeader();
+        headers[name] = value;
+
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
-            headers: {},
+            headers,
             timeout: 100000,
+            withCredentials: this.withCredentials,
         };
 
         if (transferFormat === TransferFormat.Binary) {
@@ -178,7 +185,7 @@ export class LongPollingTransport implements ITransport {
         if (!this.running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent, this.withCredentials);
     }
 
     public async stop(): Promise<void> {
@@ -194,8 +201,13 @@ export class LongPollingTransport implements ITransport {
             // Send DELETE to clean up long polling on the server
             this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
 
+            const headers = {};
+            const [name, value] = getUserAgentHeader();
+            headers[name] = value;
+
             const deleteOptions: HttpRequest = {
-                headers: {},
+                headers,
+                withCredentials: this.withCredentials,
             };
             const token = await this.getAccessToken();
             this.updateHeaderToken(deleteOptions, token);

@@ -12,7 +12,7 @@
   window.initMono = function initMono(loadAssemblyUrls, onReadyCallback) {
     window.Module = {
       locateFile: function (fileName) {
-        return fileName === 'mono.wasm' ? '/_framework/wasm/mono.wasm' : fileName;
+        return fileName === 'dotnet.wasm' ? '/_framework/wasm/dotnet.wasm' : fileName;
       },
       onRuntimeInitialized: function () {
         var allAssemblyUrls = loadAssemblyUrls.concat([
@@ -117,7 +117,7 @@
     }
 
     var scriptElem = document.createElement('script');
-    scriptElem.src = '/_framework/wasm/mono.js';
+    scriptElem.src = '/_framework/wasm/dotnet.js';
     document.body.appendChild(scriptElem);
   }
 

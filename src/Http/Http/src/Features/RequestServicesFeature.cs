@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
     }
 }

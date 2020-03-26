@@ -9,6 +9,11 @@
 *.sh eol=lf
 
 ###############################################################################
+# Make gradlew always have LF as line endings
+###############################################################################
+gradlew eol=lf
+
+###############################################################################
 # Set default behavior for command prompt diff.
 #
 # This is need for earlier builds of msysgit that does not have it on by

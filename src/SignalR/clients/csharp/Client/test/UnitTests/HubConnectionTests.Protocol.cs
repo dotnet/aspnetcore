@@ -648,6 +648,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await connection.DisposeAsync().OrTimeout();
                 }
             }
+
+            [Fact]
+            public async Task ClientWithInherentKeepAliveDoesNotPing()
+            {
+                var connection = new TestConnection(hasInherentKeepAlive: true);
+                var hubConnection = CreateHubConnection(connection);
+
+                hubConnection.TickRate = TimeSpan.FromMilliseconds(30);
+                hubConnection.KeepAliveInterval = TimeSpan.FromMilliseconds(80);
+
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    await Task.Delay(1000);
+
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+
+                    Assert.Equal(0, (await connection.ReadAllSentMessagesAsync(ignorePings: false).OrTimeout()).Count);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
         }
     }
 }

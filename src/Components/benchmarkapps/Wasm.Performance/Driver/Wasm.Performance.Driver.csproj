@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>exe</OutputType>
+
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
+
+    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver" />
+    <ProjectReference Include="..\..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
+    <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
+
+    <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

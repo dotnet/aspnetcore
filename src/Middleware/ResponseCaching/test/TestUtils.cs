@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +21,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using ISystemClock = Microsoft.AspNetCore.ResponseCaching.ISystemClock;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
@@ -60,6 +57,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
             headers.Date = DateTimeOffset.UtcNow;
             headers.Headers["X-Value"] = guid;
+
+            var contentLength = context.Request.Query["ContentLength"];
+            if (!string.IsNullOrEmpty(contentLength))
+            {
+                headers.ContentLength = long.Parse(contentLength);
+            }
 
             if (context.Request.Method != "HEAD")
             {
@@ -385,21 +388,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
-        {
-            return Task.FromResult(Get(key));
-        }
-
         public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             SetCount++;
             _storage[key] = entry;
-        }
-
-        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
-        {
-            Set(key, entry, validFor);
-            return Task.CompletedTask;
         }
     }
 

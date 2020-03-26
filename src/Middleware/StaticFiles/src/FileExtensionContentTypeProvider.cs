@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".crt", "application/x-x509-ca-cert" },
                 { ".csh", "application/x-csh" },
                 { ".css", "text/css" },
-                { ".csv", "application/octet-stream" },
+                { ".csv", "text/csv" }, // https://tools.ietf.org/html/rfc7111#section-5.1
                 { ".cur", "application/octet-stream" },
                 { ".dcr", "application/x-director" },
                 { ".deploy", "application/octet-stream" },
@@ -343,6 +343,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".wcm", "application/vnd.ms-works" },
                 { ".wdb", "application/vnd.ms-works" },
                 { ".webm", "video/webm" },
+                { ".webmanifest", "application/manifest+json" }, // https://w3c.github.io/manifest/#media-type-registration
                 { ".webp", "image/webp" },
                 { ".wks", "application/vnd.ms-works" },
                 { ".wm", "video/x-ms-wm" },

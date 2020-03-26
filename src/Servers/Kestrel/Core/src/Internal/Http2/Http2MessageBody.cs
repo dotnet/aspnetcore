@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Stream _context;
         private ReadResult _readResult;
 
-        private Http2MessageBody(Http2Stream context)
+        public Http2MessageBody(Http2Stream context)
             : base(context)
         {
             _context = context;
@@ -46,14 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AddAndCheckConsumedBytes(bytesRead);
         }
 
-        public static MessageBody For(Http2Stream context)
+        public override void Reset()
         {
-            if (context.ReceivedEmptyRequestBody)
-            {
-                return ZeroContentLengthClose;
-            }
-
-            return new Http2MessageBody(context);
+            base.Reset();
+            _readResult = default;
         }
 
         public override void AdvanceTo(SequencePosition consumed)

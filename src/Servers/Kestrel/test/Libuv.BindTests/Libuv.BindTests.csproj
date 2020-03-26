@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- https://github.com/aspnet/AspNetCore/issues/8046 -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8046 -->
     <HelixProjectPlatform Remove="OSX" />
   </ItemGroup>
 

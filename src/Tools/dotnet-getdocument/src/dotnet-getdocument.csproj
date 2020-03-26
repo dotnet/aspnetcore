@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
     <Compile Include="../../GetDocumentInsider/src/CommandException.cs" />
     <Compile Include="../../GetDocumentInsider/src/Commands/CommandBase.cs" Link="Commands/CommandBase.cs" />
@@ -19,7 +20,6 @@
     <Compile Include="../../GetDocumentInsider/src/ProgramBase.cs" />
     <Compile Include="../../GetDocumentInsider/src/ReporterExtensions.cs" />
 
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>

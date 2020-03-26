@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -307,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 defaultMethod = true;
             }
-            else if (string.Equals(method, "post", StringComparison.OrdinalIgnoreCase))
+            else if (HttpMethods.IsPost(method))
             {
                 defaultMethod = true;
             }

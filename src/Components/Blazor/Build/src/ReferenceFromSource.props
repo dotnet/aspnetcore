@@ -1,21 +1,6 @@
 <Project>
 
-  <!--
-  Importing this file is equivalent to having:
-    <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
-  ... except it's much more convenient when working in this repo, because it consumes the
-  Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
-
-  This is only intended for use by other projects in this repo.
-  -->
-
-  <PropertyGroup>
-    <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
-    <BlazorJsPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.*.js.*</BlazorJsPath>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
-  <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+  <Import Project="ReferenceBlazorBuildFromSource.props" />
 
   <!--
     Debugging support using blazor-devserver serve.
@@ -35,6 +20,14 @@
     <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
   </ItemGroup>
 
+  <Target Name="_BuildBlazorBuildProject" BeforeTargets="ResolveProjectReferences">
+    <!--
+      The Blazor.Build project cross-compiles and we need the output of all TFMs to be available in the build output.
+      We can't represent this in any good way using ProjectReference elements, but we can try and build it instead.
+    -->
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" />
+  </Target>
+
   <!-- This is used as a P2P when building the repo. Normal Blazor projects will get this as a reference through the Blazor.Build package -->
   <ItemGroup>
     <!-- Ensures these projects are built before the consuming project, but without
@@ -42,9 +35,8 @@
          given that the packed version of this project wouldn't add a .dll reference) -->
     <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <!-- Optimization. Do not require framework compatibility between these projects. -->
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <UndefineProperties>TargetFramework</UndefineProperties>
+      <Properties>TargetFramework=$(DefaultNetCoreTargetFramework)</Properties>
     </ProjectReference>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

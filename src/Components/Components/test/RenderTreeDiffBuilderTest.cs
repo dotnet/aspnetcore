@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingAdded()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame without a key and a new frame with a key.
 
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingRemoved()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame with a key and a new frame without a key.
 

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return null;
             }
 
-            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || !encodings.Any())
+            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || encodings.Count == 0)
             {
                 _logger.NoAcceptEncoding();
                 return null;

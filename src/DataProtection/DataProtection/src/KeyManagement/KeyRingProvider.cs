@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _defaultKeyResolver = defaultKeyResolver;
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
 
-            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/aspnet/AspNetCore/issues/3975
+            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/dotnet/aspnetcore/issues/3975
             AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(2);
         }
 
@@ -226,9 +226,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                             Volatile.Write(ref _cacheableKeyRing, existingCacheableKeyRing.WithTemporaryExtendedLifetime(utcNow));
                         }
 
-                        // The immediate caller should fail so that he can report the error up his chain. This makes it more likely
+                        // The immediate caller should fail so that they can report the error up the chain. This makes it more likely
                         // that an administrator can see the error and react to it as appropriate. The caller can retry the operation
-                        // and will probably have success as long as he falls within the temporary extension mentioned above.
+                        // and will probably have success as long as they fall within the temporary extension mentioned above.
                         throw;
                     }
 

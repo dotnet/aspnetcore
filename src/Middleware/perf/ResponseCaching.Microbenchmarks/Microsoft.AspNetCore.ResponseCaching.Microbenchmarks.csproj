@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCaching" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+  </ItemGroup>
+</Project>

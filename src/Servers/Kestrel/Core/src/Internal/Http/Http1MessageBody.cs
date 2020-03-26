@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly Http1Connection _context;
         protected bool _completed;
 
-        protected Http1MessageBody(Http1Connection context)
-            : base(context)
+        protected Http1MessageBody(Http1Connection context) : base(context)
         {
             _context = context;
         }
