@@ -25,7 +25,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact(Skip = "This test run for over an hour")]
+        [ConditionalFact()]
         [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task GrpcTemplate()
@@ -35,16 +35,22 @@ namespace Templates.Test
             using var testLog = assemblyLog.StartTestLog(Output, nameof(GrpcTemplateTest), out var loggerFactory);
             var logger = loggerFactory.CreateLogger("TestLogger");
 
+            logger.LogInformation("GrpcTemplateTest - Test start");
+
             Project = await ProjectFactory.GetOrCreateProject("grpc", Output);
+            logger.LogInformation("GrpcTemplateTest - Initialize project");
 
             var createResult = await Project.RunDotNetNewAsync("grpc");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            logger.LogInformation("GrpcTemplateTest - Created project");
 
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            logger.LogInformation("GrpcTemplateTest - published project");
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            logger.LogInformation("GrpcTemplateTest - built project");
 
             var isOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
@@ -52,6 +58,7 @@ namespace Templates.Test
 
             using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: logger))
             {
+                logger.LogInformation("GrpcTemplateTest - Verifing built project results");
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
@@ -78,6 +85,7 @@ namespace Templates.Test
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: !unsupported))
             {
+                logger.LogInformation("GrpcTemplateTest - Verifing published project results");
                 // These templates are HTTPS + HTTP/2 only which is not supported on Mac due to missing ALPN support.
                 // https://github.com/dotnet/aspnetcore/issues/11061
                 if (isOsx)
