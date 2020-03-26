@@ -156,9 +156,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // connection's flow-control window.
                 _inputFlowControl.Abort();
 
-                // We only want to reuse a stream that has completely finished writing
-                // This is to ensure Http2OutputProducer.ProcessDataWrites is in the
-                // correct state to be reused.
+                // We only want to reuse a stream that was not aborted and has completely finished writing.
+                // This ensures Http2OutputProducer.ProcessDataWrites is in the correct state to be reused.
                 CanReuse = !_connectionAborted && HasResponseCompleted;
             }
             finally
