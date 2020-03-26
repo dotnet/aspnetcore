@@ -86,7 +86,8 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
-                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, headers: MessageHeaders): Promise<void> {
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
+    let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -104,7 +105,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers,
+        headers: { ...headers, ...defaultHeaders},
         responseType,
         withCredentials,
     });
