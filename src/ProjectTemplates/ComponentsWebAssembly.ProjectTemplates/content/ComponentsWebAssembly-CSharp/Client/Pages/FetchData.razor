@@ -63,7 +63,7 @@ else
         if (tokenResult.TryGetToken(out var token))
         {
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-            forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+            forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
         }
         else
         {
@@ -71,10 +71,10 @@ else
         }
 
             #else
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
             #endif*@
         #else
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         #endif*@
     }
 

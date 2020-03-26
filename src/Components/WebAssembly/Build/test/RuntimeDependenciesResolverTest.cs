@@ -41,8 +41,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
-                "Microsoft.AspNetCore.Blazor.HttpClient.dll",
-                "Microsoft.AspNetCore.Blazor.HttpClient.pdb",
                 "Microsoft.AspNetCore.Components.dll",
                 "Microsoft.AspNetCore.Components.Forms.dll",
                 "Microsoft.AspNetCore.Components.Web.dll",
@@ -81,6 +79,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "System.IO.Compression.FileSystem.dll",
                 "System.Memory.dll",
                 "System.Net.Http.dll",
+                "System.Net.Http.Json.dll",
                 "System.Numerics.dll",
                 "System.Numerics.Vectors.dll",
                 "System.Runtime.CompilerServices.Unsafe.dll",
