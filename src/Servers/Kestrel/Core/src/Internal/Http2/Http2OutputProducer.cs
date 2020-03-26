@@ -528,8 +528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             _disposed = true;
 
-            // Set awaitable after disposed is true to ensure ProcessDataWrites
-            // exits successfully.
+            // Set awaitable after disposed is true to ensure ProcessDataWrites exits successfully.
             _resetAwaitable.SetResult(null);
         }
     }
