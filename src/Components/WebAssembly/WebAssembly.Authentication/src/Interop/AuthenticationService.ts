@@ -261,15 +261,10 @@ export class AuthenticationService {
         // In order to do so, we create an initialization promise and the first call to init
         // tries to initialize the app and sets up a promise other calls can await on.
         if (!AuthenticationService._initialized) {
-            this._initialized = new Promise(async (resolve, reject) => {
-                try {
-                    const userManager = await this.createUserManager(settings);
-                    AuthenticationService.instance = new OidcAuthorizeService(userManager);
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                }
-            });
+            this._initialized = (async () => {
+                const userManager = await this.createUserManager(settings);
+                AuthenticationService.instance = new OidcAuthorizeService(userManager);
+            })();
         }
 
         await this._initialized;

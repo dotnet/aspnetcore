@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddMsalAuthentication<TRemoteAuthenticationState>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         {
-            services.AddRemoteAuthentication<RemoteAuthenticationState, MsalProviderOptions>();
+            services.AddRemoteAuthentication<RemoteAuthenticationState, MsalProviderOptions>(configure);
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>, MsalDefaultOptionsConfiguration>());
 
             return services;
