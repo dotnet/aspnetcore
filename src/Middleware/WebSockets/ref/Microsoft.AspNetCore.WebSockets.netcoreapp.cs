@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Builder
         public WebSocketOptions() { }
         public System.Collections.Generic.IList<string> AllowedOrigins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [System.ObsoleteAttribute("Setting this property has no effect. It will be removed in a future version.")]
         public int ReceiveBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.WebSockets
     {
         public ExtendedWebSocketAcceptContext() { }
         public System.TimeSpan? KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [System.ObsoleteAttribute("Setting this property has no effect. It will be removed in a future version.")]
         public int? ReceiveBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override string SubProtocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
