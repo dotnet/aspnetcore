@@ -142,9 +142,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             "http://contoso.com/someaction?param1[]=value1&param1[]=&param1[]=value3&param2[]=#name#something")]
         public void AddQueryStringWithEnumerableOfKeysAndStringValues(string uri, string expectedUri)
         {
-            var queryStrings = new Dictionary<string, StringValue>()
+            var queryStrings = new Dictionary<string, StringValues>()
                         {
-                            { "param1[]", new StringValue(new [] { "value1", string.Empty, "value3" }) },
+                            { "param1[]", new StringValues(new [] { "value1", string.Empty, "value3" }) },
                             { "param2[]", StringValues.Empty }
                         };
 
