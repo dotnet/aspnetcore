@@ -1152,6 +1152,30 @@ describe("HttpConnection", () => {
         }, "Failed to start the connection: Error: nope");
     });
 
+    it("overwrites library headers with user headers on negotiate", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                headers,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        expect(r.headers).toEqual(headers);
+                        return new HttpResponse(200, "", "{\"error\":\"nope\"}");
+                    }),
+                logger,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+            } catch {
+            } finally {
+                await connection.stop();
+            }
+        }, "Failed to start the connection: Error: nope");
+    });
+
     it("logMessageContent displays correctly with binary data", async () => {
         await VerifyLogger.run(async (logger) => {
             const availableTransport = { transport: "LongPolling", transferFormats: ["Text", "Binary"] };

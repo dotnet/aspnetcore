@@ -315,7 +315,7 @@ export class HttpConnection implements IConnection {
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
-                headers,
+                headers: { ...headers, ...this.options.headers },
                 withCredentials: this.options.withCredentials,
             });
 
@@ -403,14 +403,14 @@ export class HttpConnection implements IConnection {
                 if (!this.options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
+                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket, this.options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this.options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!);
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!, this.options.headers || {});
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!);
+                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!, this.options.headers || {});
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
