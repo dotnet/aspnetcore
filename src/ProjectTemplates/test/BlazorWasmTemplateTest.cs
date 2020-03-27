@@ -191,10 +191,11 @@ namespace Templates.Test
             var serviceWorkerContents = ReadFile(publishDir, "service-worker.js");
 
             // Parse the "version": "..." value from the SWAM, and check it's in the service worker
-            var serviceWorkerAssetsManifestVersionMatch = new Regex(@"^\s*\""version\"":\s*\""([^\""]+)\""", RegexOptions.Multiline)
+            var serviceWorkerAssetsManifestVersionMatch = new Regex(@"^\s*\""version\"":\s*(\""[^\""]+\"")", RegexOptions.Multiline)
                 .Match(serviceWorkerAssetsManifestContents);
             Assert.True(serviceWorkerAssetsManifestVersionMatch.Success);
-            var serviceWorkerAssetsManifestVersion = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0];
+            var serviceWorkerAssetsManifestVersionJson = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0].Value;
+            var serviceWorkerAssetsManifestVersion = JsonSerializer.Deserialize<string>(serviceWorkerAssetsManifestVersionJson);
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
