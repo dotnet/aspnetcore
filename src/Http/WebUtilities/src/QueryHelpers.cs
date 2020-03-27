@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentNullException(nameof(queryString));
             }
 
-            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v.ToString())));
+            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)));
         }
 
         /// <summary>
