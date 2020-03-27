@@ -1126,7 +1126,8 @@ describe("hubConnection", () => {
         });
 
         it("overwrites library headers with user headers", async (done) => {
-            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const [name] = getUserAgentHeader();
+            const headers = { [name]: "Custom Agent", "X-HEADER": "VALUE" };
             const hubConnection = getConnectionBuilder(t, TESTHUBENDPOINT_URL, { headers })
                 .withHubProtocol(new JsonHubProtocol())
                 .build();
@@ -1134,19 +1135,14 @@ describe("hubConnection", () => {
             try {
                 await hubConnection.start();
 
-                const [name, value] = getUserAgentHeader();
-                const customUserAgent = await hubConnection.invoke("GetHeader", "User-Agent");
                 const customUserHeader = await hubConnection.invoke("GetHeader", "X-HEADER");
                 const headerValue = await hubConnection.invoke("GetHeader", name);
 
-                if (Platform.isNode) {
-                    expect(customUserAgent).toEqual("Custom Agent");
-                    expect(customUserHeader).toEqual("VALUE");
-                } else if (t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) {
+                if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
                     expect(headerValue).toBeNull();
                     expect(customUserHeader).toBeNull();
                 } else {
-                    expect(headerValue).toEqual(value);
+                    expect(headerValue).toEqual("Custom Agent");
                     expect(customUserHeader).toEqual("VALUE");
                 }
 
