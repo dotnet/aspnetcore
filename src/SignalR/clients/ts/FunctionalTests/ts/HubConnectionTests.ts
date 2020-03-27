@@ -1137,7 +1137,6 @@ describe("hubConnection", () => {
                 const customUserAgent = await hubConnection.invoke("GetHeader", "User-Agent");
                 const customUserHeader = await hubConnection.invoke("GetHeader", "X-HEADER");
 
-
                 if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
                     expect(customUserAgent).toBeNull();
                     expect(customUserHeader).toBeNull();
