@@ -1134,14 +1134,20 @@ describe("hubConnection", () => {
             try {
                 await hubConnection.start();
 
+                const [name, value] = getUserAgentHeader();
                 const customUserAgent = await hubConnection.invoke("GetHeader", "User-Agent");
                 const customUserHeader = await hubConnection.invoke("GetHeader", "X-HEADER");
+                const headerValue = await hubConnection.invoke("GetHeader", name);
 
-                if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
-                    expect(customUserAgent).toBeNull();
+                if (Platform.isNode) {
+                    expect(customUserAgent).toEqual("Custom Agent");
+                    expect(customUserHeader).toEqual("VALUE");
+                    expect(headerValue).toEqual(value);
+                } else if (t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) {
+                    expect(headerValue).toBeNull();
                     expect(customUserHeader).toBeNull();
                 } else {
-                    expect(customUserAgent).toEqual("Custom Agent");
+                    expect(headerValue).toEqual(value);
                     expect(customUserHeader).toEqual("VALUE");
                 }
 
