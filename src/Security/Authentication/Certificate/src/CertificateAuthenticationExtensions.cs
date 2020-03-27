@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="authenticationScheme"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, string authenticationScheme)
-            => builder.AddCertificate(authenticationScheme, configureOptions: null);
+            => builder.AddCertificate(authenticationScheme, configureOptions: (Action<CertificateAuthenticationOptions, IServiceProvider>)null);
 
         /// <summary>
         /// Adds certificate authentication.
@@ -43,6 +43,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds certificate authentication.
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="configureOptions"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions, IServiceProvider> configureOptions)
+            => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme, configureOptions);
+
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme"></param>
         /// <param name="configureOptions"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
@@ -50,6 +59,31 @@ namespace Microsoft.Extensions.DependencyInjection
             this AuthenticationBuilder builder,
             string authenticationScheme,
             Action<CertificateAuthenticationOptions> configureOptions)
+        {
+            Action<CertificateAuthenticationOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddCertificate(authenticationScheme, configureOptionsWithServices);
+        }
+
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="authenticationScheme"></param>
+        /// <param name="configureOptions"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        public static AuthenticationBuilder AddCertificate(
+            this AuthenticationBuilder builder,
+            string authenticationScheme,
+            Action<CertificateAuthenticationOptions, IServiceProvider> configureOptions)
             => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
     }
 }

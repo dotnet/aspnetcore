@@ -35,6 +35,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds and configures Negotiate authentication.
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
+        /// <returns>The original builder.</returns>
+        public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, Action<NegotiateOptions, IServiceProvider> configureOptions)
+            => builder.AddNegotiate(NegotiateDefaults.AuthenticationScheme, configureOptions);
+
+        /// <summary>
+        /// Adds and configures Negotiate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme">The scheme name used to identify the authentication handler internally.</param>
         /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
         /// <returns>The original builder.</returns>
@@ -46,10 +55,43 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme">The scheme name used to identify the authentication handler internally.</param>
+        /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
+        /// <returns>The original builder.</returns>
+        public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, Action<NegotiateOptions, IServiceProvider> configureOptions)
+            => builder.AddNegotiate(authenticationScheme, displayName: null, configureOptions: configureOptions);
+
+        /// <summary>
+        /// Adds and configures Negotiate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="authenticationScheme">The scheme name used to identify the authentication handler internally.</param>
         /// <param name="displayName">The name displayed to users when selecting an authentication handler. The default is null to prevent this from displaying.</param>
         /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
         /// <returns>The original builder.</returns>
         public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<NegotiateOptions> configureOptions)
+        {
+            Action<NegotiateOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddNegotiate(authenticationScheme, displayName, configureOptionsWithServices);
+        }
+
+        /// <summary>
+        /// Adds and configures Negotiate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="authenticationScheme">The scheme name used to identify the authentication handler internally.</param>
+        /// <param name="displayName">The name displayed to users when selecting an authentication handler. The default is null to prevent this from displaying.</param>
+        /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
+        /// <returns>The original builder.</returns>
+        public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<NegotiateOptions, IServiceProvider> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<NegotiateOptions>, PostConfigureNegotiateOptions>());
             return builder.AddScheme<NegotiateOptions, NegotiateHandler>(authenticationScheme, displayName, configureOptions);

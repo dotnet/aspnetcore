@@ -32,6 +32,15 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddWsFederation(WsFederationDefaults.AuthenticationScheme, configureOptions);
 
         /// <summary>
+        /// Registers the <see cref="WsFederationHandler"/> using the default authentication scheme, display name, and the given options configuration.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="configureOptions">A delegate that configures the <see cref="WsFederationOptions"/>.</param>
+        /// <returns></returns>
+        public static AuthenticationBuilder AddWsFederation(this AuthenticationBuilder builder, Action<WsFederationOptions, IServiceProvider> configureOptions)
+            => builder.AddWsFederation(WsFederationDefaults.AuthenticationScheme, configureOptions);
+
+        /// <summary>
         /// Registers the <see cref="WsFederationHandler"/> using the given authentication scheme, default display name, and the given options configuration.
         /// </summary>
         /// <param name="builder"></param>
@@ -39,6 +48,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">A delegate that configures the <see cref="WsFederationOptions"/>.</param>
         /// <returns></returns>
         public static AuthenticationBuilder AddWsFederation(this AuthenticationBuilder builder, string authenticationScheme, Action<WsFederationOptions> configureOptions)
+            => builder.AddWsFederation(authenticationScheme, WsFederationDefaults.DisplayName, configureOptions);
+
+        /// <summary>
+        /// Registers the <see cref="WsFederationHandler"/> using the given authentication scheme, default display name, and the given options configuration.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="authenticationScheme"></param>
+        /// <param name="configureOptions">A delegate that configures the <see cref="WsFederationOptions"/>.</param>
+        /// <returns></returns>
+        public static AuthenticationBuilder AddWsFederation(this AuthenticationBuilder builder, string authenticationScheme, Action<WsFederationOptions, IServiceProvider> configureOptions)
             => builder.AddWsFederation(authenticationScheme, WsFederationDefaults.DisplayName, configureOptions);
 
         /// <summary>
@@ -50,6 +69,29 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">A delegate that configures the <see cref="WsFederationOptions"/>.</param>
         /// <returns></returns>
         public static AuthenticationBuilder AddWsFederation(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<WsFederationOptions> configureOptions)
+        {
+            Action<WsFederationOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddWsFederation(authenticationScheme, displayName, configureOptionsWithServices);
+        }
+
+        /// <summary>
+        /// Registers the <see cref="WsFederationHandler"/> using the given authentication scheme, display name, and options configuration.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="authenticationScheme"></param>
+        /// <param name="displayName"></param>
+        /// <param name="configureOptions">A delegate that configures the <see cref="WsFederationOptions"/>.</param>
+        /// <returns></returns>
+        public static AuthenticationBuilder AddWsFederation(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<WsFederationOptions, IServiceProvider> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<WsFederationOptions>, WsFederationPostConfigureOptions>());
             return builder.AddRemoteScheme<WsFederationOptions, WsFederationHandler>(authenticationScheme, displayName, configureOptions);

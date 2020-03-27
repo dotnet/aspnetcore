@@ -96,6 +96,19 @@ namespace Microsoft.AspNetCore.Authentication
             => AddScheme<TOptions, THandler>(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
         /// <summary>
+        /// Adds a <see cref="AuthenticationScheme"/> which can be used by <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The <see cref="AuthenticationSchemeOptions"/> type to configure the handler."/>.</typeparam>
+        /// <typeparam name="THandler">The <see cref="AuthenticationHandler{TOptions}"/> used to handle this scheme.</typeparam>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, Action<TOptions, IServiceProvider> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+            => AddScheme<TOptions, THandler>(authenticationScheme, displayName: null, configureOptions: configureOptions);
+
+        /// <summary>
         /// Adds a <see cref="RemoteAuthenticationHandler{TOptions}"/> based <see cref="AuthenticationScheme"/> that supports remote authentication
         /// which can be used by <see cref="IAuthenticationService"/>.
         /// </summary>
@@ -106,6 +119,24 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="configureOptions">Used to configure the scheme options.</param>
         /// <returns>The builder.</returns>
         public virtual AuthenticationBuilder AddRemoteScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : RemoteAuthenticationOptions, new()
+            where THandler : RemoteAuthenticationHandler<TOptions>
+        {
+            Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, EnsureSignInScheme<TOptions>>());
+            return AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureOptions: configureOptions);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RemoteAuthenticationHandler{TOptions}"/> based <see cref="AuthenticationScheme"/> that supports remote authentication
+        /// which can be used by <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The <see cref="RemoteAuthenticationOptions"/> type to configure the handler."/>.</typeparam>
+        /// <typeparam name="THandler">The <see cref="RemoteAuthenticationHandler{TOptions}"/> used to handle this scheme.</typeparam>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="displayName">The display name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddRemoteScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions, IServiceProvider> configureOptions)
             where TOptions : RemoteAuthenticationOptions, new()
             where THandler : RemoteAuthenticationHandler<TOptions>
         {

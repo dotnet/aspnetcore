@@ -14,7 +14,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static AuthenticationBuilder AddOAuth(this AuthenticationBuilder builder, string authenticationScheme, Action<OAuthOptions> configureOptions)
             => builder.AddOAuth<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, configureOptions);
 
+        public static AuthenticationBuilder AddOAuth(this AuthenticationBuilder builder, string authenticationScheme, Action<OAuthOptions, IServiceProvider> configureOptions)
+            => builder.AddOAuth<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, configureOptions);
+
         public static AuthenticationBuilder AddOAuth(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OAuthOptions> configureOptions)
+            => builder.AddOAuth<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, displayName, configureOptions);
+
+        public static AuthenticationBuilder AddOAuth(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OAuthOptions, IServiceProvider> configureOptions)
             => builder.AddOAuth<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, displayName, configureOptions);
 
         public static AuthenticationBuilder AddOAuth<TOptions, THandler>(this AuthenticationBuilder builder, string authenticationScheme, Action<TOptions> configureOptions)
@@ -22,7 +28,29 @@ namespace Microsoft.Extensions.DependencyInjection
             where THandler : OAuthHandler<TOptions>
             => builder.AddOAuth<TOptions, THandler>(authenticationScheme, OAuthDefaults.DisplayName, configureOptions);
 
+        public static AuthenticationBuilder AddOAuth<TOptions, THandler>(this AuthenticationBuilder builder, string authenticationScheme, Action<TOptions, IServiceProvider> configureOptions)
+            where TOptions : OAuthOptions, new()
+            where THandler : OAuthHandler<TOptions>
+            => builder.AddOAuth<TOptions, THandler>(authenticationScheme, OAuthDefaults.DisplayName, configureOptions);
+
         public static AuthenticationBuilder AddOAuth<TOptions, THandler>(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : OAuthOptions, new()
+            where THandler : OAuthHandler<TOptions>
+        {
+            Action<TOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddOAuth<TOptions, THandler>(authenticationScheme, displayName, configureOptionsWithServices);
+        }
+
+        public static AuthenticationBuilder AddOAuth<TOptions, THandler>(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TOptions, IServiceProvider> configureOptions)
             where TOptions : OAuthOptions, new()
             where THandler : OAuthHandler<TOptions>
         {

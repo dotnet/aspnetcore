@@ -17,10 +17,31 @@ namespace Microsoft.Extensions.DependencyInjection
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, Action<TwitterOptions> configureOptions)
             => builder.AddTwitter(TwitterDefaults.AuthenticationScheme, configureOptions);
 
+        public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, Action<TwitterOptions, IServiceProvider> configureOptions)
+            => builder.AddTwitter(TwitterDefaults.AuthenticationScheme, configureOptions);
+
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, Action<TwitterOptions> configureOptions)
             => builder.AddTwitter(authenticationScheme, TwitterDefaults.DisplayName, configureOptions);
 
+        public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, Action<TwitterOptions, IServiceProvider> configureOptions)
+            => builder.AddTwitter(authenticationScheme, TwitterDefaults.DisplayName, configureOptions);
+
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TwitterOptions> configureOptions)
+        {
+            Action<TwitterOptions, IServiceProvider> configureOptionsWithServices;
+            if (configureOptions == null)
+            {
+                configureOptionsWithServices = null;
+            }
+            else
+            {
+                configureOptionsWithServices = (options, _) => configureOptions(options);
+            }
+
+            return builder.AddTwitter(authenticationScheme, displayName, configureOptionsWithServices);
+        }
+
+        public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TwitterOptions, IServiceProvider> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
             return builder.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, displayName, configureOptions);
