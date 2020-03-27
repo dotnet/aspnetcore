@@ -175,7 +175,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <RedistPackageToPublish Include="$(InstallersOutputPath)(SharedFrameworkRedistPackageId)*" />
+      <RedistPackageToPublish Include="$(DependencyAssetsDir)(SharedFrameworkRedistPackageId)*" />
     </ItemGroup>
 
     <ItemGroup>
