@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore
             _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 
-        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
+        [Fact]
         public void AssembliesAreReferenceAssemblies()
         {
             if (!_isTargetingPackBuilding)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
+        [Fact]
         public void PlatformManifestListsAllFiles()
         {
             if (!_isTargetingPackBuilding)
