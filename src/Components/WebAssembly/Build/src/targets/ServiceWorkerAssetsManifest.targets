@@ -66,6 +66,12 @@
       <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
 
+    <!-- Neither of these should ever happen, but if we do we want to know about it. -->
+    <Error Text="Cannot compute service worker assets manifest version, because no service worker manifest items were defined."
+           Condition="'@(_ServiceWorkerAssetsManifestItemWithHash)' == ''" />
+    <Error Text="While computing service worker assets manifest version, did not find any dll entries in service worker assets manifest."
+           Condition="'@(_ServiceWorkerAssetsManifestItemWithHash->WithMetadataValue('Extension', '.dll'))' == ''" />
+
     <WriteLinesToFile
       File="$(_CombinedHashIntermediatePath)"
       Lines="@(_ServiceWorkerAssetsManifestItemWithHash->'%(FileHash)')"
