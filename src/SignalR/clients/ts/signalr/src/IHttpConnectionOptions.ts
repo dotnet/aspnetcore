@@ -9,7 +9,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
 
 /** Options provided to the 'withUrl' method on {@link @microsoft/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {
-    /** {@link @microsoft/signalr.MessageHeaders} containing custom headers to be sent with every HTTP request. Note, setting headers when using WebSockets in the browser will not work. */
+    /** {@link @microsoft/signalr.MessageHeaders} containing custom headers to be sent with every HTTP request. Note, setting headers in the browser will not work for WebSockets or the ServerSentEvents stream. */
     headers?: MessageHeaders;
 
     /** An {@link @microsoft/signalr.HttpClient} that will be used to make HTTP requests. */
