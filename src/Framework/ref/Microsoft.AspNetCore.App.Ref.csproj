@@ -116,7 +116,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Output TaskParameter="JoinResult" ItemName="_ReferencedExtensionsRefAssemblies" />
     </JoinItems>
 
-    <!-- _DuplicatedExtensionsRefAssemblies represents ref assemblies that are present in Microsoft.Internal.Extensions.Refs package and also are built in this repo. -->
+    <!-- _DuplicatedExtensionsRefAssemblies represents ref assemblies that are present in Microsoft.Extensions.Internal.Transport package and also are built in this repo. -->
     <!-- This should be temporary while we migrate sources since there should be no duplication when sources are deleted from extensions. -->
     <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(_ResolvedProjectReferencePaths)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
       <Output TaskParameter="JoinResult" ItemName="_DuplicatedExtensionsRefAssemblies" />
@@ -131,7 +131,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </JoinItems>
 
     <ItemGroup>
-      <!-- Do not exclude the ref assemblies that we built in this repo if it's also included in Microsoft.Internal.Extensions.Refs -->
+      <!-- Do not exclude the ref assemblies that we built in this repo if it's also included in Microsoft.Extensions.Internal.Transport -->
       <_ReferencedExtensionsRefAssembliesToExclude Include="@(_ReferencedExtensionsRefAssemblies)" Exclude="@(_DuplicatedExtensionsRefAssemblies)" />
 
       <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
@@ -165,7 +165,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
     <ItemGroup>
       <!-- Use package version for non-Extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Internal.Extensions.Refs' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Pin version for extensions references -->
       <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />

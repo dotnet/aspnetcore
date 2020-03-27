@@ -213,9 +213,9 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>03c40031d618f923aa88da125cb078aabde9ebb1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.4.20201.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>03c40031d618f923aa88da125cb078aabde9ebb1</Sha>
+    <Dependency Name="Microsoft.Extensions.Internal.Transport" Version="5.0.0-preview.4-runtime.20201.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>

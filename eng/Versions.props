@@ -136,7 +136,7 @@
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftInternalExtensionsRefsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftInternalExtensionsRefsPackageVersion>
+    <MicrosoftExtensionsInternalTransportPackageVersion>5.0.0-preview.4-runtime.20201.2</MicrosoftExtensionsInternalTransportPackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-preview.4.20201.1</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
