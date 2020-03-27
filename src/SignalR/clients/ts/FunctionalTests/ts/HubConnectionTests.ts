@@ -1124,6 +1124,34 @@ describe("hubConnection", () => {
                 fail(e);
             }
         });
+
+        it("overwrites library headers with user headers", async (done) => {
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const hubConnection = getConnectionBuilder(t, TESTHUBENDPOINT_URL, { headers })
+                .withHubProtocol(new JsonHubProtocol())
+                .build();
+
+            try {
+                await hubConnection.start();
+
+                const customUserAgent = await hubConnection.invoke("GetHeader", "User-Agent");
+                const customUserHeader = await hubConnection.invoke("GetHeader", "X-HEADER");
+
+
+                if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
+                    expect(customUserAgent).toBeNull();
+                    expect(customUserHeader).toBeNull();
+                } else {
+                    expect(customUserAgent).toEqual("Custom Agent");
+                    expect(customUserHeader).toEqual("VALUE");
+                }
+
+                await hubConnection.stop();
+                done();
+            } catch (e) {
+                fail(e);
+            }
+        });
     });
 
     function getJwtToken(url: string): Promise<string> {
