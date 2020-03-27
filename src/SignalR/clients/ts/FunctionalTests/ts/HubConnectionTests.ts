@@ -1024,7 +1024,7 @@ describe("hubConnection", () => {
 
     it("over LongPolling it sends DELETE request and waits for poll to terminate", async (done) => {
         // Create an HTTP client to capture the poll
-        const defaultClient = new DefaultHttpClient(TestLogger.instance, {});
+        const defaultClient = new DefaultHttpClient(TestLogger.instance);
 
         class TestClient extends HttpClient {
             public pollPromise: Promise<HttpResponse> | null;
@@ -1128,7 +1128,7 @@ describe("hubConnection", () => {
 
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const httpClient = new DefaultHttpClient(NullLogger.instance, {});
+            const httpClient = new DefaultHttpClient(NullLogger.instance);
             httpClient.get(url).then((response) => {
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(response.content as string);

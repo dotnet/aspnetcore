@@ -105,7 +105,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        this.httpClient = options.httpClient || new DefaultHttpClient(this.logger, options.headers || {});
+        this.httpClient = options.httpClient || new DefaultHttpClient(this.logger);
         this.connectionState = ConnectionState.Disconnected;
         this.connectionStarted = false;
         this.options = options;
