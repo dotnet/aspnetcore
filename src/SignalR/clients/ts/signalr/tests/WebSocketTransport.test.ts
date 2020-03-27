@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { MessageHeaders } from "../src/IHubProtocol";
 import { ILogger } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
 import { getUserAgentHeader } from "../src/Utils";
@@ -257,6 +258,33 @@ describe("WebSocketTransport", () => {
         });
     });
 
+    it("overwrites library headers with user headers", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const webSocket = await createAndStartWebSocket(logger, undefined, undefined, undefined, headers);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            expect(TestWebSocket.webSocket.options!.headers[`User-Agent`]).toEqual("Custom Agent");
+            expect(TestWebSocket.webSocket.options!.headers[`X-HEADER`]).toEqual("VALUE");
+
+            await webSocket.stop();
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBeUndefined();
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
+
     it("is closed from 'onreceive' callback throwing", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestEvent;
@@ -270,7 +298,7 @@ describe("WebSocketTransport", () => {
             };
 
             const receiveError = new Error("callback error");
-            webSocket.onreceive = (data) => {
+            webSocket.onreceive = () => {
                 throw receiveError;
             };
 
@@ -318,8 +346,8 @@ describe("WebSocketTransport", () => {
     });
 });
 
-async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat): Promise<WebSocketTransport> {
-    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket, {});
+async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat, headers?: MessageHeaders): Promise<WebSocketTransport> {
+    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket, headers || {});
 
     const connectPromise = webSocket.connect(url || "http://example.com", format || TransferFormat.Text);
 

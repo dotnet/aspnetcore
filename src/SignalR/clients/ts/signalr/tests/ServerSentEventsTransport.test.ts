@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { MessageHeaders } from "../src/IHubProtocol";
 import { TransferFormat } from "../src/ITransport";
 
 import { HttpClient, HttpRequest } from "../src/HttpClient";
@@ -221,10 +222,31 @@ describe("ServerSentEventsTransport", () => {
             expect(request!.url).toBe("http://example.com");
         });
     });
+
+    it("overwrites library headers with user headers", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            const httpClient = new TestHttpClient().on((r) => {
+                request = r;
+                return "";
+            });
+
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient, headers);
+
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["User-Agent"]).toEqual("Custom Agent");
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["X-HEADER"]).toEqual("VALUE");
+            await sse.send("");
+
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["User-Agent"]).toEqual("Custom Agent");
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["X-HEADER"]).toEqual("VALUE");
+            expect(request!.url).toBe("http://example.com");
+        });
+    });
 });
 
-async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), httpClient?: HttpClient): Promise<ServerSentEventsTransport> {
-    const sse = new ServerSentEventsTransport(httpClient || new TestHttpClient(), accessTokenFactory, logger, true, TestEventSource, true, {});
+async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), httpClient?: HttpClient, headers?: MessageHeaders): Promise<ServerSentEventsTransport> {
+    const sse = new ServerSentEventsTransport(httpClient || new TestHttpClient(), accessTokenFactory, logger, true, TestEventSource, true, headers || {});
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);
     await TestEventSource.eventSource.openSet;
