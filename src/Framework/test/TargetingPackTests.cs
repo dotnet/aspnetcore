@@ -20,17 +20,24 @@ namespace Microsoft.AspNetCore
         private readonly string _expectedRid;
         private readonly string _targetingPackRoot;
         private readonly ITestOutputHelper _output;
+        private readonly bool _isTargetingPackBuilding;
 
         public TargetingPackTests(ITestOutputHelper output)
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
+            _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 
         [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
         public void AssembliesAreReferenceAssemblies()
         {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
@@ -58,6 +65,11 @@ namespace Microsoft.AspNetCore
         [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
         public void PlatformManifestListsAllFiles()
         {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
