@@ -295,6 +295,12 @@
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
 
+    <Message Text="Publishing the following packages: @(PackageToPublishToTransport)"
+             Importance="high" />
+
+    <Message Text="Publishing the following files: @(FilesToPublishToTransport)"
+             Importance="high" />
+
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"
