@@ -93,7 +93,7 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.7.0</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.7.0</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>4.7.1</SystemTextJsonPackageVersion>
-    <SystemNetHttpJsonPackageVersion>3.2.0-preview3.20175.8</SystemNetHttpJsonPackageVersion>
+    <SystemNetHttpJsonPackageVersion>3.2.0-preview4.20176.5</SystemNetHttpJsonPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.7.0</SystemThreadingChannelsPackageVersion>
     <SystemWindowsExtensionsPackageVersion>4.7.0</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
