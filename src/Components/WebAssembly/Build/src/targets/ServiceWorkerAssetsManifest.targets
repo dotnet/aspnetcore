@@ -23,7 +23,7 @@
           Inputs="@(ServiceWorkerAssetsManifestItem)"
           Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
           BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"
-          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion">
+          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion; _GenerateServiceWorkerIntermediateFiles">
 
     <GenerateServiceWorkerAssetsManifest
       Version="$(ServiceWorkerAssetsManifestVersion)"
@@ -61,7 +61,9 @@
     Compute a default ServiceWorkerAssetsManifestVersion value by combining all the asset hashes.
     This is useful because then clients will only have to repopulate caches if the contents have changed.
   -->
-  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion" Condition="'$(ServiceWorkerAssetsManifest)' != ''">
+  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
+          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes"
+          Condition="'$(ServiceWorkerAssetsManifest)' != ''">
     <PropertyGroup>
       <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
@@ -97,7 +99,7 @@
 
   <Target Name="_ResolveServiceWorkerOutputs"
           BeforeTargets="_ResolveBlazorOutputs"
-          DependsOnTargets="_ComputeServiceWorkerOutputs; _GenerateServiceWorkerIntermediateFiles">
+          DependsOnTargets="_ComputeServiceWorkerOutputs">
     <ItemGroup>
       <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerIntermediateFile)" />
     </ItemGroup>
