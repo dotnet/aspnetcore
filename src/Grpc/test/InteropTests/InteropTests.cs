@@ -14,22 +14,15 @@ using Xunit.Abstractions;
 
 namespace InteropTests
 {
-    public class InteropTests : IClassFixture<InteropTestsFixture>
+    public class InteropTests
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
-
         private readonly string _clientPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropClient", "InteropClient.dll");
-        private readonly InteropTestsFixture _fixture;
+        private readonly string _serverPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropWebsite", "InteropWebsite.dll");
         private readonly ITestOutputHelper _output;
 
-        public InteropTests(InteropTestsFixture fixture, ITestOutputHelper output)
+        public InteropTests(ITestOutputHelper output)
         {
-            var attributes = Assembly.GetExecutingAssembly()
-                .GetCustomAttributes<AssemblyMetadataAttribute>();
-
-            fixture.Path = Path.Combine(Directory.GetCurrentDirectory(), "InteropWebsite", "InteropWebsite.dll");
-
-            _fixture = fixture;
             _output = output;
         }
 
@@ -37,15 +30,18 @@ namespace InteropTests
         [MemberData(nameof(TestCaseData))]
         public async Task InteropTestCase(string name)
         {
-            await _fixture.EnsureStarted(_output).TimeoutAfter(DefaultTimeout);
-
-            using (var clientProcess = new ClientProcess(_output, _clientPath, _fixture.ServerPort, name))
+            using (var serverProcess = new WebsiteProcess(_serverPath, _output))
             {
-                await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
+                await serverProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
 
-                await clientProcess.Exited.TimeoutAfter(DefaultTimeout);
+                using (var clientProcess = new ClientProcess(_output, _clientPath, serverProcess.ServerPort, name))
+                {
+                    await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
 
-                Assert.Equal(0, clientProcess.ExitCode);
+                    await clientProcess.Exited.TimeoutAfter(DefaultTimeout);
+
+                    Assert.Equal(0, clientProcess.ExitCode);
+                }
             }
         }
 
