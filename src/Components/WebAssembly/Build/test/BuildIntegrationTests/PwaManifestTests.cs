@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             var expectedExtensions = new[] { ".dll", ".pdb", ".js", ".wasm" };
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:ServiceWorkerAssetsManifest=service-worker-assets.js");
 
             Assert.BuildPassed(result);

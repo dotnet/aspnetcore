@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                             resourceList = resourceData.assembly;
                             break;
                         case "pdb":
-                            resourceData.pdb = new ResourceHashesByNameDictionary();
+                            resourceData.pdb ??= new ResourceHashesByNameDictionary();
                             resourceList = resourceData.pdb;
                             break;
                         case "satellite":

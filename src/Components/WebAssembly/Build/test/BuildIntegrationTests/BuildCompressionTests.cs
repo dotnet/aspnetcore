@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Build_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Build_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorWebAssemblyEnableLinking=false");
 
             Assert.BuildPassed(result);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Build_CompressesAllFrameworkFiles()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Build_DisabledCompression_DoesNotCompressFiles()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
 
             // Act
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/p:BlazorEnableCompression=false");

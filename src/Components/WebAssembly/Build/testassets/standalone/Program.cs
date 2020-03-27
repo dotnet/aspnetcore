@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace standalone
 {
@@ -6,6 +6,7 @@ namespace standalone
     {
         public static void Main(string[] args)
         {
+            GC.KeepAlive(typeof(RazorClassLibrary.Class1));
 #if REFERENCE_classlibrarywithsatelliteassemblies
             GC.KeepAlive(typeof(classlibrarywithsatelliteassemblies.Class1));
 #endif
