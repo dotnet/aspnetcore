@@ -122,30 +122,31 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Theory]
-        [InlineData("http://contoso.com/", "http://contoso.com/?param1[]=value1&param1[]=&param1[]=value3&param2[]=")]
-        [InlineData("http://contoso.com/someaction", "http://contoso.com/someaction?param1[]=value1&param1[]=&param1[]=value3&param2[]=")]
-        [InlineData("http://contoso.com/someaction?param2[]=1", "http://contoso.com/someaction?param2[]=1&param1[]=value1&param1[]=&param1[]=value3&param2[]=")]
-        [InlineData("http://contoso.com/some#action", "http://contoso.com/some?param1[]=value1&param1[]=&param1[]=value3&param2[]=#action")]
-        [InlineData("http://contoso.com/some?param2[]=1#action", "http://contoso.com/some?param2[]=1&param1[]=value1&param1[]=&param1[]=value3&param2[]=#action")]
-        [InlineData("http://contoso.com/#action", "http://contoso.com/?param1[]=value1&param1[]=&param1[]=value3&param2[]=#action")]
+        [InlineData("http://contoso.com/", "http://contoso.com/?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=")]
+        [InlineData("http://contoso.com/someaction", "http://contoso.com/someaction?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=")]
+        [InlineData("http://contoso.com/someaction?param2%5B%5D=1", "http://contoso.com/someaction?param2%5B%5D=1&param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=")]
+        [InlineData("http://contoso.com/some#action", "http://contoso.com/some?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#action")]
+        [InlineData("http://contoso.com/some?param2%5B%5D=1#action", "http://contoso.com/some?param2%5B%5D=1&param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#action")]
+        [InlineData("http://contoso.com/#action", "http://contoso.com/?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#action")]
         [InlineData(
             "http://contoso.com/someaction?q=test#anchor?value",
-            "http://contoso.com/someaction?q=test&param1[]=value1&param1[]=&param1[]=value3&param2[]=#anchor?value")]
+            "http://contoso.com/someaction?q=test&param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#anchor?value")]
         [InlineData(
             "http://contoso.com/someaction#anchor?stuff",
-            "http://contoso.com/someaction?param1[]=value1&param1[]=&param1[]=value3&param2[]=#anchor?stuff")]
+            "http://contoso.com/someaction?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#anchor?stuff")]
         [InlineData(
             "http://contoso.com/someaction?name?something",
-            "http://contoso.com/someaction?name?something&param1[]=value1&param1[]=&param1[]=value3&param2[]=")]
+            "http://contoso.com/someaction?name?something&param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=")]
         [InlineData(
             "http://contoso.com/someaction#name#something",
-            "http://contoso.com/someaction?param1[]=value1&param1[]=&param1[]=value3&param2[]=#name#something")]
+            "http://contoso.com/someaction?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#name#something")]
         public void AddQueryStringWithEnumerableOfKeysAndStringValues(string uri, string expectedUri)
         {
             var queryStrings = new Dictionary<string, StringValues>()
                         {
                             { "param1[]", new StringValues(new [] { "value1", string.Empty, "value3" }) },
-                            { "param2[]", StringValues.Empty }
+                            { "param2[]", string.Empty },
+                            { "param3[]", StringValues.Empty }
                         };
 
             var result = QueryHelpers.AddQueryString(uri, queryStrings);

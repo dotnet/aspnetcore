@@ -77,7 +77,8 @@ namespace Microsoft.AspNetCore.Http.Extensions
             var builder = new QueryBuilder(new[]
             {
                 new KeyValuePair<string, StringValues>("key1", new StringValues(new [] { "value1", string.Empty, "value3" })),
-                new KeyValuePair<string, StringValues>("key2", StringValues.Empty)
+                new KeyValuePair<string, StringValues>("key2", string.Empty),
+                new KeyValuePair<string, StringValues>("key3", StringValues.Empty)
             });
             Assert.Equal("?key1=value1&key1=&key1=value3&key2=", builder.ToString());
         }
