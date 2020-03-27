@@ -9,6 +9,5 @@
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
   </ItemGroup>
 </Project>

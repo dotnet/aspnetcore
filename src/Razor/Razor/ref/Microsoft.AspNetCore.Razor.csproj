@@ -8,6 +8,5 @@
     <Compile Include="Microsoft.AspNetCore.Razor.Manual.cs" />
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
   </ItemGroup>
 </Project>

@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity
             uint b1, b2, b3, b4, b5;
 
             int retVal;
-            switch (offset - input.Length)
+            switch (input.Length - offset)
             {
                 case 1: retVal = 2; break;
                 case 2: retVal = 4; break;

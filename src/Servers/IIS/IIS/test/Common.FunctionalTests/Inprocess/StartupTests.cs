@@ -62,8 +62,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
-
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                Assert.Contains("500.0", await response.Content.ReadAsStringAsync());
+            }
         }
 
         [ConditionalFact]
@@ -113,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2221")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -172,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 
@@ -206,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task DetectsOverriddenServer()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -223,6 +230,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task LogsStartupExceptionExitError()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -271,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32");
             }
             else
             {
@@ -314,11 +322,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32 - ANCM Failed to Load dll");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32");
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.0 - ANCM In-Process Handler Load Failure");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.0");
             }
         }
 
@@ -335,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32");
             }
             else
             {
@@ -354,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31");
             }
             else
             {
@@ -374,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll"));
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.38 - ANCM Application DLL Not Found");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.38");
             }
             else
             {
@@ -396,7 +404,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                Assert.Contains("HTTP Error 500.31 - ANCM Failed to Find Native Dependencies", responseContent);
+                Assert.Contains("500.31", responseContent);
                 Assert.Contains("The framework 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
             }
             else
@@ -416,14 +424,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             if (DeployerSelector.HasNewShim && DeployerSelector.HasNewHandler)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM Request Handler Load Failure ");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.33");
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
             }
             else if (DeployerSelector.HasNewShim)
             {
                 // Forwards compat tests fail earlier due to a error with the M.AspNetCore.Server.IIS package.
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31");
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
             }
@@ -462,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 if (DeployerSelector.HasNewHandler)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    Assert.Contains("ANCM Failed to Start Within Startup Time Limit", responseContent);
+                    Assert.Contains("500.37", responseContent);
                 }
             }
         }
@@ -701,6 +709,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [InlineData("DOTNET_ENVIRONMENT", "deVelopment")]
         [InlineData("ASPNETCORE_DETAILEDERRORS", "1")]
         [InlineData("ASPNETCORE_DETAILEDERRORS", "TRUE")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled(string environmentVariable, string value)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -725,6 +734,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabledViaWebConfig()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -752,6 +762,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [RequiresNewHandler]
         [InlineData("ThrowInStartup")]
         [InlineData("ThrowInStartupGenericHost")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseDuringHostingStartupProcess(string startupType)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -765,7 +776,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Contains("InvalidOperationException", content);
             Assert.Contains("TestSite.Program.Main", content);
             Assert.Contains("From Configure", content);
-            Assert.DoesNotContain("ANCM In-Process Start Failure", content);
 
             StopServer();
 
@@ -775,6 +785,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -797,6 +808,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/20153")]
         public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -875,6 +887,39 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.True(result.IsSuccessStatusCode);
         }
 
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherPathIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_PATH"] = _dotnetLocation;
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nope"));
+
+            await StartAsync(deploymentParameters);
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        [RequiresNewHandler]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task EnvironmentVariableForLauncherArgsIsPreferred(HostingModel hostingModel)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
+            using var publishedApp = await deploymentParameters.ApplicationPublisher.Publish(deploymentParameters, LoggerFactory.CreateLogger("test"));
+
+            deploymentParameters.EnvironmentVariables["ANCM_LAUNCHER_ARGS"] = Path.ChangeExtension(Path.Combine(publishedApp.Path, deploymentParameters.ApplicationPublisher.ApplicationPath), ".dll");
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", "nope"));
+
+            await StartAsync(deploymentParameters);
+        }
+
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
         {
             var entries = GetEventLogsFromDotnetRuntime(deploymentResult);
@@ -932,7 +977,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         private Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
         {
-            return AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.0 - ANCM In-Process Handler Load Failure");
+            return AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.0");
         }
 
         private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, string error)

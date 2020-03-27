@@ -7,13 +7,14 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
@@ -22,11 +23,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal class Http2FrameWriter
     {
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
         private readonly object _writeLock = new object();
         private readonly Http2Frame _outgoingFrame;
-        private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
+        private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
         private readonly ConcurrentPipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly Http2Connection _http2Connection;
@@ -159,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                           Padding (*)                       ...
             +---------------------------------------------------------------+
         */
-        public void WriteResponseHeaders(int streamId, int statusCode, Http2HeadersFrameFlags headerFrameFlags, IHeaderDictionary headers)
+        public void WriteResponseHeaders(int streamId, int statusCode, Http2HeadersFrameFlags headerFrameFlags, HttpResponseHeaders headers)
         {
             lock (_writeLock)
             {
@@ -170,9 +172,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 try
                 {
+                    _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -195,9 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 try
                 {
+                    _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(_headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -226,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = _hpackEncoder.Encode(buffer, out payloadLength);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(_headersEnumerator, buffer, out payloadLength);
                 _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)
@@ -239,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream)
+        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool forceFlush)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -261,7 +265,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 flowControl.Advance((int)dataLength);
                 WriteDataUnsynchronized(streamId, data, dataLength, endStream);
-                return TimeFlushUnsynchronizedAsync();
+
+                if (forceFlush)
+                {
+                    return TimeFlushUnsynchronizedAsync();
+                }
+
+                return default;
             }
         }
 
@@ -355,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             while (dataLength > 0)
             {
-                OutputFlowControlAwaitable availabilityAwaitable;
+                ValueTask<object> availabilityTask;
                 var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)
@@ -365,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
-                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
+                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityTask);
 
                     if (actual > 0)
                     {
@@ -395,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
-                if (availabilityAwaitable == null && writeTask.IsCompleted)
+                if (availabilityTask.IsCompleted && writeTask.IsCompleted)
                 {
                     continue;
                 }
@@ -407,9 +417,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 // This awaitable releases continuations in FIFO order when the window updates.
                 // It should be very rare for a continuation to run without any availability.
-                if (availabilityAwaitable != null)
+                if (!availabilityTask.IsCompleted)
                 {
-                    await availabilityAwaitable;
+                    await availabilityTask;
                 }
 
                 flushResult = await writeTask;
@@ -653,17 +663,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 flowControl.Abort();
-            }
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in headers)
-            {
-                foreach (var value in header.Value)
-                {
-                    yield return new KeyValuePair<string, string>(header.Key, value);
-                }
             }
         }
     }

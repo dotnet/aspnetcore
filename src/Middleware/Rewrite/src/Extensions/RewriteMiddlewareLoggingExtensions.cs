@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         private static readonly Action<ILogger, Exception> _modRewriteMatchedRule;
         private static readonly Action<ILogger, Exception> _redirectedToHttps;
         private static readonly Action<ILogger, Exception> _redirectedToWww;
+        private static readonly Action<ILogger, Exception> _redirectedToNonWww;
         private static readonly Action<ILogger, string, Exception> _redirectedRequest;
         private static readonly Action<ILogger, string, Exception> _rewrittenRequest;
         private static readonly Action<ILogger, string, Exception> _abortedRequest;
@@ -88,6 +89,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             LogLevel.Information,
                             new EventId(13, "RedirectedToWww"),
                             "Request redirected to www");
+
+            _redirectedToNonWww = LoggerMessage.Define(
+                            LogLevel.Information,
+                            new EventId(14, "RedirectedToNonWww"),
+                            "Request redirected to root domain from www subdomain");
         }
 
         public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
@@ -133,6 +139,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         public static void RedirectedToWww(this ILogger logger)
         {
             _redirectedToWww(logger, null);
+        }
+
+        public static void RedirectedToNonWww(this ILogger logger)
+        {
+            _redirectedToNonWww(logger, null);
         }
 
         public static void RedirectedRequest(this ILogger logger, string redirectedUrl)

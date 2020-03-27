@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private IWebHost _host;
         private IHostApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
+        private readonly IDisposable _extraDisposable;
 
         private readonly LogSinkProvider _logSinkProvider;
         private string _url;
@@ -49,12 +52,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public override string Url => _url;
 
-        public InProcessTestServer() : this(loggerFactory: null)
+        public static async Task<InProcessTestServer<TStartup>> StartServer(ILoggerFactory loggerFactory, IDisposable disposable = null)
+        {
+            var server = new InProcessTestServer<TStartup>(loggerFactory, disposable);
+            await server.StartServerInner();
+            return server;
+        }
+
+        private InProcessTestServer() : this(loggerFactory: null, null)
         {
         }
 
-        public InProcessTestServer(ILoggerFactory loggerFactory)
+        private InProcessTestServer(ILoggerFactory loggerFactory, IDisposable disposable)
         {
+            _extraDisposable = disposable;
             _logSinkProvider = new LogSinkProvider();
 
             if (loggerFactory == null)
@@ -71,11 +82,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _loggerFactory = new WrappingLoggerFactory(_loggerFactory);
             _loggerFactory.AddProvider(_logSinkProvider);
             _logger = _loggerFactory.CreateLogger<InProcessTestServer<TStartup>>();
-
-            StartServer();
         }
 
-        private void StartServer()
+        private async Task StartServerInner()
         {
             // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
             var url = "http://127.0.0.1:0";
@@ -90,27 +99,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
 
-            var t = Task.Run(() => _host.Start());
             _logger.LogInformation("Starting test server...");
-            _lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
-
-            // This only happens once per fixture, so we can afford to wait a little bit on it.
-            if (!_lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(20)))
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            try
             {
-                // t probably faulted
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-
+                await _host.StartAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
                 var logs = _logSinkProvider.GetLogs();
                 throw new TimeoutException($"Timed out waiting for application to start.{Environment.NewLine}Startup Logs:{Environment.NewLine}{RenderLogs(logs)}");
             }
+
             _logger.LogInformation("Test Server started");
 
             // Get the URL from the server
             _url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
 
+            _lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
             _lifetime.ApplicationStopped.Register(() =>
             {
                 _logger.LogInformation("Test server shut down");
@@ -138,6 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public override void Dispose()
         {
+            _extraDisposable?.Dispose();
             _logger.LogInformation("Shutting down test server");
             _host.Dispose();
             _loggerFactory.Dispose();

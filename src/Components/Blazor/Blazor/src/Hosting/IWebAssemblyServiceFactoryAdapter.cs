@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
-    // Equivalent to https://github.com/aspnet/Extensions/blob/master/src/Hosting/Hosting/src/Internal/IServiceFactoryAdapter.cs
+    // Equivalent to https://github.com/dotnet/extensions/blob/master/src/Hosting/Hosting/src/Internal/IServiceFactoryAdapter.cs
 
     internal interface IWebAssemblyServiceFactoryAdapter
     {

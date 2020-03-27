@@ -26,6 +26,15 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Configuration.KeyPerFile" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization.Abstractions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Localization" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.ObjectPool" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.JSInterop" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.WebEncoders" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
 
     <!-- These assemblies are only in the shared framework -->
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />

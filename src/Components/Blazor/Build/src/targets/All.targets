@@ -6,40 +6,43 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <BlazorToolsDir Condition="'$(BlazorToolsDir)' == ''">$(MSBuildThisFileDirectory)../tools/</BlazorToolsDir>
-    <BlazorBuildExe>dotnet &quot;$(BlazorToolsDir)Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
+    <BlazorToolsDir Condition="'$(BlazorToolsDir)' == ''">$(MSBuildThisFileDirectory)..\tools\</BlazorToolsDir>
+    <_BlazorTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_BlazorTasksTFM>
+    <_BlazorTasksTFM Condition=" '$(_BlazorTasksTFM)' == ''">netfx</_BlazorTasksTFM>
+    <BlazorTasksPath>$(BlazorToolsDir)$(_BlazorTasksTFM)\Microsoft.AspNetCore.Blazor.Build.Tasks.dll</BlazorTasksPath>
 
     <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- By default, enable debugging for debug builds. -->
+    <BlazorEnableDebugging Condition="'$(Configuration)' == 'Debug' AND '$(BlazorEnableDebugging)' == ''">true</BlazorEnableDebugging>
   </PropertyGroup>
 
   <Import Project="Blazor.MonoRuntime.targets" />
   <Import Project="Publish.targets" />
+  <Import Project="StaticWebAssets.targets" />
 
-  <Target Name="GenerateBlazorMetadataFile" BeforeTargets="GetCopyToOutputDirectoryItems">
+  <Target Name="GenerateBlazorMetadataFile"
+    BeforeTargets="GetCopyToOutputDirectoryItems">
     <PropertyGroup>
       <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>
       <BlazorMetadataFilePath>$(TargetDir)$(BlazorMetadataFileName)</BlazorMetadataFilePath>
     </PropertyGroup>
-    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Lines="$(MSBuildProjectFullPath)" Overwrite="true" Encoding="Unicode"/>
-    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Lines="$(OutDir)$(AssemblyName).dll" Overwrite="false" Encoding="Unicode"/>
-    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Condition="'$(BlazorRebuildOnFileChange)'=='true'" Lines="autorebuild:true" Overwrite="false" Encoding="Unicode"/>
-    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Condition="'$(BlazorEnableDebugging)'=='true'" Lines="debug:true" Overwrite="false" Encoding="Unicode"/>
+
+    <ItemGroup>
+      <_BlazorConfigContent Include="$(MSBuildProjectFullPath)" />
+      <_BlazorConfigContent Include="$(TargetPath)" />
+      <_BlazorConfigContent Include="debug:true" Condition="'$(BlazorEnableDebugging)'=='true'" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(BlazorMetadataFilePath)"
+      Lines="@(_BlazorConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="True" />
+
     <ItemGroup>
       <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-  </Target>
-
-  <PropertyGroup>
-    <GetCurrentProjectStaticWebAssetsDependsOn>
-      $(GetCurrentProjectStaticWebAssetsDependsOn);
-      _ClearCurrentStaticWebAssetsForReferenceDiscovery
-    </GetCurrentProjectStaticWebAssetsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_ClearCurrentStaticWebAssetsForReferenceDiscovery">
-    <ItemGroup>
-      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
     </ItemGroup>
   </Target>
 

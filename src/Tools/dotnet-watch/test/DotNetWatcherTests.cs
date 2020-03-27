@@ -22,8 +22,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new KitchenSinkApp(logger);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Fact]
+        [QuarantinedTest]
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
+        [QuarantinedTest]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();

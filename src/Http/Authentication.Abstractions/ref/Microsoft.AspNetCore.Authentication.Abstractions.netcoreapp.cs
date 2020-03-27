@@ -6,12 +6,12 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticateResult
     {
         protected AuthenticateResult() { }
-        public System.Exception Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public bool None { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public System.Exception Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public bool None { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public System.Security.Claims.ClaimsPrincipal Principal { get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public bool Succeeded { get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationTicket Ticket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationTicket Ticket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(System.Exception failure) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(System.Exception failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(string failureMessage) { throw null; }
@@ -45,14 +45,14 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationOptions
     {
         public AuthenticationOptions() { }
-        public string DefaultAuthenticateScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultChallengeScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultForbidScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultSignInScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultSignOutScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireAuthenticatedSignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> SchemeMap { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string DefaultAuthenticateScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultChallengeScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultForbidScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultSignInScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultSignOutScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireAuthenticatedSignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> SchemeMap { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> Schemes { get { throw null; } }
         public void AddScheme(string name, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> configureBuilder) { }
         public void AddScheme<THandler>(string name, string displayName) where THandler : Microsoft.AspNetCore.Authentication.IAuthenticationHandler { }
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Authentication
         public System.DateTimeOffset? ExpiresUtc { get { throw null; } set { } }
         public bool IsPersistent { get { throw null; } set { } }
         public System.DateTimeOffset? IssuedUtc { get { throw null; } set { } }
-        public System.Collections.Generic.IDictionary<string, string> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<string, object> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, string> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, object> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string RedirectUri { get { throw null; } set { } }
         protected bool? GetBool(string key) { throw null; }
         protected System.DateTimeOffset? GetDateTimeOffset(string key) { throw null; }
@@ -81,31 +81,31 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationScheme
     {
         public AuthenticationScheme(string name, string displayName, System.Type handlerType) { }
-        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Type HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class AuthenticationSchemeBuilder
     {
         public AuthenticationSchemeBuilder(string name) { }
-        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Type HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Authentication.AuthenticationScheme Build() { throw null; }
     }
     public partial class AuthenticationTicket
     {
         public AuthenticationTicket(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string authenticationScheme) { }
         public AuthenticationTicket(System.Security.Claims.ClaimsPrincipal principal, string authenticationScheme) { }
-        public string AuthenticationScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string AuthenticationScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class AuthenticationToken
     {
         public AuthenticationToken() { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class AuthenticationTokenExtensions
     {
@@ -149,6 +149,7 @@ namespace Microsoft.AspNetCore.Authentication
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme>> GetRequestHandlerSchemesAsync();
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme> GetSchemeAsync(string name);
         void RemoveScheme(string name);
+        bool TryAddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme) { throw null; }
     }
     public partial interface IAuthenticationService
     {

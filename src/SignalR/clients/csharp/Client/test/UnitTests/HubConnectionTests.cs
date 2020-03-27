@@ -460,6 +460,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        [Fact]
+        public async Task CanAwaitUsingHubConnection()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                await using var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
+            }
+        }
+
         private class SampleObject
         {
             public SampleObject(string foo, int bar)

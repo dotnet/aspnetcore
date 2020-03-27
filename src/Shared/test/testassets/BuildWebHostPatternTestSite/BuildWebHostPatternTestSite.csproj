@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MockHostTypes\MockHostTypes.csproj" />
+  </ItemGroup>
+
+</Project>

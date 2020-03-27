@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static bool IsNonGetRequest(ActionContext context)
         {
-            return !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+            return !HttpMethods.IsGet(context.HttpContext.Request.Method);
         }
     }
 }

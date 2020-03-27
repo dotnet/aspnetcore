@@ -519,7 +519,7 @@ TREE_HASH_TABLE<_Record>::InsertRecord(
 )
 /*++
   This method inserts a node for this record and also empty nodes for paths
-  in the heirarchy leading upto this path
+  in the hierarchy leading upto this path
 
   The insert is done under only a read-lock - this is possible by keeping
   the hashes in a bucket in increasing order and using interlocked operations

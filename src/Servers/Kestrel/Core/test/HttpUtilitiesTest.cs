@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", true, HttpUtilities.Http10Version, (int)HttpVersion.Http10)]
-        [InlineData("HTTP/1.1\r", true, HttpUtilities.Http11Version, (int)HttpVersion.Http11)]
+        [InlineData("HTTP/1.0\r", true, "HTTP/1.0", (int)HttpVersion.Http10)]
+        [InlineData("HTTP/1.1\r", true, "HTTP/1.1", (int)HttpVersion.Http11)]
         [InlineData("HTTP/3.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.1\r", false, null, (int)HttpVersion.Unknown)]

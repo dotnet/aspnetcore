@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -395,6 +397,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ParseRequestLineTlsOverHttp()
+        {
+            var parser = CreateParser(_nullTrace);
+            var buffer = ReadOnlySequenceFactory.CreateSegments(new byte[] { 0x16, 0x03, 0x01, 0x02, 0x00, 0x01, 0x00, 0xfc, 0x03, 0x03, 0x03, 0xca, 0xe0, 0xfd, 0x0a });
+
+            var requestHandler = new RequestHandler();
+
+            var badHttpRequestException = Assert.Throws<BadHttpRequestException>(() =>
+            {
+                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
+            });
+
+            Assert.Equal(badHttpRequestException.StatusCode, StatusCodes.Status400BadRequest);
+            Assert.Equal(RequestRejectionReason.TlsOverHttpError, badHttpRequestException.Reason);
+        }
+
+        [Fact]
         public void ParseHeadersWithGratuitouslySplitBuffers()
         {
             var parser = CreateParser(_nullTrace);
@@ -488,12 +507,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
             {
                 Headers[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
             }
 
-            void IHttpHeadersHandler.OnHeadersComplete() { }
+            void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
             {
@@ -503,6 +522,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 RawPath = path.GetAsciiStringNonNullCharacters();
                 Query = query.GetAsciiStringNonNullCharacters();
                 PathEncoded = pathEncoded;
+            }
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
             }
         }
 

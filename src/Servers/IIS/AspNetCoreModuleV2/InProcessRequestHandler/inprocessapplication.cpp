@@ -165,8 +165,8 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
         errorContext.statusCode = 500;
         errorContext.subStatusCode = 37;
-        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
-        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+        errorContext.generalErrorType = "ASP.NET Core app failed to start within startup time limit";
+        errorContext.errorReason = format("ASP.NET Core app failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
 
         m_waitForShutdown = false;
         StopClr();
@@ -195,7 +195,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
-        ErrorContext errorContext; // unused 
+        ErrorContext errorContext; // unused
 
         if (s_fMainCallback == nullptr)
         {
@@ -247,15 +247,15 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
-            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
+            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x", startupReturnCode));
         }
 
         if (m_pConfig->QueryCallStartupHook())
         {
             PWSTR startupHookValue = NULL;
-            // Will get property not found if the enviroment variable isn't set.
+            // Will get property not found if the environment variable isn't set.
             context->m_hostFxr.GetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, &startupHookValue);
-            
+
             if (startupHookValue == NULL)
             {
                 RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));

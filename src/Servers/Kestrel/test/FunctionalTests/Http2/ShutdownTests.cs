@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
-    [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
@@ -44,8 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [CollectDump]
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/9985", Queues = "Fedora.28.Amd64.Open")]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.All)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/9985", Queues = "Fedora.28.Amd64;Fedora.28.Amd64.Open")]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -95,13 +94,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await stopTask.DefaultTimeout();
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished "));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2667", FlakyOn.All)]
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -139,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await requestStarted.Task.DefaultTimeout();
 
                 // Wait for the graceful shutdown log before canceling the token passed to StopAsync and triggering an ungraceful shutdown.
-                // Otherwise, graceful shutdown might be skipped causing there to be no corresponding log. https://github.com/aspnet/AspNetCore/issues/6556
+                // Otherwise, graceful shutdown might be skipped causing there to be no corresponding log. https://github.com/dotnet/aspnetcore/issues/6556
                 var closingMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closing.")).DefaultTimeout();
 
                 var cts = new CancellationTokenSource();

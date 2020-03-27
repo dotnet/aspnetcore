@@ -1,0 +1,12 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <PackageId>@microsoft/dotnet-js-interop</PackageId>
+    <IsPackable>true</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>
