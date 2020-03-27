@@ -135,7 +135,17 @@ namespace Microsoft.AspNetCore.Internal
                 _stderrCapture.AppendLine(e.Data);
             }
 
-            _output.WriteLine("[ERROR] " + e.Data);
+            try
+            {
+                _output.WriteLine("[ERROR] " + e.Data);
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (_stdoutLines != null)
+                {
+                    _stderrCapture.AppendLine(ex.ToString());
+                }
+            }
         }
 
         private void OnOutputData(object sender, DataReceivedEventArgs e)
@@ -150,7 +160,17 @@ namespace Microsoft.AspNetCore.Internal
                 _stdoutCapture.AppendLine(e.Data);
             }
 
-            _output.WriteLine(e.Data);
+            try
+            {
+                _output.WriteLine(e.Data);
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (_stdoutLines != null)
+                {
+                    _stdoutLines.Add(ex.ToString());
+                }
+            }
 
             if (_stdoutLines != null)
             {
