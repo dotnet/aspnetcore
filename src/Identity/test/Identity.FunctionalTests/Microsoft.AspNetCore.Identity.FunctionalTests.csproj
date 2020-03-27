@@ -24,8 +24,6 @@
 
     <HelixContent Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
     <HelixContent Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Identity.DefaultUI.WebSite.deps.json" />
-    <HelixContent Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" Link="Identity.DefaultUI.WebSite\wwwroot\%(RecursiveDir)\%(FileName)%(Extension)" />
-    <HelixContent Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" Link="Identity.DefaultUI.WebSite\Pages\%(RecursiveDir)\%(FileName)%(Extension)" />
     
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
