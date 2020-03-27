@@ -108,7 +108,7 @@ export class LongPollingTransport implements ITransport {
 
     private updateHeaderToken(request: HttpRequest, token: string | null) {
         if (!request.headers) {
-            request.headers = this.headers;
+            request.headers = {};
         }
         if (token) {
             // tslint:disable-next-line:no-string-literal
