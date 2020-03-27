@@ -238,7 +238,7 @@ describe("ServerSentEventsTransport", () => {
             expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["X-HEADER"]).toEqual("VALUE");
             await sse.send("");
 
-            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers["User-Agent"]).toEqual("Custom Agent");
+            expect(request!.headers!["User-Agent"]).toEqual("Custom Agent");
             expect(request!.headers!["X-HEADER"]).toEqual("VALUE");
             expect(request!.url).toBe("http://example.com");
         });
