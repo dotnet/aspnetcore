@@ -77,10 +77,20 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The combined result.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
-        public static string AddQueryString(
-            string uri,
-            IEnumerable<KeyValuePair<string, StringValues>> queryString)
-            => AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v.ToString())));
+        public static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, StringValues>> queryString)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (queryString == null)
+            {
+                throw new ArgumentNullException(nameof(queryString));
+            }
+
+            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v.ToString())));
+        }
 
         /// <summary>
         /// Append the given query keys and values to the URI.
