@@ -1128,7 +1128,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var uploadStreamSource = new CancellationTokenSource();
             connectionState.UploadStreamToken = uploadStreamSource.Token;
             var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
-            var invocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
+
+            // We can't safely wait for this task when closing without introducing deadlock potential when calling StopAsync in a .On method
+            connectionState.InvocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
 
             async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
             {
@@ -1223,9 +1225,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await timerTask;
                 uploadStreamSource.Cancel();
                 await HandleConnectionClose(connectionState);
-
-                // await after the connection has been closed, otherwise could deadlock on a user's .On callback(s)
-                await invocationMessageReceiveTask;
             }
         }
 
@@ -1657,6 +1656,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public Task ReceiveTask { get; set; }
             public Exception CloseException { get; set; }
             public CancellationToken UploadStreamToken { get; set; }
+
+            // We store this task so we can view it in a dump file, but never await it
+            public Task InvocationMessageReceiveTask { get; set; }
 
             // Indicates the connection is stopping AND the client should NOT attempt to reconnect even if automatic reconnects are enabled.
             // This means either HubConnection.DisposeAsync/StopAsync was called OR a CloseMessage with AllowReconnects set to false was received.
