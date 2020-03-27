@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         }
 
         public QueryBuilder(IEnumerable<KeyValuePair<string, StringValues>> parameters)
-            : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v.ToString())))
+            : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)))
         {
 
         }
