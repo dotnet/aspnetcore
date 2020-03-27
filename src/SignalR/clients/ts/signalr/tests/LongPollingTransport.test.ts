@@ -178,6 +178,12 @@ describe("LongPollingTransport", () => {
             let deleteUserHeader = "";
             const pollingPromiseSource = new PromiseSource();
             const httpClient = new TestHttpClient()
+                .on("POST", async (r) => {
+                    expect(r.content).toEqual({ message: "hello" });
+                    expect(r.headers).toEqual(headers);
+                    expect(r.method).toEqual("POST");
+                    expect(r.url).toEqual("http://tempuri.org");
+                })
                 .on("GET", async (r) => {
                     if (firstPoll) {
                         firstPoll = false;
@@ -200,6 +206,8 @@ describe("LongPollingTransport", () => {
             const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, headers);
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await transport.send({ message: "hello" });
 
             // Begin stopping transport
             const stopPromise = transport.stop();
