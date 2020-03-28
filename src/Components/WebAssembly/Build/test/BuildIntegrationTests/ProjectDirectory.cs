@@ -14,6 +14,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
     {
         public bool PreserveWorkingDirectory { get; set; } = false;
 
+        // Configuration the test project is building in.
+        public static readonly string TestProjectConfiguration
+#if DEBUG
+            = "Debug";
+#elif RELEASE
+            = "Release";
+#else
+#error Configuration not supported
+#endif
+
         private static readonly string RepoRoot = GetTestAttribute("Testing.RepoRoot");
 
         public static ProjectDirectory Create(string projectName, string baseDirectory = "", string[] additionalProjects = null)
@@ -142,13 +152,7 @@ $@"<Project>
 
         public string TargetFramework { get; set; } = "netstandard2.1";
 
-#if DEBUG
-        public string Configuration => "Debug";
-#elif RELEASE
-        public string Configuration => "Release";
-#else
-#error Configuration not supported
-#endif
+        public string Configuration { get; set; } = TestProjectConfiguration;
 
         public string IntermediateOutputDirectory => Path.Combine("obj", Configuration, TargetFramework);
 

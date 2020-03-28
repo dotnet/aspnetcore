@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             buildArgumentList.Add($"/t:{target}");
             buildArgumentList.Add($"/p:Configuration={project.Configuration}");
+            buildArgumentList.Add($"/p:BlazorBuildConfiguration={ProjectDirectory.TestProjectConfiguration}");
             buildArgumentList.Add(args);
 
             var buildArguments = string.Join(" ", buildArgumentList);

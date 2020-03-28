@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public async Task Build_WithLinker_IsIncremental()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);

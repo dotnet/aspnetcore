@@ -10,9 +10,11 @@
 
   <PropertyGroup>
     <ComponentsRoot Condition="'$(ComponentsRoot)'==''">$(MSBuildThisFileDirectory)..\..\..\</ComponentsRoot>
-    <_BlazorJsPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js</_BlazorJsPath>
-    <_BlazorJsMapPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js.map</_BlazorJsMapPath>
-    <_BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\</_BlazorToolsDir>
+    <BlazorBuildConfiguration Condition="'$(BlazorBuildConfiguration)'==''">$(Configuration)</BlazorBuildConfiguration>
+
+    <_BlazorJsPath>$(ComponentsRoot)Web.JS\dist\$(BlazorBuildConfiguration)\blazor.webassembly.js</_BlazorJsPath>
+    <_BlazorJsMapPath>$(ComponentsRoot)Web.JS\dist\$(BlazorBuildConfiguration)\blazor.webassembly.js.map</_BlazorJsMapPath>
+    <_BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(BlazorBuildConfiguration)\tools\</_BlazorToolsDir>
   </PropertyGroup>
 
   <Target Name="Check_BlazorJSFiles" BeforeTargets="Build">
