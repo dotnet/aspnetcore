@@ -4,295 +4,445 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Xunit;
+using VerifyCS = Microsoft.AspNetCore.Analyzers.CSharpCodeFixVerifier<
+    Microsoft.AspNetCore.Analyzers.StartupAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
-    public class StartupAnalyzerTest : AnalyzerTestBase
+    public class StartupAnalyzerTest
     {
-        public StartupAnalyzerTest()
-        {
-            StartupAnalyzer = new StartupAnalyzer();
-
-            Runner = new AnalyzersDiagnosticAnalyzerRunner(StartupAnalyzer);
-
-            Analyses = new ConcurrentBag<object>();
-            ConfigureServicesMethods = new ConcurrentBag<IMethodSymbol>();
-            ConfigureMethods = new ConcurrentBag<IMethodSymbol>();
-            StartupAnalyzer.ServicesAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
-            StartupAnalyzer.OptionsAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
-            StartupAnalyzer.MiddlewareAnalysisCompleted += (sender, analysis) => Analyses.Add(analysis);
-            StartupAnalyzer.ConfigureServicesMethodFound += (sender, method) => ConfigureServicesMethods.Add(method);
-            StartupAnalyzer.ConfigureMethodFound += (sender, method) => ConfigureMethods.Add(method);
-        }
-
-        private StartupAnalyzer StartupAnalyzer { get; }
-
-        private AnalyzersDiagnosticAnalyzerRunner Runner { get; }
-
-        private ConcurrentBag<object> Analyses { get; }
-
-        private ConcurrentBag<IMethodSymbol> ConfigureServicesMethods { get; }
-
-        private ConcurrentBag<IMethodSymbol> ConfigureMethods { get; }
-
         [Fact]
         public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_Standard()
         {
-            // Arrange
-            var source = Read("StartupSignatures_Standard");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class StartupSignatures_Standard
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+        }
 
-            Assert.Collection(ConfigureServicesMethods, m => Assert.Equal("ConfigureServices", m.Name));
-            Assert.Collection(ConfigureMethods, m => Assert.Equal("Configure", m.Name));
+        public void Configure(IApplicationBuilder app)
+        {
+
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_MoreVariety()
         {
-            // Arrange
-            var source = Read("StartupSignatures_MoreVariety");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class StartupSignatures_MoreVariety
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+        }
 
-            Assert.Collection(
-                ConfigureServicesMethods.OrderBy(m => m.Name),
-                m => Assert.Equal("ConfigureServices", m.Name));
+        public void ConfigureServices(IServiceCollection services, StringBuilder s) // Ignored 
+        {
+        }
 
-            Assert.Collection(
-                ConfigureMethods.OrderBy(m => m.Name),
-                m => Assert.Equal("Configure", m.Name),
-                m => Assert.Equal("ConfigureProduction", m.Name));
+        public void Configure(StringBuilder s) // Ignored, 
+        {
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+        }
+
+        public void ConfigureProduction(IWebHostEnvironment env, IApplicationBuilder app)
+        {
+        }
+
+        private void Configure(IApplicationBuilder app)  // Ignored
+        {
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingDisabled()
         {
-            // Arrange
-            var source = Read("MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
-            Assert.True(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc(options => options.EnableEndpointRouting = false);
+        }
 
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            var middleware = Assert.Single(middlewareAnalysis.Middleware);
-            Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseMvcWithDefaultRoute();
+        }
+    }
+}
+";
 
-            Assert.Empty(diagnostics);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_MvcOptionsAnalysis_AddMvcOptions_FindsEndpointRoutingDisabled()
         {
-            // Arrange
-            var source = Read("MvcOptions_UseMvcWithDefaultRouteAndAddMvcOptionsEndpointRoutingDisabled");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
-            Assert.True(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
-
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            var middleware = Assert.Single(middlewareAnalysis.Middleware);
-            Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
-
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcWithDefaultRouteAndAddMvcOptionsEndpointRoutingDisabled
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc().AddMvcOptions(options => options.EnableEndpointRouting = false);
         }
 
-        [Theory]
-        [InlineData("MvcOptions_UseMvc", "UseMvc")]
-        [InlineData("MvcOptions_UseMvcAndConfiguredRoutes", "UseMvc")]
-        [InlineData("MvcOptions_UseMvcWithDefaultRoute", "UseMvcWithDefaultRoute")]
-        public async Task StartupAnalyzer_MvcOptionsAnalysis_FindsEndpointRoutingEnabled(string sourceFileName, string mvcMiddlewareName)
+        public void Configure(IApplicationBuilder app)
         {
-            // Arrange
-            var source = Read(sourceFileName);
+            app.UseMvcWithDefaultRoute();
+        }
+    }
+}
+";
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
 
-            // Assert
-            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
-            Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingEnabled()
+        {
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            var middleware = Assert.Single(middlewareAnalysis.Middleware);
-            Assert.Equal(mvcMiddlewareName, middleware.UseMethod.Name);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            Assert.Collection(
-                diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                });
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvc
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            {|MVC1005:app.UseMvc()|};
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvcAndConfiguredRoutes_FindsEndpointRoutingEnabled()
+        {
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcAndConfiguredRoutes
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            {|MVC1005:app.UseMvc(routes =>
+            {
+                routes.MapRoute(""Name"", ""Template"");
+            })|};
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvcWithDefaultRoute_FindsEndpointRoutingEnabled()
+        {
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcWithDefaultRoute
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            {|MVC1005:app.UseMvcWithDefaultRoute()|};
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleMiddleware()
         {
-            // Arrange
-            var source = Read("MvcOptions_UseMvcWithOtherMiddleware");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
-            Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcWithOtherMiddleware
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
 
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseStaticFiles();
+            app.UseMiddleware<AuthorizationMiddleware>();
 
-            Assert.Collection(
-                middlewareAnalysis.Middleware,
-                item => Assert.Equal("UseStaticFiles", item.UseMethod.Name),
-                item => Assert.Equal("UseMiddleware", item.UseMethod.Name),
-                item => Assert.Equal("UseMvc", item.UseMethod.Name),
-                item => Assert.Equal("UseRouting", item.UseMethod.Name),
-                item => Assert.Equal("UseEndpoints", item.UseMethod.Name));
+            {|MVC1005:app.UseMvc()|};
 
-            Assert.Collection(
-                diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                });
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+            });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleUseMvc()
         {
-            // Arrange
-            var source = Read("MvcOptions_UseMvcMultiple");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            var optionsAnalysis = Assert.Single(Analyses.OfType<OptionsAnalysis>());
-            Assert.False(OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis));
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class MvcOptions_UseMvcMultiple
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
 
-            Assert.Collection(
-                diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
-                },
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic.Location);
-                },
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM3"], diagnostic.Location);
-                });
+        public void Configure(IApplicationBuilder app)
+        {
+            {|MVC1005:app.UseMvcWithDefaultRoute()|};
+
+            app.UseStaticFiles();
+            app.UseMiddleware<AuthorizationMiddleware>();
+
+            {|MVC1005:app.UseMvc()|};
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+            });
+
+            {|MVC1005:app.UseMvc()|};
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_ServicesAnalysis_CallBuildServiceProvider()
         {
-            // Arrange
-            var source = Read("ConfigureServices_BuildServiceProvider");
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-            // Assert
-            var servicesAnalysis = Assert.Single(Analyses.OfType<ServicesAnalysis>());
-            Assert.NotEmpty(servicesAnalysis.Services);
-            Assert.Collection(diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
-                });
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class ConfigureServices_BuildServiceProvider
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            {|ASP0000:services.BuildServiceProvider()|};
+        }
+
+        public void Configure(IApplicationBuilder app)
+        {
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredCorrectly_ReportsNoDiagnostics()
         {
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectly));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class UseAuthConfiguredCorrectly
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredAsAChain_ReportsNoDiagnostics()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/15203
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectlyChained));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest {
+    public class UseAuthConfiguredCorrectlyChained
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting()
+               .UseAuthorization()
+               .UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
         {
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthMultipleTimes));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class UseAuthMultipleTimes
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseAuthorization();
+            app.UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRouting_ReportsDiagnostics()
         {
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRouting));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Collection(diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                });
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class UseAuthBeforeUseRouting
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseFileServer();
+            {|ASP0001:app.UseAuthorization()|};
+            app.UseRouting();
+            app.UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -300,51 +450,81 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             // This one asserts a false negative for https://github.com/dotnet/aspnetcore/issues/15203.
             // We don't correctly identify chained calls, this test verifies the behavior.
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRoutingChained));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest {
+    public class UseAuthBeforeUseRoutingChained
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseFileServer()
+               .UseAuthorization()
+               .UseRouting()
+               .UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_UseAuthorizationConfiguredAfterUseEndpoints_ReportsDiagnostics()
         {
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthAfterUseEndpoints));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Collection(diagnostics,
-                diagnostic =>
-                {
-                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-                });
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class UseAuthAfterUseEndpoints
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+            app.UseEndpoints(r => { });
+            {|ASP0001:app.UseAuthorization()|};
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
         public async Task StartupAnalyzer_MultipleUseAuthorization_ReportsNoDiagnostics()
         {
-            // Arrange
-            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthFallbackPolicy));
+            var source = @"// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-            // Act
-            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+using Microsoft.AspNetCore.Builder;
 
-            // Assert
-            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
-            Assert.NotEmpty(middlewareAnalysis.Middleware);
-            Assert.Empty(diagnostics);
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{
+    public class UseAuthFallbackPolicy
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            // This sort of setup would be useful if the user wants to use Auth for non-endpoint content to be handled using the Fallback policy, while
+            // using the second instance for regular endpoint routing based auth. We do not want to produce a warning in this case.
+            app.UseAuthorization();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(r => { });
+        }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
     }
 }
