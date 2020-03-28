@@ -20,6 +20,7 @@
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
+    <IsHelixJob>true</IsHelixJob>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
