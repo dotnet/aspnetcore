@@ -38,7 +38,7 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>IsTargetingPackBuilding</_Parameter1>
-      <_Parameter2>true</_Parameter2>
+      <_Parameter2>$(IsTargetingPackBuilding)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
@@ -48,7 +48,6 @@
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
   <ItemGroup>
