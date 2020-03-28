@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview4.20176.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview4.20178.1">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>7b3bdfddce6ec156e9d88cd49040d5fe4ddc2931</Sha>
+      <Sha>b420028d3c2addc66addca350ba546e1c800c042</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="3.2.0-preview4.20177.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
