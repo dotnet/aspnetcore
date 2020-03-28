@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
 
-            _hpackEncoder = new HPackEncoder(serviceContext.ServerOptions.DisableResponseDynamicHeaderCompression);
+            _hpackEncoder = new HPackEncoder(!serviceContext.ServerOptions.Limits.Http2.EnableResponseHeaderCompression);
         }
 
         public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)

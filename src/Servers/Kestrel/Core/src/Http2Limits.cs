@@ -141,5 +141,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _initialStreamWindowSize = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value that controls whether dynamic compression of response headers is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool EnableResponseHeaderCompression { get; set; } = true;
     }
 }
