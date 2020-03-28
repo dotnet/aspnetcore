@@ -2,15 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+#nullable enable
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.HPack;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
-    internal class Http2HPackEncoder
+    internal partial class HPackEncoder
     {
+        public const int DefaultHeaderTableSize = 4096;
+
         // Internal for testing
         internal readonly HPackHeaderEntry Head;
 
@@ -20,9 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         private uint _headerTableSize;
         private uint _maxHeaderTableSize;
         private bool _pendingTableSizeUpdate;
-        private HPackHeaderEntry _removed;
+        private HPackHeaderEntry? _removed;
 
-        public Http2HPackEncoder(bool disableDynamicCompression = false, uint maxHeaderTableSize = Http2PeerSettings.DefaultHeaderTableSize)
+        public HPackEncoder(bool disableDynamicCompression = false, uint maxHeaderTableSize = DefaultHeaderTableSize)
         {
             _disableDynamicCompression = disableDynamicCompression;
             _maxHeaderTableSize = maxHeaderTableSize;
@@ -47,145 +48,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             }
         }
 
-        /// <summary>
-        /// Begin encoding headers in the first HEADERS frame.
-        /// </summary>
-        public bool BeginEncodeHeaders(int statusCode, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+        public bool EnsureDynamicTableSizeUpdate(Span<byte> buffer, out int length)
         {
-            length = 0;
-
             if (_pendingTableSizeUpdate)
             {
-                if (!HPackEncoder.EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out var sizeUpdateLength))
-                {
-                    throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-                }
-                length += sizeUpdateLength;
+                bool success = EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out length);
                 _pendingTableSizeUpdate = false;
+                return success;
             }
 
-            if (!EncodeStatusHeader(statusCode, buffer.Slice(length), out var statusCodeLength))
-            {
-                throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-            }
-            length += statusCodeLength;
-
-            if (!headersEnumerator.MoveNext())
-            {
-                return true;
-            }
-
-            // We're ok with not throwing if no headers were encoded because we've already encoded the status.
-            // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
-            var done = EncodeHeadersCore(headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: false, out var headersLength);
-            length += headersLength;
-            return done;
-        }
-
-        /// <summary>
-        /// Begin encoding headers in the first HEADERS frame.
-        /// </summary>
-        public bool BeginEncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
-        {
             length = 0;
-
-            if (_pendingTableSizeUpdate)
-            {
-                if (!HPackEncoder.EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out var sizeUpdateLength))
-                {
-                    throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-                }
-                length += sizeUpdateLength;
-                _pendingTableSizeUpdate = false;
-            }
-
-            if (!headersEnumerator.MoveNext())
-            {
-                return true;
-            }
-
-            var done = EncodeHeadersCore(headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: true, out var headersLength);
-            length += headersLength;
-            return done;
-        }
-
-        /// <summary>
-        /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
-        /// </summary>
-        public bool ContinueEncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
-        {
-            return EncodeHeadersCore(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
-        }
-
-        private bool EncodeStatusHeader(int statusCode, Span<byte> buffer, out int length)
-        {
-            switch (statusCode)
-            {
-                case 200:
-                case 204:
-                case 206:
-                case 304:
-                case 400:
-                case 404:
-                case 500:
-                    // Status codes which exist in the HTTP/2 StaticTable.
-                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], buffer, out length);
-                default:
-                    const string name = ":status";
-                    var value = StatusCodes.ToStatusString(statusCode);
-                    return EncodeHeader(buffer, H2StaticTable.Status200, name, value, out length);
-            }
-        }
-
-        private bool EncodeHeadersCore(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
-        {
-            var currentLength = 0;
-            do
-            {
-                if (!EncodeHeader(
-                    buffer.Slice(currentLength),
-                    headersEnumerator.HPackStaticTableId,
-                    headersEnumerator.Current.Key,
-                    headersEnumerator.Current.Value,
-                    out var headerLength))
-                {
-                    // If the header wasn't written, and no headers have been written, then the header is too large.
-                    // Throw an error to avoid an infinite loop of attempting to write large header.
-                    if (currentLength == 0 && throwIfNoneEncoded)
-                    {
-                        throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-                    }
-
-                    length = currentLength;
-                    return false;
-                }
-
-                currentLength += headerLength;
-            }
-            while (headersEnumerator.MoveNext());
-
-            length = currentLength;
             return true;
         }
 
-        private bool EncodeHeader(Span<byte> buffer, int staticTableIndex, string name, string value, out int bytesWritten)
+        public bool EncodeHeader(Span<byte> buffer, int staticTableIndex, HeaderEncodingHint encodingHint, string name, string value, out int bytesWritten)
         {
+            Debug.Assert(!_pendingTableSizeUpdate, "Dynamic table size update should be encoded before headers.");
+
             // Never index sensitive value.
-            if (IsSensitive(staticTableIndex, name))
+            if (encodingHint == HeaderEncodingHint.NeverIndex)
             {
                 var index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
-                    ? HPackEncoder.EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, buffer, out bytesWritten)
-                    : HPackEncoder.EncodeLiteralHeaderFieldNeverIndexing(index, value, buffer, out bytesWritten);
+                    ? EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, buffer, out bytesWritten)
+                    : EncodeLiteralHeaderFieldNeverIndexing(index, value, buffer, out bytesWritten);
             }
 
             // No dynamic table. Only use the static table.
-            if (_disableDynamicCompression || _maxHeaderTableSize == 0 || IsNotDynamicallyIndexed(staticTableIndex))
+            if (_disableDynamicCompression || _maxHeaderTableSize == 0 || encodingHint == HeaderEncodingHint.IgnoreIndex)
             {
                 return staticTableIndex == -1
-                    ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
-                    : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(staticTableIndex, value, buffer, out bytesWritten);
+                    ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
+                    : EncodeLiteralHeaderFieldWithoutIndexing(staticTableIndex, value, buffer, out bytesWritten);
             }
 
             // Header is greater than the maximum table size.
@@ -195,33 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 var index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
-                    ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
-                    : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(index, value, buffer, out bytesWritten);
+                    ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
+                    : EncodeLiteralHeaderFieldWithoutIndexing(index, value, buffer, out bytesWritten);
             }
 
             return EncodeDynamicHeader(buffer, staticTableIndex, name, value, out bytesWritten);
-        }
-
-        private bool IsSensitive(int staticTableIndex, string name)
-        {
-            // Set-Cookie could contain sensitive data.
-            if (staticTableIndex == H2StaticTable.SetCookie)
-            {
-                return true;
-            }
-            if (string.Equals(name, "Content-Disposition", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool IsNotDynamicallyIndexed(int staticTableIndex)
-        {
-            // Content-Length is added to static content. Content length is different for each
-            // file, and is unlikely to be reused because of browser caching.
-            return staticTableIndex == H2StaticTable.ContentLength;
         }
 
         private int ResolveDynamicTableIndex(int staticTableIndex, string name)
@@ -242,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             {
                 // Already exists in dynamic table. Write index.
                 var index = CalculateDynamicTableIndex(headerField.Index);
-                return HPackEncoder.EncodeIndexedHeaderField(index, buffer, out bytesWritten);
+                return EncodeIndexedHeaderField(index, buffer, out bytesWritten);
             }
             else
             {
@@ -251,8 +124,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                 var index = ResolveDynamicTableIndex(staticTableIndex, name);
                 var success = index == -1
-                    ? HPackEncoder.EncodeLiteralHeaderFieldIndexingNewName(name, value, buffer, out bytesWritten)
-                    : HPackEncoder.EncodeLiteralHeaderFieldIndexing(index, value, buffer, out bytesWritten);
+                    ? EncodeLiteralHeaderFieldIndexingNewName(name, value, buffer, out bytesWritten)
+                    : EncodeLiteralHeaderFieldIndexing(index, value, buffer, out bytesWritten);
 
                 if (success)
                 {
@@ -275,12 +148,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             while (_maxHeaderTableSize - _headerTableSize < headerSize)
             {
                 var removed = RemoveHeaderEntry();
+                Debug.Assert(removed != null);
+
                 // Removed entries are tracked to be reused.
                 PushRemovedEntry(removed);
             }
         }
 
-        private HPackHeaderEntry GetEntry(string name, string value)
+        private HPackHeaderEntry? GetEntry(string name, string value)
         {
             if (_headerTableSize == 0)
             {
@@ -350,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             _removed = removed;
         }
 
-        private HPackHeaderEntry PopRemovedEntry()
+        private HPackHeaderEntry? PopRemovedEntry()
         {
             if (_removed != null)
             {
@@ -365,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         /// <summary>
         /// Remove the oldest entry.
         /// </summary>
-        private HPackHeaderEntry RemoveHeaderEntry()
+        private HPackHeaderEntry? RemoveHeaderEntry()
         {
             if (_headerTableSize == 0)
             {
@@ -403,5 +278,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             return hash & _hashMask;
         }
+    }
+
+    internal enum HeaderEncodingHint
+    {
+        Index,
+        IgnoreIndex,
+        NeverIndex
     }
 }

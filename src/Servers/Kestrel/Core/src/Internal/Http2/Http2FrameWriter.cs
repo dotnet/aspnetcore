@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
-        private readonly Http2HPackEncoder _hpackEncoder;
+        private readonly HPackEncoder _hpackEncoder;
 
         private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
         private byte[] _headerEncodingBuffer;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
 
-            _hpackEncoder = new Http2HPackEncoder(serviceContext.ServerOptions.DisableResponseDynamicHeaderCompression);
+            _hpackEncoder = new HPackEncoder(serviceContext.ServerOptions.DisableResponseDynamicHeaderCompression);
         }
 
         public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = _hpackEncoder.BeginEncodeHeaders(_headersEnumerator, buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = _hpackEncoder.ContinueEncodeHeaders(_headersEnumerator, buffer, out payloadLength);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
                 _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)

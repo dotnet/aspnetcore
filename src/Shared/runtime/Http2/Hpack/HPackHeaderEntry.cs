@@ -3,9 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Net.Http.HPack;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     [DebuggerDisplay("Name = {Name} Value = {Value}")]
     internal class HPackHeaderEntry

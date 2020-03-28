@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net.Http.HPack;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private MemoryPool<byte> _memoryPool;
         private HttpRequestHeaders _httpRequestHeaders;
         private Http2Connection _connection;
-        private Http2HPackEncoder _hpackEncoder;
+        private HPackEncoder _hpackEncoder;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
         private byte[] _headersBuffer;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _httpRequestHeaders.Append(HeaderNames.Authority, new StringValues("localhost:80"));
 
             _headersBuffer = new byte[1024 * 16];
-            _hpackEncoder = new Http2HPackEncoder();
+            _hpackEncoder = new HPackEncoder();
 
             var serviceContext = new ServiceContext
             {

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -27,14 +26,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var http2HPackEncoder = new Http2HPackEncoder();
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(302, enumerator, buffer, out var length));
+            var hpackEncoder = new HPackEncoder();
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(0, length).ToArray();
             var hex = BitConverter.ToString(result);
             Assert.Equal("48-03-33-30-32", hex);
 
-            var statusHeader = GetHeaderEntry(http2HPackEncoder, 0);
+            var statusHeader = GetHeaderEntry(hpackEncoder, 0);
             Assert.Equal(":status", statusHeader.Name);
             Assert.Equal("302", statusHeader.Value);
         }
@@ -50,14 +49,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var http2HPackEncoder = new Http2HPackEncoder();
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(302, enumerator, buffer, out var length));
+            var hpackEncoder = new HPackEncoder();
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(5, length - 5).ToArray();
             var hex = BitConverter.ToString(result);
             Assert.Equal("58-07-70-72-69-76-61-74-65", hex);
 
-            var statusHeader = GetHeaderEntry(http2HPackEncoder, 0);
+            var statusHeader = GetHeaderEntry(hpackEncoder, 0);
             Assert.Equal("Cache-Control", statusHeader.Name);
             Assert.Equal("private", statusHeader.Value);
         }
@@ -76,11 +75,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var enumerator = new Http2HeadersEnumerator();
 
-            var http2HPackEncoder = new Http2HPackEncoder(maxHeaderTableSize: 256);
+            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: 256);
 
             // First response
             enumerator.Initialize(headers);
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(302, enumerator, buffer, out var length));
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(0, length).ToArray();
             var hex = BitConverter.ToString(result);
@@ -91,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 "74-74-70-73-3A-2F-2F-77-77-77-2E-65-78-61-6D-70-" +
                 "6C-65-2E-63-6F-6D", hex);
 
-            var entries = GetHeaderEntries(http2HPackEncoder);
+            var entries = GetHeaderEntries(hpackEncoder);
             Assert.Collection(entries,
                 e =>
                 {
@@ -116,13 +115,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Second response
             enumerator.Initialize(headers);
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(307, enumerator, buffer, out length));
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
 
             result = buffer.Slice(0, length).ToArray();
             hex = BitConverter.ToString(result);
             Assert.Equal("48-03-33-30-37-C1-C0-BF", hex);
 
-            entries = GetHeaderEntries(http2HPackEncoder);
+            entries = GetHeaderEntries(hpackEncoder);
             Assert.Collection(entries,
                 e =>
                 {
@@ -151,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             headers.HeaderSetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
             enumerator.Initialize(headers);
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(200, enumerator, buffer, out length));
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
 
             result = buffer.Slice(0, length).ToArray();
             hex = BitConverter.ToString(result);
@@ -164,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 "61-67-65-3D-33-36-30-30-3B-20-76-65-72-73-69-6F-" +
                 "6E-3D-31", hex);
 
-            entries = GetHeaderEntries(http2HPackEncoder);
+            entries = GetHeaderEntries(hpackEncoder);
             Assert.Collection(entries,
                 e =>
                 {
@@ -202,8 +201,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var http2HPackEncoder = new Http2HPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(enumerator, buffer, out _));
+            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out _));
 
             if (neverIndex)
             {
@@ -214,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(0, buffer[0] & 0x40);
             }
 
-            Assert.Empty(GetHeaderEntries(http2HPackEncoder));
+            Assert.Empty(GetHeaderEntries(hpackEncoder));
         }
 
         [Fact]
@@ -228,10 +227,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var http2HPackEncoder = new Http2HPackEncoder();
-            Assert.True(http2HPackEncoder.BeginEncodeHeaders(200, enumerator, buffer, out var length));
+            var hpackEncoder = new HPackEncoder();
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
 
-            Assert.Empty(GetHeaderEntries(http2HPackEncoder));
+            Assert.Empty(GetHeaderEntries(hpackEncoder));
         }
 
         public static TheoryData<KeyValuePair<string, string>[], byte[], int?> SinglePayloadData
@@ -313,17 +312,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(SinglePayloadData))]
         public void EncodesHeadersInSinglePayloadWhenSpaceAvailable(KeyValuePair<string, string>[] headers, byte[] expectedPayload, int? statusCode)
         {
-            Http2HPackEncoder http2HPackEncoder = new Http2HPackEncoder();
+            HPackEncoder hpackEncoder = new HPackEncoder();
 
             var payload = new byte[1024];
             var length = 0;
             if (statusCode.HasValue)
             {
-                Assert.True(http2HPackEncoder.BeginEncodeHeaders(statusCode.Value, GetHeadersEnumerator(headers), payload, out length));
+                Assert.True(HPackHeaderWriter.BeginEncodeHeaders(statusCode.Value, hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
             }
             else
             {
-                Assert.True(http2HPackEncoder.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out length));
+                Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
             }
             Assert.Equal(expectedPayload.Length, length);
 
@@ -377,7 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 0x07, 0x4b, 0x65, 0x73, 0x74, 0x72, 0x65, 0x6c
             };
 
-            var http2HPackEncoder = new Http2HPackEncoder();
+            var hpackEncoder = new HPackEncoder();
 
             Span<byte> payload = new byte[1024];
             var offset = 0;
@@ -385,28 +384,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // When !exactSize, slices are one byte short of fitting the next header
             var sliceLength = expectedStatusCodePayload.Length + (exactSize ? 0 : expectedDateHeaderPayload.Length - 1);
-            Assert.False(http2HPackEncoder.BeginEncodeHeaders(statusCode, headerEnumerator, payload.Slice(offset, sliceLength), out var length));
+            Assert.False(HPackHeaderWriter.BeginEncodeHeaders(statusCode, hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out var length));
             Assert.Equal(expectedStatusCodePayload.Length, length);
             Assert.Equal(expectedStatusCodePayload, payload.Slice(0, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedDateHeaderPayload.Length + (exactSize ? 0 : expectedContentTypeHeaderPayload.Length - 1);
-            Assert.False(http2HPackEncoder.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
+            Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedDateHeaderPayload.Length, length);
             Assert.Equal(expectedDateHeaderPayload, payload.Slice(offset, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedContentTypeHeaderPayload.Length + (exactSize ? 0 : expectedServerHeaderPayload.Length - 1);
-            Assert.False(http2HPackEncoder.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
+            Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedContentTypeHeaderPayload.Length, length);
             Assert.Equal(expectedContentTypeHeaderPayload, payload.Slice(offset, length).ToArray());
 
             offset += length;
 
             sliceLength = expectedServerHeaderPayload.Length;
-            Assert.True(http2HPackEncoder.ContinueEncodeHeaders(headerEnumerator, payload.Slice(offset, sliceLength), out length));
+            Assert.True(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
             Assert.Equal(expectedServerHeaderPayload.Length, length);
             Assert.Equal(expectedServerHeaderPayload, payload.Slice(offset, length).ToArray());
         }
@@ -416,14 +415,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Span<byte> buffer = new byte[1024 * 16];
 
-            var hpackEncoder = new Http2HPackEncoder();
+            var hpackEncoder = new HPackEncoder();
             hpackEncoder.UpdateMaxHeaderTableSize(100);
 
             var enumerator = new Http2HeadersEnumerator();
 
             // First request
             enumerator.Initialize(new Dictionary<string, StringValues>());
-            Assert.True(hpackEncoder.BeginEncodeHeaders(enumerator, buffer, out var length));
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out var length));
 
             Assert.Equal(2, length);
 
@@ -437,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Second request
             enumerator.Initialize(new Dictionary<string, StringValues>());
-            Assert.True(hpackEncoder.BeginEncodeHeaders(enumerator, buffer, out length));
+            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out length));
 
             Assert.Equal(0, length);
         }
@@ -453,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return enumerator;
         }
 
-        private HPackHeaderEntry GetHeaderEntry(Http2HPackEncoder encoder, int index)
+        private HPackHeaderEntry GetHeaderEntry(HPackEncoder encoder, int index)
         {
             var entry = encoder.Head;
             while (index-- >= 0)
@@ -463,7 +462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return entry;
         }
 
-        private List<HPackHeaderEntry> GetHeaderEntries(Http2HPackEncoder encoder)
+        private List<HPackHeaderEntry> GetHeaderEntries(HPackEncoder encoder)
         {
             var headers = new List<HPackHeaderEntry>();
 
