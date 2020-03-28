@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var queryStrings = new Dictionary<string, StringValues>()
                         {
-                            { "param1[]", new StringValues(new [] { "value1", string.Empty, "value3" }) },
+                            { "param1", new StringValues(new [] { "value1", string.Empty, "value3" }) },
                             { "param2[]", string.Empty },
                             { "param3[]", StringValues.Empty }
                         };
