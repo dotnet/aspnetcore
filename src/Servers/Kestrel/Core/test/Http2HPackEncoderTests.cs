@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return enumerator;
         }
 
-        private HPackHeaderEntry GetHeaderEntry(HPackEncoder encoder, int index)
+        private EncoderHeaderEntry GetHeaderEntry(HPackEncoder encoder, int index)
         {
             var entry = encoder.Head;
             while (index-- >= 0)
@@ -462,9 +462,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return entry;
         }
 
-        private List<HPackHeaderEntry> GetHeaderEntries(HPackEncoder encoder)
+        private List<EncoderHeaderEntry> GetHeaderEntries(HPackEncoder encoder)
         {
-            var headers = new List<HPackHeaderEntry>();
+            var headers = new List<EncoderHeaderEntry>();
 
             var entry = encoder.Head;
             while (entry.Before != encoder.Head)

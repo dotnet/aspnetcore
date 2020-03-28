@@ -7,27 +7,27 @@ using System.Diagnostics;
 namespace System.Net.Http.HPack
 {
     [DebuggerDisplay("Name = {Name} Value = {Value}")]
-    internal class HPackHeaderEntry
+    internal class EncoderHeaderEntry
     {
         // Header name and value
         public string Name;
         public string Value;
 
         // Chained list of headers in the same bucket
-        public HPackHeaderEntry Next;
+        public EncoderHeaderEntry Next;
         public int Hash;
 
         // Compute dynamic table index
         public int Index;
 
         // Doubly linked list
-        public HPackHeaderEntry Before;
-        public HPackHeaderEntry After;
+        public EncoderHeaderEntry Before;
+        public EncoderHeaderEntry After;
 
         /// <summary>
         /// Initialize header values. An entry will be reinitialized when reused.
         /// </summary>
-        public void Initialize(int hash, string name, string value, int index, HPackHeaderEntry next)
+        public void Initialize(int hash, string name, string value, int index, EncoderHeaderEntry next)
         {
             Debug.Assert(name != null);
             Debug.Assert(value != null);
@@ -62,7 +62,7 @@ namespace System.Net.Http.HPack
         /// <summary>
         /// Add before an entry in the linked list.
         /// </summary>
-        public void AddBefore(HPackHeaderEntry existingEntry)
+        public void AddBefore(EncoderHeaderEntry existingEntry)
         {
             After = existingEntry;
             Before = existingEntry.Before;

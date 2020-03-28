@@ -13,25 +13,25 @@ namespace System.Net.Http.HPack
         public const int DefaultHeaderTableSize = 4096;
 
         // Internal for testing
-        internal readonly HPackHeaderEntry Head;
+        internal readonly EncoderHeaderEntry Head;
 
         private readonly bool _disableDynamicCompression;
-        private readonly HPackHeaderEntry[] _headerBuckets;
+        private readonly EncoderHeaderEntry[] _headerBuckets;
         private readonly byte _hashMask;
         private uint _headerTableSize;
         private uint _maxHeaderTableSize;
         private bool _pendingTableSizeUpdate;
-        private HPackHeaderEntry? _removed;
+        private EncoderHeaderEntry? _removed;
 
         public HPackEncoder(bool disableDynamicCompression = false, uint maxHeaderTableSize = DefaultHeaderTableSize)
         {
             _disableDynamicCompression = disableDynamicCompression;
             _maxHeaderTableSize = maxHeaderTableSize;
-            Head = new HPackHeaderEntry();
+            Head = new EncoderHeaderEntry();
             Head.Initialize(-1, string.Empty, string.Empty, int.MaxValue, null);
             // Bucket count balances memory usage and the expected low number of headers (constrained by the header table size).
             // Performance with different bucket counts hasn't been measured in detail.
-            _headerBuckets = new HPackHeaderEntry[16];
+            _headerBuckets = new EncoderHeaderEntry[16];
             _hashMask = (byte)(_headerBuckets.Length - 1);
             Head.Before = Head.After = Head;
         }
@@ -155,7 +155,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private HPackHeaderEntry? GetEntry(string name, string value)
+        private EncoderHeaderEntry? GetEntry(string name, string value)
         {
             if (_headerTableSize == 0)
             {
@@ -209,14 +209,14 @@ namespace System.Net.Http.HPack
             var bucketIndex = CalculateBucketIndex(hash);
             var oldEntry = _headerBuckets[bucketIndex];
             // Attempt to reuse removed entry
-            var newEntry = PopRemovedEntry() ?? new HPackHeaderEntry();
+            var newEntry = PopRemovedEntry() ?? new EncoderHeaderEntry();
             newEntry.Initialize(hash, name, value, Head.Before.Index - 1, oldEntry);
             _headerBuckets[bucketIndex] = newEntry;
             newEntry.AddBefore(Head);
             _headerTableSize += headerSize;
         }
 
-        private void PushRemovedEntry(HPackHeaderEntry removed)
+        private void PushRemovedEntry(EncoderHeaderEntry removed)
         {
             if (_removed != null)
             {
@@ -225,7 +225,7 @@ namespace System.Net.Http.HPack
             _removed = removed;
         }
 
-        private HPackHeaderEntry? PopRemovedEntry()
+        private EncoderHeaderEntry? PopRemovedEntry()
         {
             if (_removed != null)
             {
@@ -240,7 +240,7 @@ namespace System.Net.Http.HPack
         /// <summary>
         /// Remove the oldest entry.
         /// </summary>
-        private HPackHeaderEntry? RemoveHeaderEntry()
+        private EncoderHeaderEntry? RemoveHeaderEntry()
         {
             if (_headerTableSize == 0)
             {
@@ -253,7 +253,7 @@ namespace System.Net.Http.HPack
             var e = prev;
             while (e != null)
             {
-                HPackHeaderEntry next = e.Next;
+                EncoderHeaderEntry next = e.Next;
                 if (e == eldest)
                 {
                     if (prev == eldest)
