@@ -9,13 +9,15 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore
 {
-    public class TargetingPackTests
+    public class TargetingPackTests : LoggedTest
     {
         private readonly string _expectedRid;
         private readonly string _targetingPackRoot;
@@ -35,7 +37,12 @@ namespace Microsoft.AspNetCore
         {
             if (!_isTargetingPackBuilding)
             {
+                Logger.LogInformation("Skipping ref tests");
                 return;
+            }
+            else
+            {
+                Logger.LogInformation("Running ref tests");
             }
 
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
