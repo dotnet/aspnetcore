@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -34,9 +35,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "standalone.StaticWebAssets.xml");
             Assert.FileContains(result, staticWebAssets, Path.Combine("netstandard2.1", "wwwroot"));
+        }
 
-            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
-            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+        [Fact]
+        public async Task Build_InRelease_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.pdb");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.pdb");
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "standalone.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, Path.Combine("netstandard2.1", "wwwroot"));
         }
 
         [Fact]
@@ -44,6 +68,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -65,6 +90,36 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var pdb = bootJsonData.resources.pdb.Keys;
             Assert.Contains("standalone.pdb", pdb);
             Assert.Contains("RazorClassLibrary.pdb", pdb);
+
+            Assert.Null(bootJsonData.resources.satelliteResources);
+        }
+
+        [Fact]
+        public async Task Build_InRelease_ProducesBootJsonDataWithExpectedContent()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var runtime = bootJsonData.resources.runtime.Keys;
+            Assert.Contains(DotNetJsFileName, runtime);
+            Assert.Contains("dotnet.wasm", runtime);
+
+            var assemblies = bootJsonData.resources.assembly.Keys;
+            Assert.Contains("standalone.dll", assemblies);
+            Assert.Contains("RazorClassLibrary.dll", assemblies);
+            Assert.Contains("Microsoft.Extensions.Logging.Abstractions.dll", assemblies);
+
+            Assert.Null(bootJsonData.resources.pdb);
+            Assert.Null(bootJsonData.resources.satelliteResources);
         }
 
         [Fact]
@@ -125,6 +180,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 <ItemGroup>
     <ProjectReference Include=""..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj"" />
 </ItemGroup>");
+            var resxfileInProject = Path.Combine(project.DirectoryPath, "Resources.ja.resx.txt");
+            File.Move(resxfileInProject, Path.Combine(project.DirectoryPath, "Resource.ja.resx"));
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/restore");
 
@@ -156,6 +213,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 <ItemGroup>
     <ProjectReference Include=""..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj"" />
 </ItemGroup>");
+
+            var resxfileInProject = Path.Combine(project.DirectoryPath, "Resources.ja.resx.txt");
+            File.Move(resxfileInProject, Path.Combine(project.DirectoryPath, "Resource.ja.resx"));
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/restore");
 
