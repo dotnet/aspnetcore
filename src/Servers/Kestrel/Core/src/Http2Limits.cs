@@ -144,6 +144,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets a value that controls whether dynamic compression of response headers is enabled.
+        /// For more information about security considerations of HPack dynamic header compression, visit
+        /// https://tools.ietf.org/html/rfc7541#section-7.
         /// </summary>
         /// <remarks>
         /// Defaults to true.
