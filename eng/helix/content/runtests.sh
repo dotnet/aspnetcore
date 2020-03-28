@@ -157,6 +157,6 @@ fi
 echo "Copying TestResults/TestResults to ."
 cp TestResults/TestResults.xml testResults.xml
 echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/"
-cp -R artifacts/log/ $HELIX_WORKITEM_UPLOAD_ROOT/../
-cp -R artifacts/log/ $HELIX_WORKITEM_UPLOAD_ROOT/
+cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/../
+cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/
 exit $exit_code
