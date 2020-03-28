@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             "http://contoso.com/someaction?name?something&param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=")]
         [InlineData(
             "http://contoso.com/someaction#name#something",
-            "http://contoso.com/someaction?param1%5B%5D=value1&param1%5B%5D=&param1%5B%5D=value3&param2%5B%5D=#name#something")]
+            "http://contoso.com/someaction?param1=value1&param1=&param1=value3&param2=#name#something")]
         public void AddQueryStringWithEnumerableOfKeysAndStringValues(string uri, string expectedUri)
         {
             var queryStrings = new Dictionary<string, StringValues>()
