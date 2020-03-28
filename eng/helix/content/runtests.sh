@@ -156,8 +156,7 @@ fi
 
 echo "Copying TestResults/TestResults to ."
 cp TestResults/TestResults.xml testResults.xml
-echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/../"
-shopt -s globstar
-cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/../
-cp artifacts/log/**/*.log $HELIX_WORKITEM_UPLOAD_ROOT/
+echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/"
+cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/../
+cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/
 exit $exit_code
