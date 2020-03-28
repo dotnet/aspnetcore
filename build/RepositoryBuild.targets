@@ -119,8 +119,9 @@
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
+    <!-- Remove final slash in $(BuildRepositoryRoot) to avoid problems due to KoreBuild adding one on Windows. -->
     <Exec
-      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
+      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot.TrimEnd('\\')) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
       IgnoreExitCode="true"
@@ -163,8 +164,9 @@
 
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
 
+    <!-- Remove final slash in $(BuildRepositoryRoot) to avoid problems due to KoreBuild adding one on Windows. -->
     <Exec Condition="'$(SkipTestsDueToMissingSharedFx)' != 'true' "
-      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
+      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot.TrimEnd('\\')) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
       IgnoreExitCode="true">
