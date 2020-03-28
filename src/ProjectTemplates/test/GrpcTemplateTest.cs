@@ -57,6 +57,7 @@ namespace Templates.Test
             var isWindowsOld = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2);
             var unsupported = isOsx || isWindowsOld;
 
+            logger.LogInformation("GrpcTemplateTest - Starting built project");
             using (var serverProcess = Project.StartBuiltProjectAsync(hasListeningUri: !unsupported, logger: logger))
             {
                 logger.LogInformation("GrpcTemplateTest - Verifing built project results");

@@ -42,6 +42,8 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true,
             ILogger logger = null)
         {
+            logger?.LogInformation($"AspNetProcess - initializing");
+
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
             {
@@ -54,7 +56,11 @@ namespace Templates.Test.Helpers
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            EnsureDevelopmentCertificates();
+            logger?.LogInformation($"AspNetProcess - http client created");
+
+            EnsureDevelopmentCertificates(logger);
+
+            logger?.LogInformation($"AspNetProcess - development certificates resolved");
 
             output.WriteLine("Running ASP.NET application...");
 
@@ -74,10 +80,12 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal static void EnsureDevelopmentCertificates()
+        internal static void EnsureDevelopmentCertificates(ILogger logger = null)
         {
+            logger?.LogInformation($"AspNetProcess/EnsureDevelopmentCertificates - start");
             var now = DateTimeOffset.Now;
             new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            logger?.LogInformation($"AspNetProcess/EnsureDevelopmentCertificates - end");
         }
 
         public void VisitInBrowser(IWebDriver driver)
