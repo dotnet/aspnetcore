@@ -65,6 +65,9 @@
     <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20171.1</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20170.19</MicrosoftNetCompilersToolsetPackageVersion>
+    <!-- Packages from dotnet/roslyn-sdk -->
+    <MicrosoftCodeAnalysisTestingVersion>1.0.1-beta1.20178.1</MicrosoftCodeAnalysisTestingVersion>
+    <MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitPackageVersion>$(MicrosoftCodeAnalysisTestingVersion)</MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.3-runtime.20174.7</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.3.20174.7</MicrosoftNETCoreAppInternalPackageVersion>
