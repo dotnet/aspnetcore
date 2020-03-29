@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public partial class Http2Limits
     {
         public Http2Limits() { }
-        public bool EnableResponseHeaderCompression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool AllowResponseHeaderCompression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int HeaderTableSize { get { throw null; } set { } }
         public int InitialConnectionWindowSize { get { throw null; } set { } }
         public int InitialStreamWindowSize { get { throw null; } set { } }

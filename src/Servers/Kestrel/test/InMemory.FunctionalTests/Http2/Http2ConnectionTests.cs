@@ -1936,7 +1936,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task HEADERS_DisableDynamicHeaderCompression_HeadersNotCompressed()
         {
-            _serviceContext.ServerOptions.Limits.Http2.EnableResponseHeaderCompression = false;
+            _serviceContext.ServerOptions.Limits.Http2.AllowResponseHeaderCompression = false;
 
             await InitializeConnectionAsync(_noopApplication);
 
