@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
@@ -21,6 +21,11 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Localization.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- NuGet Tasks path. -->
+    <Content Include="build\Microsoft.Extensions.Localization.props" PackagePath="build\" />
   </ItemGroup>
 
 </Project>

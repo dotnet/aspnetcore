@@ -1,0 +1,9 @@
+<Project>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.Extensions.Localization.RootNamespaceAttribute">
+      <_Parameter1>$(RootNamespace)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
