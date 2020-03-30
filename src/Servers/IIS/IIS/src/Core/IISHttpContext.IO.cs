@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     if (_consumedBytes > MaxRequestBodySize)
                     {
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                        throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status413PayloadTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     await _application.ProcessRequestAsync(context);
                 }
-                catch (BadHttpRequestException ex)
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
                 {
                     SetBadRequestState(ex);
                     ReportApplicationError(ex);
