@@ -41,8 +41,6 @@ echo "Creating nugetRestore directory: $NUGET_RESTORE"
 mkdir $NUGET_RESTORE
 mkdir logs
 
-ls -laR
-
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
@@ -93,35 +91,6 @@ if [ $? -ne 0 ]; then
     done
 fi
 
-# Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
-if [ ! -f "NuGet.config" ]
-then
-    cp default.NuGet.config NuGet.config
-fi
-
-# Copy over any local shared fx if found
-if [ -d "Microsoft.AspNetCore.App" ]
-then
-    echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
-    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
-
-    echo "Adding current directory to nuget sources: $DIR"
-    dotnet nuget add source $DIR --configfile NuGet.config
-    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config
-    dotnet nuget list source
-
-    dotnet tool install dotnet-ef --global --version $efVersion
-
-    # Ensure tools are on on PATH
-    export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
-fi
-
-# Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
-if [ ! -f "xunit.runner.json" ]
-then
-    cp default.runner.json xunit.runner.json
-fi
-
 if [ -e /proc/self/coredump_filter ]; then
   # Include memory in private and shared file-backed mappings in the dump.
   # This ensures that we can see disassembly from our shared libraries when
@@ -131,38 +100,15 @@ fi
 
 sync
 
-$DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
-if grep -q "Exception thrown" discovered.txt; then
-    echo -e "${RED}Exception thrown during test discovery${RESET}".
-    cat discovered.txt
-    exit 1
-fi
+export ASPNETCORE_TEST_TARGET=$test_binary_path
+export ASPNETCORE_SDK_VERSION=$dotnet_sdk_version
+export ASPNETCORE_RUNTIME_VERSION=$dotnet_runtime_version
+export ASPNETCORE_HELIX_QUEUE=$helix_queue_name
+export ASPNETCORE_ARCHITECTURE=$target_arch
+export ASPNETCORE_QUARANTINED=$quarantined
+export ASPNETCORE_EF_VERSION=$efVersion
 
 exit_code=0
+$DOTNET_ROOT/dotnet run --project app/app.csproj
 
-# Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONQUARANTINE_FILTER="Quarantined!=true"
-QUARANTINE_FILTER="Quarantined=true"
-if [ "$quarantined" == true ]; then
-    echo "Running all tests including quarantined."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:"$QUARANTINE_FILTER"
-    if [ $? != 0 ]; then
-        echo "Quarantined tests failed!" 1>&2
-        # DO NOT EXIT
-    fi
-else
-    echo "Running non-quarantined tests."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:"$NONQUARANTINE_FILTER"
-    exit_code=$?
-    if [ $exit_code != 0 ]; then
-        echo "Non-quarantined tests failed!" 1>&2
-        # DO NOT EXIT
-    fi
-fi
-
-echo "Copying TestResults/TestResults to ."
-cp TestResults/TestResults.xml testResults.xml
-echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/"
-cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/../
-cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/
-exit $exit_code
+exit $?

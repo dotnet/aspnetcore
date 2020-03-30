@@ -9,22 +9,32 @@ namespace app
     {
         static void Main(string[] args)
         {
+            var target = Environment.GetEnvironmentVariable("ASPNETCORE_TEST_TARGET");
+            var sdkVersion = Environment.GetEnvironmentVariable("ASPNETCORE_SDK_VERSION");
+            var runtimeVersion = Environment.GetEnvironmentVariable("ASPNETCORE_RUNTIME_VERSION");
+            var helixQueue = Environment.GetEnvironmentVariable("ASPNETCORE_HELIX_QUEUE");
+            var architecture = Environment.GetEnvironmentVariable("ASPNETCORE_ARCHITECTURE");
+            var quarantined = Environment.GetEnvironmentVariable("ASPNETCORE_QUARANTINED");
+            var efVersion = Environment.GetEnvironmentVariable("ASPNETCORE_EF_VERSION");
+            var HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
+
             var path = Environment.GetEnvironmentVariable("PATH");
+            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
             Console.WriteLine("Checking for Microsoft.AspNetCore.App");
             if (Directory.Exists("Microsoft.AspNetCore.App"))
             {
-                Console.WriteLine("Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%/shared/Microsoft.AspNetCore.App/%runtimeVersion%");
+                Console.WriteLine($"Found Microsoft.AspNetCore.App, copying to {dotnetRoot}/shared/Microsoft.AspNetCore.App/{runtimeVersion}");
                 foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                 {
-                    File.Copy(file, "%DOTNET_ROOT%/shared/Microsoft.AspNetCore.App/%runtimeVersion%", overwrite: true);
+                    File.Copy(file, $"{dotnetRoot}/shared/Microsoft.AspNetCore.App/{runtimeVersion}", overwrite: true);
                 }
 
-                Console.WriteLine("Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%");
+                Console.WriteLine($"Adding current directory to nuget sources: {HELIX_WORKITEM_ROOT}");
 
                 var processInfo = new ProcessStartInfo()
                 {
-                    Arguments = $"nuget add source {Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}",
-                    FileName = "dotnet",
+                    Arguments = $"nuget add source {HELIX_WORKITEM_ROOT}",
+                    FileName = $"{dotnetRoot}/dotnet",
                 };
 
                 processInfo.Environment["PATH"] = path;
@@ -40,7 +50,7 @@ namespace app
                 process = Process.Start(processInfo);
                 process.WaitForExit();
 
-                processInfo.Arguments = "tool install dotnet-ef --global --version %$efVersion%";
+                processInfo.Arguments = $"tool install dotnet-ef --global --version {efVersion}";
                 process = Process.Start(processInfo);
                 process.WaitForExit();
 
@@ -50,40 +60,38 @@ namespace app
 
             var testProcessInfo = new ProcessStartInfo()
             {
-                Arguments = "vstest ../Microsoft.AspNetCore.SignalR.Tests.dll -lt",
-                FileName = "dotnet",
+                Arguments = $"vstest {target} -lt",
+                FileName = $"{dotnetRoot}/dotnet",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
             };
 
-            testProcessInfo.Environment["DOTNET_ROOT"] = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            testProcessInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
             testProcessInfo.Environment["PATH"] = path;
 
-            //var HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-            //Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
-            ////testProcessInfo.Environment["HELIX"] = Environment.GetEnvironmentVariable("%$helixQueue%");
-            ////set HELIX=%$helixQueue%
-            //var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-            //Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
-            //testProcessInfo.Environment["HELIX_DIR"] = helixDir;
-            //testProcessInfo.Environment["NUGET_FALLBACK_PACKAGES"] = helixDir;
-            //var nugetRestore = Path.Combine(helixDir, "nugetRestore");
-            //Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
-            //testProcessInfo.Environment["NUGET_RESTORE"] = nugetRestore;
-            //var dotnetEFFullPath = Path.Combine(nugetRestore, "dotnet-ef/%$efVersion%/tools/netcoreapp3.1/any/dotnet-ef.exe");
-            //Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
-            //testProcessInfo.Environment["DotNetEfFullPath"] = dotnetEFFullPath;
+            testProcessInfo.Environment["HELIX"] = helixQueue;
+            Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
+            var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
+            Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
+            testProcessInfo.Environment["HELIX_DIR"] = helixDir;
+            testProcessInfo.Environment["NUGET_FALLBACK_PACKAGES"] = helixDir;
+            var nugetRestore = Path.Combine(helixDir, "nugetRestore");
+            Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
+            testProcessInfo.Environment["NUGET_RESTORE"] = nugetRestore;
+            var dotnetEFFullPath = Path.Combine(nugetRestore, $"dotnet-ef/{efVersion}/tools/netcoreapp3.1/any/dotnet-ef.exe");
+            Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
+            testProcessInfo.Environment["DotNetEfFullPath"] = dotnetEFFullPath;
 
-            //Directory.CreateDirectory(nugetRestore);
+            Directory.CreateDirectory(nugetRestore);
 
             // Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
-            if (!File.Exists("../xunit.runner.json"))
+            if (!File.Exists("xunit.runner.json"))
             {
-                File.Copy("../default.runner.json", "../xunit.runner.json");
+                File.Copy("default.runner.json", "xunit.runner.json");
             }
 
             Console.WriteLine("Displaying directory contents");
-            foreach (var file in Directory.EnumerateFiles("../"))
+            foreach (var file in Directory.EnumerateFiles("./"))
             {
                 Console.WriteLine(Path.GetFileName(file));
             }
@@ -111,13 +119,12 @@ namespace app
             }
 
             var exitCode = 0;
-            var quarantined = false;
-            if (quarantined)
+            if (string.Equals(quarantined, "true") || string.Equals(quarantined, "1"))
             {
                 Console.WriteLine("Running quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                testProcessInfo.Arguments = "vstest ../Microsoft.AspNetCore.SignalR.Tests.dll --logger:xunit --TestCaseFilter:\"Quarantined=true\"";
+                testProcessInfo.Arguments = $"vstest {target} --logger:xunit --TestCaseFilter:\"Quarantined=true\"";
 
                 testProcess = Process.Start(testProcessInfo);
                 testProcess.BeginOutputReadLine();
@@ -141,7 +148,7 @@ namespace app
                 Console.WriteLine("Running non-quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                testProcessInfo.Arguments = "vstest ../Microsoft.AspNetCore.SignalR.Tests.dll --logger:xunit --TestCaseFilter:\"Quarantined!=true\"";
+                testProcessInfo.Arguments = $"vstest {target} --logger:xunit --TestCaseFilter:\"Quarantined!=true\"";
 
                 testProcess = Process.Start(testProcessInfo);
                 testProcess.BeginOutputReadLine();
@@ -163,11 +170,11 @@ namespace app
             }
 
             Console.WriteLine("Copying TestResults/TestResults.xml to .");
-            File.Copy("TestResults/TestResults.xml", "../testResults.xml");
+            File.Copy("TestResults/TestResults.xml", "testResults.xml");
 
-            Console.WriteLine("Copying artifacts/logs to %HELIX_WORKITEM_UPLOAD_ROOT%/../");
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-            foreach (var file in Directory.EnumerateFiles("../artifacts/log", "*.log", SearchOption.AllDirectories))
+            Console.WriteLine($"Copying artifacts/logs to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
             {
                 Console.WriteLine($"Copying: {file}");
                 File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, Path.GetFileName(file)));
