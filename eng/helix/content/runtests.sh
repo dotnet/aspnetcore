@@ -93,6 +93,12 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+# Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
+if [ ! -f "NuGet.config" ]
+then
+    cp default.NuGet.config NuGet.config
+fi
+
 # Copy over any local shared fx if found
 if [ -d "Microsoft.AspNetCore.App" ]
 then
@@ -100,8 +106,8 @@ then
     cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 
     echo "Adding current directory to nuget sources: $DIR"
-    dotnet nuget add source $DIR
-    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
+    dotnet nuget add source $DIR --configfile NuGet.config
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config
     dotnet nuget list source
 
     dotnet tool install dotnet-ef --global --version $efVersion
