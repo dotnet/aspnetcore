@@ -120,8 +120,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _started = true;
 
-            // Users may want to configure the culture based on some ambient state such as local storage, url etc.
-            // If they have changed the culture since the initial load, fetch satellite assemblies for this selection.
+            // EntryPointInvoker loads satellite assemblies for the application default culture.
+            // Application developers might have configured the culture based on some ambient state
+            // such as local storage, url etc as part of their Program.Main(Async).
+            // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await SatelliteResourcesLoader.LoadCurrentCultureResourcesAsync();
 
             var tcs = new TaskCompletionSource<object>();
