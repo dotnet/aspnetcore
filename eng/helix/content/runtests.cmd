@@ -24,9 +24,9 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 echo "Installing Runtime"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
-REM "Rename default.NuGet.Config to NuGet.Config if there is not a custom one from the project"
-if not EXIST ".\NuGet.Config" (
-    copy default.NuGet.Config NuGet.Config
+REM "Rename default.NuGet.config to NuGet.config if there is not a custom one from the project"
+if not EXIST ".\NuGet.config" (
+    copy default.NuGet.config NuGet.config
 )
 
 echo "Checking for Microsoft.AspNetCore.App"
@@ -35,8 +35,8 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
 
     echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
-    dotnet nuget add source %HELIX_WORKITEM_ROOT% --configfile NuGet.Config
-    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.Config
+    dotnet nuget add source %HELIX_WORKITEM_ROOT% --configfile NuGet.config
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config
     dotnet nuget list source
     dotnet tool install dotnet-ef --global --version %$efVersion%
 
