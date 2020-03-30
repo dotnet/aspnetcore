@@ -77,7 +77,7 @@ set NONQUARANTINE_FILTER="Quarantined!=true"
 set QUARANTINE_FILTER="Quarantined=true"
 if %$quarantined%==true (
     echo Running quarantined tests.
-    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --logger:"console;verbosity=normal" --TestCaseFilter:%QUARANTINE_FILTER%
+    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:%QUARANTINE_FILTER%
     if errorlevel 1 (
         echo Failure in quarantined test 1>&2
         REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
@@ -85,7 +85,7 @@ if %$quarantined%==true (
 ) else (
     REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
     echo Running non-quarantined tests.
-    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --logger:"console;verbosity=normal" --TestCaseFilter:%NONQUARANTINE_FILTER%
+    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:%NONQUARANTINE_FILTER%
     if errorlevel 1 (
         echo Failure in non-quarantined test 1>&2
         set exit_code=1
