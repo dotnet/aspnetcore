@@ -9,4 +9,31 @@
     <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
   </PropertyGroup>
 
+  <Target
+    Name="_BlazorCleanupPublishOutput"
+    AfterTargets="ComputeResolvedFilesToPublishList"
+    Condition="'$(BlazorPrunePublishOutput)' != 'false'">
+
+    <ItemGroup>
+      <!-- Delete stray contents from the root of the the app. -->
+      <ResolvedFileToPublish
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="!$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))"/>
+    </ItemGroup>
+  </Target>
+
+  <Target
+      Name="_BlazorCopyStandaloneWebConfig"
+      AfterTargets="_BlazorCleanupPublishOutput;ComputeResolvedFilesToPublishList">
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(MSBuildThisFileDirectory)Standalone.Web.config">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <RelativePath>web.config</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+  </Target>
+
 </Project>

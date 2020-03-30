@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             return filePath;
         }
 
-        public static void FileCountEquals(MSBuildResult result, int expected, string directoryPath, string searchPattern)
+        public static void FileCountEquals(MSBuildResult result, int expected, string directoryPath, string searchPattern, SearchOption searchOption = SearchOption.AllDirectories)
         {
             if (result == null)
             {
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             if (Directory.Exists(directoryPath))
             {
-                var files = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
+                var files = Directory.GetFiles(directoryPath, searchPattern, searchOption);
                 if (files.Length != expected)
                 {
                     throw new FileCountException(result, expected, directoryPath, searchPattern, files);
