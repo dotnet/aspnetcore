@@ -89,12 +89,6 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
 
-      <ResolvedFileToPublish Include="$(MSBuildThisFileDirectory)Standalone.Web.config">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <RelativePath>web.config</RelativePath>
-      </ResolvedFileToPublish>
-
     </ItemGroup>
 
   </Target>
