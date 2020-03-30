@@ -10,6 +10,9 @@
     <Reference Include="Mono.WebAssembly.Interop" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Options" />
+
+    <!-- This project does not yet include the latest changes from the 'blazor-wasm' branch. -->
+    <SuppressBaselineReference Include="Microsoft.Extensions.Configuration" />
   </ItemGroup>
 
   <ItemGroup>
