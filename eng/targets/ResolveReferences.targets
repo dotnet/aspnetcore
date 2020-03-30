@@ -144,41 +144,42 @@
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+    </ItemGroup>
 
-      <!--
-        MSBuild does not provide a way to join on matching identities in a Condition,
-        but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
-      -->
-      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
-        <Id>%(LatestPackageReference.Identity)</Id>
-        <Version>%(LatestPackageReference.Version)</Version>
-      </_LatestPackageReferenceWithVersion>
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+    <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version;RTMVersion"
+        Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)"
+    </JoinItems>
 
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
+    </ItemGroup>
 
       <!-- Resolve references from BaselinePackageReference for servicing builds. -->
+      <_BaselinePackageReferenceWithVersion Include="@(Reference)"
       <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
-        <Id>%(BaselinePackageReference.Identity)</Id>
-        <Version>%(BaselinePackageReference.Version)</Version>
-      </_BaselinePackageReferenceWithVersion>
 
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)"
+    </JoinItems>
 
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
+    </ItemGroup>
 
-      <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
-      <_PrivatePackageReferenceWithVersion Include="@(Reference->WithMetadataValue('PrivateAssets', 'All'))">
-        <Id>%(LatestPackageReference.Identity)</Id>
-        <Version>%(LatestPackageReference.Version)</Version>
-      </_PrivatePackageReferenceWithVersion>
+    <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
+    <JoinItems Left="@(Reference)"
+        Right="@(LatestPackageReference->WithMetadataValue('PrivateAssets', 'All'))"
+        LeftMetadata="*"
+        RightMetadata="Version;RTMVersion">
 
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)"
+    </JoinItems>
 
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
