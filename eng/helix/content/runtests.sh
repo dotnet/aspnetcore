@@ -93,6 +93,12 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+# Rename default.NuGet.Config to NuGet.Config if there is not a custom one from the project
+if [ ! -f "NuGet.Config" ]
+then
+    cp default.NuGet.Config NuGet.Config
+fi
+
 # Copy over any local shared fx if found
 if [ -d "Microsoft.AspNetCore.App" ]
 then
