@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -445,7 +446,7 @@ namespace Microsoft.AspNetCore.TestHost
                 return Task.CompletedTask;
             };
 
-            Stream requestStream = null;
+            Stream serverRequestStream = null;
 
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
@@ -455,7 +456,7 @@ namespace Microsoft.AspNetCore.TestHost
             httpRequest.Version = new Version(2, 0);
             httpRequest.Content = new PushContent(async stream =>
             {
-                requestStream = stream;
+                serverRequestStream = stream;
                 await requestStreamTcs.Task;
             });
 
@@ -474,7 +475,7 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal(0, length);
 
             // Writing to request stream will fail because server is complete
-            await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
+            await Assert.ThrowsAnyAsync<Exception>(() => serverRequestStream.WriteAsync(buffer).AsTask());
 
             // Unblock request
             requestStreamTcs.TrySetResult(null);
