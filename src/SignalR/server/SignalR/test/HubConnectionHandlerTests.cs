@@ -2666,22 +2666,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                         options.KeepAliveInterval = TimeSpan.FromMilliseconds(interval)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                connectionHandler.SystemClock = clock;
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
-                    client.Connection.Features.Set<ISystemClock>(clock);
-
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
 
-                    // Trigger multiple keep alives, but make sure to yield some time up to unblock concurrent threads
-                    // This is useful on AppVeyor because it's slow enough to end up with no time
-                    // being available for the endpoint to run.
-                    for (var i = 0; i < 5; i += 1)
+                    // Trigger multiple keep alives
+                    var heartbeatCount = 5;
+                    for (var i = 0; i < heartbeatCount; i++)
                     {
                         clock.UtcNow = clock.UtcNow.AddMilliseconds(interval + 1);
                         client.TickHeartbeat();
-                        await Task.Yield();
                     }
 
                     // Shut down
@@ -2715,7 +2712,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                                 break;
                         }
                     }
-                    Assert.InRange(pingCounter, 1, Int32.MaxValue);
+                    Assert.Equal(heartbeatCount, pingCounter);
                 }
             }
         }
@@ -2731,11 +2728,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                connectionHandler.SystemClock = clock;
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
-                    client.Connection.Features.Set<ISystemClock>(clock);
-
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
                     // This is a fake client -- it doesn't auto-ping to signal
@@ -2768,17 +2764,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                connectionHandler.SystemClock = clock;
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
-                    client.Connection.Features.Set<ISystemClock>(clock);
-
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
-
-                    clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
-                    client.TickHeartbeat();
 
                     clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
                     client.TickHeartbeat();
@@ -2800,11 +2792,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(timeout)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                connectionHandler.SystemClock = clock;
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
-                    client.Connection.Features.Set<ISystemClock>(clock);
-
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);

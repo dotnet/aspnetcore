@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
-            _systemClock = _connectionContext.Features.Get<ISystemClock>() ?? new SystemClock();
+            _systemClock = contextOptions.SystemClock;
             _lastSendTimeStamp = _systemClock.UtcNowTicks;
         }
 

@@ -31,15 +31,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
         private readonly TimeSpan _disconnectTimeout;
-        private readonly ISystemClock _systemClock;
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, ISystemClock systemClock)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
             _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
-            _systemClock = systemClock;
 
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -94,7 +92,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
-            connection.Features.Set(_systemClock);
 
             _connections.TryAdd(connectionToken, (connection, connectionTimer));
 
@@ -153,7 +150,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
-                var utcNow = _systemClock.UtcNow;
+                var utcNow = DateTimeOffset.UtcNow;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
                 if (!Debugger.IsAttached && lastSeenUtc.HasValue && (utcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
