@@ -109,6 +109,6 @@ export ASPNETCORE_QUARANTINED=$quarantined
 export ASPNETCORE_EF_VERSION=$efVersion
 
 exit_code=0
-$DOTNET_ROOT/dotnet run --project app/app.csproj
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj
 
 exit $?

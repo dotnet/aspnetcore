@@ -33,7 +33,7 @@ set ASPNETCORE_QUARANTINED=%$quarantined%
 set ASPNETCORE_EF_VERSION=%$efVersion%
 
 set exit_code=0
-dotnet run --project app\app.csproj
+dotnet run --project RunTests\RunTests.csproj
 if errorlevel 1 (
     set exit_code=1
 )

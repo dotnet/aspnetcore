@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace app
+namespace RunTests
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var target = Environment.GetEnvironmentVariable("ASPNETCORE_TEST_TARGET");
             var sdkVersion = Environment.GetEnvironmentVariable("ASPNETCORE_SDK_VERSION");
@@ -20,6 +22,30 @@ namespace app
 
             var path = Environment.GetEnvironmentVariable("PATH");
             var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+
+            // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
+            if (!File.Exists("NuGet.config"))
+            {
+                File.Copy("default.NuGet.config", "NuGet.config");
+            }
+
+            var environmentVariables = new Dictionary<string, string>();
+            environmentVariables.Add("PATH", path);
+            environmentVariables.Add("DOTNET_ROOT", dotnetRoot);
+            environmentVariables.Add("HELIX", helixQueue);
+
+            Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
+            var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
+            Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
+            environmentVariables.Add("HELIX_DIR", helixDir);
+            environmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
+            var nugetRestore = Path.Combine(helixDir, "nugetRestore");
+            Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
+            environmentVariables.Add("NUGET_RESTORE", nugetRestore);
+            var dotnetEFFullPath = Path.Combine(nugetRestore, $"dotnet-ef/{efVersion}/tools/netcoreapp3.1/any/dotnet-ef.exe");
+            Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
+            environmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
+
             Console.WriteLine("Checking for Microsoft.AspNetCore.App");
             if (Directory.Exists("Microsoft.AspNetCore.App"))
             {
@@ -31,56 +57,25 @@ namespace app
 
                 Console.WriteLine($"Adding current directory to nuget sources: {HELIX_WORKITEM_ROOT}");
 
-                var processInfo = new ProcessStartInfo()
-                {
-                    Arguments = $"nuget add source {HELIX_WORKITEM_ROOT}",
-                    FileName = $"{dotnetRoot}/dotnet",
-                };
+                await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    $"nuget add source {HELIX_WORKITEM_ROOT} --configfile NuGet.config",
+                    environmentVariables: environmentVariables);
 
-                processInfo.Environment["PATH"] = path;
+                await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
+                    environmentVariables: environmentVariables);
 
-                var process = Process.Start(processInfo);
-                process.WaitForExit();
+                await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    "nuget list source",
+                    environmentVariables: environmentVariables);
 
-                processInfo.Arguments = "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json";
-                process = Process.Start(processInfo);
-                process.WaitForExit();
-
-                processInfo.Arguments = "nuget list source";
-                process = Process.Start(processInfo);
-                process.WaitForExit();
-
-                processInfo.Arguments = $"tool install dotnet-ef --global --version {efVersion}";
-                process = Process.Start(processInfo);
-                process.WaitForExit();
+                await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    $"tool install dotnet-ef --global --version {efVersion}",
+                    environmentVariables: environmentVariables);
 
                 path += $";{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
+                environmentVariables.Add("PATH", path);
             }
-
-
-            var testProcessInfo = new ProcessStartInfo()
-            {
-                Arguments = $"vstest {target} -lt",
-                FileName = $"{dotnetRoot}/dotnet",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-            };
-
-            testProcessInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
-            testProcessInfo.Environment["PATH"] = path;
-
-            testProcessInfo.Environment["HELIX"] = helixQueue;
-            Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
-            var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-            Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
-            testProcessInfo.Environment["HELIX_DIR"] = helixDir;
-            testProcessInfo.Environment["NUGET_FALLBACK_PACKAGES"] = helixDir;
-            var nugetRestore = Path.Combine(helixDir, "nugetRestore");
-            Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
-            testProcessInfo.Environment["NUGET_RESTORE"] = nugetRestore;
-            var dotnetEFFullPath = Path.Combine(nugetRestore, $"dotnet-ef/{efVersion}/tools/netcoreapp3.1/any/dotnet-ef.exe");
-            Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
-            testProcessInfo.Environment["DotNetEfFullPath"] = dotnetEFFullPath;
 
             Directory.CreateDirectory(nugetRestore);
 
@@ -96,18 +91,11 @@ namespace app
                 Console.WriteLine(Path.GetFileName(file));
             }
 
-            var testProcess = Process.Start(testProcessInfo);
-            testProcess.BeginOutputReadLine();
-
             var discoveredTestsBuilder = new StringBuilder();
-            testProcess.OutputDataReceived += (_, d) =>
-            {
-                if (d.Data != null)
-                {
-                    discoveredTestsBuilder.AppendLine(d.Data);
-                }
-            };
-            testProcess.WaitForExit();
+            await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                $"vstest {target} -lt",
+                environmentVariables: environmentVariables,
+                outputDataReceived: (line) => discoveredTestsBuilder.AppendLine(line));
 
             var discoveredTests = discoveredTestsBuilder.ToString();
             if (discoveredTests.Contains("Exception thrown"))
@@ -119,28 +107,22 @@ namespace app
             }
 
             var exitCode = 0;
+            var commonTestArgs = $"vstest {target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
             if (string.Equals(quarantined, "true") || string.Equals(quarantined, "1"))
             {
                 Console.WriteLine("Running quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                testProcessInfo.Arguments = $"vstest {target} --logger:xunit --TestCaseFilter:\"Quarantined=true\"";
 
-                testProcess = Process.Start(testProcessInfo);
-                testProcess.BeginOutputReadLine();
+                var result = await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
+                    environmentVariables: environmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.WriteLine);
 
-                testProcess.OutputDataReceived += (_, d) =>
+                if (result.ExitCode != 0)
                 {
-                    if (d.Data != null)
-                    {
-                        Console.WriteLine(d.Data);
-                    }
-                };
-                testProcess.WaitForExit();
-
-                if (testProcess.ExitCode != 0)
-                {
-                    Console.WriteLine($"Failure in quarantined tests. Exit code: {testProcess.ExitCode}.");
+                    Console.WriteLine($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
                 }
             }
             else
@@ -148,24 +130,16 @@ namespace app
                 Console.WriteLine("Running non-quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                testProcessInfo.Arguments = $"vstest {target} --logger:xunit --TestCaseFilter:\"Quarantined!=true\"";
+                var result = await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+                    commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
+                    environmentVariables: environmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.WriteLine);
 
-                testProcess = Process.Start(testProcessInfo);
-                testProcess.BeginOutputReadLine();
-
-                testProcess.OutputDataReceived += (_, d) =>
+                if (result.ExitCode != 0)
                 {
-                    if (d.Data != null)
-                    {
-                        Console.WriteLine(d.Data);
-                    }
-                };
-                testProcess.WaitForExit();
-
-                if (testProcess.ExitCode != 0)
-                {
-                    Console.WriteLine($"Failure in non-quarantined tests. Exit code: {testProcess.ExitCode}.");
-                    exitCode = testProcess.ExitCode;
+                    Console.WriteLine($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
+                    exitCode = result.ExitCode;
                 }
             }
 
