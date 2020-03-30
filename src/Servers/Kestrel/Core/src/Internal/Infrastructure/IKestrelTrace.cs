@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void NotAllConnectionsClosedGracefully();
 
-        void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
+        void ConnectionBadRequest(string connectionId, KestrelBadHttpRequestException ex);
 
         void ApplicationError(string connectionId, string traceIdentifier, Exception ex);
 

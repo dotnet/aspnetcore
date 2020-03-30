@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed class BadHttpRequestException : IOException
     {
         private BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)

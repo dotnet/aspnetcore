@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             const string key = "\u00141\u00F3d\017c";
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
-            var exception = Assert.Throws<BadHttpRequestException>(
+            var exception = Assert.Throws<KestrelBadHttpRequestException>(
                 () => headers.Append(encoding.GetBytes(key), Encoding.ASCII.GetBytes("value")));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }

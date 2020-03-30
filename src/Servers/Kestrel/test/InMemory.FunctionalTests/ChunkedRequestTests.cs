@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var readStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var exTcs = new TaskCompletionSource<BadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var exTcs = new TaskCompletionSource<KestrelBadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -853,7 +853,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await readTask;
                 }
-                catch (BadHttpRequestException badRequestEx)
+                catch (KestrelBadHttpRequestException badRequestEx)
                 {
                     exTcs.TrySetResult(badRequestEx);
                 }
@@ -879,7 +879,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.ReceiveEnd();
 
                     var badReqEx = await exTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
-                    Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
+                    Assert.Equal(StatusCodes.Status400BadRequest, badReqEx.StatusCode);
+                    Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, badReqEx.Message);
                 }
             }
         }

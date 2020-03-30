@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // closing the connection without a response as expected.
             _context.OnInputOrOutputCompleted();
 
-            BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
         }
 
         public abstract bool TryReadInternal(out ReadResult readResult);
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
-            catch (BadHttpRequestException ex)
+            catch (KestrelBadHttpRequestException ex)
             {
                 // At this point, the response has already been written, so this won't result in a 4XX response;
                 // however, we still need to stop the request processing loop and log.
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
-            catch (BadHttpRequestException ex)
+            catch (KestrelBadHttpRequestException ex)
             {
                 _context.SetBadRequestState(ex);
             }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (headers.HeaderTransferEncoding.Count > 0 || (headers.ContentLength.HasValue && headers.ContentLength.Value != 0))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
                 context.OnTrailersComplete(); // No trailers for these.
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // status code and then close the connection.
                 if (transferCoding != TransferCoding.Chunked)
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
                 }
 
                 // TODO may push more into the wrapper rather than just calling into the message body
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
             {
                 var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
-                BadHttpRequestException.Throw(requestRejectionReason, context.Method);
+                KestrelBadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
             context.OnTrailersComplete(); // No trailers for these.
