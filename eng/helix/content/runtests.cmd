@@ -29,8 +29,8 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
 
     echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
-    dotnet nuget add source %HELIX_WORKITEM_ROOT%
-    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
+    dotnet nuget add source %HELIX_WORKITEM_ROOT% --configfile NuGet.Config
+    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.Config
     dotnet nuget list source
     dotnet tool install dotnet-ef --global --version %$efVersion%
 
