@@ -1,8 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RunTests
@@ -85,23 +86,22 @@ namespace RunTests
                 File.Copy("default.runner.json", "xunit.runner.json");
             }
 
+            Console.WriteLine();
             Console.WriteLine("Displaying directory contents");
             foreach (var file in Directory.EnumerateFiles("./"))
             {
                 Console.WriteLine(Path.GetFileName(file));
             }
+            Console.WriteLine();
 
-            var discoveredTestsBuilder = new StringBuilder();
-            await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
+            var discoveryResult = await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
                 $"vstest {target} -lt",
-                environmentVariables: environmentVariables,
-                outputDataReceived: (line) => discoveredTestsBuilder.AppendLine(line));
+                environmentVariables: environmentVariables);
 
-            var discoveredTests = discoveredTestsBuilder.ToString();
-            if (discoveredTests.Contains("Exception thrown"))
+            if (discoveryResult.StandardOutput.Contains("Exception thrown"))
             {
                 Console.WriteLine("Exception thrown during test discovery.");
-                Console.WriteLine(discoveredTests);
+                Console.WriteLine(discoveryResult.StandardOutput);
                 Environment.Exit(1);
                 return;
             }
@@ -143,16 +143,31 @@ namespace RunTests
                 }
             }
 
-            Console.WriteLine("Copying TestResults/TestResults.xml to .");
-            File.Copy("TestResults/TestResults.xml", "testResults.xml");
+            Console.WriteLine();
+            if (File.Exists("TestResults/TestResults.xml"))
+            {
+                Console.WriteLine("Copying TestResults/TestResults.xml to ./testResults.xml");
+                File.Copy("TestResults/TestResults.xml", "testResults.xml");
+            }
+            else
+            {
+                Console.WriteLine("No test results found.");
+            }
 
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-            Console.WriteLine($"Copying artifacts/logs to {HELIX_WORKITEM_UPLOAD_ROOT}/");
-            foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
+            Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("artifacts/log"))
             {
-                Console.WriteLine($"Copying: {file}");
-                File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, Path.GetFileName(file)));
-                File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", Path.GetFileName(file)));
+                foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
+                {
+                    Console.WriteLine($"Copying: {file}");
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, Path.GetFileName(file)));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", Path.GetFileName(file)));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No logs found in artifacts/log");
             }
 
             Environment.Exit(exitCode);
