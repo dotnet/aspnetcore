@@ -196,6 +196,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestMessage.Content = requestContent;
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
