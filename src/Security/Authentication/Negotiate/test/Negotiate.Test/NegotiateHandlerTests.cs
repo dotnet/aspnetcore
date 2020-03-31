@@ -22,7 +22,6 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
-    [QuarantinedTest]
     public class NegotiateHandlerTests
     {
         [Fact]
