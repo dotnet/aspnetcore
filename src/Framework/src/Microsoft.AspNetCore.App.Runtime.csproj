@@ -67,7 +67,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- There is no way to suppress the .dev.runtimeconfig.json generation. -->
     <ProjectRuntimeConfigDevFilePath>$(IntermediateOutputPath)ignoreme.dev.runtimeconfig.json</ProjectRuntimeConfigDevFilePath>
 
-    <VersionFileIntermediateOutputPath>$(IntermediateOutputPath).version</VersionFileIntermediateOutputPath>
+    <VersionFileIntermediateOutputPath>$(IntermediateOutputPath)$(SharedFxName).versions.txt</VersionFileIntermediateOutputPath>
 
     <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
     <DebugType>none</DebugType>
@@ -498,6 +498,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ItemGroup>
       <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RuntimePackContent)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="IncludeVersionFile"
+          DependsOnTargets="GenerateSharedFxVersionsFiles" 
+          BeforeTargets="_GetPackageFiles">
+
+    <ItemGroup>
+      <None Include="$(VersionFileIntermediateOutputPath)" Pack="true" PackagePath="." />
     </ItemGroup>
   </Target>
 

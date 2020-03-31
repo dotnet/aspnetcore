@@ -24,6 +24,7 @@
     <NuspecProperty Include="componentsversion=$(ComponentsPackageVersion)" />
     <NuspecProperty Include="razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <NuspecProperty Include="blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
   <ItemGroup>

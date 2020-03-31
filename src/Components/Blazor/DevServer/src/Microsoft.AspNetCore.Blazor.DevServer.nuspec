@@ -7,6 +7,6 @@
     $CommonFileElements$
     <file src="build\**" target="build" />
     <file src="$publishDir$**\*" target="tools" />
-    <file src="$componentsrootdir$THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
+    <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
 </package>
