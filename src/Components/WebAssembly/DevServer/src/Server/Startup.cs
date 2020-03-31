@@ -1,15 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Mime;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,10 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
-
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IConfiguration configuration)
+        public void Configure(IApplicationBuilder app, IConfiguration configuration)
         {
             app.UseDeveloperExceptionPage();
             EnableConfiguredPathbase(app, configuration);
@@ -38,7 +30,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
             app.UseWebAssemblyDebugging();
 
             app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                // In development, serve everything, as there's no other way to configure it.
+                // In production, developers are responsible for configuring their own production server
+                ServeUnknownFileTypes = true,
+            });
 
             app.UseRouting();
 
