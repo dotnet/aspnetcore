@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithIntegrityData))]
+        [QuarantinedTest]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
             var integrity = await GetShaIntegrity(scriptTag);
