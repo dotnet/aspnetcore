@@ -95,7 +95,7 @@ namespace RunTests
 
             Console.WriteLine();
             Console.WriteLine("Displaying directory contents");
-            foreach (var file in Directory.EnumerateFiles("./"))
+            foreach (var file in Directory.EnumerateFileSystemEntries("./"))
             {
                 Console.WriteLine(Path.GetFileName(file));
             }
