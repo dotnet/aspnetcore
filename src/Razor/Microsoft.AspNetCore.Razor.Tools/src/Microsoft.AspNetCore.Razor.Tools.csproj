@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\TagHelperDescriptorJsonConverter.cs">
+    <Compile Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Serialization\TagHelperDescriptorJsonConverter.cs">
       <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\RazorDiagnosticJsonConverter.cs">
