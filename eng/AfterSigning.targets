@@ -1,14 +1,12 @@
 <Project>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
   <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
 
   <PropertyGroup>
     <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
     <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
     <InstallersOutputPath>$(ArtifactsDir)\installers\</InstallersOutputPath>
-    <!-- Suppress warnings about importing certain Arcade projects twice -->
-    <NoWarn>$(NoWarn);MSB4011</NoWarn>
   </PropertyGroup>
 
   <Target Name="PopulateGenerateChecksumItems"
@@ -25,6 +23,6 @@
 
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
 
 </Project>
