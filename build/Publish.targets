@@ -66,6 +66,7 @@
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
       <WindowsHostingBundleInstallerFileName>dotnet-hosting-$(PackageVersion)-win.exe</WindowsHostingBundleInstallerFileName>
+      <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
     </PropertyGroup>
 
     <ItemGroup>
