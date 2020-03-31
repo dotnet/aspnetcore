@@ -15,7 +15,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
-    [QuarantinedTest]
     public class ServerDeferralTests
     {
         [Fact]
