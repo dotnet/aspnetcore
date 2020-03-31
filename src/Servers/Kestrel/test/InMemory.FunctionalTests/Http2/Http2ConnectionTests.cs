@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [QuarantinedTest]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
-            // Increase response buffer size so there is no delay in writing to it.
-            // We only want to hit flow control back-pressure and not pipe back-pressure.
-            // This fixes flakyness https://github.com/dotnet/aspnetcore/pull/19949
-            _serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 128 * 1024;
+            // The test will:
+            // 1. Create a stream will a large response that will use up the connection window and complete.
+            // 2. Create two streams will smaller responses.
+            // 3. Update the connection window one byte at a time.
 
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Send headers
                 await c.Response.Body.FlushAsync();
 
-                // Send large data (3 larger than window size)
-                var writeTask = c.Response.Body.WriteAsync(new byte[65538]);
+                var responseBodySize = Convert.ToInt32(c.Request.Headers["ResponseBodySize"]);
+                var writeTask = c.Response.Body.WriteAsync(new byte[responseBodySize]);
 
                 // Notify test that write has started
                 writeTcs.SetResult(null);
@@ -52,9 +52,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await writeTask;
             });
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            IEnumerable<KeyValuePair<string, string>> GetHeaders(int responseBodySize)
+            {
+                foreach (var header in _browserRequestHeaders)
+                {
+                    yield return header;
+                }
+
+                yield return new KeyValuePair<string, string>("ResponseBodySize", responseBodySize.ToString());
+            }
+
+            await StartStreamAsync(1, GetHeaders(responseBodySize: 65535), endStream: true);
             // Ensure the stream window size is large enough
-            await SendWindowUpdateAsync(streamId: 1, 65538);
+            await SendWindowUpdateAsync(streamId: 1, 65535);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 33,
@@ -79,14 +89,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 16383,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
-
-            // 3 byte is remaining on stream 1
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
 
             writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
-            // Ensure the stream window size is large enough
-            await SendWindowUpdateAsync(streamId: 3, 65538);
+            await StartStreamAsync(3, GetHeaders(responseBodySize: 3), endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 33,
@@ -95,13 +105,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await writeTcs.Task;
 
+            writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await StartStreamAsync(5, GetHeaders(responseBodySize: 3), endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 33,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 5);
+
+            await writeTcs.Task;
+
             await SendWindowUpdateAsync(streamId: 0, 1);
 
-            // FIFO means stream 1 returns data first
+            // FIFO means stream 3 returns data first
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1);
+                withStreamId: 3);
+
+            await SendWindowUpdateAsync(streamId: 0, 1);
+
+            // Stream 5 data
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 5);
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
@@ -113,11 +142,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
-            // Stream 1 data
+            // Stream 5 data
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1);
+                withStreamId: 5);
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
@@ -127,29 +156,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 3);
 
-            await SendWindowUpdateAsync(streamId: 0, 1);
-
-            // Stream 1 data
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 1,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1);
-
-            // Stream 1 ends
+            // Stream 3 ends
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 0,
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
+                withStreamId: 3);
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
-            // Stream 3 data
+            // Stream 5 data
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 3);
+                withStreamId: 5);
 
-            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 5);
+
+            await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
