@@ -428,14 +428,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact(Skip = "Causes tests to not finish. See https://dev.azure.com/dnceng/internal/_build/results?buildId=580307&view=logs")]
+        [Fact]
+        [QuarantinedTest]
         public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
         {
             var serverTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async context =>
             {
-                await serverTcs.Task;
+                await serverTcs.Task.DefaultTimeout();
 
                 await context.Response.WriteAsync("Content");
                 throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
@@ -467,9 +468,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(0, _connection.StreamPool.Count);
 
             var output = (Http2OutputProducer)stream.Output;
-            await output._dataWriteProcessingTask;
+            await output._dataWriteProcessingTask.DefaultTimeout();
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
         }
 
         [Fact]
