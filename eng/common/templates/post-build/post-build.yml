@@ -27,7 +27,7 @@ parameters:
   # needs to be updated with the new channel ID
   NetEngLatestChannelId: 2
   NetEngValidationChannelId: 9
-  NetCoreDev5ChannelId: 131
+  NetDev5ChannelId: 131
   GeneralTestingChannelId: 529
   NETCoreToolingDevChannelId: 548
   NETCoreToolingReleaseChannelId: 549
@@ -35,8 +35,10 @@ parameters:
   NETCoreExperimentalChannelId: 562
   NetEngServicesIntChannelId: 678
   NetEngServicesProdChannelId: 679
-  Net5Preview1ChannelId: 737
   Net5Preview2ChannelId: 738
+  Net5Preview3ChannelId: 739
+  NetCoreSDK313xxChannelId: 759
+  NetCoreSDK313xxInternalChannelId: 760
   
 stages:
 - stage: Validate
@@ -63,7 +65,7 @@ stages:
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
           arguments: -PromoteToChannels "$(InitialChannels)[$(PromoteToMaestroChannelId)]"
-            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetCoreDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview1ChannelId}},${{parameters.Net5Preview2ChannelId}}
+            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview2ChannelId}},${{parameters.Net5Preview3ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}}
 
   - job:
     displayName: NuGet Validation
@@ -198,23 +200,9 @@ stages:
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     stageName: 'NetCore_Dev5_Publish'
-    channelName: '.NET Core 5 Dev'
+    channelName: '.NET 5 Dev'
     akaMSChannelName: 'net5/dev'
-    channelId: ${{ parameters.NetCoreDev5ChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
-
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview1_Publish'
-    channelName: '.NET 5 Preview 1'
-    akaMSChannelName: 'net5/preview1'
-    channelId: ${{ parameters.Net5Preview1ChannelId }}
+    channelId: ${{ parameters.NetDev5ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -229,6 +217,20 @@ stages:
     channelName: '.NET 5 Preview 2'
     akaMSChannelName: 'net5/preview2'
     channelId: ${{ parameters.Net5Preview2ChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+
+- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'Net5_Preview3_Publish'
+    channelName: '.NET 5 Preview 3'
+    akaMSChannelName: 'net5/preview3'
+    channelId: ${{ parameters.Net5Preview3ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -352,3 +354,29 @@ stages:
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+
+- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'NETCore_SDK_313xx_Publishing'
+    channelName: '.NET Core SDK 3.1.3xx'
+    channelId: ${{ parameters.NetCoreSDK313xxChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+
+- template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'NETCore_SDK_313xx_Internal_Publishing'
+    channelName: '.NET Core SDK 3.1.3xx Internal'
+    channelId: ${{ parameters.NetCoreSDK313xxInternalChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 

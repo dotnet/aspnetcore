@@ -67,12 +67,12 @@ function Write-PipelineTaskError {
     }
 
     if(($Type -ne 'error') -and ($Type -ne 'warning')) {
-    Write-Host $Message
-    return
+        Write-Host $Message
+        return
     }
     $PSBoundParameters.Remove('Force') | Out-Null      
     if(-not $PSBoundParameters.ContainsKey('Type')) {
-    $PSBoundParameters.Add('Type', 'error')
+        $PSBoundParameters.Add('Type', 'error')
     }
     Write-LogIssue @PSBoundParameters
   }
