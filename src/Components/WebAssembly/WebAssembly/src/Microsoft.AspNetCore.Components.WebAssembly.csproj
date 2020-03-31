@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
@@ -19,7 +20,6 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
-
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
   </ItemGroup>
 
@@ -28,5 +28,22 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
+
+  <Target Name="_GetNuspecDependencyPackageVersions">
+    <MSBuild Targets="_GetPackageVersionInfo"
+        BuildInParallel="$(BuildInParallel)"
+        Projects="@(ProjectReference)">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectPathWithVersion" />
+    </MSBuild>
+    <ItemGroup>
+      <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
+      <NuspecProperty Include="OutputPath=$(OutputPath)" />
+      <NuspecProperty Include="MicrosoftExtensionsConfigurationJsonPackageVersion=$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
+      <NuspecProperty Include="MicrosoftExtensionsConfigurationJsonPackageVersion=$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
+      <NuspecProperty Include="MicrosoftAspNetCoreComponentsWebPackageVersion=$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.JSInterop.WebAssembly')->'MicrosoftJSInteropWebAssemblyPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler')->'MicrosoftAspNetCoreComopnentsWebAssemblyHttpHandlerPackageVersion=%(PackageVersion)')" />
+    </ItemGroup>
+  </Target>
 
 </Project>

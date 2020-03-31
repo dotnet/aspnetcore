@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    $CommonMetadataElements$
+    <dependencies>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="Microsoft.AspNetCore.Components.Web" version="$MicrosoftAspNetCoreComponentsWebPackageVersion$" include="all" />
+        <dependency id="Microsoft.Extensions.Configuration.Json" version="$MicrosoftExtensionsConfigurationJsonPackageVersion$" include="all" />
+        <dependency id="Microsoft.JSInterop.WebAssembly" version="$MicrosoftJSInteropWebAssemblyPackageVersion$" include="all" />
+        <dependency id="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" version="$MicrosoftAspNetCoreComopnentsWebAssemblyHttpHandlerPackageVersion$" include="compile" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    $CommonFileElements$
+    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\netstandard2.1" />
+    <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\netstandard2.1" />
+    <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\netstandard2.1" />
+  </files>
+</package>

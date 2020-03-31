@@ -12,12 +12,12 @@ using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
+using WebAssembly.Net.Http.HttpClient;
 
 namespace BasicTestApp
 {
@@ -33,11 +33,10 @@ namespace BasicTestApp
             {
                 // Needed because the test server runs on a different port than the client app,
                 // and we want to test sending/receiving cookies under this config
-                WebAssemblyHttpMessageHandlerOptions.DefaultCredentials = FetchCredentialsOption.Include;
+                WasmHttpMessageHandler.DefaultCredentials = FetchCredentialsOption.Include;
             }
 
             builder.RootComponents.Add<Index>("root");
-
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
             builder.Services.AddAuthorizationCore(options =>

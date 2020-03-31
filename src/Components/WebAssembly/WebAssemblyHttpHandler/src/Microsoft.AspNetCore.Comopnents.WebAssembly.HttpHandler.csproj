@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <AssemblyName>WebAssembly.Net.Http</AssemblyName>
+    <Version>1.0.0</Version>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="OutputPath=$(OutputPath)" />
+  </ItemGroup>
+
+</Project>
