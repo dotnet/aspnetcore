@@ -1,5 +1,6 @@
 <Project>
 
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
 
   <PropertyGroup>
@@ -21,5 +22,7 @@
     </ItemGroup>
 
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
 </Project>
