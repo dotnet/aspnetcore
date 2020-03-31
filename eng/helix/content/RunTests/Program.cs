@@ -40,7 +40,7 @@ namespace RunTests
             var environmentVariables = new Dictionary<string, string>();
             environmentVariables.Add("PATH", path);
             environmentVariables.Add("DOTNET_ROOT", dotnetRoot);
-            environmentVariables.Add("HELIX", helixQueue);
+            environmentVariables.Add("helix", helixQueue);
 
             Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
             var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
