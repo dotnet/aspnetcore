@@ -75,7 +75,7 @@ namespace RunTests
                     environmentVariables: environmentVariables);
 
                 path += $";{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
-                environmentVariables.Add("PATH", path);
+                environmentVariables["PATH"] = path;
             }
 
             Directory.CreateDirectory(nugetRestore);
@@ -160,9 +160,11 @@ namespace RunTests
             {
                 foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
                 {
-                    Console.WriteLine($"Copying: {file}");
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, Path.GetFileName(file)));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", Path.GetFileName(file)));
+                    // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
+                    var logName = $"{Path.GetDirectoryName(file)}_{Path.GetFileName(file)}";
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
                 }
             }
             else
