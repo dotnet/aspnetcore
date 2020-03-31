@@ -62,7 +62,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20171.1</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20180.5</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20177.6</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->

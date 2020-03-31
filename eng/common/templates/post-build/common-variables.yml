@@ -9,8 +9,8 @@ variables:
   - name: PublicDevRelease_31_Channel_Id
     value: 128
 
-  # .NET Core 5 Dev
-  - name: NetCore_5_Dev_Channel_Id
+  # .NET 5 Dev
+  - name: Net_5_Dev_Channel_Id
     value: 131
 
   # .NET Eng - Validation
