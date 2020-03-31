@@ -428,8 +428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
-        [QuarantinedTest]
+        [Fact(Skip = "Causes tests to not finish. See https://dev.azure.com/dnceng/internal/_build/results?buildId=580307&view=logs")]
         public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
         {
             var serverTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
