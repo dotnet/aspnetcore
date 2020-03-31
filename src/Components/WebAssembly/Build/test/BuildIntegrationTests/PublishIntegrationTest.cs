@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify link item assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "js", "LinkedScript.js");
-            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "css", "site.css");
+            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "css", "app.css");
             Assert.FileContains(result, cssFile, ".publish");
             Assert.FileDoesNotExist(result, "dist", "Fake-License.txt");
 
