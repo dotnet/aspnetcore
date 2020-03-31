@@ -118,7 +118,8 @@ namespace RunTests
                     commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
                     environmentVariables: environmentVariables,
                     outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.WriteLine);
+                    errorDataReceived: Console.WriteLine,
+                    throwOnError: false);
 
                 if (result.ExitCode != 0)
                 {
@@ -134,7 +135,8 @@ namespace RunTests
                     commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
                     environmentVariables: environmentVariables,
                     outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.WriteLine);
+                    errorDataReceived: Console.WriteLine,
+                    throwOnError: false);
 
                 if (result.ExitCode != 0)
                 {
