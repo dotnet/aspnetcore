@@ -21,7 +21,7 @@ echo "Installing Runtime"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
 set exit_code=0
-dotnet run --project RunTests\RunTests.csproj %1 %2 %3 %4 %5 %6 %7
+dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime %3 --queue %4 --arch %5 --quarantined %6 --ef %7
 if errorlevel 1 (
     set exit_code=1
 )

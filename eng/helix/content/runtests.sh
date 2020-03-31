@@ -82,9 +82,10 @@ if [ -e /proc/self/coredump_filter ]; then
   echo -n 0x3F > /proc/self/coredump_filter
 fi
 
+# dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
 exit_code=0
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj $1 $2 $3 $4 $5 $6 $7
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7
 
 exit $?

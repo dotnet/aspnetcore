@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace RunTests
@@ -12,26 +14,60 @@ namespace RunTests
     {
         static async Task Main(string[] args)
         {
-            if (args.Length < 7)
+            var command = new RootCommand()
             {
-                Console.WriteLine($"Expected at least 7 args, got {args.Length}.");
-                Environment.Exit(1);
-                return;
-            }
+                new Option(
+                    aliases: new string[] { "--target", "-t" },
+                    description: "The test dll to run")
+                    { Argument = new Argument<string>(), Required = true },
 
-            var target = args[0];
-            var sdkVersion = args[1];
-            var runtimeVersion = args[2];
-            var helixQueue = args[3];
-            var architecture = args[4];
-            var quarantined = args[5];
-            var efVersion = args[6];
+                new Option(
+                    aliases: new string[] { "--sdk" },
+                    description: "The version of the sdk being used")
+                { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--runtime" },
+                    description: "The version of the runtime being used")
+                { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--queue" },
+                    description: "The name of the Helix queue being run on")
+                { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--arch" },
+                    description: "The architecture being run on")
+                { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--quarantined" },
+                    description: "Whether quarantined tests should run or not")
+                { Argument = new Argument<bool>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--ef" },
+                    description: "The version of the EF tool to use")
+                { Argument = new Argument<bool>(), Required = true },
+            };
+
+            var parseResult = command.Parse(args);
+            var target = parseResult.ValueForOption<string>("--target");
+            var sdkVersion = parseResult.ValueForOption<string>("--sdk");
+            var runtimeVersion = parseResult.ValueForOption<string>("--runtime");
+            var helixQueue = parseResult.ValueForOption<string>("--queue");
+            var architecture = parseResult.ValueForOption<string>("--arch");
+            var quarantined = parseResult.ValueForOption<bool>("--quarantined");
+            var efVersion = parseResult.ValueForOption<string>("--ef");
+
             var HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
 
             var path = Environment.GetEnvironmentVariable("PATH");
             var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
 
             // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
+            // We use a local NuGet.config file to avoid polluting global machine state and avoid relying on global machine state
             if (!File.Exists("NuGet.config"))
             {
                 File.Copy("default.NuGet.config", "NuGet.config");
@@ -43,7 +79,7 @@ namespace RunTests
             environmentVariables.Add("helix", helixQueue);
 
             Console.WriteLine($"Current Directory: {HELIX_WORKITEM_ROOT}");
-            var helixDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
+            var helixDir = HELIX_WORKITEM_ROOT;
             Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
             environmentVariables.Add("HELIX_DIR", helixDir);
             environmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
@@ -54,10 +90,10 @@ namespace RunTests
             Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
             environmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
-            Console.WriteLine("Checking for Microsoft.AspNetCore.App");
+            Console.WriteLine("Checking for Microsoft.AspNetCore.App/");
             if (Directory.Exists("Microsoft.AspNetCore.App"))
             {
-                Console.WriteLine($"Found Microsoft.AspNetCore.App, copying to {dotnetRoot}/shared/Microsoft.AspNetCore.App/{runtimeVersion}");
+                Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {dotnetRoot}/shared/Microsoft.AspNetCore.App/{runtimeVersion}");
                 foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                 {
                     File.Copy(file, $"{dotnetRoot}/shared/Microsoft.AspNetCore.App/{runtimeVersion}", overwrite: true);
@@ -73,15 +109,20 @@ namespace RunTests
                     "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
                     environmentVariables: environmentVariables);
 
+                // Write nuget sources to console, useful for debugging purposes
                 await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
                     "nuget list source",
-                    environmentVariables: environmentVariables);
+                    environmentVariables: environmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.WriteLine);
 
                 await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
                     $"tool install dotnet-ef --global --version {efVersion}",
                     environmentVariables: environmentVariables);
 
-                path += $";{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
+                // ';' is the path separator on Windows, and ':' on Unix
+                path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+                path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                 environmentVariables["PATH"] = path;
             }
 
@@ -94,13 +135,18 @@ namespace RunTests
             }
 
             Console.WriteLine();
-            Console.WriteLine("Displaying directory contents");
-            foreach (var file in Directory.EnumerateFileSystemEntries("./"))
+            Console.WriteLine("Displaying directory contents:");
+            foreach (var file in Directory.EnumerateFiles("./"))
+            {
+                Console.WriteLine(Path.GetFileName(file));
+            }
+            foreach (var file in Directory.EnumerateDirectories("./"))
             {
                 Console.WriteLine(Path.GetFileName(file));
             }
             Console.WriteLine();
 
+            // Run test discovery so we know if there are tests to run
             var discoveryResult = await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
                 $"vstest {target} -lt",
                 environmentVariables: environmentVariables);
@@ -115,12 +161,11 @@ namespace RunTests
 
             var exitCode = 0;
             var commonTestArgs = $"vstest {target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
-            if (string.Equals(quarantined, "true") || string.Equals(quarantined, "1"))
+            if (quarantined)
             {
                 Console.WriteLine("Running quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-
                 var result = await ProcessUtil.RunAsync($"{dotnetRoot}/dotnet",
                     commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
                     environmentVariables: environmentVariables,
@@ -152,6 +197,7 @@ namespace RunTests
                 }
             }
 
+            // 'testResults.xml' is the file Helix looks for when processing test results
             Console.WriteLine();
             if (File.Exists("TestResults/TestResults.xml"))
             {
@@ -172,6 +218,7 @@ namespace RunTests
                     // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
                     var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
+                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
                 }
