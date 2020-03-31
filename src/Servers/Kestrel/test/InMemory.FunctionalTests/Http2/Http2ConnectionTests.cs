@@ -31,9 +31,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
             // The test will:
-            // 1. Create a stream will a large response that will use up the connection window and complete.
+            // 1. Create a stream with a large response. It will use up the connection window and complete.
             // 2. Create two streams will smaller responses.
             // 3. Update the connection window one byte at a time.
+            // 4. Read from them in a FIFO order until they are each complete.
 
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -51,16 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Wait for write to complete
                 await writeTask;
             });
-
-            IEnumerable<KeyValuePair<string, string>> GetHeaders(int responseBodySize)
-            {
-                foreach (var header in _browserRequestHeaders)
-                {
-                    yield return header;
-                }
-
-                yield return new KeyValuePair<string, string>("ResponseBodySize", responseBodySize.ToString());
-            }
 
             await StartStreamAsync(1, GetHeaders(responseBodySize: 65535), endStream: true);
             // Ensure the stream window size is large enough
@@ -176,6 +167,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 5);
 
             await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
+
+            IEnumerable<KeyValuePair<string, string>> GetHeaders(int responseBodySize)
+            {
+                foreach (var header in _browserRequestHeaders)
+                {
+                    yield return header;
+                }
+
+                yield return new KeyValuePair<string, string>("ResponseBodySize", responseBodySize.ToString());
+            }
         }
 
         [Fact]
