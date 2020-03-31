@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(async context =>
             {
-                await serverTcs.Task;
+                await serverTcs.Task.DefaultTimeout();
 
                 await context.Response.WriteAsync("Content");
                 throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(0, _connection.StreamPool.Count);
 
             var output = (Http2OutputProducer)stream.Output;
-            await output._dataWriteProcessingTask;
+            await output._dataWriteProcessingTask.DefaultTimeout();
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
