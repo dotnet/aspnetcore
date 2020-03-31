@@ -15,7 +15,10 @@
           BeforeTargets="GenerateChecksums" >
 
     <ItemGroup>
-      <InstallerFiles Include="$(InstallersOutputPath)**\*" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.msi" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.exe" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.zip" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.tar.gz" />
       <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
         <DestinationPath>%(FullPath).sha512</DestinationPath>
       </GenerateChecksumItems>
