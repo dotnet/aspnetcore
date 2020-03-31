@@ -30,6 +30,7 @@ namespace RunTests
             Action<int>? onStart = null,
             CancellationToken cancellationToken = default)
         {
+            Console.WriteLine($"Running '{filename} {arguments}'");
             using var process = new Process()
             {
                 StartInfo =
