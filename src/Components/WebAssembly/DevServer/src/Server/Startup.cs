@@ -38,7 +38,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
             app.UseWebAssemblyDebugging();
 
             app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                // In development, serve everything, as there's no other way to configure it.
+                // In production, developers are responsible for configuring their own production server
+                ServeUnknownFileTypes = true,
+            });
 
             app.UseRouting();
 
