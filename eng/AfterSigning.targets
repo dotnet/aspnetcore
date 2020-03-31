@@ -14,7 +14,7 @@
           BeforeTargets="GenerateChecksums" >
 
     <ItemGroup>
-      <InstallerFiles Include="$(InstallersOutputPath)**" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*" />
       <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
         <DestinationPath>%(FullPath).sha512</DestinationPath>
       </GenerateChecksumItems>
