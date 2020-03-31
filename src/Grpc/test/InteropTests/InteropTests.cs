@@ -27,6 +27,7 @@ namespace InteropTests
         }
 
         [Theory]
+        [Repeat]
         [MemberData(nameof(TestCaseData))]
         public async Task InteropTestCase(string name)
         {

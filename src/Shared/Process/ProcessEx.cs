@@ -26,9 +26,11 @@ namespace Microsoft.AspNetCore.Internal
         private readonly StringBuilder _stderrCapture;
         private readonly StringBuilder _stdoutCapture;
         private readonly object _pipeCaptureLock = new object();
+        private readonly object _testOutputLock = new object();
         private BlockingCollection<string> _stdoutLines;
         private TaskCompletionSource<int> _exited;
         private CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        private bool _disposed = false;
 
         public ProcessEx(ITestOutputHelper output, Process proc)
         {
@@ -135,7 +137,13 @@ namespace Microsoft.AspNetCore.Internal
                 _stderrCapture.AppendLine(e.Data);
             }
 
-            _output.WriteLine("[ERROR] " + e.Data);
+            lock (_testOutputLock)
+            {
+                if (!_disposed)
+                {
+                    _output.WriteLine("[ERROR] " + e.Data);
+                }
+            }
         }
 
         private void OnOutputData(object sender, DataReceivedEventArgs e)
@@ -150,7 +158,13 @@ namespace Microsoft.AspNetCore.Internal
                 _stdoutCapture.AppendLine(e.Data);
             }
 
-            _output.WriteLine(e.Data);
+            lock (_testOutputLock)
+            {
+                if (!_disposed)
+                {
+                    _output.WriteLine(e.Data);
+                }
+            }
 
             if (_stdoutLines != null)
             {
@@ -204,6 +218,11 @@ namespace Microsoft.AspNetCore.Internal
 
         public void Dispose()
         {
+            lock (_testOutputLock)
+            {
+                _disposed = true;
+            }
+
             if (_process != null && !_process.HasExited)
             {
                 _process.KillTree();
