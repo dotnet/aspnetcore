@@ -424,7 +424,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         {
             var project = CreateBasicProject(withOpenApi: false);
 
-            var app = GetApplication(realHttp: true);
+            var app = GetApplication();
             var url = BrokenUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
