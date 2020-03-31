@@ -64,18 +64,12 @@
 
   <Target Name="CopyToArtifactsDirectory"
           Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
-          AfterTargets="Build" BeforeTargets="GenerateChecksums">
+          AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>
       <_cabs Include="$(TargetDir)**/*.cab" />
     </ItemGroup>
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
-
-  <ItemGroup Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' ">
-    <GenerateChecksumItems Include="$(InstallersOutputPath)$(PackageFileName)">
-      <DestinationPath>$(InstallersOutputPath)$(PackageFileName)$(ChecksumExtension)</DestinationPath>
-    </GenerateChecksumItems>
-  </ItemGroup>
 
 </Project>

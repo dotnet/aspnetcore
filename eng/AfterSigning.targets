@@ -1,0 +1,17 @@
+<Project>
+
+  <Target Name="PopulateGenerateChecksumItems"
+          Condition="'$(GenerateChecksums)' == 'true'"
+          AfterTargets="Build"
+          BeforeTargets="GenerateChecksums" >
+
+    <ItemGroup>
+      <InstallerFiles Include="$(InstallersOutputPath)**" />
+      <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
+        <DestinationPath>%(FullPath)$(ChecksumExtension)</DestinationPath>
+      </GenerateChecksumItems>
+    </ItemGroup>
+
+  </Target>
+
+</Project>
