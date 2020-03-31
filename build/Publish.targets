@@ -293,12 +293,22 @@
         RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)"
         ManifestArtifactData="%(FilesToPublish.ManifestArtifactData)"
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
+
+      <DependencyAssetsDirContent Include="$(DependencyAssetsDir)**" />
+      <DependencyPackagesDirContent Include="$(DependencyPackagesDir)**" />
+
     </ItemGroup>
 
     <Message Text="Publishing the following packages: @(PackageToPublishToTransport)"
              Importance="high" />
 
     <Message Text="Publishing the following files: @(FilesToPublishToTransport)"
+             Importance="high" />
+
+    <Message Text="DependencyAssetsDirContent: @(DependencyAssetsDirContent)"
+             Importance="high" />
+
+    <Message Text="DependencyPackagesDirContent: @(DependencyPackagesDirContent)"
              Importance="high" />
 
 
