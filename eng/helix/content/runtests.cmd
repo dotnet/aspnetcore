@@ -3,13 +3,9 @@ REM Need delayed expansion !PATH! so parens in the path don't mess up the parens
 setlocal enabledelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
-set $target=%1
 set $sdkVersion=%2
 set $runtimeVersion=%3
-set $helixQueue=%4
 set $arch=%5
-set $quarantined=%6
-set $efVersion=%7
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -24,16 +20,8 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 echo "Installing Runtime"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
-set ASPNETCORE_TEST_TARGET=%$target%
-set ASPNETCORE_SDK_VERSION=%$sdkVersion%
-set ASPNETCORE_RUNTIME_VERSION=%$runtimeVersion%
-set ASPNETCORE_HELIX_QUEUE=%$helixQueue%
-set ASPNETCORE_ARCHITECTURE=%$arch%
-set ASPNETCORE_QUARANTINED=%$quarantined%
-set ASPNETCORE_EF_VERSION=%$efVersion%
-
 set exit_code=0
-dotnet run --project RunTests\RunTests.csproj
+dotnet run --project RunTests\RunTests.csproj %1 %2 %3 %4 %5 %6 %7
 if errorlevel 1 (
     set exit_code=1
 )

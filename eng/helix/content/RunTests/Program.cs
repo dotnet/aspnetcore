@@ -12,13 +12,20 @@ namespace RunTests
     {
         static async Task Main(string[] args)
         {
-            var target = Environment.GetEnvironmentVariable("ASPNETCORE_TEST_TARGET");
-            var sdkVersion = Environment.GetEnvironmentVariable("ASPNETCORE_SDK_VERSION");
-            var runtimeVersion = Environment.GetEnvironmentVariable("ASPNETCORE_RUNTIME_VERSION");
-            var helixQueue = Environment.GetEnvironmentVariable("ASPNETCORE_HELIX_QUEUE");
-            var architecture = Environment.GetEnvironmentVariable("ASPNETCORE_ARCHITECTURE");
-            var quarantined = Environment.GetEnvironmentVariable("ASPNETCORE_QUARANTINED");
-            var efVersion = Environment.GetEnvironmentVariable("ASPNETCORE_EF_VERSION");
+            if (args.Length < 7)
+            {
+                Console.WriteLine($"Expected at least 7 args, got {args.Length}.");
+                Environment.Exit(1);
+                return;
+            }
+
+            var target = args[0];
+            var sdkVersion = args[1];
+            var runtimeVersion = args[2];
+            var helixQueue = args[3];
+            var architecture = args[4];
+            var quarantined = args[5];
+            var efVersion = args[6];
             var HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
 
             var path = Environment.GetEnvironmentVariable("PATH");
@@ -163,7 +170,7 @@ namespace RunTests
                 foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
                 {
                     // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
-                    var logName = $"{Path.GetDirectoryName(file)}_{Path.GetFileName(file)}";
+                    var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
@@ -174,6 +181,7 @@ namespace RunTests
                 Console.WriteLine("No logs found in artifacts/log");
             }
 
+            Console.WriteLine("Completed Helix job.");
             Environment.Exit(exitCode);
         }
     }
