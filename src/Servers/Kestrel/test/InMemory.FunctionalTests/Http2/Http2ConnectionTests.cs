@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var output = (Http2OutputProducer)stream.Output;
             await output._dataWriteProcessingTask.DefaultTimeout();
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
