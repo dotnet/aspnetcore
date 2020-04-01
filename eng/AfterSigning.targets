@@ -1,11 +1,11 @@
 <Project>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
-  <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(GenerateChecksums)' == 'true'">
     <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
     <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+    <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
     <InstallersOutputPath>$(ArtifactsDir)\installers\</InstallersOutputPath>
   </PropertyGroup>
 
@@ -19,6 +19,8 @@
       <InstallerFiles Include="$(InstallersOutputPath)**\*.exe" />
       <InstallerFiles Include="$(InstallersOutputPath)**\*.zip" />
       <InstallerFiles Include="$(InstallersOutputPath)**\*.tar.gz" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.wixlib" />
+      <InstallerFiles Include="$(InstallersOutputPath)**\*.rpm" />
       <GenerateChecksumItems Include="%(InstallerFiles.Identity)" >
         <DestinationPath>%(FullPath).sha512</DestinationPath>
       </GenerateChecksumItems>
