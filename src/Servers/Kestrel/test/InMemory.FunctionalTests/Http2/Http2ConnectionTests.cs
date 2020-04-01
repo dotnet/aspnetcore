@@ -412,6 +412,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+            // Get the in progress stream
+            var stream = _connection._streams[1];
+
             appDelegateTcs.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -421,6 +424,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Stream has been returned to the pool
             await PingUntilStreamPooled(expectedCount: 1).DefaultTimeout();
+            Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+            Assert.Equal(stream, pooledStream);
 
             appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
@@ -437,6 +442,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Stream was reused and returned to the pool
             await PingUntilStreamPooled(expectedCount: 1).DefaultTimeout();
+            Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+            Assert.Equal(stream, pooledStream);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
