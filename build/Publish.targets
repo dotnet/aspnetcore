@@ -66,6 +66,8 @@
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
       <WindowsHostingBundleInstallerFileName>dotnet-hosting-$(PackageVersion)-win.exe</WindowsHostingBundleInstallerFileName>
+      <!-- This matches the property set in SharedFramework.wixproj -->
+      <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -175,6 +177,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <RedistPackageToPublish Include="$(DependencyAssetsDir)$(SharedFrameworkRedistPackageId)*" />
+    </ItemGroup>
+
+    <ItemGroup>
       <_MissingArtifactFile Include="@(FilesToPublish)" Condition="!Exists(%(FilesToPublish.Identity))" />
       <_MissingArtifactFile Include="@(NpmPackageToPublish)" Condition="!Exists(%(NpmPackageToPublish.Identity))" />
       <_MissingArtifactFile Include="@(PackageToPublish)" Condition="!Exists(%(PackageToPublish.Identity))" />
@@ -276,6 +282,10 @@
         ManifestArtifactData="NonShipping=true"
         Condition="'%(PackageToPublish.Category)' != 'ship'" />
 
+      <PackageToPublishToTransport
+        Include="@(RedistPackageToPublish)"
+        ManifestArtifactData="NonShipping=true" />
+
       <FilesToPublishToTransport Include="@(NpmPackageToPublish)"
         RelativeBlobPath="$(BlobFileRelativePathBase)%(NpmPackageToPublish.RelativeBlobPath)"
         ManifestArtifactData="%(NpmPackageToPublish.ManifestArtifactData)" />
@@ -286,7 +296,6 @@
         ManifestArtifactData="%(FilesToPublish.ManifestArtifactData)"
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
-
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"

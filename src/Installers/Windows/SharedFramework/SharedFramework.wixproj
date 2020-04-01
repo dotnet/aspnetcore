@@ -19,6 +19,9 @@
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ToolsetInstallerNuspecFile>$(RepositoryRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
     <InstallersOutputPath>$(RepositoryRoot)artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
+    <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
+    <!-- Use non-stable versioning for this package, but keep the stable version in OutputName above -->
+    <PackageVersion>$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -64,7 +67,8 @@
                       '$(PackageVersion)' ^
                       '$(RepositoryRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
-                      '$(AspNetCoreMinorVersion)'" />
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(SharedFrameworkRedistPackageId)'" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

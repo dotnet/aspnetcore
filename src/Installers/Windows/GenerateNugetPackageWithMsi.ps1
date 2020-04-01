@@ -11,7 +11,8 @@ param(
     [Parameter(Mandatory=$true)][string]$PackageVersion,
     [Parameter(Mandatory=$true)][string]$RepoRoot,
     [Parameter(Mandatory=$true)][string]$MajorVersion,
-    [Parameter(Mandatory=$true)][string]$MinorVersion
+    [Parameter(Mandatory=$true)][string]$MinorVersion,
+    [Parameter(Mandatory=$true)][string]$PackageId
 )
 
 $NuGetDir = Join-Path $RepoRoot "obj\Tools\nuget\$Name\$Architecture"
@@ -27,5 +28,5 @@ if (-not (Test-Path $NuGetExe)) {
     wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
 }
 
-& $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;
+& $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;ID=$PackageId`;
 Exit $LastExitCode
