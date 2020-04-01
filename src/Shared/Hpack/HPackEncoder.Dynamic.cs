@@ -14,7 +14,7 @@ namespace System.Net.Http.HPack
         // Internal for testing
         internal readonly EncoderHeaderEntry Head;
 
-        private readonly bool _disableDynamicCompression;
+        private readonly bool _allowDynamicCompression;
         private readonly EncoderHeaderEntry[] _headerBuckets;
         private readonly byte _hashMask;
         private uint _headerTableSize;
@@ -22,9 +22,9 @@ namespace System.Net.Http.HPack
         private bool _pendingTableSizeUpdate;
         private EncoderHeaderEntry? _removed;
 
-        public HPackEncoder(bool disableDynamicCompression = false, uint maxHeaderTableSize = DefaultHeaderTableSize)
+        public HPackEncoder(bool allowDynamicCompression = true, uint maxHeaderTableSize = DefaultHeaderTableSize)
         {
-            _disableDynamicCompression = disableDynamicCompression;
+            _allowDynamicCompression = allowDynamicCompression;
             _maxHeaderTableSize = maxHeaderTableSize;
             Head = new EncoderHeaderEntry();
             Head.Initialize(-1, string.Empty, string.Empty, int.MaxValue, null);
@@ -78,7 +78,7 @@ namespace System.Net.Http.HPack
             }
 
             // No dynamic table. Only use the static table.
-            if (_disableDynamicCompression || _maxHeaderTableSize == 0 || encodingHint == HeaderEncodingHint.IgnoreIndex)
+            if (!_allowDynamicCompression || _maxHeaderTableSize == 0 || encodingHint == HeaderEncodingHint.IgnoreIndex)
             {
                 return staticTableIndex == -1
                     ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)

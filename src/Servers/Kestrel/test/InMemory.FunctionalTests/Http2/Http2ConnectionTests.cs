@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(5, GetHeaders(responseBodySize: 3), endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 33,
+                withLength: 2,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 5);
 
