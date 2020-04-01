@@ -204,7 +204,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), trimmedBuffer, out consumed, out examined))
                 {
                     // We read the maximum allowed but didn't complete the start line.
+#pragma warning disable CS0618 // Type or member is obsolete
                     BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
 
                 return true;
@@ -261,7 +263,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!result)
                     {
                         // We read the maximum allowed but didn't complete the headers.
+#pragma warning disable CS0618 // Type or member is obsolete
                         BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
 
                     TimeoutControl.CancelTimeout();
@@ -424,7 +428,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // requests (https://tools.ietf.org/html/rfc7231#section-4.3.6).
             if (method != HttpMethod.Connect)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.ConnectMethodRequired);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             // When making a CONNECT request to establish a tunnel through one or
@@ -468,7 +474,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
             if (method != HttpMethod.Options)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.OptionsMethodRequired);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             RawTarget = Asterisk;
@@ -555,11 +563,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return;
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             else if (hostCount > 1)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             else if (_requestTargetForm != HttpRequestTarget.OriginForm)
             {
@@ -568,7 +580,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -578,7 +592,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (hostText != RawTarget)
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
             else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
@@ -595,14 +611,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!_absoluteRequestTarget.IsDefaultPort
                         || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
                 }
             }
 
             if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -655,7 +675,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     BadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 throw;
             }
@@ -672,10 +694,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         endConnection = true;
                         return true;
                     case RequestProcessingStatus.ParsingRequestLine:
+#pragma warning disable CS0618 // Type or member is obsolete
                         BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
+#pragma warning restore CS0618 // Type or member is obsolete
                         break;
                     case RequestProcessingStatus.ParsingHeaders:
+#pragma warning disable CS0618 // Type or member is obsolete
                         BadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
+#pragma warning restore CS0618 // Type or member is obsolete
                         break;
                 }
             }
@@ -690,7 +716,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
                 // a 408 response.
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.RequestHeadersTimeout);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             endConnection = false;

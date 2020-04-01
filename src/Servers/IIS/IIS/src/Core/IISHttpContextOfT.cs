@@ -36,7 +36,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     await _application.ProcessRequestAsync(context);
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     SetBadRequestState(ex);
                     ReportApplicationError(ex);

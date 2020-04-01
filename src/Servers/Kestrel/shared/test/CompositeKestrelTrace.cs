@@ -104,7 +104,9 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.NotAllConnectionsClosedGracefully();
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             _trace1.ConnectionBadRequest(connectionId, ex);
             _trace2.ConnectionBadRequest(connectionId, ex);

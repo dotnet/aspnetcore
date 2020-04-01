@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void ApplicationError(string connectionId, string requestId, Exception ex) { }
         public IDisposable BeginScope<TState>(TState state) => null;
         public void ConnectionAccepted(string connectionId) { }
+#pragma warning disable CS0618 // Type or member is obsolete
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
+#pragma warning restore CS0618 // Type or member is obsolete
         public void ConnectionDisconnect(string connectionId) { }
         public void ConnectionError(string connectionId, Exception ex) { }
         public void ConnectionHeadResponseBodyWrite(string connectionId, long count) { }

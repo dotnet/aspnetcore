@@ -144,7 +144,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             await WaitForConnectionErrorAsync<BadHttpRequestException>(
+#pragma warning restore CS0618 // Type or member is obsolete
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,

@@ -225,7 +225,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         Debug.Assert(readAhead == 0 || readAhead == 2);
                         // Headers don't end in CRLF line.
+#pragma warning disable CS0618 // Type or member is obsolete
                         BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
 
                     var length = 0;
@@ -450,11 +452,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+#pragma warning disable CS0618 // Type or member is obsolete
         private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
+
             => BadHttpRequestException.GetException(
                 reason,
                 _showErrorDetails
                     ? new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

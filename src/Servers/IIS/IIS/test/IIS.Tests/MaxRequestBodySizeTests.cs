@@ -23,7 +23,9 @@ namespace IIS.Tests
         {
             var globalMaxRequestBodySize = 0x100000000;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -31,7 +33,9 @@ namespace IIS.Tests
                     {
                         await ctx.Request.Body.ReadAsync(new byte[2000]);
                     }
+#pragma warning disable CS0618 // Type or member is obsolete
                     catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                         exception = ex;
                         throw ex;
@@ -59,7 +63,9 @@ namespace IIS.Tests
             var maxRequestSize = 0x10000;
             var perRequestMaxRequestBodySize = 0x100;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -71,7 +77,9 @@ namespace IIS.Tests
 
                         await ctx.Request.Body.ReadAsync(new byte[2000]);
                     }
+#pragma warning disable CS0618 // Type or member is obsolete
                     catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                         exception = ex;
                         throw ex;
@@ -265,7 +273,9 @@ namespace IIS.Tests
         {
             var maxRequestSize = 0x1000;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
@@ -276,7 +286,9 @@ namespace IIS.Tests
                             var num = await ctx.Request.Body.ReadAsync(new byte[2000]);
                         }
                     }
+#pragma warning disable CS0618 // Type or member is obsolete
                     catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                         exception = ex;
                         throw ex;
@@ -305,16 +317,20 @@ namespace IIS.Tests
         [ConditionalFact]
         public async Task EveryReadFailsWhenContentLengthHeaderExceedsGlobalLimit()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException requestRejectedEx1 = null;
             BadHttpRequestException requestRejectedEx2 = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             using (var testServer = await TestServer.Create(
                 async ctx =>
                 {
                     var buffer = new byte[1];
+#pragma warning disable CS0618 // Type or member is obsolete
                     requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
                     requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
+#pragma warning restore CS0618 // Type or member is obsolete
                     throw requestRejectedEx2;
                 }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))
             {

@@ -55,7 +55,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
         protected Exception _applicationException;
+#pragma warning disable CS0618 // Type or member is obsolete
         private BadHttpRequestException _requestRejectedException;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         protected HttpVersion _httpVersion;
         // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
@@ -513,7 +515,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             HttpRequestHeaders.Append(name, value);
@@ -525,7 +529,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             string key = name.GetHeaderName();
@@ -549,7 +555,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 await ProcessRequests(application);
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 // Handle BadHttpRequestException thrown during request line or header parsing.
                 // SetBadRequestState logs the error.
@@ -647,7 +655,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         ReportApplicationError(lengthException);
                     }
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 catch (BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     // Capture BadHttpRequestException for further processing
                     // This has to be caught here so StatusCode is set properly before disposing the HttpContext
@@ -1254,7 +1264,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private void SetErrorResponseException(BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             SetErrorResponseHeaders(ex.StatusCode);
 
@@ -1313,14 +1325,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestTargetException(target);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+#pragma warning disable CS0618 // Type or member is obsolete
         private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
             => BadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)
                     ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public void SetBadRequestState(BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
 
