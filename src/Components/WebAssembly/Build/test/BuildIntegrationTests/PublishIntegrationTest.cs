@@ -324,9 +324,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootManifestResolvedPath = Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
             var bootManifestJson = File.ReadAllText(bootManifestResolvedPath);
             var bootManifest = JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(bootManifestJson);
+
             VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.assembly, r => $"_framework/_bin/{r}");
-            VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.pdb, r => $"_framework/_bin/{r}");
             VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.runtime, r => $"_framework/wasm/{r}");
+
+            if (bootManifest.resources.pdb != null)
+            {
+                VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.pdb, r => $"_framework/_bin/{r}");
+            }
+
             if (bootManifest.resources.satelliteResources != null)
             {
                 foreach (var resourcesForCulture in bootManifest.resources.satelliteResources.Values)
