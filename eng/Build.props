@@ -191,6 +191,7 @@
                           $(RepoRoot)src\Security\**\src\*.csproj;
                           $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
                           $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Logging\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\src\*.csproj;
                           $(RepoRoot)src\Razor\**\src\*.csproj;
                           $(RepoRoot)src\Mvc\**\src\*.csproj;

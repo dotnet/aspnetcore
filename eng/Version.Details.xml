@@ -161,10 +161,6 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
@@ -186,10 +182,6 @@
       <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>050d3aea0c8b18579c426d7ff2cb196953540327</Sha>
     </Dependency>

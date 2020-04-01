@@ -2,13 +2,11 @@
 
   <PropertyGroup>
     <Description>Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.</Description>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageTags>$(PackageTags);testing</PackageTags>
     <!-- This is actually a library for test projects, not a test project. -->
     <IsUnitTestProject>false</IsUnitTestProject>
-    <!-- This is an internal package for testing purposes only. -->
-    <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
