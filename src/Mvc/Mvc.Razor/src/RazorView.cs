@@ -9,8 +9,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListener;
         private IViewBufferScope _bufferScope;
 
         /// <summary>
@@ -36,14 +35,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </param>
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="htmlEncoder">The HTML encoder.</param>
-        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         public RazorView(
             IRazorViewEngine viewEngine,
             IRazorPageActivator pageActivator,
             IReadOnlyList<IRazorPage> viewStartPages,
             IRazorPage razorPage,
             HtmlEncoder htmlEncoder,
-            DiagnosticSource diagnosticSource)
+            DiagnosticListener diagnosticListener)
         {
             if (viewEngine == null)
             {
@@ -70,9 +69,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
-            if (diagnosticSource == null)
+            if (diagnosticListener == null)
             {
-                throw new ArgumentNullException(nameof(diagnosticSource));
+                throw new ArgumentNullException(nameof(diagnosticListener));
             }
 
             _viewEngine = viewEngine;
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             ViewStartPages = viewStartPages;
             RazorPage = razorPage;
             _htmlEncoder = htmlEncoder;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
         }
 
         /// <inheritdoc />
@@ -95,6 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets the sequence of _ViewStart <see cref="IRazorPage"/> instances that are executed by this view.
         /// </summary>
         public IReadOnlyList<IRazorPage> ViewStartPages { get; }
+
+        internal Action<IRazorPage, ViewContext> OnAfterPageActivated { get; set; }
 
         /// <inheritdoc />
         public virtual async Task RenderAsync(ViewContext context)
@@ -167,7 +168,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.ViewContext = context;
             _pageActivator.Activate(page, context);
 
-            _diagnosticSource.BeforeViewPage(page, context);
+            OnAfterPageActivated?.Invoke(page, context);
+
+            _diagnosticListener.BeforeViewPage(page, context);
 
             try
             {
@@ -175,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
             finally
             {
-                _diagnosticSource.AfterViewPage(page, context);
+                _diagnosticListener.AfterViewPage(page, context);
             }
         }
 
@@ -230,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // (including the layout page we just rendered).
             while (!string.IsNullOrEmpty(previousPage.Layout))
             {
-                if (!bodyWriter.IsBuffering)
+                if (bodyWriter.Flushed)
                 {
                     // Once a call to RazorPage.FlushAsync is made, we can no longer render Layout pages - content has
                     // already been written to the client and the layout content would be appended rather than surround
@@ -271,25 +274,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 layoutPage.EnsureRenderedBodyOrSections();
             }
 
-            if (bodyWriter.IsBuffering)
+            // We've got a bunch of content in the view buffer. How to best deal with it
+            // really depends on whether or not we're writing directly to the output or if we're writing to
+            // another buffer.
+            if (context.Writer is ViewBufferTextWriter viewBufferTextWriter)
             {
-                // If IsBuffering - then we've got a bunch of content in the view buffer. How to best deal with it
-                // really depends on whether or not we're writing directly to the output or if we're writing to
-                // another buffer.
-                var viewBufferTextWriter = context.Writer as ViewBufferTextWriter;
-                if (viewBufferTextWriter == null || !viewBufferTextWriter.IsBuffering)
+                // This means we're writing to another buffer. Use MoveTo to combine them.
+                bodyWriter.Buffer.MoveTo(viewBufferTextWriter.Buffer);
+            }
+            else
+            {
+                // This means we're writing to a 'real' writer, probably to the actual output stream.
+                // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
+                await using (var writer = _bufferScope.CreateWriter(context.Writer))
                 {
-                    // This means we're writing to a 'real' writer, probably to the actual output stream.
-                    // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
-                    using (var writer = _bufferScope.CreateWriter(context.Writer))
-                    {
-                        await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
-                    }
-                }
-                else
-                {
-                    // This means we're writing to another buffer. Use MoveTo to combine them.
-                    bodyWriter.Buffer.MoveTo(viewBufferTextWriter.Buffer);
+                    await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
+                    await writer.FlushAsync();
                 }
             }
         }

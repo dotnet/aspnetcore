@@ -1,35 +1,27 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using MusicStore.Models;
 using Xunit;
 
 namespace MusicStore.Components
 {
-    public class GenreMenuComponentTest
+    public class GenreMenuComponentTest : IClassFixture<SqliteInMemoryFixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly SqliteInMemoryFixture _fixture;
 
-        public GenreMenuComponentTest()
+        public GenreMenuComponentTest(SqliteInMemoryFixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
         public async Task GenreMenuComponent_Returns_NineGenres()
         {
             // Arrange
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var genreMenuComponent = new GenreMenuComponent(dbContext);
 
             PopulateData(dbContext);
@@ -47,7 +39,7 @@ namespace MusicStore.Components
 
         private static void PopulateData(MusicStoreContext context)
         {
-            var genres = Enumerable.Range(1, 10).Select(n => new Genre { GenreId = n });
+            var genres = Enumerable.Range(1, 10).Select(n => new Genre { GenreId = n, Name = $"G{n}" });
 
             context.AddRange(genres);
             context.SaveChanges();

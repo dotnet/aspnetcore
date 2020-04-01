@@ -1,0 +1,18 @@
+@using Microsoft.AspNetCore.Components;
+<CascadingValue Value="Name" Name="Name" IsFixed=true>
+    <Router AppAssembly="@typeof(ComponentsApp.App.App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <h2>Not found</h2>
+                Sorry, there's nothing at this address.
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingValue>
+
+@code{
+    [Parameter] public string Name { get; set; }
+}

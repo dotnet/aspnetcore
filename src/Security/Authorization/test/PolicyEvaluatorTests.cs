@@ -124,7 +124,6 @@ namespace Microsoft.AspNetCore.Authorization.Policy.Test
         {
             var services = new ServiceCollection()
                 .AddAuthorization()
-                .AddAuthorizationPolicyEvaluator()
                 .AddLogging()
                 .AddOptions();
             setupServices?.Invoke(services);

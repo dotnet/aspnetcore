@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler1.SignOutCount);
             Assert.Equal(0, handler2.SignOutCount);
 
-            await context.SignInAsync("forward", new ClaimsPrincipal());
+            await context.SignInAsync("forward", new ClaimsPrincipal(new ClaimsIdentity("whatever")));
             Assert.Equal(1, handler1.SignInCount);
             Assert.Equal(0, handler2.SignInCount);
         }
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler1.SignOutCount);
             Assert.Equal(0, handler2.SignOutCount);
 
-            await context.SignInAsync("forward", new ClaimsPrincipal());
+            await context.SignInAsync("forward", new ClaimsPrincipal(new ClaimsIdentity("whatever")));
             Assert.Equal(1, handler1.SignInCount);
             Assert.Equal(0, handler2.SignInCount);
         }
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler1.SignOutCount);
             Assert.Equal(0, handler2.SignOutCount);
 
-            await context.SignInAsync("forward", new ClaimsPrincipal());
+            await context.SignInAsync("forward", new ClaimsPrincipal(new ClaimsIdentity("whatever")));
             Assert.Equal(1, handler1.SignInCount);
             Assert.Equal(0, handler2.SignInCount);
         }
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler1.SignOutCount);
             Assert.Equal(0, handler2.SignOutCount);
 
-            await context.SignInAsync("forward", new ClaimsPrincipal());
+            await context.SignInAsync("forward", new ClaimsPrincipal(new ClaimsIdentity("whatever")));
             Assert.Equal(1, handler1.SignInCount);
             Assert.Equal(0, handler2.SignInCount);
         }
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler1.SignOutCount);
             Assert.Equal(0, handler2.SignOutCount);
 
-            await context.SignInAsync("forward", new ClaimsPrincipal());
+            await context.SignInAsync("forward", new ClaimsPrincipal(new ClaimsIdentity("whatever")));
             Assert.Equal(0, handler1.SignInCount);
             Assert.Equal(1, handler2.SignInCount);
         }
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Authentication
                         {
                             var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
                             var result = await context.AuthenticateAsync(name);
-                            res.Describe(result?.Ticket?.Principal);
+                            await res.DescribeAsync(result?.Ticket?.Principal);
                         }
                         else
                         {

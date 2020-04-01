@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 .Returns(metadataProvider);
             services
                 .Setup(s => s.GetService(typeof(IObjectModelValidator)))
-                .Returns(new DefaultObjectValidator(metadataProvider, new List<IModelValidatorProvider>()));
+                .Returns(new DefaultObjectValidator(metadataProvider, new List<IModelValidatorProvider>(), new MvcOptions()));
             return services.Object;
         }
 

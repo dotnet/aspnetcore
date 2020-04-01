@@ -4,22 +4,24 @@
     <Description>ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.
 Commonly used types:
 Microsoft.AspNetCore.Mvc.IActionResult</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+  <ItemGroup Label="Sources packages">
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
   </ItemGroup>
 
 </Project>

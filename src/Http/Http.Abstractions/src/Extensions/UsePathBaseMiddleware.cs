@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         private readonly PathString _pathBase;
 
         /// <summary>
-        /// Creates a new instace of <see cref="UsePathBaseMiddleware"/>.
+        /// Creates a new instance of <see cref="UsePathBaseMiddleware"/>.
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
         /// <param name="pathBase">The path base to extract.</param>

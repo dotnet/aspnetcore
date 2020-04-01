@@ -8,8 +8,8 @@ using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -21,16 +21,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            using (var memoryPool = KestrelMemoryPool.Create())
+            using (var memoryPool = SlabMemoryPoolFactory.Create())
             {
                 var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
                 var pair = DuplexPipe.CreateConnectionPair(options, options);
-                var http1ConnectionContext = new Http1ConnectionContext
+                var http1ConnectionContext = new HttpConnectionContext
                 {
                     ServiceContext = new TestServiceContext(),
                     ConnectionFeatures = new FeatureCollection(),
                     MemoryPool = memoryPool,
-                    Application = pair.Application,
                     Transport = pair.Transport,
                     TimeoutControl = null
                 };
@@ -79,6 +78,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("Server", "Dašta")]
         [InlineData("Unknownš-Header", "Data")]
         [InlineData("Seršver", "Data")]
+        [InlineData("Server\"", "Data")]
+        [InlineData("Server(", "Data")]
+        [InlineData("Server)", "Data")]
+        [InlineData("Server,", "Data")]
+        [InlineData("Server/", "Data")]
+        [InlineData("Server:", "Data")]
+        [InlineData("Server;", "Data")]
+        [InlineData("Server<", "Data")]
+        [InlineData("Server=", "Data")]
+        [InlineData("Server>", "Data")]
+        [InlineData("Server?", "Data")]
+        [InlineData("Server@", "Data")]
+        [InlineData("Server[", "Data")]
+        [InlineData("Server\\", "Data")]
+        [InlineData("Server]", "Data")]
+        [InlineData("Server{", "Data")]
+        [InlineData("Server}", "Data")]
+        [InlineData("", "Data")]
+        [InlineData(null, "Data")]
         public void AddingControlOrNonAsciiCharactersToHeadersThrows(string key, string value)
         {
             var responseHeaders = new HttpResponseHeaders();

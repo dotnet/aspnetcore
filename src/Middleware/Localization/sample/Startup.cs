@@ -23,18 +23,17 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            var supportedCultures = new [] { "en-US", "en-AU", "en-GB", "es-ES", "ja-JP", "fr-FR", "zh", "zh-CN" };
+            var supportedCultures = new[] { "en-US", "en-AU", "en-GB", "es-ES", "ja-JP", "fr-FR", "zh", "zh-CN" };
             app.UseRequestLocalization(options =>
                 options
                     .AddSupportedCultures(supportedCultures)
                     .AddSupportedUICultures(supportedCultures)
                     .SetDefaultCulture(supportedCultures[0])
-                  // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
-                  // Inserting it as position 0 ensures it has priority over any of the default providers.
-                  //.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
-                  //{
+            // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
+            //.AddRequestCultureProvider(new CustomRequestCultureProvider(async context =>
+            //{
 
-                 //}));
+            //}));
             );
 
             app.Use(async (context, next) =>

@@ -46,6 +46,35 @@
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
 
+    <!-- Fallback to static href with no asp-suppress-fallback-integrity attribute, default behavior is to keep integrity hash -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static href with asp-suppress-fallback-integrity set to false, behavior is to keep integrity hash -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden"
+          asp-suppress-fallback-integrity="false" />
+
+    <!-- Fallback to static href with asp-suppress-fallback-integrity provided, removes integrity attribute on fallback so that different CSS can be loaded  -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          integrity="XY7YsMemPf8AGU4SIX9ED9eOjK1LOQWu2dmCNmh+pQc="
+          crossorigin="anonymous"
+          asp-fallback-href="~/styles/siteIntegrity.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden"
+          asp-suppress-fallback-integrity />
+
     <!-- Fallback to static href with dynamic attributes -->
     <link href="~/styles/site.min.css?a=b&c=d" rel="@("stylesheet")" data-extra="@("test")" title='@(@"""the"" title")'
           asp-fallback-href="~/styles/site.css?a=b&c=d"
@@ -128,7 +157,7 @@
           asp-fallback-test-property="visibility"
           asp-fallback-test-value="hidden" />
 
-    <!-- Fallback from globbed href to glbobed href -->
+    <!-- Fallback from globbed href to globbed href -->
     <link asp-href-include="styles/site.min.css" rel="stylesheet" data-extra="test"
           asp-fallback-href-include="**/site.css"
           asp-fallback-test-class="hidden"

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTrace : ILibuvTrace
+    internal class LibuvTrace : ILibuvTrace
     {
         // ConnectionRead: Reserved: 3
 
@@ -19,21 +19,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionReadFin =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(ConnectionReadFin)), @"Connection id ""{ConnectionId}"" received FIN.");
 
-        private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN.");
-
-        private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(8, nameof(ConnectionWroteFin)), @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
+        private static readonly Action<ILogger, string, string, Exception> _connectionWriteFin =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""");
 
         // ConnectionWrite: Reserved: 11
 
         // ConnectionWriteCallback: Reserved: 12
 
         private static readonly Action<ILogger, string, Exception> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
 
         private static readonly Action<ILogger, string, Exception> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
 
         private readonly ILogger _logger;
 
@@ -53,14 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _connectionReadFin(_logger, connectionId, null);
         }
 
-        public void ConnectionWriteFin(string connectionId)
+        public void ConnectionWriteFin(string connectionId, string reason)
         {
-            _connectionWriteFin(_logger, connectionId, null);
-        }
-
-        public void ConnectionWroteFin(string connectionId, int status)
-        {
-            _connectionWroteFin(_logger, connectionId, status, null);
+            _connectionWriteFin(_logger, connectionId, reason, null);
         }
 
         public void ConnectionWrite(string connectionId, int count)

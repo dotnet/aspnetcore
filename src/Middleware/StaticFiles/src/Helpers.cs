@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     internal static class Helpers
     {
-        internal static IFileProvider ResolveFileProvider(IHostingEnvironment hostingEnv)
+        internal static IFileProvider ResolveFileProvider(IWebHostEnvironment hostingEnv)
         {
             if (hostingEnv.WebRootFileProvider == null) {
                 throw new InvalidOperationException("Missing FileProvider.");

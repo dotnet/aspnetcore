@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private readonly TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
 
         private int _disposeCount = 0;
-
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
 
@@ -52,17 +52,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Application = pair.Application;
             Transport = pair.Transport;
-
-            Application.Input.OnWriterCompleted((ex, _) =>
-            {
-                Application.Output.Complete();
-            }, 
-            null);
         }
 
-        public Task DisposeAsync() => DisposeCoreAsync();
+        public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
-        public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
+        public async ValueTask<ConnectionContext> StartAsync()
         {
             _started.TrySetResult(null);
 
@@ -78,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return this;
         }
 
-        public async Task<string> ReadHandshakeAndSendResponseAsync()
+        public async Task<string> ReadHandshakeAndSendResponseAsync(int minorVersion = 0)
         {
             var s = await ReadSentTextMessageAsync();
 
@@ -118,9 +112,26 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return Application.Output.WriteAsync(bytes).AsTask();
         }
 
-        public async Task<string> ReadSentTextMessageAsync()
+        public async Task<string> ReadSentTextMessageAsync(bool ignorePings = true)
         {
             // Read a single text message from the Application Input pipe
+
+            while (true)
+            {
+                var result = await ReadSentTextMessageAsyncInner();
+
+                var receivedMessageType = (int?)JObject.Parse(result)["type"];
+
+                if (ignorePings && receivedMessageType == HubProtocolConstants.PingMessageType)
+                {
+                    continue;
+                }
+                return result;
+            }
+        }
+
+        private async Task<string> ReadSentTextMessageAsyncInner()
+        {
             while (true)
             {
                 var result = await Application.Input.ReadAsync();
@@ -136,7 +147,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (result.IsCompleted)
                     {
-                        throw new InvalidOperationException("Out of data!");
+                        await Application.Output.CompleteAsync();
+                        return null;
                     }
                 }
                 finally
@@ -146,12 +158,39 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        public async Task<JObject> ReadSentJsonAsync()
+        {
+            return JObject.Parse(await ReadSentTextMessageAsync());
+        }
+
+        public async Task<IList<string>> ReadAllSentMessagesAsync(bool ignorePings = true)
+        {
+            if (!Disposed.IsCompleted)
+            {
+                throw new InvalidOperationException("The connection must be stopped before this method can be used.");
+            }
+
+            var results = new List<string>();
+
+            while (true)
+            {
+                var message = await ReadSentTextMessageAsync(ignorePings);
+                if (message == null)
+                {
+                    break;
+                }
+                results.Add(message);
+            }
+
+            return results;
+        }
+
         public void CompleteFromTransport(Exception ex = null)
         {
             Application.Output.Complete(ex);
         }
 
-        private async Task DisposeCoreAsync(Exception ex = null)
+        private async ValueTask DisposeCoreAsync(Exception ex = null)
         {
             Interlocked.Increment(ref _disposeCount);
             _disposed.TrySetResult(null);

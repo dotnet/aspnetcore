@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Override prerelease label and use preview 4, even in the final build -->
+    <PreReleaseVersionLabel>$(BlazorClientPreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind></DotNetFinalVersionKind>
+  </PropertyGroup>
+</Project>

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly Dictionary<string, List<IRouteConstraint>> _constraints;
         private readonly HashSet<string> _optionalParameters;
         /// <summary>
-        /// Creates a new <see cref="RouteConstraintBuilder"/> instance.
+        /// Creates a new instance of <see cref="RouteConstraintBuilder"/> instance.
         /// </summary>
         /// <param name="inlineConstraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
         /// <param name="displayName">The display name (for use in error messages).</param>
@@ -158,6 +158,11 @@ namespace Microsoft.AspNetCore.Routing
                         _displayName,
                         _inlineConstraintResolver.GetType().Name));
             }
+            else if (constraint == NullRouteConstraint.Instance)
+            {
+                // A null route constraint can be returned for other parameter policy types
+                return;
+            }
 
             Add(key, constraint);
         }
@@ -178,8 +183,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private void Add(string key, IRouteConstraint constraint)
         {
-            List<IRouteConstraint> list;
-            if (!_constraints.TryGetValue(key, out list))
+            if (!_constraints.TryGetValue(key, out var list))
             {
                 list = new List<IRouteConstraint>();
                 _constraints.Add(key, list);

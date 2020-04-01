@@ -9,7 +9,16 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class MockSystemClock : ISystemClock
     {
-        private long _utcNowTicks = DateTimeOffset.UtcNow.Ticks;
+        private static Random _random = new Random();
+
+        private long _utcNowTicks;
+
+        public MockSystemClock()
+        {
+            // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
+            // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
+            _utcNowTicks = NextLong(DateTimeOffset.MinValue.Ticks, DateTimeOffset.MaxValue.Ticks - TimeSpan.FromDays(1).Ticks);
+        }
 
         public DateTimeOffset UtcNow
         {
@@ -24,6 +33,15 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public long UtcNowTicks => UtcNow.Ticks;
+
+        public DateTimeOffset UtcNowUnsynchronized => UtcNow;
+
         public int UtcNowCalled { get; private set; }
+
+        private long NextLong(long minValue, long maxValue)
+        {
+            return (long)(_random.NextDouble() * (maxValue - minValue) + minValue);
+        }
     }
 }

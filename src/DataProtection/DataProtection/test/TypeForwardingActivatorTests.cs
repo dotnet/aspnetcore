@@ -103,21 +103,7 @@ namespace Microsoft.AspNetCore.DataProtection
         [MemberData(nameof(AssemblyVersions))]
         public void CreateInstance_ForwardsAcrossVersionChanges(Version version)
         {
-#if NET461
-            // run this test in an appdomain without testhost's custom assembly resolution hooks
-            var setupInfo = new AppDomainSetup
-            {
-                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
-                ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile,
-            };
-            var domain = AppDomain.CreateDomain("TestDomain", null, setupInfo);
-            var wrappedTestClass = (TypeForwardingActivatorTests)domain.CreateInstanceAndUnwrap(GetType().Assembly.FullName, typeof(TypeForwardingActivatorTests).FullName);
-            wrappedTestClass.CreateInstance_ForwardsAcrossVersionChangesImpl(version);
-#elif NETCOREAPP2_1
             CreateInstance_ForwardsAcrossVersionChangesImpl(version);
-#else
-#error Target framework should be updated
-#endif
         }
 
         private void CreateInstance_ForwardsAcrossVersionChangesImpl(Version newVersion)

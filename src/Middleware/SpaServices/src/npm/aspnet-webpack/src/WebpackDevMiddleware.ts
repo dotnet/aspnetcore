@@ -121,6 +121,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     const compiler = webpack(webpackConfig);
     app.use(require('webpack-dev-middleware')(compiler, {
         noInfo: true,
+        stats: webpackConfig.stats,
         publicPath: ensureLeadingSlash(webpackConfig.output.publicPath),
         watchOptions: webpackConfig.watchOptions
     }));
@@ -133,9 +134,12 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     // middleware's in-memory filesystem only (and not on disk) would confuse the debugger, because the
     // file on disk wouldn't match the file served to the browser, and the source map line numbers wouldn't
     // match up. Breakpoints would either not be hit, or would hit the wrong lines.
-    (compiler as any).plugin('done', stats => {
-        copyRecursiveToRealFsSync(compiler.outputFileSystem, '/', [/\.hot-update\.(js|json|js\.map)$/]);
-    });
+    const copy = stats => copyRecursiveToRealFsSync(compiler.outputFileSystem, '/', [/\.hot-update\.(js|json|js\.map)$/]);
+    if (compiler.hooks) {
+        compiler.hooks.done.tap('aspnet-webpack', copy);
+    } else {
+        compiler.plugin('done', copy);
+    }
 
     if (enableHotModuleReplacement) {
         let webpackHotMiddlewareModule;

@@ -1,12 +1,13 @@
+const path = require('path');
+
 module.exports = {
     target: 'node',
-    externals: ['fs', 'net', 'events', 'readline', 'stream'],
     resolve: {
         extensions: [ '.ts' ]
     },
     module: {
-        loaders: [
-            { test: /\.ts$/, loader: 'ts-loader' },
+        rules: [
+            { test: /\.ts$/, use: 'ts-loader' },
         ]
     },
     entry: {
@@ -14,7 +15,10 @@ module.exports = {
     },
     output: {
         libraryTarget: 'commonjs',
-        path: './Content/Node',
+        path: path.join(__dirname, 'Content', 'Node'),
         filename: '[name].js'
+    },
+    optimization: {
+        minimize: false
     }
 };

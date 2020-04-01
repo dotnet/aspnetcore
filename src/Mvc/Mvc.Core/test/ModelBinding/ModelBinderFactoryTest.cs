@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Internal;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -290,12 +290,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var halfBindingInfo = new BindingInfo
                 {
                     BinderModelName = "expected name",
-                    BinderType = typeof(Widget),
+                    BinderType = typeof(WidgetBinder),
                 };
                 var fullBindingInfo = new BindingInfo
                 {
                     BinderModelName = "expected name",
-                    BinderType = typeof(Widget),
+                    BinderType = typeof(WidgetBinder),
                     BindingSource = BindingSource.Services,
                     PropertyFilterProvider = propertyFilterProvider,
                 };
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var differentBindingMetadata = new BindingMetadata
                 {
                     BinderModelName = "not the expected name",
-                    BinderType = typeof(WidgetId),
+                    BinderType = typeof(WidgetIdBinder),
                     BindingSource = BindingSource.ModelBinding,
                     PropertyFilterProvider = Mock.Of<IPropertyFilterProvider>(),
                 };
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var fullBindingMetadata = new BindingMetadata
                 {
                     BinderModelName = "expected name",
-                    BinderType = typeof(Widget),
+                    BinderType = typeof(WidgetBinder),
                     BindingSource = BindingSource.Services,
                     PropertyFilterProvider = propertyFilterProvider,
                 };
@@ -651,8 +651,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public WidgetId Id { get; set; }
         }
 
+        private class WidgetBinder : IModelBinder
+        {
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private class WidgetId
         {
+        }
+
+        private class WidgetIdBinder : IModelBinder
+        {
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class Employee

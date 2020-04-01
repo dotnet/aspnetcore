@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [InlineData(-1337)]
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
-            var options = new LibuvTransportOptions() { ThreadCount = threadCount };
+            var options = new LibuvTransportOptions { ThreadCount = threadCount };
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
                 new LibuvTransportFactory(Options.Create(options), new LifetimeNotImplemented(), Mock.Of<ILoggerFactory>()));

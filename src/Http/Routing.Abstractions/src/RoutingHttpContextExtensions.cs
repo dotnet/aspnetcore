@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -23,8 +24,8 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            var routingFeature = httpContext.Features[typeof(IRoutingFeature)] as IRoutingFeature;
-            return routingFeature?.RouteData;
+            var routingFeature = httpContext.Features.Get<IRoutingFeature>();
+            return routingFeature?.RouteData ?? new RouteData(httpContext.Request.RouteValues);
         }
 
         /// <summary>
@@ -46,8 +47,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var routingFeature = httpContext.Features[typeof(IRoutingFeature)] as IRoutingFeature;
-            return routingFeature?.RouteData.Values[key];
+            return httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];
         }
     }
 }

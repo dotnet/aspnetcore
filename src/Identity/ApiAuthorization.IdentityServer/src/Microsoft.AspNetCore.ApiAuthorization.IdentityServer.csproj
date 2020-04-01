@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>ASP.NET Core API Authorization package powered by Identity Server.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;apiauth;identity</PackageTags>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <!-- We are a package that depends on the shared framework, this allows us to
+         avoid errors during restore -->
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <Reference Include="IdentityServer4.AspNetIdentity" />
+    <Reference Include="IdentityServer4.EntityFramework" />
+    <Reference Include="IdentityServer4.EntityFramework.Storage" />
+    <Reference Include="IdentityServer4" />
+    <Reference Include="IdentityServer4.Storage" />
+    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
+
+    <!-- These references don't matter as they'll be replaced by the shared framework reference -->
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
+</Project>

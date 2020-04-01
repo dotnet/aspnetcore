@@ -1,0 +1,181 @@
+@using Microsoft.JSInterop
+@using BasicTestApp.InteropTest
+@using System.Runtime.InteropServices
+@using System.Text.Json
+@inject IJSRuntime JSRuntime
+
+<button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
+
+<div>
+    <h1>Invocations</h1>
+    @foreach (var invocation in Invocations)
+    {
+        <h2>@invocation.Key</h2>
+        <p id="@invocation.Key">@invocation.Value</p>
+    }
+</div>
+
+<div>
+    <h1>.NET to JS calls: passing .NET object by ref, receiving .NET object by ref</h1>
+    @foreach (var kvp in ReceiveDotNetObjectByRefResult)
+    {
+        <h2>@(kvp.Key)Sync</h2>
+        <p id="@(kvp.Key)Sync">@kvp.Value</p>
+    }
+    @foreach (var kvp in ReceiveDotNetObjectByRefAsyncResult)
+    {
+        <h2>@(kvp.Key)Async</h2>
+        <p id="@(kvp.Key)Async">@kvp.Value</p>
+    }
+</div>
+
+<div>
+    <h1>Return values and exceptions thrown from .NET</h1>
+    @foreach (var returnValue in ReturnValues)
+    {
+        <h2>@returnValue.Key</h2>
+        <p id="@returnValue.Key">@returnValue.Value</p>
+    }
+</div>
+
+<div>
+    <h1>Exceptions thrown from JavaScript</h1>
+    <h2>@nameof(ExceptionFromSyncMethod)</h2>
+    <p id="@nameof(ExceptionFromSyncMethod)">@ExceptionFromSyncMethod?.Message</p>
+    <h2>@nameof(SyncExceptionFromAsyncMethod)</h2>
+    <p id="@nameof(SyncExceptionFromAsyncMethod)">@SyncExceptionFromAsyncMethod?.Message</p>
+    <h2>@nameof(AsyncExceptionFromAsyncMethod)</h2>
+    <p id="@nameof(AsyncExceptionFromAsyncMethod)">@AsyncExceptionFromAsyncMethod?.Message</p>
+</div>
+@if (DoneWithInterop)
+{
+    <p id="done-with-interop">Done with interop.</p>
+}
+
+@code {
+    public IDictionary<string, string> ReturnValues { get; set; } = new Dictionary<string, string>();
+    public IDictionary<string, string> Invocations { get; set; } = new Dictionary<string, string>();
+
+    public JSException ExceptionFromSyncMethod { get; set; }
+    public JSException SyncExceptionFromAsyncMethod { get; set; }
+    public JSException AsyncExceptionFromAsyncMethod { get; set; }
+
+    public IDictionary<string, object> ReceiveDotNetObjectByRefResult { get; set; } = new Dictionary<string, object>();
+    public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
+
+    public bool DoneWithInterop { get; set; }
+
+    public async Task InvokeInteropAsync()
+    {
+        var shouldSupportSyncInterop = RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
+        var testDTOTOPassByRef = new TestDTO(nonSerializedValue: 123);
+        var instanceMethodsTarget = new JavaScriptInterop();
+        var genericType = new JavaScriptInterop.GenericType<string> { Value = "Initial value" };
+
+        Console.WriteLine("Starting interop invocations.");
+        await JSRuntime.InvokeVoidAsync(
+            "jsInteropTests.invokeDotNetInteropMethodsAsync",
+            shouldSupportSyncInterop,
+            DotNetObjectReference.Create(testDTOTOPassByRef),
+            DotNetObjectReference.Create(instanceMethodsTarget),
+            DotNetObjectReference.Create(genericType));
+
+        if (shouldSupportSyncInterop)
+        {
+            InvokeInProcessInterop();
+        }
+
+        Console.WriteLine("Showing interop invocation results.");
+        var collectResults = await JSRuntime.InvokeAsync<Dictionary<string, string>>("jsInteropTests.collectInteropResults");
+
+        ReturnValues = collectResults.ToDictionary(kvp => kvp.Key, kvp => System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(kvp.Value)));
+
+        var invocations = new Dictionary<string, string>();
+        foreach (var interopResult in JavaScriptInterop.Invocations)
+        {
+            var interopResultValue = JsonSerializer.Serialize(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
+            invocations[interopResult.Key] = interopResultValue;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsSyncException");
+        }
+        catch (JSException e)
+        {
+            SyncExceptionFromAsyncMethod = e;
+        }
+
+        try
+        {
+            await JSRuntime.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsAsyncException");
+        }
+        catch (JSException e)
+        {
+            AsyncExceptionFromAsyncMethod = e;
+        }
+
+        var passDotNetObjectByRef = new TestDTO(99999);
+        var passDotNetObjectByRefArg = new PassDotNetObjectByRefArgs
+        {
+            StringValue = "My string",
+            TestDto = DotNetObjectReference.Create(passDotNetObjectByRef),
+        };
+        var result = await JSRuntime.InvokeAsync<ReceiveDotNetObjectByRefArgs>("receiveDotNetObjectByRefAsync", passDotNetObjectByRefArg);
+        ReceiveDotNetObjectByRefAsyncResult["stringValueUpper"] = result.StringValueUpper;
+        ReceiveDotNetObjectByRefAsyncResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
+        ReceiveDotNetObjectByRefAsyncResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+
+        ReturnValues["returnPrimitiveAsync"] = (await JSRuntime.InvokeAsync<int>("returnPrimitiveAsync")).ToString();
+        ReturnValues["returnArrayAsync"] = string.Join(",", (await JSRuntime.InvokeAsync<Segment[]>("returnArrayAsync")).Select(x => x.Source).ToArray());
+        if (shouldSupportSyncInterop)
+        {
+            ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime).Invoke<int>("returnPrimitive").ToString();
+            ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
+        }
+
+        Invocations = invocations;
+        DoneWithInterop = true;
+    }
+
+    public void InvokeInProcessInterop()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        try
+        {
+            inProcRuntime.Invoke<object>("jsInteropTests.functionThrowsException");
+        }
+        catch (JSException e)
+        {
+            ExceptionFromSyncMethod = e;
+        }
+
+        var passDotNetObjectByRef = new TestDTO(99999);
+        var passDotNetObjectByRefArg = new PassDotNetObjectByRefArgs
+        {
+            StringValue = "My string",
+            TestDto = DotNetObjectReference.Create(passDotNetObjectByRef),
+        };
+        var result = inProcRuntime.Invoke<ReceiveDotNetObjectByRefArgs>("receiveDotNetObjectByRef", passDotNetObjectByRefArg);
+        ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
+        ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
+        ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+    }
+
+    public class PassDotNetObjectByRefArgs
+    {
+        public string StringValue { get; set; }
+
+        public DotNetObjectReference<TestDTO> TestDto { get; set; }
+    }
+
+    public class ReceiveDotNetObjectByRefArgs
+    {
+        public string StringValueUpper { get; set; }
+
+        public int TestDtoNonSerializedValue { get; set; }
+
+        public DotNetObjectReference<TestDTO> TestDto { get; set; }
+    }
+}

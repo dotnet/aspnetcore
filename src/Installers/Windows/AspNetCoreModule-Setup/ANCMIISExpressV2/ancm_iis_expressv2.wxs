@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+    AspNetCoreModule setup. v1 for initial release.
+-->
+
+<?define Codepage = "1252" ?>
+<?include ..\IIS-Setup\include.wxi ?>
+
+<?define ProductCode = "*" ?>
+<?if $(var.IsWin64)=no ?>
+  <?define ANCMUpgradeCode = "de400ae0-3cd7-4a35-a234-b5a41b90893c" ?>
+  <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x86" ?>
+<?else?>
+  <?define ANCMUpgradeCode = "da062c0f-12c2-4703-8ed7-0cad342a53a1" ?>
+  <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x64" ?>
+<?endif?>
+
+<?define ProductShortName="IIS Express AspNetCore Module V2" ?>
+<?define ProductNameShort="IISExpress_ANCM_V2" ?>
+<?define ProductVersionString = "V2"?>
+<?define ProductName="Asp.Net Core Module"?>
+
+<?if $(var.PlatformValue)="Intel" ?>
+  <?undef PlatformValue ?>
+  <?define PlatformValue = "x86" ?>
+<?endif?>
+
+<?define AspNetCoreSectionName = "aspNetCore" ?>
+<?define AspNetCoreTraceProviderName = "ANCM" ?>
+<?define AspNetCoreTraceProviderValue = "65536" ?>
+<?define AspNetCoreModuleName = "AspNetCoreModuleV2" ?>
+
+<?if $(var.Platform) = "x64" ?>
+    <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
+    <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
+<?else ?>
+    <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
+<?endif ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+    <Product Id="$(var.ProductCode)"
+          Name="!(loc.AspNetCoreIISExpressModuleProductNameV2)"
+          Manufacturer="!(loc.Manufacturer)"
+          Version="$(var.ANCMMsiVersion)"
+          Language="!(loc.Language)"
+          Codepage="$(var.Codepage)"
+          UpgradeCode="$(var.ANCMUpgradeCode)" >
+
+        <Package Id="*"
+                 Description="!(loc.AspNetCoreIISExpressModuleProductNameV2)"
+                 Manufacturer="!(loc.Manufacturer)"
+                 Compressed="yes"
+                 InstallPrivileges="elevated"
+                 InstallerVersion="400"
+                 Platform="$(var.PlatformValue)" />
+
+        <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
+
+        <Property Id="ARPCONTACT">Microsoft Corporation</Property>
+        <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
+        <Icon Id="AspNetCoreModule.ico" SourceFile="..\Bitmaps\AspNetCoreModule.ico" />
+
+        <WixVariable Id="WixUILicenseRtf" Value="..\license\license.rtf" />
+
+        <Upgrade Id="$(var.ANCMUpgradeCode)">
+            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
+        </Upgrade>
+
+        <Condition Message="!(loc.NewerVersionFound)">(NOT NEWERVERSIONFOUND)  OR Installed</Condition>
+
+        <!-- Require the user be an admin to install -->
+        <Condition Message="!(loc.AdminRequired)">Privileged</Condition>
+
+        <Property Id="ALLUSERS">1</Property>
+
+        <Property Id="IISEXPRESS_INSTALL" Secure="yes">
+            <RegistrySearch Id="IISExpressInstallRegSearch" Root="HKLM" Key="SOFTWARE\Microsoft\IISExpress" Name="Version" Type="raw" Win64="$(var.IsWin64)" />
+        </Property>
+
+        <Property Id="IISEXPRESS_INSTALL_PATH" Secure="yes">
+            <DirectorySearch Id="ProgramFilesSearch" Path="[$(var.ProgramFilesFolder)]">
+               <DirectorySearch Id="IISExpressInstallPathSearch" Path="IIS Express" AssignToProperty="yes">
+                   <FileSearch Id="IISExpressExe" Name="iisexpress.exe" />
+               </DirectorySearch>
+            </DirectorySearch>
+        </Property>
+
+        <Property Id="IISEXPRESS_APPHOST_CONFIG" Secure="yes">
+            <DirectorySearchRef Id="ProgramFilesSearch" Path="[$(var.ProgramFilesFolder)]">
+               <DirectorySearch Id="IISExpressAppServerPathSearch" Path="IIS Express\AppServer">
+                  <FileSearch Id="AppHostConfig" Name="applicationhost.config" />
+               </DirectorySearch>
+            </DirectorySearchRef>
+        </Property>
+
+        <Property Id="IISEXPRESS_APPHOST_CONFIG_TMP" Secure="yes">
+            <DirectorySearchRef Id="ProgramFilesSearch" Path="[$(var.ProgramFilesFolder)]">
+               <DirectorySearch Id="IISExpressTmpPathSearch" Path="IIS Express\config\templates\PersonalWebServer">
+                  <FileSearch Id="AppHostConfigTmp" Name="applicationhost.config" />
+               </DirectorySearch>
+            </DirectorySearchRef>
+        </Property>
+
+        <Condition Message="!(loc.AspNetCoreModuleIISExpressPrereq)"><![CDATA[Installed Or IISEXPRESS_INSTALL_PATH]]></Condition>
+        <?if $(var.Platform) = "x64" ?>
+          <Condition Message="!(loc.AspNetCoreModuleIISExpressPrereq)"><![CDATA[Installed Or IISEXPRESS_INSTALL_PATH32]]></Condition>
+        <?endif?>
+
+        <!-- prevent install of 32 bit product on 64 bit machine -->
+        <?if "x86" = "$(var.Platform)" ?>
+        <Condition Message="!(loc.LaunchCondition_64BIT)">
+            <![CDATA[Installed Or NOT VersionNT64]]>
+        </Condition>
+        <?endif ?>
+
+        <!-- also prevent install of 64-bit product on 32-bit machine -->
+        <?if $(var.Platform) = "x64"?>
+        <Condition Message="!(loc.LaunchCondition_32BIT)">
+            <![CDATA[(Installed And NOT PATCH) Or VersionNT64]]>
+        </Condition>
+        <?endif ?>
+
+        <?if $(var.Platform) = "x64" ?>
+            <Property Id="IISEXPRESS_INSTALL_PATH32" Secure="yes">
+                <DirectorySearch Id="ProgramFilesSearch32" Path="[ProgramFilesFolder]">
+                   <DirectorySearch Id="IISExpressInstallPathSearch32" Path="IIS Express" AssignToProperty="yes">
+                       <FileSearch Id="IISExpressExe32" Name="iisexpress.exe" />
+                   </DirectorySearch>
+                </DirectorySearch>
+            </Property>
+
+            <Property Id="IISEXPRESS_APPHOST_CONFIG32" Secure="yes">
+                <DirectorySearchRef Id="ProgramFilesSearch32" Path="[ProgramFilesFolder]">
+                   <DirectorySearch Id="IISExpressAppServerPathSearch32" Path="IIS Express\AppServer">
+                      <FileSearch Id="AppHostConfig32" Name="applicationhost.config" />
+                   </DirectorySearch>
+                </DirectorySearchRef>
+            </Property>
+
+            <Property Id="IISEXPRESS_APPHOST_CONFIG_TMP32" Secure="yes">
+                <DirectorySearchRef Id="ProgramFilesSearch32" Path="[ProgramFilesFolder]">
+                   <DirectorySearch Id="IISExpressTmpPathSearch32" Path="IIS Express\config\templates\PersonalWebServer">
+                      <FileSearch Id="AppHostConfigTmp32" Name="applicationhost.config" />
+                   </DirectorySearch>
+                </DirectorySearchRef>
+            </Property>
+
+           <SetProperty Id="INSTALLDIR32" Value="[IISEXPRESS_INSTALL_PATH32]" After="CostInitialize"/>
+        <?endif?>
+
+        <Directory Id="TARGETDIR" Name="SourceDir" >
+            <Directory Id="$(var.ProgramFilesFolder)" >
+                <Directory Id="INSTALLDIR" Name="IIS Express" />
+            </Directory>
+        </Directory>
+
+
+        <!-- Directory Structure and Component Definitions -->
+      <DirectoryRef Id="INSTALLDIR">
+        <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="$(var.ProductName)">
+          <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
+            <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleDll"
+                    Name="aspnetcorev2.dll"
+                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
+                    DiskId="1"
+                    Vital="yes">
+                </File>
+              <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll]"/>
+                <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+              </RegistryKey>
+            </Component>
+            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
+              <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Win64="$(var.IsWin64)">
+                    <File Id="AspNetCoreModuleHandlerDll"
+                        Name="aspnetcorev2_outofprocess.dll"
+                        Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)"
+                        DiskId="1"
+                        Vital="yes">
+                    </File>
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+        <Directory Id="IISConfigDir" Name="config">
+          <Directory Id="IISSchemaDir" Name="schema">
+            <Component Id="AspNetCoreSchema" Guid="$(var.SchemaGuid)" Win64="$(var.IsWin64)" >
+              <File Id="AspNetCoreSchemaFile"
+                    Name="aspnetcore_schema_v2.xml"
+                    Source="$(var.AspNetCoreSchemaPath)"
+                    DiskId="1"
+                    Vital="yes"/>
+            </Component>
+          </Directory>
+        </Directory>
+
+        <!-- WOW64 Support -->
+        <?if $(var.Platform) = "x64" ?>
+        <Directory Id="$(var.ProgramFilesFolder32)">
+          <Directory Id="INSTALLDIR32" Name="IIS Express" >
+            <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="$(var.ProductName)">
+              <Directory Id="VersionDir32" Name="$(var.ProductVersionString)">
+                <!-- Originally created with same component GUID as IIS installer. Must remain the same so upgrade doesn't remove this file -->
+                <Component Id="AspNetCoreModule.wow" Guid="45ba5011-a619-4d06-8a8d-155b1f9732b3" Win64="no">
+                  <File Id="AspNetCoreModuleDll.wow"
+                        Name="aspnetcorev2.dll"
+                        Source="$(var.AspNetCoreV2WoW64.TargetPath)"
+                        DiskId="1"
+                        Vital="yes">
+                  </File>
+                  <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll.wow]"/>
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+                  </RegistryKey>
+                </Component>
+                <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" >
+                  <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
+                    <File Id="AspNetCoreModuleHandlerDll.wow"
+                          Name="aspnetcorev2_outofprocess.dll"
+                          Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
+                          DiskId="1"
+                          Vital="yes">
+                    </File>
+                  </Component>
+                </Directory>
+              </Directory>
+            </Directory>
+            <Directory Id="IISConfigDir.wow" Name="config">
+              <Directory Id="IISSchemaDir.wow" Name="schema">
+                <Component Id="AspNetCoreSchema.wow" Guid="$(var.SchemaGuid32)" Win64="no" >
+                  <File Id="AspNetCoreSchemaFile.wow"
+                        Name="aspnetcore_schema_v2.xml"
+                        Source="$(var.AspNetCoreSchemaPath)"
+                        DiskId="1"
+                        Vital="yes"/>
+                </Component>
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+        <?endif?>
+      </DirectoryRef>
+
+        <!-- Feature Definition -->
+        <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
+            <ComponentRef Id="AspNetCoreModule"/>
+            <ComponentRef Id="AspNetCoreModuleHandler"/>
+            <ComponentRef Id="AspNetCoreSchema"/>
+            <?if $(var.Platform) = "x64" ?>
+                <ComponentRef Id="AspNetCoreModule.wow"/>
+                <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
+                <ComponentRef Id="AspNetCoreSchema.wow"/>
+            <?endif ?>
+        </Feature>
+
+        <!-- User Interface -->
+        <UIRef Id="WixUI_Minimal"/>
+        <UIRef Id="WixUI_ErrorProgressText"/>
+
+        <UI>
+            <DialogRef Id="WelcomeEulaDlg"/>
+
+            <!--CUSTOM errors specific to OOB setup-->
+            <Error Id="30001">!(loc.Error30001)</Error>
+            <Error Id="30002">!(loc.Error30002)</Error>
+            <!-- Require WAS and WMSVC be stopped to avoid restarts -->
+            <Error Id="30003">!(loc.WebServicesRunning)</Error>
+        </UI>
+
+        <!-- Standard IIS Custom Actions -->
+
+        <SetProperty Id="INSTALLDIR" Value="[IISEXPRESS_INSTALL_PATH]" After="CostInitialize"/>
+
+        <!--   All this magic just to set the handlers section OverrideModeDefault=allow -->
+        <CustomAction Id="CA_UNLOCK_HANDLER_PROPERTY"
+                          Property="CA_UNLOCK_HANDLER"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;" />
+        <CustomAction Id="CA_UNLOCK_HANDLER" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+        <CustomAction Id="CA_UNLOCK_HANDLER_TMP_PROPERTY"
+                          Property="CA_UNLOCK_HANDLER_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;" />
+        <CustomAction Id="CA_UNLOCK_HANDLER_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <!-- CA's to install/add module in appserver/applicationhost.config -->
+        <CustomAction Id="CA_UNINSTALL_MODULE_PROPERTY"
+                          Property="CA_UNINSTALL_MODULE"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_UNINSTALL_MODULE" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_MODULE_PROPERTY"
+                          Property="CA_ADD_MODULE"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; install module /name:$(var.AspNetCoreModuleName) /image:&quot;%IIS_BIN%\$(var.ProductName)\$(var.ProductVersionString)\aspnetcorev2.dll&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_ADD_MODULE" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ROLLBACK_MODULE_PROPERTY"
+                          Property="CA_ROLLBACK_MODULE"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_ROLLBACK_MODULE" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="rollback" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_SET_MODULE_PROPERTY"
+                          Property="CA_SET_MODULE"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set module $(var.AspNetCoreModuleName) /lockItem:true /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_SET_MODULE" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_REMOVE_MODULE_PROPERTY"
+                          Property="CA_REMOVE_MODULE"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_REMOVE_MODULE" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION_PROPERTY"
+                          Property="CA_ADD_TRACE_PROVIDER_DEFINITION"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /+&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION_PROPERTY"
+                          Property="CA_REMOVE_TRACE_PROVIDER_DEFINITION"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /-&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <!-- CAs to install/add module in config/templates/.../applicationhost.config -->
+        <CustomAction Id="CA_UNINSTALL_MODULE_TMP_PROPERTY"
+                          Property="CA_UNINSTALL_MODULE_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_UNINSTALL_MODULE_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_MODULE_TMP_PROPERTY"
+                          Property="CA_ADD_MODULE_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; install module /name:$(var.AspNetCoreModuleName) /image:&quot;%IIS_BIN%\$(var.ProductName)\$(var.ProductVersionString)\aspnetcorev2.dll&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_ADD_MODULE_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ROLLBACK_MODULE_TMP_PROPERTY"
+                          Property="CA_ROLLBACK_MODULE_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_ROLLBACK_MODULE_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="rollback" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_SET_MODULE_TMP_PROPERTY"
+                          Property="CA_SET_MODULE_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set module $(var.AspNetCoreModuleName) /lockItem:true /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_SET_MODULE_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_REMOVE_MODULE_TMP_PROPERTY"
+                          Property="CA_REMOVE_MODULE_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_REMOVE_MODULE_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY"
+                          Property="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /+&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY"
+                          Property="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /-&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_PROPERTY"
+                          Property="CA_UPDATE_DYNAMIC_COMPRESSION"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG]&quot;"/>
+        <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP_PROPERTY"
+                          Property="CA_UPDATE_DYNAMIC_COMPRESSION_TMP"
+                          Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
+        <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_CONFIGSECTION_PROPERTY"
+                          Property="CA_ADD_CONFIGSECTION"
+                          Value="[IISEXPRESS_APPHOST_CONFIG]"/>
+        <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
+        <CustomAction Id="CA_ADD_CONFIGSECTION_PROPERTY_TMP"
+                          Property="CA_ADD_CONFIGSECTION_TMP"
+                          Value="[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
+        <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY"
+                            Property="CA_REMOVE_CONFIGSECTION"
+                            Value="[IISEXPRESS_APPHOST_CONFIG]"/>
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY_TMP"
+                Property="CA_REMOVE_CONFIGSECTION_TMP"
+                Value="[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION_TMP" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+
+        <?if $(var.Platform) = "x64" ?>
+            <CustomAction Id="CA_UNLOCK_HANDLER32_PROPERTY"
+                              Property="CA_UNLOCK_HANDLER32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;" />
+            <CustomAction Id="CA_UNLOCK_HANDLER32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+            <CustomAction Id="CA_UNLOCK_HANDLER_TMP32_PROPERTY"
+                              Property="CA_UNLOCK_HANDLER_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;" />
+            <CustomAction Id="CA_UNLOCK_HANDLER_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <!-- CA's to install/add module in appserver/applicationhost.config -->
+
+            <CustomAction Id="CA_UNINSTALL_MODULE32_PROPERTY"
+                              Property="CA_UNINSTALL_MODULE32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_UNINSTALL_MODULE32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_MODULE32_PROPERTY"
+                              Property="CA_ADD_MODULE32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; install module /name:$(var.AspNetCoreModuleName) /image:&quot;%IIS_BIN%\$(var.ProductName)\$(var.ProductVersionString)\aspnetcorev2.dll&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_ADD_MODULE32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ROLLBACK_MODULE32_PROPERTY"
+                              Property="CA_ROLLBACK_MODULE32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_ROLLBACK_MODULE32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="rollback" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_SET_MODULE32_PROPERTY"
+                              Property="CA_SET_MODULE32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set module $(var.AspNetCoreModuleName) /lockItem:true /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_SET_MODULE32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_REMOVE_MODULE32_PROPERTY"
+                              Property="CA_REMOVE_MODULE32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_REMOVE_MODULE32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION32_PROPERTY"
+                              Property="CA_ADD_TRACE_PROVIDER_DEFINITION32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /+&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION32_PROPERTY"
+                              Property="CA_REMOVE_TRACE_PROVIDER_DEFINITION32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /-&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <!-- CAs to install/add module in config/templates/.../applicationhost.config -->
+            <CustomAction Id="CA_UNINSTALL_MODULE_TMP32_PROPERTY"
+                              Property="CA_UNINSTALL_MODULE_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_UNINSTALL_MODULE_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_MODULE_TMP32_PROPERTY"
+                              Property="CA_ADD_MODULE_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; install module /name:$(var.AspNetCoreModuleName) /image:&quot;%IIS_BIN%\$(var.ProductName)\$(var.ProductVersionString)\aspnetcorev2.dll&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_ADD_MODULE_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ROLLBACK_MODULE_TMP32_PROPERTY"
+                              Property="CA_ROLLBACK_MODULE_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_ROLLBACK_MODULE_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="rollback" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_SET_MODULE_TMP32_PROPERTY"
+                              Property="CA_SET_MODULE_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set module $(var.AspNetCoreModuleName) /lockItem:true /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_SET_MODULE_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_REMOVE_MODULE_TMP32_PROPERTY"
+                              Property="CA_REMOVE_MODULE_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; uninstall module $(var.AspNetCoreModuleName) /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_REMOVE_MODULE_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY"
+                              Property="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /+&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY"
+                              Property="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/tracing/traceProviderDefinitions /-&quot;[\[]name='WWW Server'[\]].areas.[\[]name='$(var.AspNetCoreTraceProviderName)',value='$(var.AspNetCoreTraceProviderValue)'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;"/>
+            <CustomAction Id="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION32_PROPERTY"
+                              Property="CA_UPDATE_DYNAMIC_COMPRESSION32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32_PROPERTY"
+                              Property="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32"
+                              Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
+            <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY"
+                            Property="CA_ADD_CONFIGSECTION32"
+                            Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
+            <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION32" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
+            <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY_TMP"
+                            Property="CA_ADD_CONFIGSECTION32_TMP"
+                            Value="[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
+            <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION32_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32_PROPERTY"
+                              Property="CA_REMOVE_CONFIGSECTION32"
+                              Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32_PROPERTY_TMP"
+                    Property="CA_REMOVE_CONFIGSECTION32_TMP"
+                    Value="[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32_TMP" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+        <?endif?>
+
+        <InstallExecuteSequence>
+            <AppSearch Before="LaunchConditions" />
+            <LaunchConditions After="FindRelatedProducts" />
+            <MigrateFeatureStates />
+            <Custom Action="CA_UNLOCK_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNLOCK_HANDLER" After="CA_UNLOCK_HANDLER_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNINSTALL_MODULE_PROPERTY" After="CA_UNLOCK_HANDLER"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNINSTALL_MODULE" After="CA_UNINSTALL_MODULE_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_MODULE_PROPERTY" After="CA_UNINSTALL_MODULE"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_MODULE" After="CA_ADD_MODULE_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ROLLBACK_MODULE_PROPERTY" Before="CA_ROLLBACK_MODULE"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ROLLBACK_MODULE" Before="CA_ADD_MODULE_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_SET_MODULE_PROPERTY" After="CA_ADD_MODULE"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_SET_MODULE" After="CA_SET_MODULE_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION_PROPERTY" After="CA_SET_MODULE"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION" After="CA_ADD_CONFIGSECTION_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION_PROPERTY_TMP" After="CA_ADD_CONFIGSECTION"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION_TMP" After="CA_ADD_CONFIGSECTION_PROPERTY_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_PROPERTY" After="CA_ADD_CONFIGSECTION_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION" After="CA_ADD_TRACE_PROVIDER_DEFINITION_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP" After="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UPDATE_DYNAMIC_COMPRESSION_TMP_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UPDATE_DYNAMIC_COMPRESSION_TMP" After="CA_UPDATE_DYNAMIC_COMPRESSION_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_REMOVE_MODULE_PROPERTY" Before="CA_REMOVE_MODULE"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_MODULE" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION_PROPERTY" Before="CA_REMOVE_CONFIGSECTION"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION_PROPERTY_TMP" Before="CA_REMOVE_CONFIGSECTION_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_UNLOCK_HANDLER_TMP_PROPERTY" After="CA_ADD_CONFIGSECTION"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNLOCK_HANDLER_TMP" After="CA_UNLOCK_HANDLER_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNINSTALL_MODULE_TMP_PROPERTY" After="CA_UNLOCK_HANDLER_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_UNINSTALL_MODULE_TMP" After="CA_UNINSTALL_MODULE_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_MODULE_TMP_PROPERTY" After="CA_UNINSTALL_MODULE_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_MODULE_TMP" After="CA_ADD_MODULE_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ROLLBACK_MODULE_TMP_PROPERTY" Before="CA_ROLLBACK_MODULE_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ROLLBACK_MODULE_TMP" Before="CA_ADD_MODULE_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_SET_MODULE_TMP_PROPERTY" After="CA_ADD_MODULE_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_SET_MODULE_TMP" After="CA_SET_MODULE_TMP_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_REMOVE_MODULE_TMP_PROPERTY" Before="CA_REMOVE_MODULE_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_MODULE_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+
+            <?if $(var.Platform) = "x64" ?>
+                <Custom Action="CA_UNLOCK_HANDLER32_PROPERTY" After="InstallFiles"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNLOCK_HANDLER32" After="CA_UNLOCK_HANDLER32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNINSTALL_MODULE32_PROPERTY" After="CA_UNLOCK_HANDLER32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNINSTALL_MODULE32" After="CA_UNINSTALL_MODULE32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ADD_MODULE32_PROPERTY" After="CA_UNINSTALL_MODULE32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ADD_MODULE32" After="CA_ADD_MODULE32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ROLLBACK_MODULE32_PROPERTY" Before="CA_ROLLBACK_MODULE32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ROLLBACK_MODULE32" Before="CA_ADD_MODULE32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_SET_MODULE32_PROPERTY" After="CA_ADD_MODULE32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_SET_MODULE32" After="CA_ADD_MODULE32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32_PROPERTY" After="CA_SET_MODULE32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32" After="CA_ADD_CONFIGSECTION32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32_PROPERTY_TMP" After="CA_ADD_CONFIGSECTION32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32_TMP" After="CA_ADD_CONFIGSECTION32_PROPERTY_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION32_PROPERTY" After="CA_ADD_CONFIGSECTION32_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION32" After="CA_ADD_TRACE_PROVIDER_DEFINITION32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32" After="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32" After="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_REMOVE_MODULE32_PROPERTY" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND IISEXPRESS_INSTALL_PATH32 AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_MODULE32" After="CA_REMOVE_MODULE32_PROPERTY"><![CDATA[(REMOVE~="ALL" AND IISEXPRESS_INSTALL_PATH32 AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32_PROPERTY" Before="CA_REMOVE_CONFIGSECTION32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32_PROPERTY_TMP" Before="CA_REMOVE_CONFIGSECTION32_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION32_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_UNLOCK_HANDLER_TMP32_PROPERTY" After="CA_ADD_CONFIGSECTION32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNLOCK_HANDLER_TMP32" After="CA_UNLOCK_HANDLER_TMP32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNINSTALL_MODULE_TMP32_PROPERTY" After="CA_UNLOCK_HANDLER_TMP32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_UNINSTALL_MODULE_TMP32" After="CA_UNINSTALL_MODULE_TMP32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ADD_MODULE_TMP32_PROPERTY" After="CA_UNINSTALL_MODULE_TMP32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ADD_MODULE_TMP32" After="CA_ADD_MODULE_TMP32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_ROLLBACK_MODULE_TMP32_PROPERTY" Before="CA_ROLLBACK_MODULE_TMP32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ROLLBACK_MODULE_TMP32" Before="CA_ADD_MODULE_TMP32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_SET_MODULE_TMP32_PROPERTY" After="CA_ADD_MODULE_TMP32"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_SET_MODULE_TMP32"  After="CA_SET_MODULE_TMP32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
+                <Custom Action="CA_REMOVE_MODULE_TMP32_PROPERTY" Before="CA_REMOVE_MODULE_TMP32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_MODULE_TMP32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <?endif?>
+            <RemoveExistingProducts After="InstallFinalize"/>
+        </InstallExecuteSequence>
+
+        <FeatureRef Id="FT_DepProvider_$(var.ProductNameShort)" />
+    </Product>
+
+    <Fragment>
+        <Feature Id="FT_DepProvider_$(var.ProductNameShort)" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install">
+            <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
+        </Feature>
+
+        <DirectoryRef Id="TARGETDIR">
+            <Component Id="C_DepProvider_$(var.ProductNameShort)" Win64="no">
+                <dep:Provides Key="$(var.ANCMDepProviderKey)" />
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+
+    <Fragment>
+        <Binary Id="IISCustomActionDll" SourceFile="$(var.aspnetcoreCA.TargetPath)"/>
+    </Fragment>
+
+</Wix>
+

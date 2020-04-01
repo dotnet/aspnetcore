@@ -1,0 +1,36 @@
+<h3 id="event-disabling">Disabling events</h3>
+
+<p>
+    <div @onclick="@(() => LogEvent("Got event on div"))" id="disabled-div" disabled style="border: 1px dashed red">Even though this div has a 'disabled' attribute, it still responds to mouse events, because you can't disable a div</div>
+</p>
+
+<p>
+    <button @onclick="@(() => LogEvent("Got event on disabled button"))" id="disabled-button" disabled>Since this button is disabled, it doesn't react to mouse events <span style="border: 1px dashed green">even on its children</span></button>
+</p>
+
+<p>
+    <textarea @onclick="@(() => LogEvent("Got event on disabled textarea"))" id="disabled-textarea" disabled>Since this textarea is disabled, it doesn't react to mouse events</textarea>
+</p>
+
+<p>
+    <button @onclick="@(() => LogEvent("Got event on enabled button"))" id="enabled-button">Since this button is enabled, it does react to mouse events <span style="border: 1px dashed green">and so do its children</span></button>
+</p>
+
+<h3>Event log</h3>
+
+<textarea id="event-log" readonly @bind="logValue"></textarea>
+<button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
+
+@code {
+    string logValue = string.Empty;
+
+    void LogEvent(string message)
+    {
+        if (logValue != string.Empty)
+        {
+            logValue += Environment.NewLine;
+        }
+
+        logValue += message;
+    }
+}

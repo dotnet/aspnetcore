@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Razor クラス ライブラリ",
+    "description": "Razor クラス ライブラリを作成するためのプロジェクト テンプレートです。",
+    "parameter.SupportPagesAndViews.name": "ページとビューのサポート(_S)"
+  }
+}

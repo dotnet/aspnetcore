@@ -10,9 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -1097,10 +1095,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             // Arrange
             var page = new TestPage();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = page.RedirectToPage(pageName, routeVaues);
+            var result = page.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);
@@ -1696,6 +1694,156 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             // Assert
             Assert.Equal(statusCode, result.StatusCode);
+        }
+
+        [Fact]
+        public void PartialView_WithName()
+        {
+            // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var viewData = new ViewDataDictionary(modelMetadataProvider, new ModelStateDictionary());
+            var pageModel = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData
+                },
+                MetadataProvider = modelMetadataProvider,
+            };
+            viewData.Model = pageModel;
+
+            // Act
+            var result = pageModel.Partial("LoginStatus");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Null(result.Model);
+        }
+
+        [Fact]
+        public void PartialView_WithNameAndModel()
+        {
+            // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var viewData = new ViewDataDictionary(modelMetadataProvider, new ModelStateDictionary());
+            var pageModel = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData
+                },
+                MetadataProvider = modelMetadataProvider,
+            };
+            viewData.Model = pageModel;
+            var model = new { Username = "Admin" };
+
+            // Act
+            var result = pageModel.Partial("LoginStatus", model);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Equal(model, result.Model);
+        }
+
+        [Fact]
+        public void ViewComponent_WithName()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = page.ViewComponent("TagCloud");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("TagCloud", result.ViewComponentName);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithType()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = page.ViewComponent(typeof(Guid));
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithArguments()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            var arguments = new { Arg1 = "Hi", Arg2 = "There" };
+
+            // Act
+            var result = page.ViewComponent(typeof(Guid), arguments);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(arguments, result.Arguments);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
+        {
+            // Arrange
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("some error"));
+
+            var pageModel = new TestPage
+            {
+                PageContext = new PageContext
+                {
+                    ValueProviderFactories = new[] { valueProviderFactory.Object },
+                }
+            };
+
+            var model = new object();
+
+            // Act
+            var result = await pageModel.TryUpdateModelAsync(model);
+
+            // Assert
+            Assert.False(result);
+            var modelState = Assert.Single(pageModel.ModelState);
+            Assert.Empty(modelState.Key);
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal("some error", error.ErrorMessage);
         }
 
         public static IEnumerable<object[]> RedirectTestData

@@ -8,22 +8,19 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    public class LongPollingTransportTests
+    public class LongPollingTransportTests : VerifiableLoggedTest
     {
         private static readonly Uri TestUri = new Uri("http://example.com/?id=1234");
 
@@ -218,6 +215,53 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 finally
                 {
                     await longPollingTransport.StopAsync();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StopTransportWhenConnectionAlreadyStoppedOnServer()
+        {
+            var pollRequestTcs = new TaskCompletionSource<object>();
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            var firstPoll = true;
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.Method == HttpMethod.Delete)
+                    {
+                        // Simulate the server having already cleaned up the connection on the server
+                        return ResponseUtils.CreateResponse(HttpStatusCode.NotFound);
+                    }
+                    else
+                    {
+                        if (firstPoll)
+                        {
+                            firstPoll = false;
+                            return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                        }
+
+                        await pollRequestTcs.Task;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+                });
+
+            using (StartVerifiableLog())
+            {
+                using (var httpClient = new HttpClient(mockHttpHandler.Object))
+                {
+                    var longPollingTransport = new LongPollingTransport(httpClient, LoggerFactory);
+
+                    await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary).OrTimeout();
+
+                    var stopTask = longPollingTransport.StopAsync();
+
+                    pollRequestTcs.SetResult(null);
+
+                    await stopTask.OrTimeout();
                 }
             }
         }

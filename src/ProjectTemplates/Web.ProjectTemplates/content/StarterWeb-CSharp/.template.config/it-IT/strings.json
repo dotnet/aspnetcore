@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Applicazione Web (MVC)",
+    "description": "Modello di progetto per la creazione di un'applicazione ASP.NET Core con viste e controller ASP.NET Core MVC di esempio. È possibile usare questo modello anche per i servizi HTTP RESTful."
+  }
+}

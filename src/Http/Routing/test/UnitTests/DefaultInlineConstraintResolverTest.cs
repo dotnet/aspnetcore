@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -328,7 +329,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
         {
             var optionsAccessor = new Mock<IOptions<RouteOptions>>();
             optionsAccessor.SetupGet(o => o.Value).Returns(routeOptions);
-            return new DefaultInlineConstraintResolver(optionsAccessor.Object);
+
+            return new DefaultInlineConstraintResolver(optionsAccessor.Object, new TestServiceProvider());
         }
 
         private class MultiConstructorRouteConstraint : IRouteConstraint

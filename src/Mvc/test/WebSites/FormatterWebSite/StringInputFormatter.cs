@@ -20,13 +20,13 @@ namespace FormatterWebSite
             SupportedEncodings.Add(Encoding.Unicode);
         }
 
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding effectiveEncoding)
+        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding effectiveEncoding)
         {
             var request = context.HttpContext.Request;
             using (var reader = new StreamReader(request.Body, effectiveEncoding))
             {
-                var stringContent = reader.ReadToEnd();
-                return InputFormatterResult.SuccessAsync(stringContent);
+                var stringContent = await reader.ReadToEndAsync();
+                return await InputFormatterResult.SuccessAsync(stringContent);
             }
         }
     }

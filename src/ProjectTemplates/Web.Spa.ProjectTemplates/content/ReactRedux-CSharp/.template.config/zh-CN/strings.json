@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "React.js 和 Redux",
+    "description": "用于创建 ASP.NET Core 应用程序的项目模板，其中包含 React.js 和 Redux。"
+  }
+}

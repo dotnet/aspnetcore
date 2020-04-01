@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
@@ -87,11 +85,11 @@ namespace Microsoft.AspNetCore.Mvc
                 RequestServices = CreateServices(),
             };
 
-            var pageContext = new PageContext
+            var pageContext = new ActionContext
             {
                 HttpContext = httpContext,
                 RouteData = new RouteData(),
-                ActionDescriptor = new CompiledPageActionDescriptor(),
+                ActionDescriptor = new ActionDescriptor(),
             };
 
             pageContext.RouteData.Values.Add("page", "/A/Redirecting/Page");
@@ -144,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc
                 RequestServices = CreateServices(),
             };
 
-            var pageContext = new PageContext
+            var pageContext = new ActionContext
             {
                 HttpContext = httpContext,
                 RouteData = new RouteData(),

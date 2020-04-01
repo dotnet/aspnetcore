@@ -6,37 +6,44 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class Http1Connection : HttpProtocol, IRequestProcessor
+    internal partial class Http1Connection : HttpProtocol, IRequestProcessor
     {
         private const byte ByteAsterisk = (byte)'*';
         private const byte ByteForwardSlash = (byte)'/';
         private const string Asterisk = "*";
+        private const string ForwardSlash = "/";
 
-        private readonly Http1ConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly IHttpParser<Http1ParsingHandler> _parser;
+        private readonly Http1OutputProducer _http1Output;
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
 
+        private int _requestAborted;
         private volatile bool _requestTimedOut;
         private uint _requestCount;
 
         private HttpRequestTarget _requestTargetForm = HttpRequestTarget.Unknown;
         private Uri _absoluteRequestTarget;
 
+        // The _parsed fields cache the Path, QueryString, RawTarget, and/or _absoluteRequestTarget
+        // from the previous request when DisableStringReuse is false.
+        private string _parsedPath = null;
+        private string _parsedQueryString = null;
+        private string _parsedRawTarget = null;
+        private Uri _parsedAbsoluteRequestTarget;
+
         private int _remainingRequestHeadersBytesAllowed;
 
-        public Http1Connection(Http1ConnectionContext context)
+        public Http1Connection(HttpConnectionContext context)
             : base(context)
         {
             _context = context;
@@ -44,21 +51,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
-            Output = new Http1OutputProducer(
+            _http1Output = new Http1OutputProducer(
                 _context.Transport.Output,
                 _context.ConnectionId,
                 _context.ConnectionContext,
                 _context.ServiceContext.Log,
                 _context.TimeoutControl,
-                _context.ConnectionFeatures.Get<IBytesWrittenFeature>());
+                this,
+                _context.MemoryPool);
+
+            Input = _context.Transport.Input;
+            Output = _http1Output;
+            MemoryPool = _context.MemoryPool;
         }
 
-        public PipeReader Input => _context.Transport.Input;
+        public PipeReader Input { get; }
 
-        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
         public bool RequestTimedOut => _requestTimedOut;
 
-        public override bool IsUpgradableRequest => _upgradeAvailable;
+        public MinDataRate MinResponseDataRate { get; set; }
+
+        public MemoryPool<byte> MemoryPool { get; }
+
+        protected override void OnRequestProcessingEnded()
+        {
+            TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
+
+            // Prevent RequestAborted from firing. Free up unneeded feature references.
+            Reset();
+
+            _http1Output.Dispose();
+        }
+
+        public void OnInputOrOutputCompleted()
+        {
+            _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            AbortRequest();
+        }
+
+        /// <summary>
+        /// Immediately kill the connection and poison the request body stream with an error.
+        /// </summary>
+        public void Abort(ConnectionAbortedException abortReason)
+        {
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            {
+                return;
+            }
+
+            _http1Output.Abort(abortReason);
+
+            AbortRequest();
+
+            PoisonRequestBodyStream(abortReason);
+        }
+
+        protected override void ApplicationAbort()
+        {
+            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+        }
 
         /// <summary>
         /// Stops the request processing loop between requests.
@@ -77,7 +129,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Input.CancelPendingRead();
         }
 
-        public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public void HandleRequestHeadersTimeout()
+            => SendTimeoutResponse();
+
+        public void HandleReadDataRateTimeout()
+        {
+            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
+            SendTimeoutResponse();
+        }
+
+        public void ParseRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -90,75 +151,137 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     }
 
-                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutAction.SendTimeoutResponse);
+                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
 
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
                 case RequestProcessingStatus.ParsingRequestLine:
                     if (TakeStartLine(buffer, out consumed, out examined))
                     {
-                        buffer = buffer.Slice(consumed, buffer.End);
-
-                        _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-                        goto case RequestProcessingStatus.ParsingHeaders;
+                        TrimAndParseHeaders(buffer, ref consumed, out examined);
+                        return;
                     }
                     else
                     {
                         break;
                     }
                 case RequestProcessingStatus.ParsingHeaders:
-                    if (TakeMessageHeaders(buffer, out consumed, out examined))
+                    if (TakeMessageHeaders(buffer, trailers: false, out consumed, out examined))
                     {
                         _requestProcessingStatus = RequestProcessingStatus.AppStarted;
                     }
                     break;
             }
+
+            void TrimAndParseHeaders(in ReadOnlySequence<byte> buffer, ref SequencePosition consumed, out SequencePosition examined)
+            {
+                var trimmedBuffer = buffer.Slice(consumed, buffer.End);
+                _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+
+                if (TakeMessageHeaders(trimmedBuffer, trailers: false, out consumed, out examined))
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                }
+            }
         }
 
-        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
-        {
-            var overLength = false;
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
-            {
-                buffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
-                overLength = true;
-            }
-
-            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
-            if (!result && overLength)
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
-            }
-
-            return result;
-        }
-
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
             {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
-
-                // If we sliced it means the current buffer bigger than what we're
-                // allowed to look at
-                overLength = true;
+                // Input oversize, cap amount checked
+                return TrimAndTakeStartLine(buffer, out consumed, out examined);
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), buffer, out consumed, out examined, out var consumedBytes);
-            _remainingRequestHeadersBytesAllowed -= consumedBytes;
+            return _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
 
-            if (!result && overLength)
+            bool TrimAndTakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                var trimmedBuffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
+
+                if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), trimmedBuffer, out consumed, out examined))
+                {
+                    // We read the maximum allowed but didn't complete the start line.
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+                }
+
+                return true;
             }
-            if (result)
+        }
+
+        public bool TakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        {
+            // Make sure the buffer is limited
+            if (buffer.Length > _remainingRequestHeadersBytesAllowed)
             {
-                TimeoutControl.CancelTimeout();
+                // Input oversize, cap amount checked
+                return TrimAndTakeMessageHeaders(buffer, trailers, out consumed, out examined);
             }
 
-            return result;
+            var reader = new SequenceReader<byte>(buffer);
+            var result = false;
+            try
+            {
+                result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                if (result)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
+                return result;
+            }
+            finally
+            {
+                consumed = reader.Position;
+                _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                if (result)
+                {
+                    examined = consumed;
+                }
+                else
+                {
+                    examined = buffer.End;
+                }
+            }
+
+            bool TrimAndTakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+            {
+                var trimmedBuffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+
+                var reader = new SequenceReader<byte>(trimmedBuffer);
+                var result = false;
+                try
+                {
+                    result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                    if (!result)
+                    {
+                        // We read the maximum allowed but didn't complete the headers.
+                        BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                    }
+
+                    TimeoutControl.CancelTimeout();
+
+                    return result;
+                }
+                finally
+                {
+                    consumed = reader.Position;
+                    _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                    if (result)
+                    {
+                        examined = consumed;
+                    }
+                    else
+                    {
+                        examined = trimmedBuffer.End;
+                    }
+                }
+            }
         }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
@@ -171,13 +294,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // origin-form.
                 // The most common form of request-target.
                 // https://tools.ietf.org/html/rfc7230#section-5.3.1
-                OnOriginFormTarget(method, version, target, path, query, customMethod, pathEncoded);
+                OnOriginFormTarget(pathEncoded, target, path, query);
             }
             else if (ch == ByteAsterisk && target.Length == 1)
             {
                 OnAsteriskFormTarget(method);
             }
-            else if (target.GetKnownHttpScheme(out var scheme))
+            else if (target.GetKnownHttpScheme(out _))
             {
                 OnAbsoluteFormTarget(target, query);
             }
@@ -204,68 +327,85 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Debug.Assert(HttpVersion != null, "HttpVersion was not set");
         }
 
-        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        // Compare with Http2Stream.TryValidatePseudoHeaders
+        private void OnOriginFormTarget(bool pathEncoded, Span<byte> target, Span<byte> path, Span<byte> query)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
             _requestTargetForm = HttpRequestTarget.OriginForm;
 
+            if (target.Length == 1)
+            {
+                // If target.Length == 1 it can only be a forward slash (e.g. home page)
+                // and we know RawTarget and Path are the same and QueryString is Empty
+                RawTarget = ForwardSlash;
+                Path = ForwardSlash;
+                QueryString = string.Empty;
+                // Clear parsedData as we won't check it if we come via this path again,
+                // an setting to null is fast as it doesn't need to use a GC write barrier.
+                _parsedRawTarget = _parsedPath = _parsedQueryString = null;
+                _parsedAbsoluteRequestTarget = null;
+                return;
+            }
+
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-            string requestUrlPath = null;
-            string rawTarget = null;
 
             try
             {
+                var disableStringReuse = ServerOptions.DisableStringReuse;
                 // Read raw target before mutating memory.
-                rawTarget = target.GetAsciiStringNonNullCharacters();
-
-                if (pathEncoded)
+                var previousValue = _parsedRawTarget;
+                if (disableStringReuse ||
+                    previousValue == null || previousValue.Length != target.Length ||
+                    !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
                 {
-                    // URI was encoded, unescape and then parse as UTF-8
-                    // Disabling warning temporary
-                    var pathLength = UrlDecoder.Decode(path, path);
+                    // The previous string does not match what the bytes would convert to,
+                    // so we will need to generate a new string.
+                    RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
-                    // Removing dot segments must be done after unescaping. From RFC 3986:
-                    //
-                    // URI producing applications should percent-encode data octets that
-                    // correspond to characters in the reserved set unless these characters
-                    // are specifically allowed by the URI scheme to represent data in that
-                    // component.  If a reserved character is found in a URI component and
-                    // no delimiting role is known for that character, then it must be
-                    // interpreted as representing the data octet corresponding to that
-                    // character's encoding in US-ASCII.
-                    //
-                    // https://tools.ietf.org/html/rfc3986#section-2.2
-                    pathLength = PathNormalizer.RemoveDotSegments(path.Slice(0, pathLength));
-
-                    requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
-                }
-                else
-                {
-                    var pathLength = PathNormalizer.RemoveDotSegments(path);
-
-                    if (path.Length == pathLength && query.Length == 0)
+                    previousValue = _parsedQueryString;
+                    if (disableStringReuse ||
+                        previousValue == null || previousValue.Length != query.Length ||
+                        !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
                     {
-                        // If no decoding was required, no dot segments were removed and
-                        // there is no query, the request path is the same as the raw target
-                        requestUrlPath = rawTarget;
+                        // The previous string does not match what the bytes would convert to,
+                        // so we will need to generate a new string.
+                        QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
                     }
                     else
                     {
-                        requestUrlPath = path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
+                        // Same as previous
+                        QueryString = _parsedQueryString;
+                    }
+
+                    if (path.Length == 1)
+                    {
+                        // If path.Length == 1 it can only be a forward slash (e.g. home page)
+                        Path = _parsedPath = ForwardSlash;
+                    }
+                    else
+                    {
+                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathEncoded, RawTarget, query.Length);
                     }
                 }
+                else
+                {
+                    // As RawTarget is the same we can reuse the previous parsed values.
+                    RawTarget = _parsedRawTarget;
+                    Path = _parsedPath;
+                    QueryString = _parsedQueryString;
+                }
+
+                // Clear parsedData for absolute target as we won't check it if we come via this path again,
+                // an setting to null is fast as it doesn't need to use a GC write barrier.
+                _parsedAbsoluteRequestTarget = null;
             }
             catch (InvalidOperationException)
             {
                 ThrowRequestTargetRejected(target);
             }
-
-            QueryString = query.GetAsciiStringNonNullCharacters();
-            RawTarget = rawTarget;
-            Path = requestUrlPath;
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
@@ -274,13 +414,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // This is not complete validation. It is just a quick scan for invalid characters
             // but doesn't check that the target fully matches the URI spec.
-            for (var i = 0; i < target.Length; i++)
+            if (HttpCharacters.ContainsInvalidAuthorityChar(target))
             {
-                var ch = target[i];
-                if (!UriUtilities.IsValidAuthorityCharacter(ch))
-                {
-                    ThrowRequestTargetRejected(target);
-                }
+                ThrowRequestTargetRejected(target);
             }
 
             // The authority-form of request-target is only used for CONNECT
@@ -299,9 +435,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //
             // Allowed characters in the 'host + port' section of authority.
             // See https://tools.ietf.org/html/rfc3986#section-3.2
-            RawTarget = target.GetAsciiStringNonNullCharacters();
+
+            var previousValue = _parsedRawTarget;
+            if (ServerOptions.DisableStringReuse ||
+                previousValue == null || previousValue.Length != target.Length ||
+                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            }
+            else
+            {
+                // Reuse previous value
+                RawTarget = _parsedRawTarget;
+            }
+
             Path = string.Empty;
             QueryString = string.Empty;
+            // Clear parsedData for path, queryString and absolute target as we won't check it if we come via this path again,
+            // an setting to null is fast as it doesn't need to use a GC write barrier.
+            _parsedPath = _parsedQueryString = null;
+            _parsedAbsoluteRequestTarget = null;
         }
 
         private void OnAsteriskFormTarget(HttpMethod method)
@@ -318,6 +473,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RawTarget = Asterisk;
             Path = string.Empty;
             QueryString = string.Empty;
+            // Clear parsedData as we won't check it if we come via this path again,
+            // an setting to null is fast as it doesn't need to use a GC write barrier.
+            _parsedRawTarget = _parsedPath = _parsedQueryString = null;
+            _parsedAbsoluteRequestTarget = null;
         }
 
         private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
@@ -333,30 +492,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //    a server MUST accept the absolute-form in requests, even though
             //    HTTP/1.1 clients will only send them in requests to proxies.
 
-            RawTarget = target.GetAsciiStringNonNullCharacters();
-
-            // Validation of absolute URIs is slow, but clients
-            // should not be sending this form anyways, so perf optimization
-            // not high priority
-
-            if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
+            var disableStringReuse = ServerOptions.DisableStringReuse;
+            var previousValue = _parsedRawTarget;
+            if (disableStringReuse ||
+                previousValue == null || previousValue.Length != target.Length ||
+                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
-                ThrowRequestTargetRejected(target);
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+
+                // Validation of absolute URIs is slow, but clients
+                // should not be sending this form anyways, so perf optimization
+                // not high priority
+
+                if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
+                {
+                    ThrowRequestTargetRejected(target);
+                }
+
+                _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
+                Path = _parsedPath = uri.LocalPath;
+                // don't use uri.Query because we need the unescaped version
+                previousValue = _parsedQueryString;
+                if (disableStringReuse ||
+                    previousValue == null || previousValue.Length != query.Length ||
+                    !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                {
+                    // The previous string does not match what the bytes would convert to,
+                    // so we will need to generate a new string.
+                    QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                }
+                else
+                {
+                    QueryString = _parsedQueryString;
+                }
             }
-
-            _absoluteRequestTarget = uri;
-            Path = uri.LocalPath;
-            // don't use uri.Query because we need the unescaped version
-            QueryString = query.GetAsciiStringNonNullCharacters();
-        }
-
-        private static unsafe string GetUtf8String(Span<byte> path)
-        {
-            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
-            // copy to an array
-            fixed (byte* pointer = &MemoryMarshal.GetReference(path))
+            else
             {
-                return Encoding.UTF8.GetString(pointer, path.Length);
+                // As RawTarget is the same we can reuse the previous values.
+                RawTarget = _parsedRawTarget;
+                Path = _parsedPath;
+                QueryString = _parsedQueryString;
+                _absoluteRequestTarget = _parsedAbsoluteRequestTarget;
             }
         }
 
@@ -385,16 +563,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (_requestTargetForm != HttpRequestTarget.OriginForm)
             {
                 // Tail call
-                ValidateNonOrginHostHeader(hostText);
+                ValidateNonOriginHostHeader(hostText);
             }
-            else
+            else if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
-                // Tail call
-                HttpUtilities.ValidateHostHeader(hostText);
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
         }
 
-        private void ValidateNonOrginHostHeader(string hostText)
+        private void ValidateNonOriginHostHeader(string hostText)
         {
             if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
             {
@@ -422,24 +599,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // Tail call
-            HttpUtilities.ValidateHostHeader(hostText);
+            if (!HttpUtilities.IsHostHeaderValid(hostText))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            }
         }
 
         protected override void OnReset()
         {
-            ResetIHttpUpgradeFeature();
+            ResetHttp1Features();
 
             _requestTimedOut = false;
             _requestTargetForm = HttpRequestTarget.Unknown;
             _absoluteRequestTarget = null;
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
             _requestCount++;
+
+            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
         }
 
         protected override void OnRequestProcessingEnding()
         {
-            Input.Complete();
         }
 
         protected override string CreateRequestId()
@@ -452,7 +632,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Reset the features and timeout.
             Reset();
-            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
+            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
         }
 
         protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
@@ -523,5 +703,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return false;
             }
         }
+
+        void IRequestProcessor.Tick(DateTimeOffset now) { }
     }
 }

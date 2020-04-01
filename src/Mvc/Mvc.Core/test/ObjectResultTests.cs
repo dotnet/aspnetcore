@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -61,13 +62,47 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(404, actionContext.HttpContext.Response.StatusCode);
         }
 
+        [Fact]
+        public async Task ObjectResult_ExecuteResultAsync_SetsProblemDetailsStatus()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+
+            var details = new ValidationProblemDetails(modelState);
+
+            var result = new ObjectResult(details)
+            {
+                StatusCode = StatusCodes.Status422UnprocessableEntity,
+                Formatters = new FormatterCollection<IOutputFormatter>()
+                {
+                    new NoOpOutputFormatter(),
+                },
+            };
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = CreateServices(),
+                }
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
+        }
+
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            var options = Options.Create(new MvcOptions());
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                new DefaultOutputFormatterSelector(Options.Create(new MvcOptions()), NullLoggerFactory.Instance),
+                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider();

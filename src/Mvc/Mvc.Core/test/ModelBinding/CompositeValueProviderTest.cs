@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -39,9 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Dictionary<string, StringValues> values,
             CultureInfo culture)
         {
-            var emptyValueProvider =
-                new JQueryFormValueProvider(bindingSource, new Dictionary<string, StringValues>(), culture);
-            var valueProvider = new JQueryFormValueProvider(bindingSource, values, culture);
+            var emptyValueProvider = new QueryStringValueProvider(bindingSource, new QueryCollection(), culture);
+            var valueProvider = new FormValueProvider(bindingSource, new FormCollection(values), culture);
 
             return new CompositeValueProvider() { emptyValueProvider, valueProvider };
         }

@@ -1,1 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml(2,1): Error RZ2001: The 'model' directive may only occur once per document.

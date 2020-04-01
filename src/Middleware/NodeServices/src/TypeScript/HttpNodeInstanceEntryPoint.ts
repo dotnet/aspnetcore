@@ -6,6 +6,7 @@ import * as http from 'http';
 import * as path from 'path';
 import { parseArgs } from './Util/ArgsUtil';
 import { exitWhenParentExits } from './Util/ExitWhenParentExits';
+import { AddressInfo } from 'net';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 // reference to Node's runtime 'require' function.
@@ -70,8 +71,10 @@ const server = http.createServer((req, res) => {
 const parsedArgs = parseArgs(process.argv);
 const requestedPortOrZero = parsedArgs.port || 0; // 0 means 'let the OS decide'
 server.listen(requestedPortOrZero, 'localhost', function () {
+    const addressInfo = server.address() as AddressInfo;
+
     // Signal to HttpNodeHost which loopback IP address (IPv4 or IPv6) and port it should make its HTTP connections on
-    console.log('[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on {' + server.address().address + '} port ' + server.address().port + '\]');
+    console.log('[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on {' + addressInfo.address + '} port ' + addressInfo.port + '\]');
 
     // Signal to the NodeServices base class that we're ready to accept invocations
     console.log('[Microsoft.AspNetCore.NodeServices:Listening]');

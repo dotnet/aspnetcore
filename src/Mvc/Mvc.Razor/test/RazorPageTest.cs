@@ -14,10 +14,9 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
@@ -141,24 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 ex.Message);
         }
 
-        public static TheoryData<HtmlEncoder> HtmlEncoderData
-        {
-            get
-            {
-                return new TheoryData<HtmlEncoder>
-                {
-                    HtmlEncoder.Default,
-                    NullHtmlEncoder.Default,
-                    new HtmlTestEncoder(),
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(HtmlEncoderData))]
-        public async Task StartTagHelperWritingScope_SetsHtmlEncoder(HtmlEncoder encoder)
+        [Fact]
+        public async Task StartTagHelperWritingScope_SetsHtmlEncoder()
         {
             // Arrange
+            var encoder = Mock.Of<HtmlEncoder>();
             var page = CreatePage(v =>
             {
                 v.StartTagHelperWritingScope(encoder);
@@ -304,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(1, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
-                    v.Write("Level:1-A"); // Creates a new buffer for the taghelper.
+                    v.Write("Level:1-A"); // Creates a new buffer for the TagHelper.
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
 
@@ -319,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
-                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
                 }
@@ -336,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                    v.Write("Level:1-B"); // Creates a new buffer for the taghelper.
+                    v.Write("Level:1-B"); // Creates a new buffer for the TagHelper.
                     Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
@@ -352,7 +338,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                         Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                        v.Write("Level:2"); // Creates a new buffer for the taghelper.
+                        v.Write("Level:2"); // Creates a new buffer for the TagHelper.
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
@@ -367,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
-                        v.Write(outputLevel2); // Writing the taghelper to output returns a buffer.
+                        v.Write(outputLevel2); // Writing the TagHelper to output returns a buffer.
                         Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                         Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
                     }
@@ -383,7 +369,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
                     Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
-                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
                     Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
                 }
@@ -962,268 +948,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Same(HtmlString.Empty, actual);
         }
 
-        [Fact]
-        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource()
-        {
-            // Arrange
-            var path = "path-to-page";
-            var page = CreatePage(p =>
-            {
-                p.HtmlEncoder = new HtmlTestEncoder();
-                p.BeginWriteAttribute("href", "prefix", 0, "suffix", 34, 2);
-                p.WriteAttributeValue("prefix", 0, "attr1-value", 8, 14, true);
-                p.WriteAttributeValue("prefix2", 22, "attr2", 29, 5, false);
-                p.EndWriteAttribute();
-            });
-            page.Path = path;
-            var adapter = new TestDiagnosticListener();
-            var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
-            diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
-
-            // Act
-            await page.ExecuteAsync();
-
-            // Assert
-            Func<object, TestDiagnosticListener.BeginPageInstrumentationData> assertStartEvent = data =>
-            {
-                var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
-                Assert.NotNull(beginEvent.HttpContext);
-                Assert.Equal(path, beginEvent.Path);
-
-                return beginEvent;
-            };
-
-            Action<object> assertEndEvent = data =>
-            {
-                var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
-                Assert.NotNull(endEvent.HttpContext);
-                Assert.Equal(path, endEvent.Path);
-            };
-
-            Assert.Collection(adapter.PageInstrumentationData,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(0, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(0, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(8, beginEvent.Position);
-                    Assert.Equal(14, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(22, beginEvent.Position);
-                    Assert.Equal(7, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(29, beginEvent.Position);
-                    Assert.Equal(5, beginEvent.Length);
-                    Assert.False(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(34, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent);
-        }
-
-        [Fact]
-        public async Task WriteAttribute_WithBoolValue_WritesBeginAndEndEvents_ToDiagnosticSource()
-        {
-            // Arrange
-            var path = "some-path";
-            var page = CreatePage(p =>
-            {
-                p.HtmlEncoder = new HtmlTestEncoder();
-                p.BeginWriteAttribute("href", "prefix", 0, "suffix", 10, 1);
-                p.WriteAttributeValue("", 6, "true", 6, 4, false);
-                p.EndWriteAttribute();
-            });
-            page.Path = path;
-            var adapter = new TestDiagnosticListener();
-            var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
-            diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
-
-            // Act
-            await page.ExecuteAsync();
-
-            // Assert
-            Func<object, TestDiagnosticListener.BeginPageInstrumentationData> assertStartEvent = data =>
-            {
-                var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
-                Assert.NotNull(beginEvent.HttpContext);
-                Assert.Equal(path, beginEvent.Path);
-
-                return beginEvent;
-            };
-
-            Action<object> assertEndEvent = data =>
-            {
-                var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
-                Assert.NotNull(endEvent.HttpContext);
-                Assert.Equal(path, endEvent.Path);
-            };
-
-            Assert.Collection(adapter.PageInstrumentationData,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(0, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(6, beginEvent.Position);
-                    Assert.Equal(4, beginEvent.Length);
-                    Assert.False(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(10, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent);
-        }
-
-        [Fact]
-        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource_OnPrefixAndSuffixValues()
-        {
-            // Arrange
-            var path = "some-path";
-            var page = CreatePage(p =>
-            {
-                p.BeginWriteAttribute("href", "prefix", 0, "tail", 7, 0);
-                p.EndWriteAttribute();
-            });
-            page.Path = path;
-            var adapter = new TestDiagnosticListener();
-            var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
-            diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
-
-            // Act
-            await page.ExecuteAsync();
-
-            // Assert
-            Func<object, TestDiagnosticListener.BeginPageInstrumentationData> assertStartEvent = data =>
-            {
-                var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
-                Assert.NotNull(beginEvent.HttpContext);
-                Assert.Equal(path, beginEvent.Path);
-
-                return beginEvent;
-            };
-
-            Action<object> assertEndEvent = data =>
-            {
-                var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
-                Assert.NotNull(endEvent.HttpContext);
-                Assert.Equal(path, endEvent.Path);
-            };
-
-            Assert.Collection(adapter.PageInstrumentationData,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(0, beginEvent.Position);
-                    Assert.Equal(6, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent,
-                data =>
-                {
-                    var beginEvent = assertStartEvent(data);
-                    Assert.Equal(7, beginEvent.Position);
-                    Assert.Equal(4, beginEvent.Length);
-                    Assert.True(beginEvent.IsLiteral);
-                },
-                assertEndEvent);
-        }
-
         public static TheoryData AddHtmlAttributeValues_ValueData
         {
             get
             {
                 // attributeValues, expectedValue
-                return new TheoryData<Tuple<string, int, object, int, bool>[], string>
+                return new TheoryData<string, int, object, int, bool, string>
                 {
                     {
-                        new []
-                        {
-                            Tuple.Create(string.Empty, 9, (object)"Hello", 9, true),
-                        },
-                        "Hello"
+                        string.Empty, 9, (object)"Hello", 9, true, "Hello"
                     },
                     {
-                        new []
-                        {
-                            Tuple.Create(" ", 9, (object)"Hello", 10, true)
-                        },
-                        " Hello"
+                        " ", 9, (object)"Hello", 10, true, " Hello"
                     },
                     {
 
-                        new []
-                        {
-                            Tuple.Create(" ", 9, (object)null, 10, false)
-                        },
-                        string.Empty
+                        " ", 9, (object)null, 10, false, string.Empty
                     },
                     {
-                        new []
-                        {
-                            Tuple.Create(" ", 9, (object)false, 10, false)
-                        },
-                        " HtmlEncode[[False]]"
-                    },
-                    {
-                        new []
-                        {
-                            Tuple.Create("  ", 9, (object)true, 11, false),
-                            Tuple.Create("  ", 9, (object)"abcd", 17, true)
-                        },
-                        "  HtmlEncode[[True]]  abcd"
-                    },
-                    {
-                        new []
-                        {
-                            Tuple.Create(string.Empty, 9, (object)"prefix", 9, true),
-                            Tuple.Create("  ", 15, (object)null, 17, false),
-                            Tuple.Create(" ", 21, (object)"suffix", 22, false),
-                        },
-                        "prefix HtmlEncode[[suffix]]"
+                        " ", 9, (object)false, 10, false, " HtmlEncode[[False]]"
                     },
                 };
             }
@@ -1232,10 +975,102 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         [Theory]
         [MemberData(nameof(AddHtmlAttributeValues_ValueData))]
         public void AddHtmlAttributeValues_AddsToHtmlAttributesAsExpected(
-            Tuple<string, int, object, int, bool>[] attributeValues,
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            bool isLiteral,
             string expectedValue)
         {
             // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new HtmlTestEncoder();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                tagMode: TagMode.StartTagAndEndTag,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            page.BeginAddHtmlAttributeValues(executionContext, "someattr", 1, HtmlAttributeValueStyle.SingleQuotes);
+            page.AddHtmlAttributeValue(prefix, prefixOffset, value, valueOffset, 0, isLiteral);
+            page.EndAddHtmlAttributeValues(executionContext);
+
+            // Assert
+            var output = executionContext.Output;
+            var htmlAttribute = Assert.Single(output.Attributes);
+            Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
+            var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
+            Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, htmlAttribute.ValueStyle);
+
+            var context = executionContext.Context;
+            var allAttribute = Assert.Single(context.AllAttributes);
+            Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
+            htmlContent = Assert.IsAssignableFrom<IHtmlContent>(allAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
+            Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, allAttribute.ValueStyle);
+        }
+
+        [Fact]
+        public void AddHtmlAttributeValues_TwoAttributeValues_AddsToHtmlAttributesAsExpected()
+        {
+            // Arrange
+            var expectedValue = "  HtmlEncode[[True]]  abcd";
+            var attributeValues = new[]
+            {
+                Tuple.Create("  ", 9, (object)true, 11, false),
+                Tuple.Create("  ", 9, (object)"abcd", 17, true)
+            };
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new HtmlTestEncoder();
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                tagMode: TagMode.StartTagAndEndTag,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+
+            // Act
+            page.BeginAddHtmlAttributeValues(executionContext, "someattr", attributeValues.Length, HtmlAttributeValueStyle.SingleQuotes);
+            foreach (var value in attributeValues)
+            {
+                page.AddHtmlAttributeValue(value.Item1, value.Item2, value.Item3, value.Item4, 0, value.Item5);
+            }
+            page.EndAddHtmlAttributeValues(executionContext);
+
+            // Assert
+            var output = executionContext.Output;
+            var htmlAttribute = Assert.Single(output.Attributes);
+            Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
+            var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
+            Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, htmlAttribute.ValueStyle);
+
+            var context = executionContext.Context;
+            var allAttribute = Assert.Single(context.AllAttributes);
+            Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
+            htmlContent = Assert.IsAssignableFrom<IHtmlContent>(allAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
+            Assert.Equal(HtmlAttributeValueStyle.SingleQuotes, allAttribute.ValueStyle);
+        }
+
+        [Fact]
+        public void AddHtmlAttributeValues_ThreeAttributeValues_AddsToHtmlAttributesAsExpected()
+        {
+            // Arrange
+            var expectedValue = "prefix HtmlEncode[[suffix]]";
+            var attributeValues = new[]
+            {
+                Tuple.Create(string.Empty, 9, (object)"prefix", 9, true),
+                Tuple.Create("  ", 15, (object)null, 17, false),
+                Tuple.Create(" ", 21, (object)"suffix", 22, false),
+            };
             var page = CreatePage(p => { });
             page.HtmlEncoder = new HtmlTestEncoder();
             var executionContext = new TagHelperExecutionContext(
@@ -1343,50 +1178,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             get
             {
                 // AttributeValues, ExpectedOutput
-                return new TheoryData<Tuple<string, int, object, int, bool>[], string>
+                return new TheoryData<string, int, object, int, bool, string>
                 {
                     {
-                        new[]
-                        {
-                            Tuple.Create(string.Empty, 9, (object)true, 9, false),
-                        },
-                        "someattr=HtmlEncode[[someattr]]"
+                        string.Empty, 9, (object)true, 9, false, "someattr=HtmlEncode[[someattr]]"
                     },
                     {
-                        new[]
-                        {
-                            Tuple.Create(string.Empty, 9, (object)false, 9, false),
-                        },
-                        string.Empty
+                        string.Empty, 9, (object)false, 9, false, string.Empty
                     },
                     {
-                        new[]
-                        {
-                            Tuple.Create(string.Empty, 9, (object)null, 9, false),
-                        },
-                        string.Empty
+                        string.Empty, 9, (object)null, 9, false, string.Empty
                     },
                     {
-                        new[]
-                        {
-                            Tuple.Create("  ", 9, (object)false, 11, false),
-                        },
-                        "someattr=  HtmlEncode[[False]]"
+                        "  ", 9, (object)false, 11, false, "someattr=  HtmlEncode[[False]]"
                     },
                     {
-                        new[]
-                        {
-                            Tuple.Create("  ", 9, (object)null, 11, false),
-                        },
-                        "someattr="
-                    },
-                    {
-                        new[]
-                        {
-                            Tuple.Create("  ", 9, (object)true, 11, false),
-                            Tuple.Create("  ", 15, (object)"abcd", 17, true),
-                        },
-                        "someattr=  HtmlEncode[[True]]  abcd"
+                        "  ", 9, (object)null, 11, false, "someattr="
                     },
                 };
             }
@@ -1395,10 +1202,47 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         [Theory]
         [MemberData(nameof(WriteAttributeData))]
         public void WriteAttribute_UsesSpecifiedWriter_WritesAsExpected(
-            Tuple<string, int, object, int, bool>[] attributeValues,
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            bool isLiteral,
             string expectedOutput)
         {
             // Arrange
+            var page = CreatePage(p => { });
+            page.HtmlEncoder = new HtmlTestEncoder();
+            var writer = new StringWriter();
+            var suffix = string.Empty;
+
+            // Act
+            page.PushWriter(writer);
+            page.BeginWriteAttribute("someattr", "someattr=", 0, suffix, 0, 1);
+            page.WriteAttributeValue(
+                prefix,
+                prefixOffset,
+                value,
+                valueOffset,
+                value?.ToString().Length ?? 0,
+                isLiteral);
+            page.EndWriteAttribute();
+            page.PopWriter();
+
+            // Assert
+            Assert.Equal(expectedOutput, writer.ToString());
+        }
+
+        [Fact]
+        public void WriteAttribute_MultipleValues_UsesSpecifiedWriter_WritesAsExpected()
+        {
+            // Arrange
+            var attributeValues = new[]
+            {
+                Tuple.Create("  ", 9, (object)true, 11, false),
+                Tuple.Create("  ", 15, (object)"abcd", 17, true),
+            };
+            var expectedOutput = "someattr=  HtmlEncode[[True]]  abcd";
+
             var page = CreatePage(p => { });
             page.HtmlEncoder = new HtmlTestEncoder();
             var writer = new StringWriter();
