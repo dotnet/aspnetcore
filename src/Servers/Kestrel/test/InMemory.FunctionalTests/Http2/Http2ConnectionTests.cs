@@ -1954,20 +1954,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
-            var payload = frame.Payload;
-
             var handler = new TestHttpHeadersHandler();
 
             var hpackDecoder = new HPackDecoder();
-            hpackDecoder.Decode(new ReadOnlySequence<byte>(payload), endHeaders: true, handler);
+            hpackDecoder.Decode(new ReadOnlySequence<byte>(frame.Payload), endHeaders: true, handler);
             hpackDecoder.CompleteDecode();
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             Assert.Equal("200", handler.Headers[":status"]);
             Assert.Equal("SetCookie!", handler.Headers[HeaderNames.SetCookie]);
             Assert.Equal("ContentDisposition!", handler.Headers[HeaderNames.ContentDisposition]);
             Assert.Equal("0", handler.Headers[HeaderNames.ContentLength]);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            frame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 60,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            handler = new TestHttpHeadersHandler();
+
+            hpackDecoder.Decode(new ReadOnlySequence<byte>(frame.Payload), endHeaders: true, handler);
+            hpackDecoder.CompleteDecode();
+
+            Assert.Equal("200", handler.Headers[":status"]);
+            Assert.Equal("SetCookie!", handler.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("ContentDisposition!", handler.Headers[HeaderNames.ContentDisposition]);
+            Assert.Equal("0", handler.Headers[HeaderNames.ContentLength]);
+
+            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
         private class TestHttpHeadersHandler : IHttpHeadersHandler
