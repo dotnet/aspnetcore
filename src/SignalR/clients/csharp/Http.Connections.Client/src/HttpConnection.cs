@@ -151,12 +151,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
+
+
+            (if httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+            {
+                throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
+            }
+
             _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
             _logScope = new ConnectionLogScope();
 
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
-
-            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         // Used by unit tests
