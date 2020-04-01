@@ -21,8 +21,6 @@
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
     <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
 
-    <InstallersOutputPath>$(RepositoryRoot)artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
-
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
@@ -42,11 +40,6 @@
   <PropertyGroup>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Publish.targets & SharedFramework.wixproj both use this property, so putting it here in a common location -->
-    <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />

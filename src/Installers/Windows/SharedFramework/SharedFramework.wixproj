@@ -18,6 +18,8 @@
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ToolsetInstallerNuspecFile>$(RepositoryRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
+    <InstallersOutputPath>$(RepositoryRoot)artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
+    <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
     <!-- Use non-stable versioning for this package, but keep the stable version in OutputName above -->
     <PackageVersion>$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
   </PropertyGroup>

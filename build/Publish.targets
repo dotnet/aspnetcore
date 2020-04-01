@@ -66,6 +66,7 @@
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
       <WindowsHostingBundleInstallerFileName>dotnet-hosting-$(PackageVersion)-win.exe</WindowsHostingBundleInstallerFileName>
+      <!-- This matches the property set in SharedFramework.wixproj -->
       <SharedFrameworkRedistPackageId>VS.Redist.Common.AspNetCore.SharedFramework</SharedFrameworkRedistPackageId>
     </PropertyGroup>
 
@@ -294,10 +295,6 @@
         RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)"
         ManifestArtifactData="%(FilesToPublish.ManifestArtifactData)"
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
-
-      <DependencyAssetsDirContent Include="$(DependencyAssetsDir)**" />
-      <DependencyPackagesDirContent Include="$(DependencyPackagesDir)**" />
-
     </ItemGroup>
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
