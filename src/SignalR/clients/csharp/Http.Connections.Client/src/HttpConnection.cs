@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _started;
         private bool _disposed;
         private bool _hasInherentKeepAlive;
+        private bool _isRunningInBrowser;
 
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
@@ -154,6 +155,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _logScope = new ConnectionLogScope();
 
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
+
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         // Used by unit tests
@@ -362,6 +365,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     {
                         Log.WebSocketsNotSupportedByOperatingSystem(_logger);
                         transportExceptions.Add(new TransportFailedException("WebSockets", "The transport is not supported on this operating system."));
+                        continue;
+                    }
+
+                    if (transportType == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+                    {
+                        Log.ServerSentEventsNotSupportedByBrowser(_logger);
+                        transportExceptions.Add(new TransportFailedException("ServerSentEvents", "The transport is not supported in the browser."));
                         continue;
                     }
 
