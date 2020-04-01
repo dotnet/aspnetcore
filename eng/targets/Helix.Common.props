@@ -22,6 +22,7 @@
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64'">
     <HelixAvailableTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="Linux" />
   </ItemGroup>
 
   <!-- daily scheduled only queues -->
