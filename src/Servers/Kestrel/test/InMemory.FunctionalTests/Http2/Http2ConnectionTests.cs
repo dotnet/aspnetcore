@@ -14,10 +14,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -1931,6 +1933,79 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 3);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_ResponseSetsIgnoreIndexAndNeverIndexValues_HeadersParsed()
+        {
+            await InitializeConnectionAsync(c =>
+            {
+                c.Response.ContentLength = 0;
+                c.Response.Headers[HeaderNames.SetCookie] = "SetCookie!";
+                c.Response.Headers[HeaderNames.ContentDisposition] = "ContentDisposition!";
+
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            var frame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 90,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            var payload = frame.Payload;
+
+            var handler = new TestHttpHeadersHandler();
+
+            var hpackDecoder = new HPackDecoder();
+            hpackDecoder.Decode(new ReadOnlySequence<byte>(payload), endHeaders: true, handler);
+            hpackDecoder.CompleteDecode();
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal("200", handler.Headers[":status"]);
+            Assert.Equal("SetCookie!", handler.Headers[HeaderNames.SetCookie]);
+            Assert.Equal("ContentDisposition!", handler.Headers[HeaderNames.ContentDisposition]);
+            Assert.Equal("0", handler.Headers[HeaderNames.ContentLength]);
+        }
+
+        private class TestHttpHeadersHandler : IHttpHeadersHandler
+        {
+            public readonly Dictionary<string, StringValues> Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+            {
+                var nameString = Encoding.ASCII.GetString(name);
+                var valueString = Encoding.ASCII.GetString(value);
+
+                if (Headers.TryGetValue(nameString, out var values))
+                {
+                    var l = values.ToList();
+                    l.Add(valueString);
+
+                    Headers[nameString] = new StringValues(l.ToArray());
+                }
+                else
+                {
+                    Headers[nameString] = new StringValues(valueString);
+                }
+            }
+
+            public void OnHeadersComplete(bool endStream)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [Fact]
