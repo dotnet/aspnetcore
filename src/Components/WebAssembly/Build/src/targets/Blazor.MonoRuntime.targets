@@ -210,6 +210,10 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Note that the VS-specific condition below is a workaround for https://github.com/dotnet/aspnetcore/issues/19822
+    For more details, see https://github.com/dotnet/aspnetcore/issues/20413
+  -->
   <UsingTask TaskName="BlazorILLink" AssemblyFile="$(_BlazorTasksPath)" />
   <Target
       Name="_LinkBlazorApplication"
