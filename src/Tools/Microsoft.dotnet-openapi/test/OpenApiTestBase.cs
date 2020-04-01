@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
                 { NoDispositionUrl, Tuple.Create<string, ContentDispositionHeaderValue>(Content, null) },
                 { NoExtensionUrl, Tuple.Create(Content, noExtension) },
                 { NoSegmentUrl, Tuple.Create(Content, justAttachments) },
-                { BrokenUrl, Tuple.Create<string, ContentDispositionHeaderValue>(Content, null) }
+                { BrokenUrl, null }
             };
         }
 
@@ -140,10 +140,14 @@ namespace Microsoft.DotNet.OpenApi.Tests
         public Task<IHttpResponseMessageWrapper> GetResponseAsync(string url)
         {
             var result = _results[url];
-            byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
-            var stream = new MemoryStream(byteArray);
+            MemoryStream stream = null;
+            if(result != null)
+            {
+                byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
+                stream = new MemoryStream(byteArray);
+            }
 
-            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result.Item2));
+            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result?.Item2));
         }
     }
 
@@ -175,7 +179,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             ContentDispositionHeaderValue header)
         {
             Stream = Task.FromResult<Stream>(stream);
-            if (header is null)
+            if (header is null && stream is null)
             {
                 StatusCode = HttpStatusCode.NotFound;
             }
