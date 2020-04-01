@@ -89,7 +89,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths">
+  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths; ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
       <Content Remove="@(ServiceWorker)" />

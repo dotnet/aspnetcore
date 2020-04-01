@@ -217,7 +217,8 @@
               @(_BlazorManagedRuntimeAssembly);
               @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
-      Outputs="$(_BlazorLinkerOutputCache)">
+      Outputs="$(_BlazorLinkerOutputCache)"
+      Condition="'$(BuildingInsideVisualStudio)' != 'true' OR '$(DeployOnBuild)' != 'true'">
 
     <PropertyGroup>
       <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
