@@ -133,6 +133,7 @@ function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   if (resourceLoader.bootConfig.cacheBootResources) {
     const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
     scriptElem.integrity = contentHash;
+    scriptElem.crossOrigin = 'anonymous';
   }
 
   document.body.appendChild(scriptElem);
