@@ -170,6 +170,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             {
                 _transportStarted(logger, transportType, null);
             }
+
+            public static void ServerSentEventsNotSupportedByBrowser(ILogger logger)
+            {
+                _serverSentEventsNotSupportedByBrowser(logger, null);
+            }
         }
     }
 }
