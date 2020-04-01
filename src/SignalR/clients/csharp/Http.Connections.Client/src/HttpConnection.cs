@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _isRunningInBrowser = Utils.IsRunningInBrowser();
 
 
-            (if httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
             {
                 throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
             }
