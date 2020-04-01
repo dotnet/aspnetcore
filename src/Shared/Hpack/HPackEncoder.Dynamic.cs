@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 #nullable enable
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace System.Net.Http.HPack
@@ -41,6 +40,8 @@ namespace System.Net.Http.HPack
             if (_maxHeaderTableSize != maxHeaderTableSize)
             {
                 _maxHeaderTableSize = maxHeaderTableSize;
+
+                // Dynamic table size update will be written next HEADERS frame
                 _pendingTableSizeUpdate = true;
 
                 // Check capacity and remove entries that exceed the new capacity
@@ -50,6 +51,7 @@ namespace System.Net.Http.HPack
 
         public bool EnsureDynamicTableSizeUpdate(Span<byte> buffer, out int length)
         {
+            // Check if there is a table size update that should be encoded
             if (_pendingTableSizeUpdate)
             {
                 bool success = EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out length);
@@ -68,7 +70,7 @@ namespace System.Net.Http.HPack
             // Never index sensitive value.
             if (encodingHint == HeaderEncodingHint.NeverIndex)
             {
-                var index = ResolveDynamicTableIndex(staticTableIndex, name);
+                int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
                     ? EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, buffer, out bytesWritten)
@@ -87,7 +89,7 @@ namespace System.Net.Http.HPack
             // Don't attempt to add dynamic header as all existing dynamic headers will be removed.
             if (HeaderField.GetLength(name.Length, value.Length) > _maxHeaderTableSize)
             {
-                var index = ResolveDynamicTableIndex(staticTableIndex, name);
+                int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
                     ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
@@ -110,20 +112,20 @@ namespace System.Net.Http.HPack
 
         private bool EncodeDynamicHeader(Span<byte> buffer, int staticTableIndex, string name, string value, out int bytesWritten)
         {
-            var headerField = GetEntry(name, value);
+            EncoderHeaderEntry? headerField = GetEntry(name, value);
             if (headerField != null)
             {
                 // Already exists in dynamic table. Write index.
-                var index = CalculateDynamicTableIndex(headerField.Index);
+                int index = CalculateDynamicTableIndex(headerField.Index);
                 return EncodeIndexedHeaderField(index, buffer, out bytesWritten);
             }
             else
             {
                 // Doesn't exist in dynamic table. Add new entry to dynamic table.
-                var headerSize = (uint)HeaderField.GetLength(name.Length, value.Length);
+                uint headerSize = (uint)HeaderField.GetLength(name.Length, value.Length);
 
-                var index = ResolveDynamicTableIndex(staticTableIndex, name);
-                var success = index == -1
+                int index = ResolveDynamicTableIndex(staticTableIndex, name);
+                bool success = index == -1
                     ? EncodeLiteralHeaderFieldIndexingNewName(name, value, buffer, out bytesWritten)
                     : EncodeLiteralHeaderFieldIndexing(index, value, buffer, out bytesWritten);
 
@@ -147,7 +149,7 @@ namespace System.Net.Http.HPack
 
             while (_maxHeaderTableSize - _headerTableSize < headerSize)
             {
-                var removed = RemoveHeaderEntry();
+                EncoderHeaderEntry? removed = RemoveHeaderEntry();
                 Debug.Assert(removed != null);
 
                 // Removed entries are tracked to be reused.
@@ -161,9 +163,9 @@ namespace System.Net.Http.HPack
             {
                 return null;
             }
-            var hash = name.GetHashCode();
-            var bucketIndex = CalculateBucketIndex(hash);
-            for (var e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
+            int hash = name.GetHashCode();
+            int bucketIndex = CalculateBucketIndex(hash);
+            for (EncoderHeaderEntry? e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
             {
                 // We've already looked up entries based on a hash of the name.
                 // Compare value before name as it is more likely to be different.
@@ -183,9 +185,9 @@ namespace System.Net.Http.HPack
             {
                 return -1;
             }
-            var hash = name.GetHashCode();
-            var bucketIndex = CalculateBucketIndex(hash);
-            for (var e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
+            int hash = name.GetHashCode();
+            int bucketIndex = CalculateBucketIndex(hash);
+            for (EncoderHeaderEntry? e = _headerBuckets[bucketIndex]; e != null; e = e.Next)
             {
                 if (e.Hash == hash && string.Equals(name, e.Name, StringComparison.Ordinal))
                 {
@@ -205,11 +207,11 @@ namespace System.Net.Http.HPack
             Debug.Assert(headerSize <= _maxHeaderTableSize, "Header is bigger than dynamic table size.");
             Debug.Assert(headerSize <= _maxHeaderTableSize - _headerTableSize, "Not enough room in dynamic table.");
 
-            var hash = name.GetHashCode();
-            var bucketIndex = CalculateBucketIndex(hash);
-            var oldEntry = _headerBuckets[bucketIndex];
+            int hash = name.GetHashCode();
+            int bucketIndex = CalculateBucketIndex(hash);
+            EncoderHeaderEntry? oldEntry = _headerBuckets[bucketIndex];
             // Attempt to reuse removed entry
-            var newEntry = PopRemovedEntry() ?? new EncoderHeaderEntry();
+            EncoderHeaderEntry? newEntry = PopRemovedEntry() ?? new EncoderHeaderEntry();
             newEntry.Initialize(hash, name, value, Head.Before.Index - 1, oldEntry);
             _headerBuckets[bucketIndex] = newEntry;
             newEntry.AddBefore(Head);
@@ -229,7 +231,7 @@ namespace System.Net.Http.HPack
         {
             if (_removed != null)
             {
-                var removed = _removed;
+                EncoderHeaderEntry? removed = _removed;
                 _removed = _removed.Next;
                 return removed;
             }
@@ -246,11 +248,11 @@ namespace System.Net.Http.HPack
             {
                 return null;
             }
-            var eldest = Head.After;
-            var hash = eldest.Hash;
-            var bucketIndex = CalculateBucketIndex(hash);
-            var prev = _headerBuckets[bucketIndex];
-            var e = prev;
+            EncoderHeaderEntry? eldest = Head.After;
+            int hash = eldest.Hash;
+            int bucketIndex = CalculateBucketIndex(hash);
+            EncoderHeaderEntry? prev = _headerBuckets[bucketIndex];
+            EncoderHeaderEntry? e = prev;
             while (e != null)
             {
                 EncoderHeaderEntry next = e.Next;
@@ -280,6 +282,10 @@ namespace System.Net.Http.HPack
         }
     }
 
+    /// <summary>
+    /// Hint for how the header should be encoded as HPack. This value can be overriden.
+    /// For example, a header that is larger than the dynamic table won't be indexed.
+    /// </summary>
     internal enum HeaderEncodingHint
     {
         Index,
