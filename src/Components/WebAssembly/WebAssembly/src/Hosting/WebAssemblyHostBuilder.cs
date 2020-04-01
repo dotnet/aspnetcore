@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
+        private List<Action<IServiceCollection>> _configServices = new List<Action<IServiceCollection>>();
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -163,6 +164,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
+        /// Adds services to the container.
+        /// </summary>
+        /// <param name="configureService">The delegate for configuring the <see cref="IConfigurationBuilder"/> that will be used
+        /// to construct the <see cref="IConfiguration"/> for the host.</param>
+        /// <returns>The same instance of the <see cref="WebAssemblyHostBuilder"/> for chaining.</returns>
+        public WebAssemblyHostBuilder ConfigureServices(Action<IServiceCollection> configureService)
+        {
+            _configServices.Add(configureService ?? throw new ArgumentNullException(nameof(configureService)));
+            return this;
+        }
+
+        /// <summary>
         /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
         /// </summary>
         /// <returns>A <see cref="WebAssemblyHost"/> object.</returns>
@@ -171,6 +184,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Intentionally overwrite configuration with the one we're creating.
             var configuration = Configuration.Build();
             Services.AddSingleton<IConfiguration>(configuration);
+
+            foreach (var configService in _configServices)
+            {
+                configService(Services);
+            }
 
             // A Blazor application always runs in a scope. Since we want to make it possible for the user
             // to configure services inside *that scope* inside their startup code, we create *both* the
@@ -186,8 +204,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
-            Services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
-            Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
+            Services.AddLogging(builder => {
+                builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
+            });
         }
     }
 }

@@ -230,12 +230,29 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange & Act
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
 
-            // Assert
-            Assert.Equal(DefaultServiceTypes.Count, builder.Services.Count);
             foreach (var type in DefaultServiceTypes)
             {
                 Assert.Single(builder.Services, d => d.ServiceType == type);
             }
+        }
+
+        [Fact]
+        public void Build_SupportsConfigServices()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var invoked = false;
+            builder.ConfigureServices(services =>
+            {
+                invoked = true;
+            });
+
+            // Act
+            builder.Build();
+
+            // Assert
+            Assert.True(invoked);
+
         }
     }
 }
