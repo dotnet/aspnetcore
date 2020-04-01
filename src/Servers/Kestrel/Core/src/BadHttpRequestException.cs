@@ -11,16 +11,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public sealed class BadHttpRequestException : IOException
+    public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
         private BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)
             : this(message, statusCode, reason, null)
         { }
 
         private BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason, HttpMethod? requiredMethod)
-            : base(message)
+            : base(message, statusCode)
         {
-            StatusCode = statusCode;
             Reason = reason;
 
             if (requiredMethod.HasValue)
@@ -28,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 AllowedHeader = HttpUtilities.MethodToString(requiredMethod.Value);
             }
         }
-
-        public int StatusCode { get; }
 
         internal StringValues AllowedHeader { get; }
 

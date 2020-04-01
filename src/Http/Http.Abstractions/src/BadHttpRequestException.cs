@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Represents an HTTP request error
     /// </summary>
-    public sealed class BadHttpRequestException : IOException
+    public class BadHttpRequestException : IOException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BadHttpRequestException"/> class.
