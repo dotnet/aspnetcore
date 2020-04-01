@@ -64,7 +64,7 @@
 
   <Target Name="CopyToArtifactsDirectory"
           Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
-          AfterTargets="Build">
+          BeforeTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>
       <_cabs Include="$(TargetDir)**/*.cab" />
