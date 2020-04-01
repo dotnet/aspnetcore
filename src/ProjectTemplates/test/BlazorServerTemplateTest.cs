@@ -85,6 +85,7 @@ namespace Templates.Test
         [InlineData(true)]
         [InlineData(false)]
         [SkipOnHelix("ef restore no worky")]
+        [QuarantinedTest]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
