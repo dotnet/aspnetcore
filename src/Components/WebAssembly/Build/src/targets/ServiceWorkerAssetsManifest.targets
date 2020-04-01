@@ -89,7 +89,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths">
+  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths; ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
       <Content Remove="@(ServiceWorker)" />
@@ -113,6 +113,7 @@
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</ContentSourcePath>
         <TargetOutputPath>%(ServiceWorker.Identity)</TargetOutputPath>
         <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot\'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
+        <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot/'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
       </_ServiceWorkerIntermediateFile>
     </ItemGroup>
   </Target>
