@@ -141,15 +141,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _initialStreamWindowSize = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
-        /// For more information about the security considerations of HPack dynamic header compression, visit
-        /// https://tools.ietf.org/html/rfc7541#section-7.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to true.
-        /// </remarks>
-        public bool AllowResponseHeaderCompression { get; set; } = true;
     }
 }

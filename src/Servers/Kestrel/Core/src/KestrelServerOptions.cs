@@ -39,6 +39,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AddServerHeader { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
+        /// For more information about the security considerations of HPack dynamic header compression, visit
+        /// https://tools.ietf.org/html/rfc7541#section-7.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AllowResponseHeaderCompression { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
