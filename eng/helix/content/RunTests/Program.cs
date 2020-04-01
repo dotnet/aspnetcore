@@ -49,7 +49,7 @@ namespace RunTests
                 new Option(
                     aliases: new string[] { "--ef" },
                     description: "The version of the EF tool to use")
-                { Argument = new Argument<bool>(), Required = true },
+                { Argument = new Argument<string>(), Required = true },
             };
 
             var parseResult = command.Parse(args);
