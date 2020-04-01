@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <Import Project="$(ReferenceBlazorBuildFromSourceProps)" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <ServiceWorkerAssetsManifest>custom-service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
   <!-- Test Placeholder -->
@@ -32,6 +33,8 @@
     <!-- This asset should not be treated as a static web asset as it is being linked out of the wwwroot folder. -->
     <Content Update="wwwroot\Fake-License.txt" Link="Excluded-Static-Web-Assets\Fake-License.txt" />
 
+    <!-- The content from my-prod-service-worker.js should be published under the name my-service-worker.js -->
+    <ServiceWorker Include="wwwroot\serviceworkers\my-service-worker.js" PublishedContent="wwwroot\serviceworkers\my-prod-service-worker.js" />
   </ItemGroup>
 
 </Project>
