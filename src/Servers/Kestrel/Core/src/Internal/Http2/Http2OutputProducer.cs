@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _suffixSent;
         private bool _streamEnded;
         private bool _writerComplete;
-        private bool _disposed;
 
         // Internal for testing
         internal ValueTask _dataWriteProcessingTask;
+        internal bool _disposed;
 
         /// <summary>The core logic for the IValueTaskSource implementation.</summary>
         private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
