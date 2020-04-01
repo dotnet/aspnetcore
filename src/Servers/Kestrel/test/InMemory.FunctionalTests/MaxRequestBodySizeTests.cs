@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             // 4 GiB
             var globalMaxRequestBodySize = 0x100000000;
-            KestrelBadHttpRequestException requestRejectedEx = null;
+            BadHttpRequestException requestRejectedEx = null;
 
             await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
-                requestRejectedEx = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
                 throw requestRejectedEx;
             },
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var globalMaxRequestBodySize = 0x200000000;
             // 4 GiB
             var perRequestMaxRequestBodySize = 0x100000000;
-            KestrelBadHttpRequestException requestRejectedEx = null;
+            BadHttpRequestException requestRejectedEx = null;
 
             await using (var server = new TestServer(async context =>
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 feature.MaxRequestBodySize = perRequestMaxRequestBodySize;
 
                 var buffer = new byte[1];
-                requestRejectedEx = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
                 throw requestRejectedEx;
             },
@@ -258,15 +258,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task EveryReadFailsWhenContentLengthHeaderExceedsGlobalLimit()
         {
-            KestrelBadHttpRequestException requestRejectedEx1 = null;
-            KestrelBadHttpRequestException requestRejectedEx2 = null;
+            BadHttpRequestException requestRejectedEx1 = null;
+            BadHttpRequestException requestRejectedEx2 = null;
 
             await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
-                requestRejectedEx1 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
-                requestRejectedEx2 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
                 throw requestRejectedEx2;
             },
@@ -301,12 +301,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
             var globalMaxRequestBodySize = chunkedPayload.Length - 1;
-            KestrelBadHttpRequestException requestRejectedEx = null;
+            BadHttpRequestException requestRejectedEx = null;
 
             await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[11];
-                requestRejectedEx = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                 {
                     var count = 0;
                     do
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
             var globalMaxRequestBodySize = chunkedPayload.Length - 1;
             var firstRequest = true;
-            KestrelBadHttpRequestException requestRejectedEx = null;
+            BadHttpRequestException requestRejectedEx = null;
 
             await using (var server = new TestServer(async context =>
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
                 else
                 {
-                    requestRejectedEx = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                    requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                     {
                         do
                         {
@@ -457,15 +457,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task EveryReadFailsWhenChunkedPayloadExceedsGlobalLimit()
         {
-            KestrelBadHttpRequestException requestRejectedEx1 = null;
-            KestrelBadHttpRequestException requestRejectedEx2 = null;
+            BadHttpRequestException requestRejectedEx1 = null;
+            BadHttpRequestException requestRejectedEx2 = null;
 
             await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
-                requestRejectedEx1 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
-                requestRejectedEx2 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(
+                requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
                 throw requestRejectedEx2;
             },

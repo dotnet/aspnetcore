@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    [System.ObsoleteAttribute("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed partial class BadHttpRequestException : System.IO.IOException
     {
         internal BadHttpRequestException() { }

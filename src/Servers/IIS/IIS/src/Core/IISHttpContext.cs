@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
-        protected Microsoft.AspNetCore.Http.BadHttpRequestException _requestRejectedException;
+        protected BadHttpRequestException _requestRejectedException;
 
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IISHttpServer _server;
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-                throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status431RequestHeaderFieldsTooLarge);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public void SetBadRequestState(Microsoft.AspNetCore.Http.BadHttpRequestException ex)
+        public void SetBadRequestState(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(_logger, RequestConnectionId, ex);
 
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _requestRejectedException = ex;
         }
 
-        private void SetErrorResponseException(Microsoft.AspNetCore.Http.BadHttpRequestException ex)
+        private void SetErrorResponseException(BadHttpRequestException ex)
         {
             SetErrorResponseHeaders(ex.StatusCode);
         }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Note ContentLength or MaxRequestBodySize may be null
             if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

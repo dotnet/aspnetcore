@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            var exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as KestrelBadHttpRequestException).StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
         [Theory]
@@ -112,11 +112,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            var exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D\x0A"), exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as KestrelBadHttpRequestException).StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
         [Theory]
@@ -134,11 +134,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            var exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
-            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as KestrelBadHttpRequestException).StatusCode);
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
         }
 
         [Theory]
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
 
-            var exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
             {
                 var reader = new SequenceReader<byte>(buffer);
                 parser.ParseHeaders(requestHandler, ref reader);
@@ -352,25 +352,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET % HTTP/1.1\r\n"));
             var requestHandler = new RequestHandler();
 
-            var exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal("Invalid request line: ''", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as KestrelBadHttpRequestException).StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
 
             // Unrecognized HTTP version
             buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
 
-            exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
-            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as KestrelBadHttpRequestException).StatusCode);
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
 
             // Invalid request header
             buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
 
-            exception = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            exception = Assert.Throws<BadHttpRequestException>(() =>
             {
                 var reader = new SequenceReader<byte>(buffer);
                 parser.ParseHeaders(requestHandler, ref reader);
@@ -404,13 +404,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var requestHandler = new RequestHandler();
 
-            var badHttpRequestException = Assert.Throws<KestrelBadHttpRequestException>(() =>
+            var badHttpRequestException = Assert.Throws<BadHttpRequestException>(() =>
             {
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
             });
 
             Assert.Equal(badHttpRequestException.StatusCode, StatusCodes.Status400BadRequest);
-            Assert.Equal(CoreStrings.HttpParserTlsOverHttpError, badHttpRequestException.Message);
+            Assert.Equal(RequestRejectionReason.TlsOverHttpError, badHttpRequestException.Reason);
         }
 
         [Fact]

@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _notAllConnectionsClosedGracefully(_logger, null);
         }
 
-        public virtual void ConnectionBadRequest(string connectionId, KestrelBadHttpRequestException ex)
+        public virtual void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }

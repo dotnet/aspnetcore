@@ -190,14 +190,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
-            KestrelBadHttpRequestException loggedException = null;
+            BadHttpRequestException loggedException = null;
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.IsEnabled(LogLevel.Information))
                 .Returns(true);
             mockKestrelTrace
-                .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<KestrelBadHttpRequestException>()))
-                .Callback<string, KestrelBadHttpRequestException>((connectionId, exception) => loggedException = exception);
+                .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
+                .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
 
             await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
             {
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<KestrelBadHttpRequestException>()));
+            mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
             Assert.Equal(expectedExceptionMessage, loggedException.Message);
         }
 

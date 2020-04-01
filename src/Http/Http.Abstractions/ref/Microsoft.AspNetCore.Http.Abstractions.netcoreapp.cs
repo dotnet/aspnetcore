@@ -97,12 +97,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 }
 namespace Microsoft.AspNetCore.Http
 {
-    public sealed partial class BadHttpRequestException : System.IO.IOException
-    {
-        public BadHttpRequestException(string message) { }
-        public BadHttpRequestException(string message, int statusCode) { }
-        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-    }
     public abstract partial class ConnectionInfo
     {
         protected ConnectionInfo() { }

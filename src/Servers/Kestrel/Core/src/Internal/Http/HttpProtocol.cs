@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
         protected Exception _applicationException;
-        private KestrelBadHttpRequestException _requestRejectedException;
+        private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
         // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
@@ -513,7 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
 
             HttpRequestHeaders.Append(name, value);
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
 
             string key = name.GetHeaderName();
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 await ProcessRequests(application);
             }
-            catch (KestrelBadHttpRequestException ex)
+            catch (BadHttpRequestException ex)
             {
                 // Handle BadHttpRequestException thrown during request line or header parsing.
                 // SetBadRequestState logs the error.
@@ -647,7 +647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         ReportApplicationError(lengthException);
                     }
                 }
-                catch (KestrelBadHttpRequestException ex)
+                catch (BadHttpRequestException ex)
                 {
                     // Capture BadHttpRequestException for further processing
                     // This has to be caught here so StatusCode is set properly before disposing the HttpContext
@@ -1254,7 +1254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void SetErrorResponseException(KestrelBadHttpRequestException ex)
+        private void SetErrorResponseException(BadHttpRequestException ex)
         {
             SetErrorResponseHeaders(ex.StatusCode);
 
@@ -1313,14 +1313,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestTargetException(target);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private KestrelBadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
-            => KestrelBadHttpRequestException.GetException(
+        private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
+            => BadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)
                     ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
 
-        public void SetBadRequestState(KestrelBadHttpRequestException ex)
+        public void SetBadRequestState(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
 

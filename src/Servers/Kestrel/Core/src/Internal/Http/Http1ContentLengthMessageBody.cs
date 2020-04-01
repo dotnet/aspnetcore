@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // which is unknown to StartTimingReadAsync. 
                 if (_context.RequestTimedOut)
                 {
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
                 try
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_context.RequestTimedOut)
                 {
                     ResetReadingState();
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
                 if (_readResult.IsCompleted)
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_contentLength > _context.MaxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

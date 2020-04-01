@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_consumedBytes > _context.MaxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

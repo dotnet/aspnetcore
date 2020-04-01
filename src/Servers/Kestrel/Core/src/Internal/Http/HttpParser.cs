@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         Debug.Assert(readAhead == 0 || readAhead == 2);
                         // Headers don't end in CRLF line.
-                        throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF);
+                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                     }
 
                     var length = 0;
@@ -434,37 +433,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Check for incoming TLS handshake over HTTP
             if (IsTlsHandshake(requestLine, length))
             {
-                throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.HttpParserTlsOverHttpError);
+                throw GetInvalidRequestException(RequestRejectionReason.TlsOverHttpError, requestLine, length);
             }
             else
             {
-                var errorDetails = GetErrorDetails(requestLine, length);
-                throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(errorDetails));
+                throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
             }
         }
 
         [StackTraceHidden]
         private unsafe void RejectRequestHeader(byte* headerLine, int length)
-        {
-            var errorDetails = GetErrorDetails(headerLine, length);
-            throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(errorDetails));
-        }
+            => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestHeader, headerLine, length);
 
         [StackTraceHidden]
         private unsafe void RejectUnknownVersion(byte* version, int length)
-        {
-            var errorDetails = GetErrorDetails(version, length);
-            throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(errorDetails), StatusCodes.Status505HttpVersionNotsupported);
-        }
+            => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
 
-        private unsafe string GetExceptionDetail(byte* detail, int length)
-            => new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize);
-
-        private unsafe string GetErrorDetails(byte* detail, int length)
-        {
-            return _showErrorDetails
-                    ? GetExceptionDetail(detail, length)
-                    : string.Empty;
-        }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
+            => BadHttpRequestException.GetException(
+                reason,
+                _showErrorDetails
+                    ? new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
+                    : string.Empty);
     }
 }

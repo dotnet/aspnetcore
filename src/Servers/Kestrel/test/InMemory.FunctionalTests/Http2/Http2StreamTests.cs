@@ -1569,7 +1569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_ContentLengthOver_413()
         {
-            KestrelBadHttpRequestException exception = null;
+            BadHttpRequestException exception = null;
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
@@ -1580,7 +1580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                exception = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1651,7 +1651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_NoContentLength_Over_413()
         {
-            KestrelBadHttpRequestException exception = null;
+            BadHttpRequestException exception = null;
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
@@ -1661,7 +1661,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                exception = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1699,7 +1699,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(false)]
         public async Task MaxRequestBodySize_AppCanLowerLimit(bool includeContentLength)
         {
-            KestrelBadHttpRequestException exception = null;
+            BadHttpRequestException exception = null;
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
             var headers = new[]
             {
@@ -1718,7 +1718,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
                 context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 17;
-                exception = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }

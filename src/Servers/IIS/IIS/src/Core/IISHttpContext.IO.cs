@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     if (_consumedBytes > MaxRequestBodySize)
                     {
-                        throw new Microsoft.AspNetCore.Http.BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status413PayloadTooLarge);
+                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();

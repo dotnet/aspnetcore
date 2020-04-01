@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("g");
                 input.Add("g");
 
-                await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => task);
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
 
                 await body.StopAsync();
             }
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     input.Add(i.ToString());
                 }
 
-                await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => task);
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
 
                 await body.StopAsync();
             }
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("\r");
                 input.Add("n");
 
-                await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => task);
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
 
                 await body.StopAsync();
             }
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("012345678\r");
 
                 var buffer = new byte[1024];
-                var ex = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () =>
+                var ex = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                     await stream.ReadAsync(buffer, 0, buffer.Length));
 
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var ex = Assert.Throws<KestrelBadHttpRequestException>(() =>
+                var ex = Assert.Throws<BadHttpRequestException>(() =>
                     Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
-                var ex = Assert.Throws<KestrelBadHttpRequestException>(() =>
+                var ex = Assert.Throws<BadHttpRequestException>(() =>
                     Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 input.Http1Connection.Method = method;
-                var ex = Assert.Throws<KestrelBadHttpRequestException>(() =>
+                var ex = Assert.Throws<BadHttpRequestException>(() =>
                     Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
-                var exception = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(async () => await body.ReadAsync());
+                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync());
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
 
                 await body.StopAsync();
@@ -768,9 +768,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 mockLogger.Verify(logger => logger.ConnectionBadRequest(
                     It.IsAny<string>(),
-                    It.Is<KestrelBadHttpRequestException>(ex =>
-                        ex.StatusCode == StatusCodes.Status408RequestTimeout &&
-                        ex.Message == CoreStrings.BadRequest_RequestBodyTimeout)));
+                    It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
 
                 await body.StopAsync();
             }
@@ -798,7 +796,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 using (var ms = new MemoryStream())
                 {
-                    var exception = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => stream.CopyToAsync(ms));
+                    var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => stream.CopyToAsync(ms));
                     Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
                 }
 
@@ -1208,20 +1206,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Application.Output.Complete();
 
-                var ex0 = Assert.Throws<KestrelBadHttpRequestException>(() => reader.TryRead(out var readResult));
-                var ex1 = Assert.Throws<KestrelBadHttpRequestException>(() => reader.TryRead(out var readResult));
-                var ex2 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => reader.ReadAsync().AsTask());
-                var ex3 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
 
-                Assert.Equal(StatusCodes.Status400BadRequest, ex0.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex1.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex2.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex3.StatusCode);
-
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex0.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex1.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex2.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex3.Message);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex2.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex3.Reason);
 
                 await body.StopAsync();
             }
@@ -1238,20 +1231,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Application.Output.Complete();
 
-                var ex0 = Assert.Throws<KestrelBadHttpRequestException>(() => reader.TryRead(out var readResult));
-                var ex1 = Assert.Throws<KestrelBadHttpRequestException>(() => reader.TryRead(out var readResult));
-                var ex2 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => reader.ReadAsync().AsTask());
-                var ex3 = await Assert.ThrowsAsync<KestrelBadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex0 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex1 = Assert.Throws<BadHttpRequestException>(() => reader.TryRead(out var readResult));
+                var ex2 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
+                var ex3 = await Assert.ThrowsAsync<BadHttpRequestException>(() => reader.ReadAsync().AsTask());
 
-                Assert.Equal(StatusCodes.Status400BadRequest, ex0.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex1.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex2.StatusCode);
-                Assert.Equal(StatusCodes.Status400BadRequest, ex3.StatusCode);
-
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex0.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex1.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex2.Message);
-                Assert.Equal(CoreStrings.BadRequest_UnexpectedEndOfRequestContent, ex3.Message);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex0.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex1.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex2.Reason);
+                Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, ex3.Reason);
 
                 await body.StopAsync();
             }

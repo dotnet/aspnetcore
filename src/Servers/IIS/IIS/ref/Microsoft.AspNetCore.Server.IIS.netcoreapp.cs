@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.IIS
 {
-    [System.ObsoleteAttribute("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed partial class BadHttpRequestException : System.IO.IOException
     {
         internal BadHttpRequestException() { }
