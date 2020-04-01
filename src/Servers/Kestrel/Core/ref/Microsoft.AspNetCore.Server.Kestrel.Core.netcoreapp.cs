@@ -62,10 +62,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public sealed partial class BadHttpRequestException : System.IO.IOException
+    [System.ObsoleteAttribute("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
+    public sealed partial class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
-        internal BadHttpRequestException() { }
-        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        internal BadHttpRequestException() : base (default(string), default(int)) { }
     }
     public partial class Http2Limits
     {
