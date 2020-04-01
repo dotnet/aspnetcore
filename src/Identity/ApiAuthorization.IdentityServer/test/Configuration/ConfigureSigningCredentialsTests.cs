@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void Configure_LoadsPfxCertificateCredentialFromConfiguration()
         {
             // Arrange
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             Assert.Equal("AC8FDF4BD4C10841BD24DC88D983225D10B43BB2", key.Certificate.Thumbprint);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void Configure_LoadsCertificateStoreCertificateCredentialFromConfiguration()
         {
             try
