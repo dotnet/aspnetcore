@@ -1,4 +1,4 @@
 [submodule "modules/EntityFrameworkCore"]
        path = modules/EntityFrameworkCore
-       url = https://github.com/aspnet/EntityFrameworkCore.git
+       url = https://github.com/dotnet/efcore.git
        branch = release/2.1
