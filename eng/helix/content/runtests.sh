@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
-test_binary_path="$1"
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
-helix_queue_name="$4"
-target_arch="$5"
-quarantined="$6"
-efVersion="$7"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -29,19 +24,6 @@ export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-
-# Used by SkipOnHelix attribute
-export helix="$helix_queue_name"
-export HELIX_DIR="$DIR"
-export NUGET_FALLBACK_PACKAGES="$DIR"
-export DotNetEfFullPath=$DIR\nugetRestore\dotnet-ef\$efVersion\tools\netcoreapp3.1\any\dotnet-ef.dll
-echo "Set DotNetEfFullPath: $DotNetEfFullPath"
-export NUGET_RESTORE="$DIR/nugetRestore"
-echo "Creating nugetRestore directory: $NUGET_RESTORE"
-mkdir $NUGET_RESTORE
-mkdir logs
-
-ls -laR
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -93,35 +75,6 @@ if [ $? -ne 0 ]; then
     done
 fi
 
-# Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
-if [ ! -f "NuGet.config" ]
-then
-    cp default.NuGet.config NuGet.config
-fi
-
-# Copy over any local shared fx if found
-if [ -d "Microsoft.AspNetCore.App" ]
-then
-    echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
-    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
-
-    echo "Adding current directory to nuget sources: $DIR"
-    dotnet nuget add source $DIR --configfile NuGet.config
-    dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config
-    dotnet nuget list source
-
-    dotnet tool install dotnet-ef --global --version $efVersion
-
-    # Ensure tools are on on PATH
-    export PATH="$PATH:$DOTNET_CLI_HOME/.dotnet/tools"
-fi
-
-# Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
-if [ ! -f "xunit.runner.json" ]
-then
-    cp default.runner.json xunit.runner.json
-fi
-
 if [ -e /proc/self/coredump_filter ]; then
   # Include memory in private and shared file-backed mappings in the dump.
   # This ensures that we can see disassembly from our shared libraries when
@@ -129,40 +82,11 @@ if [ -e /proc/self/coredump_filter ]; then
   echo -n 0x3F > /proc/self/coredump_filter
 fi
 
+# dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
-$DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
-if grep -q "Exception thrown" discovered.txt; then
-    echo -e "${RED}Exception thrown during test discovery${RESET}".
-    cat discovered.txt
-    exit 1
-fi
-
 exit_code=0
+$DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7
 
-# Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-NONQUARANTINE_FILTER="Quarantined!=true"
-QUARANTINE_FILTER="Quarantined=true"
-if [ "$quarantined" == true ]; then
-    echo "Running all tests including quarantined."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:"$QUARANTINE_FILTER"
-    if [ $? != 0 ]; then
-        echo "Quarantined tests failed!" 1>&2
-        # DO NOT EXIT
-    fi
-else
-    echo "Running non-quarantined tests."
-    $DOTNET_ROOT/dotnet vstest $test_binary_path --logger:xunit --logger:"console;verbosity=normal" --blame --TestCaseFilter:"$NONQUARANTINE_FILTER"
-    exit_code=$?
-    if [ $exit_code != 0 ]; then
-        echo "Non-quarantined tests failed!" 1>&2
-        # DO NOT EXIT
-    fi
-fi
-
-echo "Copying TestResults/TestResults to ."
-cp TestResults/TestResults.xml testResults.xml
-echo "Copying artifacts/logs to $HELIX_WORKITEM_UPLOAD_ROOT/"
-cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/../
-cp `find . -name \*.log` $HELIX_WORKITEM_UPLOAD_ROOT/
-exit $exit_code
+exit $?
