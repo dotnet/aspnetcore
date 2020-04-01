@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.</Description>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageTags>$(PackageTags);testing</PackageTags>
+    <!-- This is actually a library for test projects, not a test project. -->
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <!-- This is an internal package for testing purposes only. -->
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Logging.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+
+    <!--
+      This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+      XUnit recommends only using xunit.extensibility.*, xunit.assert, and xunit.abstractions for packages which "extend" xunit.
+      This allows consumers to decide which type of xunit runner they want to use to run these tests,
+      and avoids problems with `dotnet pack`.
+
+      See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
+    -->
+    <Reference Include="xunit.abstractions" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.execution" />
+  </ItemGroup>
+
+</Project>
