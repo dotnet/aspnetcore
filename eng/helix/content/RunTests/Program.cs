@@ -233,7 +233,8 @@ namespace RunTests
                 Console.WriteLine($"Completed Helix job with exit code '{exitCode}'");
                 Environment.Exit(exitCode);
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Console.WriteLine($"RunTests uncaught exception: {e.ToString()}");
             Environment.Exit(1);
