@@ -63,6 +63,27 @@ namespace RunTests
             }
         }
 
+        public void DisplayInitialState() {
+            try 
+            {
+                Console.WriteLine();
+                Console.WriteLine("Displaying directory contents:");
+                foreach (var file in Directory.EnumerateFiles("./"))
+                {
+                    Console.WriteLine(Path.GetFileName(file));
+                }
+                foreach (var file in Directory.EnumerateDirectories("./"))
+                {
+                    Console.WriteLine(Path.GetFileName(file));
+                }
+                Console.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in DisplayInitialState: {e.ToString()}");
+            }
+        }
+
         public async Task<bool> InstallAspNetAppIfNeededAsync() 
         {
             try 

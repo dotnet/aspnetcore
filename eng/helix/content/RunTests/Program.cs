@@ -23,17 +23,7 @@ namespace RunTests
                     keepGoing = await runner.InstallAspNetAppIfNeededAsync();
                 }
 
-                Console.WriteLine();
-                Console.WriteLine("Displaying directory contents:");
-                foreach (var file in Directory.EnumerateFiles("./"))
-                {
-                    Console.WriteLine(Path.GetFileName(file));
-                }
-                foreach (var file in Directory.EnumerateDirectories("./"))
-                {
-                    Console.WriteLine(Path.GetFileName(file));
-                }
-                Console.WriteLine();
+                runner.DisplayInitialState();
 
                 if (keepGoing)
                 {
