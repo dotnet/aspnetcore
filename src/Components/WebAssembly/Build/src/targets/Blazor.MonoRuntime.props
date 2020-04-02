@@ -12,4 +12,8 @@
     <_BlazorBootJsonName>blazor.boot.json</_BlazorBootJsonName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
+  </ItemGroup>
+
 </Project>

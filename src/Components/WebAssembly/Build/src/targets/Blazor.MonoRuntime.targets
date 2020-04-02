@@ -179,8 +179,7 @@
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(_BlazorTasksPath)" />
   <Target Name="_GenerateBlazorLinkerDescriptor"
           Inputs="@(IntermediateAssembly)"
-          Outputs="$(_GeneratedBlazorLinkerDescriptor)"
-          Condition="'@(BlazorLinkerDescriptor)' == ''">
+          Outputs="$(_GeneratedBlazorLinkerDescriptor)">
 
     <!-- Generate linker descriptors if the project doesn't explicitly provide one. -->
 
@@ -191,7 +190,6 @@
     <ItemGroup>
       <FileWrites Include="$(_GeneratedBlazorLinkerDescriptor)" />
       <BlazorLinkerDescriptor Include="$(_GeneratedBlazorLinkerDescriptor)" />
-      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
     </ItemGroup>
   </Target>
 
