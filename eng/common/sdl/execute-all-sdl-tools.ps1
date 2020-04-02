@@ -33,6 +33,10 @@ try {
   $disableConfigureToolsetImport = $true
   $LASTEXITCODE = 0
 
+  # `tools.ps1` checks $ci to perform some actions. Since the SDL
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
   . $PSScriptRoot\..\tools.ps1
 
   #Replace repo names to the format of org/repo

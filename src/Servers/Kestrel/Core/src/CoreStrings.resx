@@ -599,4 +599,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="TransportNotFound" xml:space="preserve">
     <value>Unable to resolve service for type 'Microsoft.AspNetCore.Connections.IConnectionListenerFactory' while attempting to activate 'Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer'.</value>
   </data>
+  <data name="GreaterThanOrEqualToZeroRequired" xml:space="preserve">
+    <value>A value greater than or equal to zero is required.</value>
+  </data>
 </root>
