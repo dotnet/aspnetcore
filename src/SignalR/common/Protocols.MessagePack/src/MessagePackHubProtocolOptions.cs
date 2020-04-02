@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR
         private MessagePackSerializerOptions _messagePackSerializerOptions;
 
         /// <summary>
-        /// <para>Get or Set the <see cref="MessagePackSerializerOptions"/> used internally by the <see cref="MessagePackSerializer" />.</para>
+        /// <para>Gets or sets the <see cref="MessagePackSerializerOptions"/> used internally by the <see cref="MessagePackSerializer" />.</para>
         /// <para>If you override it, we strongly recommend that you set <see cref="MessagePackSecurity" /> to <see cref="MessagePackSecurity.UntrustedData"/> by calling:</para>
         /// <code>customMessagePackSerializerOptions = customMessagePackSerializerOptions.WithSecurity(MessagePackSecurity.UntrustedData)</code>
         /// If you want to modify the default options you need to assign the options back to the <see cref="SerializerOptions" /> after modifications:
