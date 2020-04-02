@@ -63,7 +63,7 @@ namespace RunTests
             }
         }
 
-        public void DisplayInitialState() {
+        public void DisplayContents() {
             try 
             {
                 Console.WriteLine();
