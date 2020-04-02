@@ -11,7 +11,10 @@
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Options" />
 
-    <!-- This project does not yet include the latest changes from the 'blazor-wasm' branch. -->
+    <!--
+      Supress a "BUILD001: Reference to 'Microsoft.Extensions.Configuration' was removed since the last stable release
+      of this package." warning.
+    -->
     <SuppressBaselineReference Include="Microsoft.Extensions.Configuration" />
   </ItemGroup>
 
