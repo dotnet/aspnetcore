@@ -9,7 +9,7 @@ namespace Wasm.Authentication.Client
     {
         private string _state;
 
-        public string GetCurrentState() => _state != null ? _state : (_state = Guid.NewGuid().ToString());
+        public string GetCurrentState() => _state ??= Guid.NewGuid().ToString();
 
         public void RestoreCurrentState(string state) => _state = state;
     }

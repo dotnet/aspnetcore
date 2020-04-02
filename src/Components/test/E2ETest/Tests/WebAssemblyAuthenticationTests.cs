@@ -19,7 +19,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
 using Wasm.Authentication.Server;
 using Wasm.Authentication.Server.Data;
@@ -28,7 +27,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFixture>, IDisposable
+    public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFixture>
     {
         private static readonly SqliteConnection _connection;
 
@@ -461,20 +460,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             if (applicationDbContext?.Database?.GetPendingMigrations()?.Any() == true)
             {
                 applicationDbContext?.Database?.Migrate();
-            }
-        }
-
-        public void Dispose()
-        {
-            try
-            {
-                // Make the tests run faster by navigating back to the home page when we are done
-                // If we don't, then the next test will reload the whole page before it starts
-                Browser.FindElement(By.LinkText("Home")).Click();
-            }
-            catch
-            {
-                // We don't care if this step fails.
             }
         }
 
