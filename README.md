@@ -9,7 +9,7 @@ Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-star
 
 Also check out the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
-See the [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/anurse/issue-policies/docs/IssueManagementPolicies.md) document for more information on how we handle incoming issues.
+See the [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/master/docs/IssueManagementPolicies.md) document for more information on how we handle incoming issues.
 
 ## How to Engage, Contribute, and Give Feedback
 
