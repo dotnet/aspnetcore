@@ -40,7 +40,6 @@ final class DefaultHttpClient extends HttpClient {
         if (client != null) {
             this.client = client;
         } else {
-
             OkHttpClient.Builder builder = new OkHttpClient.Builder().cookieJar(new CookieJar() {
                 private List<Cookie> cookieList = new ArrayList<>();
                 private Lock cookieLock = new ReentrantLock();

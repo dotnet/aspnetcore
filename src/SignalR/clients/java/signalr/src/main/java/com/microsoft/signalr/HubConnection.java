@@ -24,7 +24,7 @@ import io.reactivex.subjects.*;
 /**
  * A connection used to invoke hub methods on a SignalR Server.
  */
-public class HubConnection {
+public class HubConnection implements AutoCloseable {
     private static final String RECORD_SEPARATOR = "\u001e";
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
@@ -328,10 +328,6 @@ public class HubConnection {
             return Completable.complete();
         }
 
-        if (this.httpClient == null) {
-            this.httpClient = new DefaultHttpClient();
-        }
-
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
@@ -544,11 +540,6 @@ public class HubConnection {
             if (this.handshakeTimeout != null) {
                 this.handshakeTimeout.shutdownNow();
                 this.handshakeTimeout = null;
-            }
-
-            this.httpClient.close();
-            if (this.httpClient instanceof DefaultHttpClient) {
-                this.httpClient = null;
             }
 
             if (this.customTransport == false) {
@@ -1118,6 +1109,21 @@ public class HubConnection {
             }
 
             return handlers.get(0).getClasses();
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop().subscribe(() -> {
+            this.cleanup();
+        }, e -> {
+            this.cleanup();
+        });
+    }
+
+    private void cleanup() {
+        if (this.httpClient != null) {
+            this.httpClient.close();
         }
     }
 }

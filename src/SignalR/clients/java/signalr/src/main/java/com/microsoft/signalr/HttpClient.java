@@ -74,7 +74,7 @@ class HttpResponse {
     }
 }
 
-abstract class HttpClient {
+abstract class HttpClient implements AutoCloseable {
     public Single<HttpResponse> get(String url) {
         HttpRequest request = new HttpRequest();
         request.setUrl(url);
