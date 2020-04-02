@@ -80,7 +80,8 @@ namespace Templates.Test.Helpers
             var now = DateTimeOffset.Now;
             var manager = new CertificateManager();
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
-            if (result.ResultCode == EnsureCertificateResult.Succeeded)
+            if (result.ResultCode == EnsureCertificateResult.Succeeded || 
+                result.ResultCode == EnsureCertificateResult.ValidCertificatePresent)
             {
                 return;
             }
