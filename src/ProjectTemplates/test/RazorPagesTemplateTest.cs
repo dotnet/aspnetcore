@@ -27,6 +27,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -98,7 +99,7 @@ namespace Templates.Test
         [InlineData(false)]
         [InlineData(true)]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -213,8 +214,8 @@ namespace Templates.Test
             }
         }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);
@@ -235,8 +236,7 @@ namespace Templates.Test
             // Verify ref assemblies isn't published
             var refsDirectory = Path.Combine(Project.TemplatePublishDir, "refs");
             Assert.False(Directory.Exists(refsDirectory), $"{refsDirectory} should not be in the publish output.");
-       }
-
+        }
 
         private string ReadFile(string basePath, string path)
         {
