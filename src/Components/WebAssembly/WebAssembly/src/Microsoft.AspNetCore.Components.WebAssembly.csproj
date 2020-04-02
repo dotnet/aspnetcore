@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler" />
+    <Reference Include="Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler" IncludeAssets="compile" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
