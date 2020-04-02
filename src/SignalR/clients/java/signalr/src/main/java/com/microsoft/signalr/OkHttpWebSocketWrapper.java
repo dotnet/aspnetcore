@@ -94,6 +94,10 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("WebSocket closed from an error: {}.", t.getMessage());
+            // Register a default error handler to avoid unhandled exceptions crashing the process
+            // This can happen if the connection closes from a network issue instead of the user calling stop()
+            // In which case no one is observing the closeSubject error.
+            closeSubject.doOnError((e) -> {});
             closeSubject.onError(new RuntimeException(t));
             onClose.invoke(null, t.getMessage());
             checkStartFailure();
