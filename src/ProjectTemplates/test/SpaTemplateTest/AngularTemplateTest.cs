@@ -17,16 +17,19 @@ namespace Templates.Test.SpaTemplateTest
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task AngularTemplate_Works()
             => SpaTemplateImplAsync("angularnoauth", "angular", useLocalDb: false, usesAuth: false);
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task AngularTemplate_IndividualAuth_Works()
             => SpaTemplateImplAsync("angularindividual", "angular", useLocalDb: false, usesAuth: true);
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task AngularTemplate_IndividualAuth_Works_LocalDb()
             => SpaTemplateImplAsync("angularindividualuld", "angular", useLocalDb: true, usesAuth: true);
     }
