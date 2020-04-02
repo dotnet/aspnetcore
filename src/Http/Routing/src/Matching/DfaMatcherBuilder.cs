@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -429,7 +429,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 candidates,
                 endpointSelectorPolicies?.ToArray() ?? Array.Empty<IEndpointSelectorPolicy>(),
                 JumpTableBuilder.Build(currentDefaultDestination, currentExitDestination, pathEntries),
-                BuildPolicy(currentExitDestination, node.NodeBuilder, policyEntries));
+                // Use the final exit destination when building the policy state.
+                // We don't want to use either of the current destinations because they refer routing states,
+                // and a policy state should never transition back to a routing state.
+                BuildPolicy(exitDestination, node.NodeBuilder, policyEntries));
 
             return currentStateIndex;
 
