@@ -23,9 +23,9 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact(Skip = "This test ran for over an hour")]
+        [ConditionalFact]
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20162")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task EmptyWebTemplateCSharp()
         {
             await EmtpyTemplateCore(languageOverride: null);
