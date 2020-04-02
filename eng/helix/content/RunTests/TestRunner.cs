@@ -96,6 +96,8 @@ namespace RunTests
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
+                    Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
+                    EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
                     foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                     {
                         File.Copy(file, Path.Combine(appRuntimePath, file), overwrite: true);
