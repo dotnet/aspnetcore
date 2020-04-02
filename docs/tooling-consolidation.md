@@ -13,7 +13,6 @@ Microsoft.AspNetCore.Razor.Language
 Microsoft.AspNetCore.Razor.Tools
 Microsoft.CodeAnalysis.Razor
 Microsoft.NET.Sdk.Razor
-RazorPageGenerator
 ````
 The following (and associated tests) will remain in aspnetcore-tooling:
 ```
