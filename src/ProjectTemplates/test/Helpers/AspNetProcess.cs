@@ -20,6 +20,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Templates.Test.Helpers
 {
@@ -74,10 +75,49 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal static void EnsureDevelopmentCertificates()
+        internal void EnsureDevelopmentCertificates()
         {
             var now = DateTimeOffset.Now;
-            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            var manager = new CertificateManager();
+            var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            if (result.ResultCode == EnsureCertificateResult.Succeeded)
+            {
+                return;
+            }
+
+            _output.WriteLine($"{nameof(EnsureDevelopmentCertificates)} failed with error code {result.ResultCode}.");
+            _output.WriteLine($"Output from {nameof(CertificateManager)}:");
+            _output.WriteLine(string.Empty);
+            foreach (var message in result.Diagnostics.Messages)
+            {
+                _output.WriteLine("\t" + message);
+            }
+
+            if (result.Diagnostics.Exceptions.Count > 0)
+            {
+                _output.WriteLine($"Exceptions from {nameof(CertificateManager)}:");
+                foreach (var exception in result.Diagnostics.Exceptions)
+                {
+                    _output.WriteLine(string.Empty);
+                    _output.WriteLine(exception.ToString());
+                }
+            }
+
+            _output.WriteLine(string.Empty);
+            _output.WriteLine(string.Empty);
+
+            var exceptionMessage =
+                $"{nameof(EnsureDevelopmentCertificates)} failed with error code {result.ResultCode}." + Environment.NewLine +
+                Environment.NewLine +
+                string.Join(Environment.NewLine, result.Diagnostics.Messages);
+
+            var innerException = result.Diagnostics.Exceptions.Count switch
+            {
+                0 => null,
+                1 => result.Diagnostics.Exceptions.Single(),
+                _ => new AggregateException(result.Diagnostics.Exceptions),
+            };
+            throw new InvalidOperationException(exceptionMessage, innerException);
         }
 
         public void VisitInBrowser(IWebDriver driver)
