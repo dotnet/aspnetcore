@@ -486,12 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, null);
 
-            // Ping will trigger the stream to be returned to the pool so we can assert it
-            await SendPingAsync(Http2PingFrameFlags.NONE);
-            await ExpectAsync(Http2FrameType.PING,
-                withLength: 8,
-                withFlags: (byte)Http2PingFrameFlags.ACK,
-                withStreamId: 0);
+            await PingUntilStreamDisposed(stream).DefaultTimeout();
 
             // Stream is not returned to the pool
             Assert.Equal(0, _connection.StreamPool.Count);
@@ -500,6 +495,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await output._dataWriteProcessingTask.DefaultTimeout();
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            async Task PingUntilStreamDisposed(Http2Stream stream)
+            {
+                var output = (Http2OutputProducer)stream.Output;
+
+                do
+                {
+                    // Ping will trigger the stream to be returned to the pool so we can assert it
+                    await SendPingAsync(Http2PingFrameFlags.NONE);
+                    await ExpectAsync(Http2FrameType.PING,
+                        withLength: 8,
+                        withFlags: (byte)Http2PingFrameFlags.ACK,
+                        withStreamId: 0);
+                } while (!output._disposed);
+            }
         }
 
         [Fact]
