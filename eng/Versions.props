@@ -96,8 +96,6 @@
     <!-- Packages from dotnet/blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from dotnet/extensions -->
-    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20201.2</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
@@ -168,6 +166,9 @@
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
+    <!-- Analyzer packages pinned temporarily until migrated/deprecated -->
+    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20201.1</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20201.1</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <!-- Build tool dependencies -->
     <InternalAspNetCoreBuildTasksPackageVersion>3.0.0-build-20190530.3</InternalAspNetCoreBuildTasksPackageVersion>
     <MicrosoftSymbolUploaderBuildTaskPackageVersion>1.0.0-beta-64023-03</MicrosoftSymbolUploaderBuildTaskPackageVersion>
