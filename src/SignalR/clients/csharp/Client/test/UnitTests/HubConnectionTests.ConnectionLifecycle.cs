@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                     try
                     {
-                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
+                        await Assert.ThrowsAsync<TaskCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
                         Assert.False(onStartCalled);
                     }
                     finally
