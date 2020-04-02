@@ -3298,7 +3298,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task ConnectionAbortedIfSendFailsWithProtocolError()
         {
-            using (StartVerifiableLog())
+            using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {

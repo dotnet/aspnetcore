@@ -1352,21 +1352,24 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var protocol = HubProtocols[protocolName];
             using (var server = await StartServer<Startup>(write => write.EventId.Name == "FailedWritingMessage"))
             {
-                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.LongPolling, protocol, LoggerFactory);
-                var closedTcs = new TaskCompletionSource<Exception>();
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
+                var closedTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.Closed += (ex) => { closedTcs.TrySetResult(ex); return Task.CompletedTask; };
                 try
                 {
                     await connection.StartAsync().OrTimeout();
 
-                    var result = connection.InvokeAsync<string>(nameof(TestHub.CallWithUnserializableObject)).OrTimeout();
+                    var result = connection.InvokeAsync<string>(nameof(TestHub.CallWithUnserializableObject));
 
                     // The connection should close.
-                    await closedTcs.Task.OrTimeout();
+                    Assert.Null(await closedTcs.Task.OrTimeout());
+
+                    await Assert.ThrowsAsync<TaskCanceledException>(() => result).OrTimeout();
                 }
                 catch (Exception ex)
                 {
                     LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
                 }
                 finally
                 {
