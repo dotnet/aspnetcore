@@ -21,8 +21,8 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);
