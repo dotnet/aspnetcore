@@ -272,6 +272,15 @@
     <ReadLinesFromFile File="$(_BlazorApplicationAssembliesCacheFile)" Condition="'@(_BlazorResolvedAssembly->Count())' == '0'">
       <Output TaskParameter="Lines" ItemName="_BlazorResolvedAssembly"/>
     </ReadLinesFromFile>
+
+    <ItemGroup>
+      <!--
+        Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Add _BlazorResolvedAssembly to FileWrites so that these files
+        do not get removed during an incremental build. Note that we add these files here as opposed to _ResolveBlazorRuntimeDependencies
+        since the task that calculates these items in _ResolveBlazorRuntimeDependencies does not execute in incremental builds.
+       -->
+      <FileWrites Include="$(_BlazorResolvedAssembly)"/>
+    </ItemGroup>
   </Target>
 
   <Target
@@ -291,8 +300,19 @@
       ApplicationDependencies="@(_BlazorManagedRuntimeAssembly)"
       WebAssemblyBCLAssemblies="@(_WebAssemblyBCLAssembly)">
 
-      <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssembly" />
+      <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssemblyUnlinked" />
     </ResolveBlazorRuntimeDependencies>
+
+    <!--
+    Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Using the files from their initial locations
+    as-is causes RazorSDK to remove files from a hosted app's publish directory. This is because files being removed
+    are looked up by their path. We'll copy files to an intermediate location to avoid the removal code.
+    -->
+    <Copy
+      SourceFiles="@(_BlazorResolvedAssemblyUnlinked)"
+      DestinationFolder="$(_BlazorIntermediateOutputPath)unlinked">
+        <Output TaskParameter="CopiedFiles" ItemName="_BlazorResolvedAssembly" />
+    </Copy>
 
     <WriteLinesToFile File="$(_BlazorApplicationAssembliesCacheFile)" Lines="@(_BlazorResolvedAssembly)" Overwrite="true" />
 

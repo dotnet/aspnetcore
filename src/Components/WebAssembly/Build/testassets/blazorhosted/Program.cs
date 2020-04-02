@@ -10,6 +10,7 @@ namespace blazorhosted.Server
         public static void Main(string[] args)
         {
             Console.WriteLine(typeof(IWebHost));
+            GC.KeepAlive(typeof(RazorClassLibrary.Class1));
         }
     }
 }
