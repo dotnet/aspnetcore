@@ -5,7 +5,6 @@ export interface Platform {
 
   callEntryPoint(assemblyName: string): void;
 
-  toJavaScriptString(dotNetString: System_String): string;
   toUint8Array(array: System_Array<any>): Uint8Array;
 
   getArrayLength(array: System_Array<any>): number;
@@ -17,7 +16,7 @@ export interface Platform {
   readUint64Field(baseAddress: Pointer, fieldOffset?: number): number;
   readFloatField(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
-  readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
+  readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 }
 

@@ -41,17 +41,6 @@ export const monoPlatform: Platform = {
     invokeEntrypoint(assemblyName, null);
   },
 
-  toJavaScriptString: function toJavaScriptString(managedString: System_String) {
-    // Comments from original Mono sample:
-    // FIXME this is wastefull, we could remove the temp malloc by going the UTF16 route
-    // FIXME this is unsafe, cuz raw objects could be GC'd.
-
-    const utf8 = mono_string_get_utf8(managedString);
-    const res = (<any>window['Module']).UTF8ToString(utf8);
-    Module._free(utf8 as any);
-    return res;
-  },
-
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
     const dataPtr = getArrayDataPointer(array);
     const length = Module.getValue(dataPtr, 'i32');
@@ -102,9 +91,23 @@ export const monoPlatform: Platform = {
     return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as T;
   },
 
-  readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): string | null {
+  readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null {
     const fieldValue = Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
-    return fieldValue === 0 ? null : monoPlatform.toJavaScriptString(fieldValue as any as System_String);
+    if (fieldValue === 0) {
+      return null;
+    }
+
+    if (readBoolValueAsString) {
+      // Some fields are stored as a union of bool | string | null values, but need to read as a string.
+      // If the stored value is a bool, the behavior we want is empty string ('') for true, or null for false.
+      const unboxedValue = BINDING.unbox_mono_obj(fieldValue as any as System_Object);
+      if (typeof (unboxedValue) === 'boolean') {
+        return unboxedValue ? '' : null;
+      }
+      return unboxedValue;
+    }
+
+    return BINDING.conv_string(fieldValue as any as System_String);
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
