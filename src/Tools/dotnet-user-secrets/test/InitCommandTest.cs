@@ -72,6 +72,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void DoesNotGenerateIdForProjectWithSecretId()
         {
             const string SecretId = "AlreadyExists";
