@@ -4,7 +4,7 @@
 
 using System;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging.Test;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         {
             var testTestOutputHelper = new TestTestOutputHelper();
 
-            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+            var loggerFactory = CreateTestLogger(builder => builder
                 .SetMinimumLevel(LogLevel.Trace)
                 .AddXunit(testTestOutputHelper));
 
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderDoesNotWriteLogMessagesBelowMinimumLevel()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+            var loggerFactory = CreateTestLogger(builder => builder
                 .AddXunit(testTestOutputHelper, LogLevel.Warning));
 
             var logger = loggerFactory.CreateLogger("TestCategory");
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderPrependsPrefixToEachLine()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+            var loggerFactory = CreateTestLogger(builder => builder
                 .AddXunit(testTestOutputHelper));
 
             var logger = loggerFactory.CreateLogger("TestCategory");
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderDoesNotThrowIfOutputHelperThrows()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+            var loggerFactory = CreateTestLogger(builder => builder
 
                 .AddXunit(testTestOutputHelper));
 
@@ -83,5 +83,13 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         private static readonly Regex TimestampRegex = new Regex(@"\d+-\d+-\d+T\d+:\d+:\d+");
 
         private string MakeConsistent(string input) => TimestampRegex.Replace(input, "TIMESTAMP");
+
+        private static ILoggerFactory CreateTestLogger(Action<ILoggingBuilder> configure)
+        {
+            return new ServiceCollection()
+                .AddLogging(configure)
+                .BuildServiceProvider()
+                .GetRequiredService<ILoggerFactory>();
+        }
     }
 }
