@@ -26,6 +26,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
@@ -49,9 +51,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
-#pragma warning disable CS0618 // Type or member is obsolete
         protected BadHttpRequestException _requestRejectedException;
-#pragma warning restore CS0618 // Type or member is obsolete
 
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IISHttpServer _server;
@@ -295,9 +295,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-#pragma warning restore CS0618 // Type or member is obsolete
+                IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;
@@ -492,9 +490,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         public void SetBadRequestState(BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             Log.ConnectionBadRequest(_logger, RequestConnectionId, ex);
 
@@ -506,9 +502,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _requestRejectedException = ex;
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         private void SetErrorResponseException(BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             SetErrorResponseHeaders(ex.StatusCode);
         }

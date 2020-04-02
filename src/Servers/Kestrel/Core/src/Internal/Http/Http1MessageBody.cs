@@ -31,9 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // closing the connection without a response as expected.
             _context.OnInputOrOutputCompleted();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
-#pragma warning restore CS0618 // Type or member is obsolete
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
         }
 
         public abstract bool TryReadInternal(out ReadResult readResult);
@@ -54,9 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            catch (BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
             {
                 // At this point, the response has already been written, so this won't result in a 4XX response;
                 // however, we still need to stop the request processing loop and log.
@@ -91,9 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            catch (BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
             {
                 _context.SetBadRequestState(ex);
             }
@@ -136,9 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (headers.HeaderTransferEncoding.Count > 0 || (headers.ContentLength.HasValue && headers.ContentLength.Value != 0))
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
                 context.OnTrailersComplete(); // No trailers for these.
@@ -158,9 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // status code and then close the connection.
                 if (transferCoding != TransferCoding.Chunked)
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
                 }
 
                 // TODO may push more into the wrapper rather than just calling into the message body
@@ -185,9 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
             {
                 var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(requestRejectionReason, context.Method);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
             context.OnTrailersComplete(); // No trailers for these.

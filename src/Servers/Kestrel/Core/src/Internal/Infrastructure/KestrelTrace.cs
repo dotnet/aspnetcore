@@ -175,9 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _notAllConnectionsClosedGracefully(_logger, null);
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        public virtual void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+        public virtual void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }

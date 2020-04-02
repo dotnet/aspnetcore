@@ -65,9 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
 
             return parsed;
@@ -78,18 +76,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_contentLength.HasValue)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
             }
 
             if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
                 parsed < 0 ||
                 consumed != value.Length)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
             }
 
             _contentLength = parsed;

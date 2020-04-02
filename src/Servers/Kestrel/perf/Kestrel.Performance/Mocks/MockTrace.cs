@@ -4,7 +4,6 @@
 using System;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -16,9 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void ApplicationError(string connectionId, string requestId, Exception ex) { }
         public IDisposable BeginScope<TState>(TState state) => null;
         public void ConnectionAccepted(string connectionId) { }
-#pragma warning disable CS0618 // Type or member is obsolete
-        public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
-#pragma warning restore CS0618 // Type or member is obsolete
+        public void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex) { }
         public void ConnectionDisconnect(string connectionId) { }
         public void ConnectionError(string connectionId, Exception ex) { }
         public void ConnectionHeadResponseBodyWrite(string connectionId, long count) { }

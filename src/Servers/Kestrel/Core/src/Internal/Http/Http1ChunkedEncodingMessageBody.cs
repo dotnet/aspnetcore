@@ -135,9 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (_context.RequestTimedOut)
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-#pragma warning restore CS0618 // Type or member is obsolete
+                        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                     }
 
                     var readableBuffer = result.Buffer;
@@ -375,9 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // At this point, 10 bytes have been consumed which is enough to parse the max value "7FFFFFFF\r\n".
-#pragma warning disable CS0618 // Type or member is obsolete
-            BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
-#pragma warning restore CS0618 // Type or member is obsolete
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
         }
 
         private void ParseExtension(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
@@ -473,9 +469,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSuffix);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSuffix);
             }
         }
 
@@ -534,9 +528,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw new IOException(CoreStrings.BadRequest_BadChunkSizeData, ex);
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
-#pragma warning restore CS0618 // Type or member is obsolete
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
+
             return -1; // can't happen, but compiler complains
         }
 

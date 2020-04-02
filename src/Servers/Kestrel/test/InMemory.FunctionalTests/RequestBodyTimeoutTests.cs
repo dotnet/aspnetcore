@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -164,9 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await readTask;
                 }
-#pragma warning disable CS0618 // Type or member is obsolete
-                catch (BadHttpRequestException ex) when (ex.StatusCode == 408)
-#pragma warning restore CS0618 // Type or member is obsolete
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == 408)
                 {
                     exceptionSwallowedTcs.SetResult(null);
                 }

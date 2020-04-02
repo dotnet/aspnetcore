@@ -38,9 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _unexpectedError(logger, className, methodName, ex);
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            public static void ConnectionBadRequest(ILogger logger, string connectionId, BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+            public static void ConnectionBadRequest(ILogger logger, string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
             {
                 _connectionBadRequest(logger, connectionId, ex.Message, ex);
             }

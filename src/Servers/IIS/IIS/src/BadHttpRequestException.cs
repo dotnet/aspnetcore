@@ -11,33 +11,14 @@ namespace Microsoft.AspNetCore.Server.IIS
     [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
-        private BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)
+        internal BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)
             : base(message, statusCode)
         {
             Reason = reason;
         }
 
+        public new int StatusCode { get => base.StatusCode; }
+
         internal RequestRejectionReason Reason { get; }
-
-        internal static void Throw(RequestRejectionReason reason)
-        {
-            throw GetException(reason);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static BadHttpRequestException GetException(RequestRejectionReason reason)
-        {
-            BadHttpRequestException ex;
-            switch (reason)
-            {
-                case RequestRejectionReason.RequestBodyTooLarge:
-                    ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status413PayloadTooLarge, reason);
-                    break;
-                default:
-                    ex = new BadHttpRequestException(CoreStrings.BadRequest, StatusCodes.Status400BadRequest, reason);
-                    break;
-            }
-            return ex;
-        }
     }
 }

@@ -289,9 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         await context.Request.Body.ReadAsync(new byte[1], 0, 1);
                     }
-#pragma warning disable CS0618 // Type or member is obsolete
-                    catch (BadHttpRequestException)
-#pragma warning restore CS0618 // Type or member is obsolete
+                    catch (Microsoft.AspNetCore.Http.BadHttpRequestException)
                     {
                     }
                 },
@@ -1274,9 +1272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
                 }
-#pragma warning disable CS0618 // Type or member is obsolete
-                catch (BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
                 {
                     expectedResponse = ex.Message;
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;

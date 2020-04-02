@@ -170,9 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_consumedBytes > _context.MaxRequestBodySize)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

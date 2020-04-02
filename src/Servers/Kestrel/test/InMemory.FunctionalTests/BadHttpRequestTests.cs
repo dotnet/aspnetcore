@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -190,18 +191,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException loggedException = null;
-#pragma warning restore CS0618 // Type or member is obsolete
+
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.IsEnabled(LogLevel.Information))
                 .Returns(true);
             mockKestrelTrace
-#pragma warning disable CS0618 // Type or member is obsolete
                 .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
                 .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
-#pragma warning restore CS0618 // Type or member is obsolete
 
             await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
             {
@@ -212,9 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
             mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
-#pragma warning restore CS0618 // Type or member is obsolete
             Assert.Equal(expectedExceptionMessage, loggedException.Message);
         }
 

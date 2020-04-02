@@ -96,9 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
-#pragma warning restore CS0618 // Type or member is obsolete
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -122,9 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D\x0A"), exception.Message);
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
-#pragma warning restore CS0618 // Type or member is obsolete
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -148,9 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
-#pragma warning restore CS0618 // Type or member is obsolete
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
         }
 
         [Theory]
@@ -372,9 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal("Invalid request line: ''", exception.Message);
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
-#pragma warning restore CS0618 // Type or member is obsolete
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
 
             // Unrecognized HTTP version
             buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
@@ -385,9 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
-#pragma warning restore CS0618 // Type or member is obsolete
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
 
             // Invalid request header
             buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("Header: value\n\r\n"));

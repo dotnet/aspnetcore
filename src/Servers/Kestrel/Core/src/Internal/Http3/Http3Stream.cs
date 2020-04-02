@@ -143,9 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     base.OnHeader(name, value);
                 }
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            catch (BadHttpRequestException bre)
-#pragma warning restore CS0618 // Type or member is obsolete
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
             {
                 throw new Http3StreamErrorException(bre.Message, Http3ErrorCode.ProtocolError);
             }
@@ -295,9 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void HandleRequestHeadersTimeout()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            Log.ConnectionBadRequest(ConnectionId, BadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-#pragma warning restore CS0618 // Type or member is obsolete
+            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
             Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
         }
 

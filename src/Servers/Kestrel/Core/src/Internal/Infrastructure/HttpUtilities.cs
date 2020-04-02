@@ -107,9 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // in the string
                 if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }
             }
         }

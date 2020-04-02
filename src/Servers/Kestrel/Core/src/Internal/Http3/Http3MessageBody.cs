@@ -25,9 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Note ContentLength or MaxRequestBodySize may be null
             if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

@@ -122,9 +122,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     if (_consumedBytes > MaxRequestBodySize)
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-#pragma warning restore CS0618 // Type or member is obsolete
+                        IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();

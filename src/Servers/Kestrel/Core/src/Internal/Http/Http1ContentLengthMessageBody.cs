@@ -58,9 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // which is unknown to StartTimingReadAsync. 
                 if (_context.RequestTimedOut)
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
                 try
@@ -87,9 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_context.RequestTimedOut)
                 {
                     ResetReadingState();
-#pragma warning disable CS0618 // Type or member is obsolete
-                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
                 if (_readResult.IsCompleted)
@@ -238,9 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_contentLength > _context.MaxRequestBodySize)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-#pragma warning restore CS0618 // Type or member is obsolete
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 

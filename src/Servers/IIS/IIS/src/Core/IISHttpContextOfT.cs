@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;
@@ -36,9 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     await _application.ProcessRequestAsync(context);
                 }
-#pragma warning disable CS0618 // Type or member is obsolete
                 catch (BadHttpRequestException ex)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     SetBadRequestState(ex);
                     ReportApplicationError(ex);
