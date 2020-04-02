@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public sealed partial class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
         internal BadHttpRequestException() : base (default(string), default(int)) { }
+        public new int StatusCode { get { throw null; } }
     }
     public partial class Http2Limits
     {

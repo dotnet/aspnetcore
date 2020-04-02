@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS
     public sealed partial class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
         internal BadHttpRequestException() : base (default(string), default(int)) { }
+        public new int StatusCode { get { throw null; } }
     }
     public static partial class HttpContextExtensions
     {

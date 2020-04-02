@@ -100,7 +100,9 @@ namespace Microsoft.AspNetCore.Http
     public partial class BadHttpRequestException : System.IO.IOException
     {
         public BadHttpRequestException(string message) { }
+        public BadHttpRequestException(string message, System.Exception innerException) { }
         public BadHttpRequestException(string message, int statusCode) { }
+        public BadHttpRequestException(string message, int statusCode, System.Exception innerException) { }
         public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class ConnectionInfo
