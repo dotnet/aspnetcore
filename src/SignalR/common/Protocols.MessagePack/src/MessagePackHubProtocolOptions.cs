@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <para>If you override it, we strongly recommend that you set <see cref="MessagePackSecurity" /> to <see cref="MessagePackSecurity.UntrustedData"/> by calling:<para>
         /// <code>customMessagePackSerializerOptions.WithSecurity(MessagePackSecurity.UntrustedData)</code>
         /// If you want to modify the default options you need to assign the options back to the <see cref="SerializerOptions" /> after modifications:
-        /// <code>SerializerOptions = SerializerOptions.WithResolver(new CustomResolver());</code>
+        /// <code>options.SerializerOptions = options.SerializerOptions.WithResolver(new CustomResolver());</code>
         /// </summary>
         public MessagePackSerializerOptions SerializerOptions
         {
