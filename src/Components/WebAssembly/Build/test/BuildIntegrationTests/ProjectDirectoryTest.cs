@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         public void ProjectDirectory_IsNotSetToBePreserved()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
 
             // Act & Assert
             // This flag is only meant for local debugging and should not be set when checking in.

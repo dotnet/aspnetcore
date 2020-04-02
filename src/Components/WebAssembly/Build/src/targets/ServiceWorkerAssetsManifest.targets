@@ -23,7 +23,7 @@
           Inputs="@(ServiceWorkerAssetsManifestItem)"
           Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
           BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"
-          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion">
+          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion; _GenerateServiceWorkerIntermediateFiles">
 
     <GenerateServiceWorkerAssetsManifest
       Version="$(ServiceWorkerAssetsManifestVersion)"
@@ -61,10 +61,18 @@
     Compute a default ServiceWorkerAssetsManifestVersion value by combining all the asset hashes.
     This is useful because then clients will only have to repopulate caches if the contents have changed.
   -->
-  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion" Condition="'$(ServiceWorkerAssetsManifest)' != ''">
+  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
+          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes"
+          Condition="'$(ServiceWorkerAssetsManifest)' != ''">
     <PropertyGroup>
       <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
+
+    <!-- Neither of these should ever happen, but if we do we want to know about it. -->
+    <Error Text="Cannot compute service worker assets manifest version, because no service worker manifest items were defined."
+           Condition="'@(_ServiceWorkerAssetsManifestItemWithHash)' == ''" />
+    <Error Text="While computing service worker assets manifest version, did not find any dll entries in service worker assets manifest."
+           Condition="'@(_ServiceWorkerAssetsManifestItemWithHash->WithMetadataValue('Extension', '.dll'))' == ''" />
 
     <WriteLinesToFile
       File="$(_CombinedHashIntermediatePath)"
@@ -81,7 +89,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths">
+  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths; ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
       <Content Remove="@(ServiceWorker)" />
@@ -91,7 +99,7 @@
 
   <Target Name="_ResolveServiceWorkerOutputs"
           BeforeTargets="_ResolveBlazorOutputs"
-          DependsOnTargets="_ComputeServiceWorkerOutputs; _GenerateServiceWorkerIntermediateFiles">
+          DependsOnTargets="_ComputeServiceWorkerOutputs">
     <ItemGroup>
       <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerIntermediateFile)" />
     </ItemGroup>
@@ -105,6 +113,7 @@
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</ContentSourcePath>
         <TargetOutputPath>%(ServiceWorker.Identity)</TargetOutputPath>
         <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot\'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
+        <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot/'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
       </_ServiceWorkerIntermediateFile>
     </ItemGroup>
   </Target>

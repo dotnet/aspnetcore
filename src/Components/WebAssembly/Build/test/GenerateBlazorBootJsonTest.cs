@@ -38,6 +38,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                         fileHash: "pdbhashpdbhashpdbhash"),
 
                     CreateResourceTaskItem(
+                        "pdb",
+                        name: "My.Assembly1.pdb",
+                        fileHash: "pdbdefghikjlmnopqrstuvwxyz"),
+
+                    CreateResourceTaskItem(
                         "runtime",
                         name: "some-runtime-file", // Can specify path with no extension
                         fileHash: "runtimehashruntimehash"),
@@ -77,8 +82,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.ext2"]); // Paths are converted to use URL-style separators
 
             resources = parsedContent.resources.pdb;
-            Assert.Single(resources);
+            Assert.Equal(2, resources.Count);
             Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["otherdir/SomePdb.pdb"]);
+            Assert.Equal("sha256-pdbdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.pdb"]);
 
             resources = parsedContent.resources.runtime;
             Assert.Single(resources);

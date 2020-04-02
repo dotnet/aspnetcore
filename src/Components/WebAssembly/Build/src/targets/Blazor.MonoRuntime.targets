@@ -93,6 +93,7 @@
 
       <_BlazorOutputWithTargetPath Include="@(_BlazorCopyLocalPaths)">
         <!-- This group is for satellite assemblies. We set the resource name to include a path, e.g. "fr\\SomeAssembly.resources.dll" -->
+        <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Extension)' == '.pdb'">pdb</BootManifestResourceType>
         <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Culture)' == '' AND '%(_BlazorCopyLocalPaths.Extension)' == '.dll'">assembly</BootManifestResourceType>
         <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Culture)' != '' AND '%(_BlazorCopyLocalPaths.Extension)' == '.dll'">satellite</BootManifestResourceType>
         <BootManifestResourceName>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
@@ -108,9 +109,9 @@
 
       <_BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
         <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
-        <BootManifestResourceType Condition="'%(_BlazorCopyLocalPaths.Extension)' == '.pdb'">pdb</BootManifestResourceType>
-        <BootManifestResourceName>%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
-        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(_BlazorCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+        <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
+        <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
+        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
 
       <_BlazorOutputWithTargetPath Include="@(_DotNetWasmRuntimeFile)">
@@ -209,6 +210,10 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Note that the VS-specific condition below is a workaround for https://github.com/dotnet/aspnetcore/issues/19822
+    For more details, see https://github.com/dotnet/aspnetcore/issues/20413
+  -->
   <UsingTask TaskName="BlazorILLink" AssemblyFile="$(_BlazorTasksPath)" />
   <Target
       Name="_LinkBlazorApplication"
@@ -216,7 +221,8 @@
               @(_BlazorManagedRuntimeAssembly);
               @(BlazorLinkerDescriptor);
               $(MSBuildAllProjects)"
-      Outputs="$(_BlazorLinkerOutputCache)">
+      Outputs="$(_BlazorLinkerOutputCache)"
+      Condition="'$(BuildingInsideVisualStudio)' != 'true' OR '$(DeployOnBuild)' != 'true'">
 
     <PropertyGroup>
       <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>

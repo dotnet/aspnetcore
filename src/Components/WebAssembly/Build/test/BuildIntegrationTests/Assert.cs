@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -236,6 +237,23 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             {
                 throw new FileContentNotEqualException(result, filePath, expected, actual);
             }
+        }
+
+        public static void FileHashEquals(MSBuildResult result, string filePath, string expectedSha256Base64)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+
+            var actual = File.ReadAllBytes(filePath);
+            using var algorithm = SHA256.Create();
+            var actualSha256 = algorithm.ComputeHash(actual);
+            var actualSha256Base64 = Convert.ToBase64String(actualSha256);
+            Assert.Equal(expectedSha256Base64, actualSha256Base64);
         }
 
         public static void FileEquals(MSBuildResult result, string expected, string actual)

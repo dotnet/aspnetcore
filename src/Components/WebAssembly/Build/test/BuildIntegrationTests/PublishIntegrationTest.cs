@@ -1,9 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Blazor.Build;
 using Xunit;
+using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
@@ -38,12 +44,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify link item assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "js", "LinkedScript.js");
-            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "css", "site.css");
+            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "css", "app.css");
             Assert.FileContains(result, cssFile, ".publish");
             Assert.FileDoesNotExist(result, "dist", "Fake-License.txt");
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         [Fact]
@@ -81,6 +93,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         [Fact]
@@ -116,6 +134,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         [Fact]
@@ -145,6 +169,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJsonPath = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");
             Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
             Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         [Fact]
@@ -178,6 +208,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         [Fact]
@@ -226,6 +262,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
 
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
+
             void AddSiblingProjectFileContent(string content)
             {
                 var path = Path.Combine(project.SolutionPath, "standalone", "standalone.csproj");
@@ -269,6 +311,109 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        private static void VerifyBootManifestHashes(MSBuildResult result, string blazorPublishDirectory)
+        {
+            var bootManifestResolvedPath = Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            var bootManifestJson = File.ReadAllText(bootManifestResolvedPath);
+            var bootManifest = JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(bootManifestJson);
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.assembly, r => $"_framework/_bin/{r}");
+            VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.runtime, r => $"_framework/wasm/{r}");
+
+            if (bootManifest.resources.pdb != null)
+            {
+                VerifyBootManifestHashes(result, blazorPublishDirectory, bootManifest.resources.pdb, r => $"_framework/_bin/{r}");
+            }
+
+            if (bootManifest.resources.satelliteResources != null)
+            {
+                foreach (var resourcesForCulture in bootManifest.resources.satelliteResources.Values)
+                {
+                    VerifyBootManifestHashes(result, blazorPublishDirectory, resourcesForCulture, r => $"_framework/_bin/{r}");
+                }
+            }
+        }
+
+        private static void VerifyBootManifestHashes(MSBuildResult result, string blazorPublishDirectory, ResourceHashesByNameDictionary resources, Func<string, string> relativePathFunc)
+        {
+            foreach (var (name, hash) in resources)
+            {
+                var relativePath = Path.Combine(blazorPublishDirectory, relativePathFunc(name));
+                Assert.FileHashEquals(result, relativePath, ParseWebFormattedHash(hash));
+            }
+        }
+
+        private static void VerifyServiceWorkerFiles(MSBuildResult result, string blazorPublishDirectory, string serviceWorkerPath, string serviceWorkerContent, string assetsManifestPath)
+        {
+            // Check the expected files are there
+            var serviceWorkerResolvedPath = Assert.FileExists(result, blazorPublishDirectory, serviceWorkerPath);
+            var assetsManifestResolvedPath = Assert.FileExists(result, blazorPublishDirectory, assetsManifestPath);
+
+            // Check the service worker contains the expected content (which comes from the PublishedContent file)
+            Assert.FileContains(result, serviceWorkerResolvedPath, serviceWorkerContent);
+
+            // Check the assets manifest version was added to the published service worker
+            var assetsManifest = ReadServiceWorkerAssetsManifest(assetsManifestResolvedPath);
+            Assert.FileContains(result, serviceWorkerResolvedPath, $"/* Manifest version: {assetsManifest.version} */");
+
+            // Check the assets manifest contains correct entries for all static content we're publishing
+            var resolvedPublishDirectory = Path.Combine(result.Project.DirectoryPath, blazorPublishDirectory);
+            var publishedStaticFiles = Directory.GetFiles(resolvedPublishDirectory, "*", new EnumerationOptions { RecurseSubdirectories = true });
+            var assetsManifestHashesByUrl = (IReadOnlyDictionary<string, string>)assetsManifest.assets.ToDictionary(x => x.url, x => x.hash);
+            foreach (var publishedFilePath in publishedStaticFiles)
+            {
+                var publishedFileRelativePath = Path.GetRelativePath(resolvedPublishDirectory, publishedFilePath);
+
+                // We don't list compressed files in the SWAM, as these are transparent to the client,
+                // nor do we list the service worker itself or its assets manifest, as these don't need to be fetched in the same way
+                if (IsCompressedFile(publishedFileRelativePath)
+                    || string.Equals(publishedFileRelativePath, serviceWorkerPath, StringComparison.Ordinal)
+                    || string.Equals(publishedFileRelativePath, assetsManifestPath, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Verify hash
+                var publishedFileUrl = publishedFileRelativePath.Replace('\\', '/');
+                var expectedHash = ParseWebFormattedHash(assetsManifestHashesByUrl[publishedFileUrl]);
+                Assert.Contains(publishedFileUrl, assetsManifestHashesByUrl);
+                Assert.FileHashEquals(result, publishedFilePath, expectedHash);
+            }
+        }
+
+        private static string ParseWebFormattedHash(string webFormattedHash)
+        {
+            Assert.StartsWith("sha256-", webFormattedHash);
+            return webFormattedHash.Substring(7);
+        }
+
+        private static bool IsCompressedFile(string path)
+        {
+            switch (Path.GetExtension(path))
+            {
+                case ".br":
+                case ".gz":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static GenerateServiceWorkerAssetsManifest.AssetsManifestFile ReadServiceWorkerAssetsManifest(string assetsManifestResolvedPath)
+        {
+            var jsContents = File.ReadAllText(assetsManifestResolvedPath);
+            var jsonStart = jsContents.IndexOf("{");
+            var jsonLength = jsContents.LastIndexOf("}") - jsonStart + 1;
+            var json = jsContents.Substring(jsonStart, jsonLength);
+            return JsonSerializer.Deserialize<GenerateServiceWorkerAssetsManifest.AssetsManifestFile>(json);
         }
     }
 }
