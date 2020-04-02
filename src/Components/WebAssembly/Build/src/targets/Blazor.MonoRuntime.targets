@@ -275,8 +275,9 @@
 
     <ItemGroup>
       <!--
-        Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Add _BlazorResolvedAssembly to FileWrites so it doesn't
-        get removed during build incremantalism. We cannot do this in _ResolveBlazorRuntimeDependencies since it's incremental.
+        Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Add _BlazorResolvedAssembly to FileWrites so that these files
+        do not get removed during an incremental build. Note that we add these files here as opposed to _ResolveBlazorRuntimeDependencies
+        since the task that calculates these items in _ResolveBlazorRuntimeDependencies does not execute in incremental builds.
        -->
       <FileWrites Include="$(_BlazorResolvedAssembly)"/>
     </ItemGroup>
@@ -303,9 +304,9 @@
     </ResolveBlazorRuntimeDependencies>
 
     <!--
-    Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Using the files from their inital locations
+    Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Using the files from their initial locations
     as-is causes RazorSDK to remove files from a hosted app's publish directory. This is because files being removed
-    are looked up by their path. We'll copy files to an intermediate location to trip the removal code.
+    are looked up by their path. We'll copy files to an intermediate location to avoid the removal code.
     -->
     <Copy
       SourceFiles="@(_BlazorResolvedAssemblyUnlinked)"

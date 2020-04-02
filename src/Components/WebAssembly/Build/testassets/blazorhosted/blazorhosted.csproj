@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\standalone\standalone.csproj" />
-    <ProjectReference Include="..\razorclasslibrary\RazorClassLibrary.csproj" />
   </ItemGroup>
 
 </Project>
