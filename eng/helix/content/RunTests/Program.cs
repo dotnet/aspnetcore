@@ -230,7 +230,7 @@ namespace RunTests
                     Console.WriteLine("No logs found in artifacts/log");
                 }
 
-                Console.WriteLine("Completed Helix job, exitCode="+exitCode);
+                Console.WriteLine($"Completed Helix job with exit code '{exitCode}'");
                 Environment.Exit(exitCode);
             }
         } catch (Exception e)
