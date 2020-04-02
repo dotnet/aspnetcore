@@ -235,7 +235,7 @@ namespace RunTests
             }
         } catch (Exception e)
         {
-            Console.WriteLine("RunTests uncaught exception: "+e.ToString());
+            Console.WriteLine($"RunTests uncaught exception: {e.ToString()}");
             Environment.Exit(1);
         }
     }
