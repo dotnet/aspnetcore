@@ -156,12 +156,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <GenerateChecksumItems Include="$(RedistArchiveOutputPath)">
-      <DestinationPath>$(RedistArchiveOutputPath)$(ChecksumExtension)</DestinationPath>
-    </GenerateChecksumItems>
-  </ItemGroup>
-
   <!-- Target chain -->
   <PropertyGroup>
     <ResolveReferencesDependsOn>
