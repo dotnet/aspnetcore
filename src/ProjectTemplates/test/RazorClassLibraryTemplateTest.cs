@@ -41,8 +41,8 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
         }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RazorClassLibraryTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);
