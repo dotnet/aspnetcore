@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
-        private List<Action<IServiceCollection>> _configServices = new List<Action<IServiceCollection>>();
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -56,6 +55,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Configuration = new ConfigurationBuilder();
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
+            Logging = new LoggingBuilder(Services);
+
+            Logging.SetMinimumLevel(LogLevel.Warning);
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntimeInvoker);
@@ -130,6 +132,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public IWebAssemblyHostEnvironment HostEnvironment { get; }
 
         /// <summary>
+        /// Gets the logging builder for configuring logging services.
+        /// </summary>
+        public ILoggingBuilder Logging { get;  }
+
+        /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="factory">The <see cref="IServiceProviderFactory{TBuilder}" />.</param>
@@ -164,18 +171,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
-        /// Adds services to the container.
-        /// </summary>
-        /// <param name="configureService">The delegate for configuring the <see cref="IConfigurationBuilder"/> that will be used
-        /// to construct the <see cref="IConfiguration"/> for the host.</param>
-        /// <returns>The same instance of the <see cref="WebAssemblyHostBuilder"/> for chaining.</returns>
-        public WebAssemblyHostBuilder ConfigureServices(Action<IServiceCollection> configureService)
-        {
-            _configServices.Add(configureService ?? throw new ArgumentNullException(nameof(configureService)));
-            return this;
-        }
-
-        /// <summary>
         /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
         /// </summary>
         /// <returns>A <see cref="WebAssemblyHost"/> object.</returns>
@@ -184,11 +179,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Intentionally overwrite configuration with the one we're creating.
             var configuration = Configuration.Build();
             Services.AddSingleton<IConfiguration>(configuration);
-
-            foreach (var configService in _configServices)
-            {
-                configService(Services);
-            }
 
             // A Blazor application always runs in a scope. Since we want to make it possible for the user
             // to configure services inside *that scope* inside their startup code, we create *both* the

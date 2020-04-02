@@ -45,10 +45,7 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
-            builder.ConfigureLogging(builder =>
-            {
-                builder.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s => new PrependMessageLoggerProvider("Custom logger", s.GetService<IJSRuntime>()));
-            });
+            builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s => new PrependMessageLoggerProvider("Custom logger", s.GetService<IJSRuntime>()));
 
             var host = builder.Build();
             ConfigureCulture(host);

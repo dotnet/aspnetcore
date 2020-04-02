@@ -237,21 +237,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         [Fact]
-        public void Build_SupportsConfigServices()
+        public void Builder_SupportsConfiguringLogging()
         {
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
-            var invoked = false;
-            builder.ConfigureServices(services =>
-            {
-                invoked = true;
-            });
+            var provider = new Mock<ILoggerProvider>();
 
             // Act
-            builder.Build();
+            builder.Logging.AddProvider(provider.Object);
+            var host = builder.Build();
 
             // Assert
-            Assert.True(invoked);
+            var loggerProvider = host.Services.GetRequiredService<ILoggerProvider>();
+            Assert.NotNull(loggerProvider);
+            Assert.Equal<ILoggerProvider>(provider.Object, loggerProvider);
 
         }
     }

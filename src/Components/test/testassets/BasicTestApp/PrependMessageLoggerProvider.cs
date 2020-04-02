@@ -9,7 +9,7 @@ using Microsoft.JSInterop;
 
 namespace BasicTestApp
 {
-    public class PrependMessageLoggerProvider : ILoggerProvider, IDisposable
+    internal class PrependMessageLoggerProvider : ILoggerProvider
     {
         ILogger _logger;
         string _message;
