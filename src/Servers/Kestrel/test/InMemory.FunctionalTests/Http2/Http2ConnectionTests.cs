@@ -414,6 +414,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+            // Get the in progress stream
+            var stream = _connection._streams[1];
+
             appDelegateTcs.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -421,15 +424,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
-            // Ping will trigger the stream to be returned to the pool so we can assert it
-            await SendPingAsync(Http2PingFrameFlags.NONE);
-            await ExpectAsync(Http2FrameType.PING,
-                withLength: 8,
-                withFlags: (byte)Http2PingFrameFlags.ACK,
-                withStreamId: 0);
-
             // Stream has been returned to the pool
-            Assert.Equal(1, _connection.StreamPool.Count);
+            await PingUntilStreamPooled(expectedCount: 1).DefaultTimeout();
+            Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+            Assert.Equal(stream, pooledStream);
 
             appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
@@ -444,17 +442,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
-            // Ping will trigger the stream to be returned to the pool so we can assert it
-            await SendPingAsync(Http2PingFrameFlags.NONE);
-            await ExpectAsync(Http2FrameType.PING,
-                withLength: 8,
-                withFlags: (byte)Http2PingFrameFlags.ACK,
-                withStreamId: 0);
-
             // Stream was reused and returned to the pool
-            Assert.Equal(1, _connection.StreamPool.Count);
+            await PingUntilStreamPooled(expectedCount: 1).DefaultTimeout();
+            Assert.True(_connection.StreamPool.TryPeek(out pooledStream));
+            Assert.Equal(stream, pooledStream);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+            async Task PingUntilStreamPooled(int expectedCount)
+            {
+                do
+                {
+                    // Ping will trigger the stream to be returned to the pool so we can assert it
+                    await SendPingAsync(Http2PingFrameFlags.NONE);
+                    await ExpectAsync(Http2FrameType.PING,
+                        withLength: 8,
+                        withFlags: (byte)Http2PingFrameFlags.ACK,
+                        withStreamId: 0);
+                } while (_connection.StreamPool.Count != expectedCount);
+            }
         }
 
         [Fact]
