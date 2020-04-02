@@ -19,17 +19,19 @@ namespace Templates.Test.SpaTemplateTest
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ReactTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactnoauth", "react", useLocalDb: false, usesAuth: false);
 
-        [QuarantinedTest]
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ReactTemplate_IndividualAuth_NetCore()
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);
 
         [ConditionalFact]
         [SkipOnHelix("selenium")]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ReactTemplate_IndividualAuth_NetCore_LocalDb()
             => SpaTemplateImplAsync("reactindividualuld", "react", useLocalDb: true, usesAuth: true);
     }
