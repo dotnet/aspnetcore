@@ -152,6 +152,7 @@
                           $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
+                          $(RepoRoot)src\Logging\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
