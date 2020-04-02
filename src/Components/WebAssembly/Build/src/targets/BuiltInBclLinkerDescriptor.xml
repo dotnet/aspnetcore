@@ -24,4 +24,15 @@
     <type fullname="WebAssembly.Net.Http.HttpClient.FetchCredentialsOption" />
     <type fullname="WebAssembly.Net.Http.HttpClient.WasmHttpMessageHandler" />
   </assembly>
+
+  <assembly fullname="System.Text.Json">
+    <!-- S.T.J. uses Activator.CreateInstance to instantiate converters, so we need to preserve default constructors.
+    For safety, do this for all converter types, even though most of them are preserved anyway due to being referenced
+    statically. It's only JsonStringEnumConverter that currently isn't referenced statically.
+    The following is a workaround for https://github.com/dotnet/aspnetcore/issues/19086.
+    The underlying issue is reported in the runtime repo at https://github.com/dotnet/runtime/issues/34449 -->
+    <type fullname="System.Text.Json.Serialization.*Converter">
+      <method signature="System.Void .ctor()" />
+    </type>
+  </assembly>
 </linker>
