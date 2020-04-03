@@ -98,7 +98,7 @@ namespace RunTests
                     Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
                     foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                     {
-                        File.Copy(file, $"{appRuntimePath}{file}", overwrite: true);
+                        File.Copy(file, Path.Combine(appRuntimePath, file), overwrite: true);
                     }
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
