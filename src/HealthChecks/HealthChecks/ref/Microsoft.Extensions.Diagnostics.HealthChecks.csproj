@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" Key="" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
@@ -16,6 +17,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" Key="" />
   </ItemGroup>
 </Project>

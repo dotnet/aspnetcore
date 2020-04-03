@@ -105,7 +105,7 @@
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.4-runtime.20201.1</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.4-runtime.20201.1</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.4-runtime.20201.1</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsInternalTransportPackageVersion>5.0.0-preview.4-runtime.20201.2</MicrosoftExtensionsInternalTransportPackageVersion>
+    <MicrosoftExtensionsInternalTransportPackageVersion>5.0.0-preview.4-runtime.20201.1</MicrosoftExtensionsInternalTransportPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.4.20201.1</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.4.20201.1</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-preview.4.20201.1</SystemDrawingCommonPackageVersion>
