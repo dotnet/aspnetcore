@@ -19,6 +19,9 @@
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+    <ProjectReference
+      Include="..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj"
+      CopyLocal="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,5 +31,18 @@
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
   </ItemGroup>
+
+  <Target Name="_FixupRefAssembly" AfterTargets="_ResolveBlazorInputs" BeforeTargets="_ResolveBlazorOutputs">
+    <!--
+      ProjectReference doesn't really play well with IncludeAssets behavior you get when referencing
+      the package with IncludeAssets="compile".
+    -->
+    <ItemGroup>
+      <_HttpHandlerAssembly Include="@(_BlazorUserRuntimeAssembly)"
+        Condition="%(_BlazorUserRuntimeAssembly.ProjectReferenceOriginalItemSpec) == '..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj'" />
+
+      <_BlazorUserRuntimeAssembly Remove="@(_HttpHandlerAssembly)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
