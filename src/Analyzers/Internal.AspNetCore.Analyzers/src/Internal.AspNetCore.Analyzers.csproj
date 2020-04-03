@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core internal use analyzers.</Description>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <PackageTags>$(PackageTags);analyzers</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <!--
+      Except for analyzer unit tests, analyzers should not be referenced by other projects in this repo. Analyzers cannot be used as
+      a project reference. The SDK currently only supports using analyzers as a PackageReference. This flag prevents this project from
+      being used as a `<Reference>`, which indicates that a reference is interchangeable between ProjectRef and PackageRef.
+    -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
