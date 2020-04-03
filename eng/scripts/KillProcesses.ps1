@@ -42,7 +42,7 @@ function _listProcesses($processName) {
     $processes = Get-WmiObject win32_process -Filter "name like '%$processName'" -ErrorAction SilentlyContinue;
     if ($processes) {
         Write-Host "These processes will be killed..."
-        $processes | select commandline
+        $processes | select commandline | Out-String -Width 800
     }
 }
 
