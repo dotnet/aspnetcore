@@ -223,8 +223,8 @@
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"
         Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
         IsImplicitlyDefined="true"
-        ExcludeAssets="runtime"
-        PrivateAssets="all"
+        IncludeAssets="Compile"
+        PrivateAssets="All"
         GeneratePathProperty="true" />
   </ItemGroup>
 
