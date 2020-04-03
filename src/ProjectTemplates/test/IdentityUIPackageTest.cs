@@ -118,7 +118,7 @@ namespace Templates.Test
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
-        [ConditionalTheory(Skip = "This test run for over an hour")]
+        [ConditionalTheory]
         [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]

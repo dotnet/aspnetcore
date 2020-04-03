@@ -104,7 +104,7 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory(Skip = "This test run for over an hour")]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
