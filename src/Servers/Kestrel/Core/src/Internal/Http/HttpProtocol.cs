@@ -547,6 +547,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
+                // We run the request processing loop in a seperate async method so per connection
+                // exception handling doesn't complicate the generated asm for the loop.
                 await ProcessRequests(application);
             }
             catch (BadHttpRequestException ex)
@@ -624,91 +626,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 InitializeBodyControl(messageBody);
 
-                var context = application.CreateContext(this);
-
-                try
-                {
-                    KestrelEventSource.Log.RequestStart(this);
-
-                    // Run the application code for this request
-                    await application.ProcessRequestAsync(context);
-
-                    // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                    // already failed. If an OnStarting callback throws we can go through
-                    // our normal error handling in ProduceEnd.
-                    // https://github.com/aspnet/KestrelHttpServer/issues/43
-                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
-                    {
-                        await FireOnStarting();
-                    }
-
-                    if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
-                    {
-                        ReportApplicationError(lengthException);
-                    }
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    // Capture BadHttpRequestException for further processing
-                    // This has to be caught here so StatusCode is set properly before disposing the HttpContext
-                    // (DisposeContext logs StatusCode).
-                    SetBadRequestState(ex);
-                    ReportApplicationError(ex);
-                }
-                catch (Exception ex)
-                {
-                    ReportApplicationError(ex);
-                }
-
-                KestrelEventSource.Log.RequestStop(this);
-
-                // At this point all user code that needs use to the request or response streams has completed.
-                // Using these streams in the OnCompleted callback is not allowed.
-                try
-                {
-                    await _bodyControl.StopAsync();
-                }
-                catch (Exception ex)
-                {
-                    // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
-                    // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
-                    // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
-                    ReportApplicationError(ex);
-                }
-
-                // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
-                if (_requestRejectedException == null)
-                {
-                    if (!_connectionAborted)
-                    {
-                        // Call ProduceEnd() before consuming the rest of the request body to prevent
-                        // delaying clients waiting for the chunk terminator:
-                        //
-                        // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
-                        //
-                        // This also prevents the 100 Continue response from being sent if the app
-                        // never tried to read the body.
-                        // https://github.com/aspnet/KestrelHttpServer/issues/2102
-                        //
-                        // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                        // HttpContext.Response.StatusCode is correctly set when
-                        // IHttpContextFactory.Dispose(HttpContext) is called.
-                        await ProduceEnd();
-                    }
-                    else if (!HasResponseStarted)
-                    {
-                        // If the request was aborted and no response was sent, there's no
-                        // meaningful status code to log.
-                        StatusCode = 0;
-                    }
-                }
-
-                if (_onCompleted?.Count > 0)
-                {
-                    await FireOnCompleted();
-                }
-
-                application.DisposeContext(context, _applicationException);
+                // We run user controlled request processing in a seperate async method
+                // so any changes made to ExecutionContext are undone when it returns and
+                // each request starts with a fresh ExecutionContext state.
+                await ProcessRequest(application);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
                 if (!_connectionAborted && _requestRejectedException == null && !messageBody.IsEmpty)
@@ -721,6 +642,95 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     await messageBody.StopAsync();
                 }
             }
+        }
+
+        private async ValueTask ProcessRequest<TContext>(IHttpApplication<TContext> application)
+        {
+            var context = application.CreateContext(this);
+
+            try
+            {
+                KestrelEventSource.Log.RequestStart(this);
+
+                // Run the application code for this request
+                await application.ProcessRequestAsync(context);
+
+                // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                // already failed. If an OnStarting callback throws we can go through
+                // our normal error handling in ProduceEnd.
+                // https://github.com/aspnet/KestrelHttpServer/issues/43
+                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
+                {
+                    await FireOnStarting();
+                }
+
+                if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
+                {
+                    ReportApplicationError(lengthException);
+                }
+            }
+            catch (BadHttpRequestException ex)
+            {
+                // Capture BadHttpRequestException for further processing
+                // This has to be caught here so StatusCode is set properly before disposing the HttpContext
+                // (DisposeContext logs StatusCode).
+                SetBadRequestState(ex);
+                ReportApplicationError(ex);
+            }
+            catch (Exception ex)
+            {
+                ReportApplicationError(ex);
+            }
+
+            KestrelEventSource.Log.RequestStop(this);
+
+            // At this point all user code that needs use to the request or response streams has completed.
+            // Using these streams in the OnCompleted callback is not allowed.
+            try
+            {
+                await _bodyControl.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
+                // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
+                // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
+                ReportApplicationError(ex);
+            }
+
+            // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
+            if (_requestRejectedException == null)
+            {
+                if (!_connectionAborted)
+                {
+                    // Call ProduceEnd() before consuming the rest of the request body to prevent
+                    // delaying clients waiting for the chunk terminator:
+                    //
+                    // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
+                    //
+                    // This also prevents the 100 Continue response from being sent if the app
+                    // never tried to read the body.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/2102
+                    //
+                    // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                    // HttpContext.Response.StatusCode is correctly set when
+                    // IHttpContextFactory.Dispose(HttpContext) is called.
+                    await ProduceEnd();
+                }
+                else if (!HasResponseStarted)
+                {
+                    // If the request was aborted and no response was sent, there's no
+                    // meaningful status code to log.
+                    StatusCode = 0;
+                }
+            }
+
+            if (_onCompleted?.Count > 0)
+            {
+                await FireOnCompleted();
+            }
+
+            application.DisposeContext(context, _applicationException);
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
@@ -749,108 +759,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected Task FireOnStarting()
         {
             var onStarting = _onStarting;
-
-            if (onStarting == null || onStarting.Count == 0)
+            if (onStarting?.Count > 0)
             {
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return FireOnStartingMayAwait(onStarting);
-            }
-        }
-
-        private Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
-        {
-            try
-            {
-                while (onStarting.TryPop(out var entry))
-                {
-                    var task = entry.Key.Invoke(entry.Value);
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        return FireOnStartingAwaited(task, onStarting);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ReportApplicationError(ex);
+                return ProcessEvents(this, onStarting);
             }
 
             return Task.CompletedTask;
-        }
 
-        private async Task FireOnStartingAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
-        {
-            try
+            static async Task ProcessEvents(HttpProtocol protocol, Stack<KeyValuePair<Func<object, Task>, object>> events)
             {
-                await currentTask;
-
-                while (onStarting.TryPop(out var entry))
+                // Try/Catch is outside the loop as any error that occurs is before the request starts.
+                // So we want to report it as an ApplicationError to fail the request and not process more events.
+                try
                 {
-                    await entry.Key.Invoke(entry.Value);
+                    while (events.TryPop(out var entry))
+                    {
+                        await entry.Key.Invoke(entry.Value);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                ReportApplicationError(ex);
+                catch (Exception ex)
+                {
+                    protocol.ReportApplicationError(ex);
+                }
             }
         }
 
         protected Task FireOnCompleted()
         {
             var onCompleted = _onCompleted;
-
-            if (onCompleted == null || onCompleted.Count == 0)
+            if (onCompleted?.Count > 0)
             {
-                return Task.CompletedTask;
-            }
-
-            return FireOnCompletedMayAwait(onCompleted);
-        }
-
-        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
-        {
-            while (onCompleted.TryPop(out var entry))
-            {
-                try
-                {
-                    var task = entry.Key.Invoke(entry.Value);
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        return FireOnCompletedAwaited(task, onCompleted);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ReportApplicationError(ex);
-                }
+                return ProcessEvents(this, onCompleted);
             }
 
             return Task.CompletedTask;
-        }
 
-        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
-        {
-            try
+            static async Task ProcessEvents(HttpProtocol protocol, Stack<KeyValuePair<Func<object, Task>, object>> events)
             {
-                await currentTask;
-            }
-            catch (Exception ex)
-            {
-                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
-            }
-
-            while (onCompleted.TryPop(out var entry))
-            {
-                try
+                // Try/Catch is inside the loop as any error that occurs is after the request has finished.
+                // So we will just log it and keep processing the events, as the completion has already happened.
+                while (events.TryPop(out var entry))
                 {
-                    await entry.Key.Invoke(entry.Value);
-                }
-                catch (Exception ex)
-                {
-                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+                    try
+                    {
+                        await entry.Key.Invoke(entry.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        protocol.Log.ApplicationError(protocol.ConnectionId, protocol.TraceIdentifier, ex);
+                    }
                 }
             }
         }
