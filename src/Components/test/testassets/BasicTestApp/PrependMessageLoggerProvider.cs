@@ -3,33 +3,42 @@
 
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.JSInterop;
 
 namespace BasicTestApp
 {
-    // The goal for this class is to make it possible for E2E tests to observe that a custom
-    // logger factory can be plugged in and gets used when logging unhandled exceptions.
-    // However, it's valuable to pass through all calls to the default implementation too
-    // so that if any defect in the underlying implementation would break tests, we still see it.
-
-    public class PrependMessageLoggerFactory : ILoggerFactory
+    internal class PrependMessageLoggerProvider : ILoggerProvider
     {
-        private readonly string _message;
-        private readonly ILoggerFactory _underlyingFactory;
+        ILogger _logger;
+        string _message;
+        ILogger _defaultLogger;
+        private bool _disposed = false;
 
-        public PrependMessageLoggerFactory(string message, ILoggerFactory underlyingFactory)
+        public PrependMessageLoggerProvider(string message, IJSRuntime runtime)
         {
             _message = message;
-            _underlyingFactory = underlyingFactory;
+            _defaultLogger = new WebAssemblyConsoleLogger<object>(runtime);
         }
 
-        public void AddProvider(ILoggerProvider provider)
-            => _underlyingFactory.AddProvider(provider);
-
         public ILogger CreateLogger(string categoryName)
-            => new PrependMessageLogger(_message, _underlyingFactory.CreateLogger(categoryName));
+        {
+            if (_logger == null)
+            {
+                _logger = new PrependMessageLogger(_message, _defaultLogger);
+            }
+            return _logger;
+        }
 
         public void Dispose()
-            => _underlyingFactory.Dispose();
+        {
+            if (!_disposed)
+            {
+                _logger = null;
+            }
+            _disposed = true;
+        }
 
         private class PrependMessageLogger : ILogger
         {

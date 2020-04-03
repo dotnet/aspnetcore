@@ -85,10 +85,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("log-none")).Click();
             Browser.FindElement(By.Id("log-trace")).Click();
             Browser.FindElement(By.Id("log-debug")).Click();
-            Browser.FindElement(By.Id("log-information")).Click();
             AssertLastLogMessage(LogLevel.Info, "Test log message");
 
             // These severity levels are displayed
+            Browser.FindElement(By.Id("log-information")).Click();
+            AssertLastLogMessage(LogLevel.Info, "[Custom logger] This is a Information message with count=4");
             Browser.FindElement(By.Id("log-warning")).Click();
             AssertLastLogMessage(LogLevel.Warning, "[Custom logger] This is a Warning message with count=5");
             Browser.FindElement(By.Id("log-error")).Click();

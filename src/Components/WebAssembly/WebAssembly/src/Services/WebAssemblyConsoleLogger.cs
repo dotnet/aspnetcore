@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return logLevel >= LogLevel.Warning && logLevel != LogLevel.None;
+            return logLevel != LogLevel.None;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
