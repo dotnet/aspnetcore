@@ -1317,9 +1317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestTargetException(target);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-#pragma warning disable CS0618 // Type or member is obsolete
-        private Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
-#pragma warning restore CS0618 // Type or member is obsolete
+        private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
             => KestrelBadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)

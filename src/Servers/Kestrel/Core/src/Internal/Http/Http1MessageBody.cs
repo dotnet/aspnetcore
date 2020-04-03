@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract class Http1MessageBody : MessageBody
     {
         protected readonly Http1Connection _context;
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
-            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
+            catch (BadHttpRequestException ex)
             {
                 // At this point, the response has already been written, so this won't result in a 4XX response;
                 // however, we still need to stop the request processing loop and log.

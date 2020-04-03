@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly bool _showErrorDetails;
@@ -451,9 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-#pragma warning disable CS0618 // Type or member is obsolete
         private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
-#pragma warning restore CS0618 // Type or member is obsolete
             => KestrelBadHttpRequestException.GetException(
                 reason,
                 _showErrorDetails
