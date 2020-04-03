@@ -165,9 +165,7 @@
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
-    <!-- Analyzer packages pinned temporarily until migrated/deprecated -->
-    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20180.4</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20180.4</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <!-- DiagnosticAdapter package pinned temporarily until migrated/deprecated -->
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.4.20180.4</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <!-- Build tool dependencies -->
     <InternalAspNetCoreBuildTasksPackageVersion>3.0.0-build-20190530.3</InternalAspNetCoreBuildTasksPackageVersion>
