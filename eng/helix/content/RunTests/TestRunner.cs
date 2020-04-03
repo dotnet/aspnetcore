@@ -95,6 +95,8 @@ namespace RunTests
                 if (Directory.Exists("Microsoft.AspNetCore.App"))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
+                    Console.WriteLine($"Creating directory: {appRuntimePath}");
+                    Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
