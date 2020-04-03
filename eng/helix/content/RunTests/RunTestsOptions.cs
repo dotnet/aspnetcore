@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace RunTests
 {
-    public class RunTestsOptions {
+    public class RunTestsOptions
+    {
         public static RunTestsOptions Parse(string[] args)
         {
             var command = new RootCommand()

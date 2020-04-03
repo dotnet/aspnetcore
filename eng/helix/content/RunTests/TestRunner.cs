@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace RunTests
 {
-    public class TestRunner {
+    public class TestRunner
+    {
         public TestRunner(RunTestsOptions options)
         {
             Options = options;
@@ -20,7 +21,8 @@ namespace RunTests
         public RunTestsOptions Options { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; }
 
-        public bool SetupEnvironment() {
+        public bool SetupEnvironment()
+        {
             try 
             {
                 // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
@@ -63,7 +65,8 @@ namespace RunTests
             }
         }
 
-        public void DisplayContents() {
+        public void DisplayContents()
+        {
             try 
             {
                 Console.WriteLine();
@@ -137,7 +140,8 @@ namespace RunTests
             }
         }
 
-        public async Task<bool> CheckTestDiscoveryAsync() {
+        public async Task<bool> CheckTestDiscoveryAsync()
+        {
             try
             {
                 // Run test discovery so we know if there are tests to run
@@ -243,6 +247,5 @@ namespace RunTests
                 Console.WriteLine("No logs found in artifacts/log");
             }
         }
-
     }
 }

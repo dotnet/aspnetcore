@@ -19,7 +19,8 @@ namespace RunTests
                 var runner = new TestRunner(RunTestsOptions.Parse(args));
 
                 var keepGoing = runner.SetupEnvironment();
-                if (keepGoing) {
+                if (keepGoing)
+                {
                     keepGoing = await runner.InstallAspNetAppIfNeededAsync();
                 }
 
@@ -27,7 +28,8 @@ namespace RunTests
 
                 if (keepGoing)
                 {
-                    if (!await runner.CheckTestDiscoveryAsync()) {
+                    if (!await runner.CheckTestDiscoveryAsync())
+                    {
                         Console.WriteLine("RunTest stopping due to test discovery failure.");
                         Environment.Exit(1);
                         return;
