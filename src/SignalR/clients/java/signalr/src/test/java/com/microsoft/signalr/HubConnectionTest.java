@@ -2520,30 +2520,29 @@ class HubConnectionTest {
         assertEquals("Unexpected status code returned from negotiate: 500 Internal server error.", exception.getMessage());
     }
 
-    public void hubConnectionClosesHttpClientOnClose() throws Exception {
+    @Test
+    public void hubConnectionCloseCallsStop() throws Exception {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                         + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
+        CompletableSubject close = CompletableSubject.create();
+
         try (HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withTransportImplementation(mockTransport)
                 .withHttpClient(client)
                 .build()) {
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
-            assertEquals(false, client.getCloseCalled());
+            hubConnection.onClosed(e -> {
+                close.onComplete();
+            });
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         }
 
-        assertEquals(true, client.getCloseCalled());
+        close.timeout(1, TimeUnit.SECONDS).blockingGet();
     }
 }

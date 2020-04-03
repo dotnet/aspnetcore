@@ -534,9 +534,7 @@ public class HubConnection implements AutoCloseable {
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
             this.streamMap.clear();
-            if (this.pingTimer != null) {
-                this.pingTimer.cancel();
-            }
+
             if (this.handshakeTimeout != null) {
                 this.handshakeTimeout.shutdownNow();
                 this.handshakeTimeout = null;
@@ -1114,16 +1112,13 @@ public class HubConnection implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        stop().subscribe(() -> {
-            this.cleanup();
-        }, e -> {
-            this.cleanup();
-        });
-    }
-
-    private void cleanup() {
-        if (this.httpClient != null) {
-            this.httpClient.close();
+        try {
+            stop().blockingAwait();
+        } catch (Exception ex) {
+            // Don't close HttpClient if it's passed in by the user
+            if (this.httpClient != null && this.httpClient instanceof DefaultHttpClient) {
+                this.httpClient.close();
+            }
         }
     }
 }
