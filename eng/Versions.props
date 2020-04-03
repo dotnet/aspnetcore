@@ -123,14 +123,12 @@
     <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
     <MicrosoftExtensionsLoggingConfigurationPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingConfigurationPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingEventSourcePackageVersion>
     <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingEventLogPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
