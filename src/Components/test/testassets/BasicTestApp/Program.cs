@@ -46,6 +46,7 @@ namespace BasicTestApp
             });
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s => new PrependMessageLoggerProvider("Custom logger", s.GetService<IJSRuntime>()));
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
 
             var host = builder.Build();
             ConfigureCulture(host);
