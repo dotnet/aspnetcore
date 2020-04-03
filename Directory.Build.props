@@ -106,7 +106,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(DisablePubternalApiCheck)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" IsImplicitlyDefined="true" />
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
