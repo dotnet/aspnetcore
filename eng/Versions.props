@@ -132,16 +132,14 @@
     <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20201.2</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsLoggingTestingPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>5.0.0-preview.4.20201.1</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.4.20201.1</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>5.0.0-preview.4.20203.1</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.4.20203.1</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from dotnet/aspnetcore-tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.4.20201.4</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.4.20201.4</MicrosoftAspNetCoreRazorLanguagePackageVersion>

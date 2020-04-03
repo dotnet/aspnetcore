@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -30,6 +31,9 @@ namespace Templates.Test.Helpers
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
 
+        private string _certificatePath;
+        private string _certificatePassword = Guid.NewGuid().ToString();
+
         internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
 
@@ -48,11 +52,13 @@ namespace Templates.Test.Helpers
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (m, c, ch, p) => true,
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
             };
+
+            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
 
             EnsureDevelopmentCertificates();
 
@@ -62,7 +68,13 @@ namespace Templates.Test.Helpers
 
             logger?.LogInformation($"AspNetProcess - process: {DotNetMuxer.MuxerPathOrDefault()} arguments: {arguments}");
 
-            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
+            var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
+            {
+                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH"] = _certificatePath,
+                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PASSWORD"] = _certificatePassword
+            };
+
+            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
 
             logger?.LogInformation("AspNetProcess - process started");
 
@@ -74,10 +86,12 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal static void EnsureDevelopmentCertificates()
+        internal void EnsureDevelopmentCertificates()
         {
             var now = DateTimeOffset.Now;
-            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            var manager = new CertificateManager();
+            var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), "CN=localhost");
+            manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
 
         public void VisitInBrowser(IWebDriver driver)
