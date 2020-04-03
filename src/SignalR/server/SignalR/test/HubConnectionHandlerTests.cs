@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
+using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -2371,7 +2372,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.AddSignalR()
                         .AddMessagePackProtocol(options =>
                         {
-                            options.FormatterResolvers.Insert(0, new CustomFormatter());
+                            options.SerializerOptions = MessagePackSerializerOptions.Standard.WithResolver(CompositeResolver.Create(new CustomFormatter(), options.SerializerOptions.Resolver));
                         });
                 }, LoggerFactory);
 
