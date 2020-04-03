@@ -179,7 +179,6 @@
 
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
-    <ChecksumExtension>.sha512</ChecksumExtension>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />

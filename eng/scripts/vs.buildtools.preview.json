@@ -7,11 +7,8 @@
     ],
     "add": [
         "Microsoft.Net.Component.4.6.1.TargetingPack",
-        "Microsoft.Net.Component.4.6.2.TargetingPack",
-        "Microsoft.Net.Component.4.7.1.TargetingPack",
         "Microsoft.Net.Component.4.7.2.SDK",
         "Microsoft.Net.Component.4.7.2.TargetingPack",
-        "Microsoft.Net.Component.4.7.TargetingPack",
         "Microsoft.VisualStudio.Component.FSharp.MSBuild",
         "Microsoft.VisualStudio.Component.NuGet",
         "Microsoft.VisualStudio.Component.NuGet.BuildTools",

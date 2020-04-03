@@ -34,6 +34,7 @@
     <NuspecProperty Include="publishDir=$(PublishDir)" />
     <NuspecProperty Include="componentsrootdir=..\..\..\" />
     <NuspecProperty Include="blazorversion=$(PackageVersion)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
 </Project>
