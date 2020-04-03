@@ -112,7 +112,6 @@
     <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsConfigurationXmlPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.4.20201.2</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
@@ -167,8 +166,9 @@
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Analyzer packages pinned temporarily until migrated/deprecated -->
-    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20201.1</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20201.1</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>5.0.0-preview.4.20180.4</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>5.0.0-preview.4.20180.4</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>5.0.0-preview.4.20180.4</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <!-- Build tool dependencies -->
     <InternalAspNetCoreBuildTasksPackageVersion>3.0.0-build-20190530.3</InternalAspNetCoreBuildTasksPackageVersion>
     <MicrosoftSymbolUploaderBuildTaskPackageVersion>1.0.0-beta-64023-03</MicrosoftSymbolUploaderBuildTaskPackageVersion>
