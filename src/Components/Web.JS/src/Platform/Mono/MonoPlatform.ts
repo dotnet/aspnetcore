@@ -2,6 +2,7 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
+import { loadTimezone } from './Timezone';
 
 let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
@@ -161,7 +162,7 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
 
 function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, onReady: () => void, onError: (reason?: any) => void) {
   const resources = resourceLoader.bootConfig.resources;
-  const module = {} as typeof Module;
+  const module = (window['Module'] || { }) as typeof Module;
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(line));
@@ -170,8 +171,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     console.error(line);
     showErrorNotification();
   };
-  module.preRun = [];
-  module.postRun = [];
+  module.preRun = module.preRun || [];
+  module.postRun = module.postRun || [];
   (module as any).preloadPlugins = [];
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
@@ -205,6 +206,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
 
     MONO.loaded_files = [];
+
+    loadTimezone();
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
     // Mono requires the assembly filenames to have a '.dll' extension, so supply such names regardless

@@ -1,5 +1,14 @@
 ﻿@page "/"
+@using System.IO
 
 <h1>Hello, world!</h1>
 
+<h1>@DateTimeOffset.Now</h1>
+
+<ul>
+@foreach (var item in TimeZoneInfo.GetSystemTimeZones())
+{
+    <li>@item.DisplayName @item.BaseUtcOffset</li>
+}
+</ul>
 Welcome to your new app.
