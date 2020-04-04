@@ -361,60 +361,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             try
             {
-                var disableStringReuse = ServerOptions.DisableStringReuse;
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
-                if (disableStringReuse ||
+                if (ServerOptions.DisableStringReuse ||
                     previousValue == null || previousValue.Length != target.Length ||
                     !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
                 {
-                    // The previous string does not match what the bytes would convert to,
-                    // so we will need to generate a new string.
-                    RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
-
-                    var queryLength = 0;
-                    if (target.Length == pathOffset.End)
-                    {
-                        // No query string
-                        QueryString = string.Empty;
-                        _parsedQueryString = null;
-                    }
-                    else
-                    {
-                        previousValue = _parsedQueryString;
-                        var query = target[pathOffset.End..];
-                        queryLength = query.Length;
-                        if (disableStringReuse ||
-                            previousValue == null || previousValue.Length != query.Length ||
-                            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
-                        {
-                            // The previous string does not match what the bytes would convert to,
-                            // so we will need to generate a new string.
-                            QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
-                        }
-                        else
-                        {
-                            // Same as previous
-                            QueryString = _parsedQueryString;
-                        }
-                    }
-
-                    var pathLength = pathOffset.End;
-                    if (pathLength == 1)
-                    {
-                        // If path.Length == 1 it can only be a forward slash (e.g. home page)
-                        Path = _parsedPath = ForwardSlash;
-                    }
-                    else
-                    {
-                        var path = target[..pathLength];
-                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
-                    }
+                    ParseTarget(pathOffset, target);
                 }
                 else
                 {
                     // As RawTarget is the same we can reuse the previous parsed values.
-                    RawTarget = _parsedRawTarget;
+                    RawTarget = previousValue;
                     Path = _parsedPath;
                     QueryString = _parsedQueryString;
                 }
@@ -427,6 +385,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 ThrowRequestTargetRejected(target);
             }
+        }
+
+        private void ParseTarget(PathOffset pathOffset, Span<byte> target)
+        {
+            // The previous string does not match what the bytes would convert to,
+            // so we will need to generate a new string.
+            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+
+            var queryLength = 0;
+            if (target.Length == pathOffset.End)
+            {
+                // No query string
+                QueryString = string.Empty;
+                _parsedQueryString = null;
+            }
+            else
+            {
+                queryLength = ParseQuery(pathOffset, target);
+            }
+
+            var pathLength = pathOffset.End;
+            if (pathLength == 1)
+            {
+                // If path.Length == 1 it can only be a forward slash (e.g. home page)
+                Path = _parsedPath = ForwardSlash;
+            }
+            else
+            {
+                var path = target[..pathLength];
+                Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
+            }
+        }
+
+        private int ParseQuery(PathOffset pathOffset, Span<byte> target)
+        {
+            var previousValue = _parsedQueryString;
+            var query = target[pathOffset.End..];
+            var queryLength = query.Length;
+            if (ServerOptions.DisableStringReuse ||
+                previousValue == null || previousValue.Length != queryLength ||
+                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+            }
+            else
+            {
+                // Same as previous
+                QueryString = _parsedQueryString;
+            }
+
+            return queryLength;
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
