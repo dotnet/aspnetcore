@@ -363,7 +363,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 var disableStringReuse = ServerOptions.DisableStringReuse;
                 var path = target[..pathOffset.End];
-                var query = target[pathOffset.End..];
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
                 if (disableStringReuse ||
@@ -374,19 +373,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // so we will need to generate a new string.
                     RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
-                    previousValue = _parsedQueryString;
-                    if (disableStringReuse ||
-                        previousValue == null || previousValue.Length != query.Length ||
-                        !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                    var queryLength = 0;
+                    if (target.Length == pathOffset.End)
                     {
-                        // The previous string does not match what the bytes would convert to,
-                        // so we will need to generate a new string.
-                        QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                        // No query string
+                        QueryString = string.Empty;
+                        _parsedQueryString = null;
                     }
                     else
                     {
-                        // Same as previous
-                        QueryString = _parsedQueryString;
+                        previousValue = _parsedQueryString;
+                        var query = target[pathOffset.End..];
+                        queryLength = query.Length;
+                        if (disableStringReuse ||
+                            previousValue == null || previousValue.Length != query.Length ||
+                            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                        {
+                            // The previous string does not match what the bytes would convert to,
+                            // so we will need to generate a new string.
+                            QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                        }
+                        else
+                        {
+                            // Same as previous
+                            QueryString = _parsedQueryString;
+                        }
                     }
 
                     if (path.Length == 1)
@@ -396,7 +407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else
                     {
-                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, query.Length);
+                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
                     }
                 }
                 else
