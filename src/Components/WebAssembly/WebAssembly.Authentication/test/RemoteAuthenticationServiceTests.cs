@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -21,10 +24,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -51,10 +55,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -77,10 +82,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -107,10 +113,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -133,10 +140,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -163,10 +171,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -189,10 +198,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -219,10 +229,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -245,10 +256,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -282,10 +294,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -321,10 +334,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -361,12 +375,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
-            testJsRuntime.GetUserResult = null;
+            testJsRuntime.GetUserResult = default;
 
             // Act
             var result = await runtime.GetAuthenticatedUser();
@@ -387,19 +402,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions();
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, CoolRoleAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
-            var serializationOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
-            var serializedUser = JsonSerializer.Serialize(new
+            var account = new CoolRoleAccount
             {
-                CoolName = "Alfred",
-                CoolRole = new[] { "admin", "cool", "fantastic" }
-            }, serializationOptions);
+                CoolRole = new[] { "admin", "cool", "fantastic" },
+                AdditionalProperties = new Dictionary<string, object>
+                {
+                    ["CoolName"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("Alfred"))
+                }
+            };
 
-            testJsRuntime.GetUserResult = JsonSerializer.Deserialize<IDictionary<string, object>>(serializedUser);
+            testJsRuntime.GetUserResult = account;
 
             // Act
             var result = await runtime.GetAuthenticatedUser();
@@ -420,19 +438,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var testJsRuntime = new TestJsRuntime();
             var options = CreateOptions("scope");
-            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>(
+            var runtime = new RemoteAuthenticationService<RemoteAuthenticationState, CoolRoleAccount, OidcProviderOptions>(
                 testJsRuntime,
                 options,
-                new TestNavigationManager());
+                new TestNavigationManager(),
+                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
-            var serializationOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
-            var serializedUser = JsonSerializer.Serialize(new
+            var account = new CoolRoleAccount
             {
-                CoolName = "Alfred",
-                CoolRole = new[] { "admin", "cool", "fantastic" }
-            }, serializationOptions);
+                CoolRole = new[] { "admin", "cool", "fantastic" },
+                AdditionalProperties = new Dictionary<string, object>
+                {
+                    ["CoolName"] = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize("Alfred")),
+                }
+            };
 
-            testJsRuntime.GetUserResult = JsonSerializer.Deserialize<IDictionary<string, object>>(serializedUser);
+            testJsRuntime.GetUserResult = account;
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
             {
                 Status = "success",
@@ -509,22 +530,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             public InternalAccessTokenResult GetAccessTokenResult { get; set; }
 
-            public IDictionary<string, object> GetUserResult { get; set; }
+            public RemoteUserAccount GetUserResult { get; set; }
 
             public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             {
                 PastInvocations.Add((identifier, args));
-                return new ValueTask<TValue>((TValue)GetInvocationResult<TValue>(identifier));
+                return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
             }
-
 
             public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
             {
                 PastInvocations.Add((identifier, args));
-                return new ValueTask<TValue>((TValue)GetInvocationResult<TValue>(identifier));
+                return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
             }
 
-            private object GetInvocationResult<TValue>(string identifier)
+            private object GetInvocationResult(string identifier)
             {
                 switch (identifier)
                 {
@@ -549,6 +569,35 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 return default;
             }
         }
+    }
+
+    internal class TestUserFactory : UserFactory<CoolRoleAccount>
+    {
+        public TestUserFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
+        {
+        }
+
+        public override async ValueTask<ClaimsPrincipal> CreateUserAsync(
+            CoolRoleAccount account,
+            RemoteAuthenticationUserOptions options)
+        {
+            var user = await base.CreateUserAsync(account, options);
+
+            if (account.CoolRole != null)
+            {
+                foreach (var role in account.CoolRole)
+                {
+                    ((ClaimsIdentity)user.Identity).AddClaim(new Claim("CoolRole", role));
+                }
+            }
+
+            return user;
+        }
+    }
+
+    internal class CoolRoleAccount : RemoteUserAccount
+    {
+        public string[] CoolRole { get; set; }
     }
 
     internal class TestNavigationManager : NavigationManager

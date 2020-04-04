@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,15 +16,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// </summary>
     /// <typeparam name="TRemoteAuthenticationState">The state to preserve across authentication operations.</typeparam>
     /// <typeparam name="TProviderOptions">The options to be passed down to the underlying JavaScript library handling the authentication operations.</typeparam>
-    public class RemoteAuthenticationService<TRemoteAuthenticationState, TProviderOptions> :
+    public class RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions> :
         AuthenticationStateProvider,
         IRemoteAuthenticationService<TRemoteAuthenticationState>,
         IAccessTokenProvider
-         where TRemoteAuthenticationState : RemoteAuthenticationState
-         where TProviderOptions : new()
+        where TRemoteAuthenticationState : RemoteAuthenticationState
+        where TProviderOptions : new()
+        where TAccount : RemoteUserAccount
     {
         private static readonly TimeSpan _userCacheRefreshInterval = TimeSpan.FromSeconds(60);
-
         private bool _initialized = false;
 
         // This defaults to 1/1/1970
@@ -33,33 +32,42 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private ClaimsPrincipal _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
 
         /// <summary>
-        /// The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.
+        /// Gets the <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.
         /// </summary>
-        protected readonly IJSRuntime _jsRuntime;
+        protected IJSRuntime JsRuntime { get; }
 
         /// <summary>
-        /// The <see cref="NavigationManager"/> used to compute absolute urls.
+        /// Gets the <see cref="NavigationManager"/> used to compute absolute urls.
         /// </summary>
-        protected readonly NavigationManager _navigation;
+        protected NavigationManager Navigation { get; }
 
         /// <summary>
-        /// The options for the underlying JavaScript library handling the authentication operations.
+        /// Gets the <see cref="UserFactory{TAccount}"/> to map accounts to <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        protected readonly RemoteAuthenticationOptions<TProviderOptions> _options;
+        protected UserFactory<TAccount> UserFactory { get; }
+
+        /// <summary>
+        /// Gets the options for the underlying JavaScript library handling the authentication operations.
+        /// </summary>
+        protected RemoteAuthenticationOptions<TProviderOptions> Options { get; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RemoteAuthenticationService{TRemoteAuthenticationState, TProviderOptions}"/>.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
         /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
+        /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
+        /// <param name="userFactory">The <see cref="UserFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
         public RemoteAuthenticationService(
             IJSRuntime jsRuntime,
             IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
-            NavigationManager navigation)
+            NavigationManager navigation,
+            UserFactory<TAccount> userFactory)
         {
-            _jsRuntime = jsRuntime;
-            _navigation = navigation;
-            _options = options.Value;
+            JsRuntime = jsRuntime;
+            Navigation = navigation;
+            UserFactory = userFactory;
+            Options = options.Value;
         }
 
         /// <inheritdoc />
@@ -70,11 +78,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+            var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -85,11 +95,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
+            var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignIn", context.Url);
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -100,11 +112,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+            var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -115,11 +129,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             RemoteAuthenticationContext<TRemoteAuthenticationState> context)
         {
             await EnsureAuthService();
-            var internalResult = await _jsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
+            var internalResult = await JsRuntime.InvokeAsync<InternalRemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.completeSignOut", context.Url);
             var result = internalResult.Convert();
             if (result.Status == RemoteAuthenticationStatus.Success)
             {
-                UpdateUser(GetUser());
+                var getUserTask = GetUser();
+                await getUserTask;
+                UpdateUser(getUserTask);
             }
 
             return result;
@@ -129,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public virtual async ValueTask<AccessTokenResult> RequestAccessToken()
         {
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken");
+            var result = await JsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken");
 
             if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
             {
@@ -154,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
 
             await EnsureAuthService();
-            var result = await _jsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken", options);
+            var result = await JsRuntime.InvokeAsync<InternalAccessTokenResult>("AuthenticationService.getAccessToken", options);
 
             if (!Enum.TryParse<AccessTokenResultStatus>(result.Status, ignoreCase: true, out var parsedStatus))
             {
@@ -172,13 +188,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
         private Uri GetRedirectUrl(string customReturnUrl)
         {
-            var returnUrl = customReturnUrl != null ? _navigation.ToAbsoluteUri(customReturnUrl).ToString() : null;
-            var encodedReturnUrl = Uri.EscapeDataString(returnUrl ?? _navigation.Uri);
-            var redirectUrl = _navigation.ToAbsoluteUri($"{_options.AuthenticationPaths.LogInPath}?returnUrl={encodedReturnUrl}");
+            var returnUrl = customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).ToString() : null;
+            var encodedReturnUrl = Uri.EscapeDataString(returnUrl ?? Navigation.Uri);
+            var redirectUrl = Navigation.ToAbsoluteUri($"{Options.AuthenticationPaths.LogInPath}?returnUrl={encodedReturnUrl}");
             return redirectUrl;
         }
 
-        private async ValueTask<ClaimsPrincipal> GetUser(bool useCache = false)
+        private async Task<ClaimsPrincipal> GetUser(bool useCache = false)
         {
             var now = DateTimeOffset.Now;
             if (useCache && now < _userLastCheck + _userCacheRefreshInterval)
@@ -196,56 +212,29 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Gets the current authenticated used using JavaScript interop.
         /// </summary>
         /// <returns>A <see cref="Task{ClaimsPrincipal}"/>that will return the current authenticated user when completes.</returns>
-        protected internal virtual async Task<ClaimsPrincipal> GetAuthenticatedUser()
+        protected internal virtual async ValueTask<ClaimsPrincipal> GetAuthenticatedUser()
         {
             await EnsureAuthService();
-            var user = await _jsRuntime.InvokeAsync<IDictionary<string, object>>("AuthenticationService.getUser");
+            var account = await JsRuntime.InvokeAsync<TAccount>("AuthenticationService.getUser");
+            var user = await UserFactory.CreateUserAsync(account, Options.UserOptions);
 
-            var identity = user != null ? new ClaimsIdentity(
-                _options.UserOptions.AuthenticationType,
-                _options.UserOptions.NameClaim,
-                _options.UserOptions.RoleClaim) : new ClaimsIdentity();
-
-            if (user != null)
-            {
-                foreach (var kvp in user)
-                {
-                    var name = kvp.Key;
-                    var value = kvp.Value;
-                    if (value != null)
-                    {
-                        if (value is JsonElement element && element.ValueKind == JsonValueKind.Array)
-                        {
-                            foreach (var item in element.EnumerateArray())
-                            {
-                                identity.AddClaim(new Claim(name, JsonSerializer.Deserialize<object>(item.GetRawText()).ToString()));
-                            }
-                        }
-                        else
-                        {
-                            identity.AddClaim(new Claim(name, value.ToString()));
-                        }
-                    }
-                }
-            }
-
-            return new ClaimsPrincipal(identity);
+            return user;
         }
 
         private async ValueTask EnsureAuthService()
         {
             if (!_initialized)
             {
-                await _jsRuntime.InvokeVoidAsync("AuthenticationService.init", _options.ProviderOptions);
+                await JsRuntime.InvokeVoidAsync("AuthenticationService.init", Options.ProviderOptions);
                 _initialized = true;
             }
         }
 
-        private void UpdateUser(ValueTask<ClaimsPrincipal> task)
+        private void UpdateUser(Task<ClaimsPrincipal> task)
         {
             NotifyAuthenticationStateChanged(UpdateAuthenticationState(task));
 
-            static async Task<AuthenticationState> UpdateAuthenticationState(ValueTask<ClaimsPrincipal> futureUser) => new AuthenticationState(await futureUser);
+            static async Task<AuthenticationState> UpdateAuthenticationState(Task<ClaimsPrincipal> futureUser) => new AuthenticationState(await futureUser);
         }
     }
 

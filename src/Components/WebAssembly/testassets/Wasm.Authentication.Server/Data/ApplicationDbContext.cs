@@ -13,5 +13,21 @@ namespace Wasm.Authentication.Server.Data
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
         }
+
+        public DbSet<UserPreference> UserPreferences { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<ApplicationUser>().HasOne(u => u.UserPreference);
+
+            builder.Entity<UserPreference>()
+                .Property(u => u.Id).ValueGeneratedOnAdd();
+
+            builder.Entity<UserPreference>()
+                .HasKey(p => p.Id);
+
+        }
     }
 }

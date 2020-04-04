@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             options.AuthenticationPaths.RemoteRegisterPath ??= "Identity/Account/Register";
             options.AuthenticationPaths.RemoteProfilePath ??= "Identity/Account/Manage";
             options.UserOptions.ScopeClaim ??= "scope";
+            options.UserOptions.RoleClaim ??= "role";
             options.UserOptions.AuthenticationType ??= _applicationName;
         }
 

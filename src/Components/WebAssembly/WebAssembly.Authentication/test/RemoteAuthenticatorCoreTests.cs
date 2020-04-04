@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -21,8 +22,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     public class RemoteAuthenticatorCoreTests
     {
         private const string _action = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.Action);
-        private const string _onLogInSucceded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogInSucceeded);        
-        private const string _onLogOutSucceeded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogOutSucceeded);        
+        private const string _onLogInSucceded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogInSucceeded);
+        private const string _onLogOutSucceeded = nameof(RemoteAuthenticatorViewCore<RemoteAuthenticationState>.OnLogOutSucceeded);
 
         [Fact]
         public async Task AuthenticationManager_Throws_ForInvalidAction()
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var (remoteAuthenticator, renderer, authServiceMock, jsRuntime) = CreateAuthenticationManager(
                 "https://www.example.com/base/authentication/logout?returnUrl=https://www.example.com/base/");
 
-            authServiceMock.GetAuthenticatedUserCallback = () => Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("Test")));
+            authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
             authServiceMock.SignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
             {
@@ -269,7 +270,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var (remoteAuthenticator, renderer, authServiceMock, jsRuntime) = CreateAuthenticationManager(
                 "https://www.example.com/base/authentication/logout");
 
-            authServiceMock.GetAuthenticatedUserCallback = () => Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("Test")));
+            authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
             authServiceMock.SignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
             {
@@ -296,7 +297,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var originalUrl = "https://www.example.com/base/authentication/login?returnUrl=https://www.example.com/base/fetchData";
             var (remoteAuthenticator, renderer, authServiceMock, jsRuntime) = CreateAuthenticationManager(originalUrl);
 
-            authServiceMock.GetAuthenticatedUserCallback = () => Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("Test")));
+            authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
             authServiceMock.SignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
             {
@@ -350,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var (remoteAuthenticator, renderer, authServiceMock, jsRuntime) = CreateAuthenticationManager(
                 "https://www.example.com/base/authentication/logout?returnUrl=https://www.example.com/base/fetchData");
 
-            authServiceMock.GetAuthenticatedUserCallback = () => Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("Test")));
+            authServiceMock.GetAuthenticatedUserCallback = () => new ValueTask<ClaimsPrincipal>(new ClaimsPrincipal(new ClaimsIdentity("Test")));
 
             authServiceMock.SignOutCallback = s => Task.FromResult(new RemoteAuthenticationResult<RemoteAuthenticationState>()
             {
@@ -660,13 +661,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             }
         }
 
-        private class TestRemoteAuthenticationService : RemoteAuthenticationService<RemoteAuthenticationState, OidcProviderOptions>
+        private class TestRemoteAuthenticationService : RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>
         {
             public TestRemoteAuthenticationService(
                 IJSRuntime jsRuntime,
                 IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> options,
                 TestNavigationManager navigationManager) :
-                base(jsRuntime, options, navigationManager)
+                base(jsRuntime, options, navigationManager, new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
             {
             }
 
@@ -674,13 +675,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             public Func<RemoteAuthenticationContext<RemoteAuthenticationState>, Task<RemoteAuthenticationResult<RemoteAuthenticationState>>> CompleteSignInCallback { get; set; }
             public Func<RemoteAuthenticationContext<RemoteAuthenticationState>, Task<RemoteAuthenticationResult<RemoteAuthenticationState>>> SignOutCallback { get; set; }
             public Func<RemoteAuthenticationContext<RemoteAuthenticationState>, Task<RemoteAuthenticationResult<RemoteAuthenticationState>>> CompleteSignOutCallback { get; set; }
-            public Func<Task<ClaimsPrincipal>> GetAuthenticatedUserCallback { get; set; }
+            public Func<ValueTask<ClaimsPrincipal>> GetAuthenticatedUserCallback { get; set; }
 
             public async override Task<AuthenticationState> GetAuthenticationStateAsync() => new AuthenticationState(await GetAuthenticatedUserCallback());
 
             public override Task<RemoteAuthenticationResult<RemoteAuthenticationState>> CompleteSignInAsync(RemoteAuthenticationContext<RemoteAuthenticationState> context) => CompleteSignInCallback(context);
 
-            protected internal override Task<ClaimsPrincipal> GetAuthenticatedUser() => GetAuthenticatedUserCallback();
+            protected internal override ValueTask<ClaimsPrincipal> GetAuthenticatedUser() => GetAuthenticatedUserCallback();
 
             public override Task<RemoteAuthenticationResult<RemoteAuthenticationState>> CompleteSignOutAsync(RemoteAuthenticationContext<RemoteAuthenticationState> context) => CompleteSignOutCallback(context);
 
