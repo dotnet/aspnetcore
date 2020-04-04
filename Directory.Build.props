@@ -105,8 +105,18 @@
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DisablePubternalApiCheck)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(MSBuildProjectName)' != 'Internal.AspNetCore.Analyzers'">
-    <ProjectReference Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" IsImplicitlyDefined="true" />
+  <ItemGroup
+    Condition="'$(DisablePubternalApiCheck)' != 'true'
+      AND '$(IsTestProject)' != 'true'
+      AND '$(IsBenchmarkProject)' != 'true'
+      AND '$(IsTestAssetProject)' != 'true'
+      AND '$(MSBuildProjectName)' != 'Internal.AspNetCore.Analyzers'
+      AND '$(MSBuildProjectExtension)' == '.csproj'">
+    <ProjectReference
+      Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj"
+      PrivateAssets="All"
+      Version="$(InternalAspNetCoreAnalyzersPackageVersion)"
+      IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
