@@ -359,62 +359,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
 
-            try
+            // Read raw target before mutating memory.
+            var previousValue = _parsedRawTarget;
+            if (ServerOptions.DisableStringReuse ||
+                previousValue == null || previousValue.Length != target.Length ||
+                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
-                // Read raw target before mutating memory.
-                var previousValue = _parsedRawTarget;
-                if (ServerOptions.DisableStringReuse ||
-                    previousValue == null || previousValue.Length != target.Length ||
-                    !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
-                {
-                    ParseTarget(pathOffset, target);
-                }
-                else
-                {
-                    // As RawTarget is the same we can reuse the previous parsed values.
-                    RawTarget = previousValue;
-                    Path = _parsedPath;
-                    QueryString = _parsedQueryString;
-                }
+                ParseTarget(pathOffset, target);
+            }
+            else
+            {
+                // As RawTarget is the same we can reuse the previous parsed values.
+                RawTarget = previousValue;
+                Path = _parsedPath;
+                QueryString = _parsedQueryString;
+            }
 
-                // Clear parsedData for absolute target as we won't check it if we come via this path again,
-                // an setting to null is fast as it doesn't need to use a GC write barrier.
-                _parsedAbsoluteRequestTarget = null;
-            }
-            catch (InvalidOperationException)
-            {
-                ThrowRequestTargetRejected(target);
-            }
+            // Clear parsedData for absolute target as we won't check it if we come via this path again,
+            // an setting to null is fast as it doesn't need to use a GC write barrier.
+            _parsedAbsoluteRequestTarget = null;
         }
 
         private void ParseTarget(PathOffset pathOffset, Span<byte> target)
         {
-            // The previous string does not match what the bytes would convert to,
-            // so we will need to generate a new string.
-            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            try
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
-            var queryLength = 0;
-            if (target.Length == pathOffset.End)
-            {
-                // No query string
-                QueryString = string.Empty;
-                _parsedQueryString = null;
-            }
-            else
-            {
-                queryLength = ParseQuery(pathOffset, target);
-            }
+                var queryLength = 0;
+                if (target.Length == pathOffset.End)
+                {
+                    // No query string
+                    QueryString = string.Empty;
+                    _parsedQueryString = null;
+                }
+                else
+                {
+                    queryLength = ParseQuery(pathOffset, target);
+                }
 
-            var pathLength = pathOffset.End;
-            if (pathLength == 1)
-            {
-                // If path.Length == 1 it can only be a forward slash (e.g. home page)
-                Path = _parsedPath = ForwardSlash;
+                var pathLength = pathOffset.End;
+                if (pathLength == 1)
+                {
+                    // If path.Length == 1 it can only be a forward slash (e.g. home page)
+                    Path = _parsedPath = ForwardSlash;
+                }
+                else
+                {
+                    var path = target[..pathLength];
+                    Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
+                }
             }
-            else
+            catch (InvalidOperationException)
             {
-                var path = target[..pathLength];
-                Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
+                ThrowRequestTargetRejected(target);
             }
         }
 
