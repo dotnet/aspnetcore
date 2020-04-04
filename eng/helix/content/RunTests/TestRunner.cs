@@ -102,7 +102,7 @@ namespace RunTests
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
                     foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                     {
-                        File.Copy(file, Path.Combine(appRuntimePath, Path.GetFileName(file), overwrite: true);
+                        File.Copy(file, Path.Combine(appRuntimePath, Path.GetFileName(file)), overwrite: true);
                     }
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
