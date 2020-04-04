@@ -362,7 +362,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             try
             {
                 var disableStringReuse = ServerOptions.DisableStringReuse;
-                var path = target[..pathOffset.End];
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
                 if (disableStringReuse ||
@@ -400,13 +399,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
 
-                    if (path.Length == 1)
+                    var pathLength = pathOffset.End;
+                    if (pathLength == 1)
                     {
                         // If path.Length == 1 it can only be a forward slash (e.g. home page)
                         Path = _parsedPath = ForwardSlash;
                     }
                     else
                     {
+                        var path = target[..pathLength];
                         Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
                     }
                 }
