@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     internal class NullParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : struct, IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly byte[] _startLine = Encoding.ASCII.GetBytes("GET /plaintext HTTP/1.1\r\n");
-        private readonly byte[] _target = Encoding.ASCII.GetBytes("/plaintext");
         private readonly byte[] _hostHeaderName = Encoding.ASCII.GetBytes("Host");
         private readonly byte[] _hostHeaderValue = Encoding.ASCII.GetBytes("www.example.com");
         private readonly byte[] _acceptHeaderName = Encoding.ASCII.GetBytes("Accept");
@@ -35,13 +34,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
-            handler.OnStartLine(HttpMethod.Get,
-                HttpVersion.Http11,
-                new Span<byte>(_target),
-                new Span<byte>(_target),
-                Span<byte>.Empty,
-                Span<byte>.Empty,
-                false);
+            Span<byte> startLine = _startLine;
+
+            handler.OnStartLine(
+                new HttpVersionAndMethod(HttpMethod.Get, 3) { Version = HttpVersion.Http11 },
+                new PathOffset(startLine.Length, false),
+                startLine);
 
             consumed = buffer.Start;
             examined = buffer.End;

@@ -524,6 +524,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 PathEncoded = pathEncoded;
             }
 
+            public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
+            {
+                var method = versionAndMethod.Method;
+                var version = versionAndMethod.Version;
+                var customMethod = startLine[..versionAndMethod.MethodEnd];
+                var targetStart = versionAndMethod.MethodEnd + 1;
+                var target = startLine[targetStart..];
+                var path = startLine[targetStart..pathOffset.End];
+                var query = startLine[pathOffset.End..];
+
+                Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
+                Version = HttpUtilities.VersionToString(version);
+                RawTarget = target.GetAsciiStringNonNullCharacters();
+                RawPath = path.GetAsciiStringNonNullCharacters();
+                Query = query.GetAsciiStringNonNullCharacters();
+                PathEncoded = pathOffset.IsEncoded;
+            }
+
             public void OnStaticIndexedHeader(int index)
             {
                 throw new NotImplementedException();

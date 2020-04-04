@@ -285,25 +285,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
         {
+            // Is a space after the end of the method, so add 1
+            var targetStart = versionAndMethod.MethodEnd + 1;
+            // Adjust path and query to target slice
+            pathOffset = new PathOffset(end: pathOffset.End - targetStart, isEncoded: pathOffset.IsEncoded);
+            // Slice out target
+            var target = startLine[targetStart..];
             Debug.Assert(target.Length != 0, "Request target must be non-zero length");
-
+            var method = versionAndMethod.Method;
             var ch = target[0];
             if (ch == ByteForwardSlash)
             {
                 // origin-form.
                 // The most common form of request-target.
                 // https://tools.ietf.org/html/rfc7230#section-5.3.1
-                OnOriginFormTarget(pathEncoded, target, path, query);
+                OnOriginFormTarget(pathOffset, target);
             }
             else if (ch == ByteAsterisk && target.Length == 1)
             {
                 OnAsteriskFormTarget(method);
             }
-            else if (target.GetKnownHttpScheme(out _))
+            else if (startLine[targetStart..].GetKnownHttpScheme(out _))
             {
-                OnAbsoluteFormTarget(target, query);
+                OnAbsoluteFormTarget(pathOffset, target);
             }
             else
             {
@@ -316,10 +322,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Method = method;
             if (method == HttpMethod.Custom)
             {
-                _methodText = customMethod.GetAsciiStringNonNullCharacters();
+                _methodText = startLine[..versionAndMethod.MethodEnd].GetAsciiStringNonNullCharacters();
             }
 
-            _httpVersion = version;
+            _httpVersion = versionAndMethod.Version;
 
             Debug.Assert(RawTarget != null, "RawTarget was not set");
             Debug.Assert(((IHttpRequestFeature)this).Method != null, "Method was not set");
@@ -329,7 +335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         // Compare with Http2Stream.TryValidatePseudoHeaders
-        private void OnOriginFormTarget(bool pathEncoded, Span<byte> target, Span<byte> path, Span<byte> query)
+        private void OnOriginFormTarget(PathOffset pathOffset, Span<byte> target)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
@@ -356,6 +362,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             try
             {
                 var disableStringReuse = ServerOptions.DisableStringReuse;
+                var path = target[..pathOffset.End];
+                var query = target[pathOffset.End..];
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
                 if (disableStringReuse ||
@@ -388,7 +396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else
                     {
-                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathEncoded, RawTarget, query.Length);
+                        Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, query.Length);
                     }
                 }
                 else
@@ -480,8 +488,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _parsedAbsoluteRequestTarget = null;
         }
 
-        private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
+        private void OnAbsoluteFormTarget(PathOffset pathOffset, Span<byte> target)
         {
+            Span<byte> query = target[pathOffset.End..];
             _requestTargetForm = HttpRequestTarget.AbsoluteForm;
 
             // absolute-form

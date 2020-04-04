@@ -76,18 +76,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
         {
             // Get Method and set the offset
-            var method = HttpUtilities.GetKnownMethod(data, length, out var pathStartOffset);
-
-            Span<byte> customMethod = default;
+            var method = HttpUtilities.GetKnownMethod(data, length, out var methodEnd);
             if (method == HttpMethod.Custom)
             {
-                customMethod = GetUnknownMethod(data, length, out pathStartOffset);
+                methodEnd = GetUnknownMethodLength(data, length);
             }
 
-            // Use a new offset var as pathStartOffset needs to be on stack
+            var versionAndMethod = new HttpVersionAndMethod(method, methodEnd);
+
+            // Use a new offset var as methodEnd needs to be on stack
             // as its passed by reference above so can't be in register.
             // Skip space
-            var offset = pathStartOffset + 1;
+            var offset = methodEnd + 1;
             if (offset >= length)
             {
                 // Start of path not found
@@ -103,7 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Target = Path and Query
             var pathEncoded = false;
-            var pathStart = offset;
 
             // Skip first char (just checked)
             offset++;
@@ -123,10 +122,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
+            var path = new PathOffset(end: offset, pathEncoded);
 
             // Query string
-            var queryStart = offset;
             if (ch == ByteQuestionMark)
             {
                 // We have a query string
@@ -146,14 +144,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RejectRequestLine(data, length);
             }
 
-            var targetBuffer = new Span<byte>(data + pathStart, offset - pathStart);
-            var query = new Span<byte>(data + queryStart, offset - queryStart);
+            var queryEnd = offset;
 
             // Consume space
             offset++;
 
             // Version
             var httpVersion = HttpUtilities.GetKnownVersion(data + offset, length - offset);
+            versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {
                 if (data[offset] == ByteCR || data[length - 2] != ByteCR)
@@ -174,7 +172,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RejectRequestLine(data, length);
             }
 
-            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
+            var startLine = new Span<byte>(data, queryEnd);
+            handler.OnStartLine(versionAndMethod, path, startLine);
         }
 
         public unsafe bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
@@ -415,6 +414,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             methodLength = invalidIndex;
             return new Span<byte>(data, methodLength);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe int GetUnknownMethodLength(byte* data, int length)
+        {
+            var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(data, length);
+
+            if (invalidIndex <= 0 || data[invalidIndex] != ByteSpace)
+            {
+                RejectRequestLine(data, length);
+            }
+
+            return invalidIndex;
         }
 
         private unsafe bool IsTlsHandshake(byte* data, int length)
