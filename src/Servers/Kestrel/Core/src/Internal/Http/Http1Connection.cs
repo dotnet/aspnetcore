@@ -355,10 +355,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
-            // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
-            // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-
             // Read raw target before mutating memory.
             var previousValue = _parsedRawTarget;
             if (ServerOptions.DisableStringReuse ||
@@ -382,6 +378,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void ParseTarget(PathOffset pathOffset, Span<byte> target)
         {
+            // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
+            // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
+            // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
+
             try
             {
                 // The previous string does not match what the bytes would convert to,
@@ -392,8 +392,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (target.Length == pathOffset.End)
                 {
                     // No query string
-                    QueryString = string.Empty;
-                    _parsedQueryString = null;
+                    if (ReferenceEquals(_parsedQueryString, string.Empty))
+                    {
+                        QueryString = _parsedQueryString;
+                    }
+                    else
+                    {
+                        QueryString = string.Empty;
+                        _parsedQueryString = string.Empty;
+                    }
                 }
                 else
                 {
