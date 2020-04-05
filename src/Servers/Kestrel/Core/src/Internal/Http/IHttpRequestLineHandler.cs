@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         void OnStartLine(
             HttpVersionAndMethod versionAndMethod,
-            PathOffset pathOffset,
+            TargetOffsetPathLength targetPath,
             Span<byte> startLine);
     }
 
@@ -33,34 +34,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public int MethodEnd => (int)(uint)(_versionAndMethod >> 32);
     }
 
-    public readonly struct PathOffset
+    public readonly struct TargetOffsetPathLength
     {
-        private readonly int _path;
+        private readonly ulong _targetOffsetPathLength;
 
-        public PathOffset(int end, bool isEncoded)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TargetOffsetPathLength(int offset, int length, bool isEncoded)
         {
             if (isEncoded)
             {
-                end = -end;
+                length = -length;
             }
 
-            _path = end;
+            _targetOffsetPathLength = ((ulong)offset << 32) | (uint)length;
         }
 
-        public int End
+        public int Offset
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                var path = _path;
-                if (path < 0)
-                {
-                    path = -path;
-                }
-
-                return path;
+                return (int)(_targetOffsetPathLength >> 32);
             }
         }
 
-        public bool IsEncoded => _path < 0 ? true : false;
+        public int Length
+        {
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                var length = (int)_targetOffsetPathLength;
+                if (length < 0)
+                {
+                    length = -length;
+                }
+
+                return length;
+            }
+        }
+
+        public bool IsEncoded
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (int)_targetOffsetPathLength < 0 ? true : false;
+            }
+        }
     }
 }

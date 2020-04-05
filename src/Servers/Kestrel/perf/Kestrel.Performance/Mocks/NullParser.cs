@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             handler.OnStartLine(
                 new HttpVersionAndMethod(HttpMethod.Get, 3) { Version = HttpVersion.Http11 },
-                new PathOffset(startLine.Length, false),
+                new TargetOffsetPathLength(3, startLine.Length - 3, false),
                 startLine);
 
             consumed = buffer.Start;

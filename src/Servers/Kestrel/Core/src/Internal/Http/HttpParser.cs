@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RejectRequestLine(data, length);
             }
 
-            byte ch = data[offset];
+            var ch = data[offset];
             if (ch == ByteSpace || ch == ByteQuestionMark || ch == BytePercentage)
             {
                 // Empty path is illegal, or path starting with percentage
@@ -102,8 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Target = Path and Query
+            var targetStart = offset;
             var pathEncoded = false;
-
             // Skip first char (just checked)
             offset++;
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            var path = new PathOffset(end: offset, pathEncoded);
+            var path = new TargetOffsetPathLength(targetStart, length: offset - targetStart, pathEncoded);
 
             // Query string
             if (ch == ByteQuestionMark)

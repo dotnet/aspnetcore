@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
-        public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
         }
 
@@ -114,8 +114,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.OnHeadersComplete(endStream);
 
-            public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
-                => RequestHandler.OnStartLine(versionAndMethod, pathOffset, startLine);
+            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+                => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
 
             public void OnStaticIndexedHeader(int index)
             {

@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
-            => Connection.OnStartLine(versionAndMethod, pathOffset, startLine);
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+            => Connection.OnStartLine(versionAndMethod, targetPath, startLine);
 
         public void OnStaticIndexedHeader(int index)
         {

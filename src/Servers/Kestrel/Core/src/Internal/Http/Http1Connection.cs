@@ -285,12 +285,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnStartLine(HttpVersionAndMethod versionAndMethod, PathOffset pathOffset, Span<byte> startLine)
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
-            // Is a space after the end of the method, so add 1
-            var targetStart = versionAndMethod.MethodEnd + 1;
-            // Adjust path and query to target slice
-            pathOffset = new PathOffset(end: pathOffset.End - targetStart, isEncoded: pathOffset.IsEncoded);
+            var targetStart = targetPath.Offset;
             // Slice out target
             var target = startLine[targetStart..];
             Debug.Assert(target.Length != 0, "Request target must be non-zero length");
@@ -301,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // origin-form.
                 // The most common form of request-target.
                 // https://tools.ietf.org/html/rfc7230#section-5.3.1
-                OnOriginFormTarget(pathOffset, target);
+                OnOriginFormTarget(targetPath, target);
             }
             else if (ch == ByteAsterisk && target.Length == 1)
             {
@@ -309,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else if (startLine[targetStart..].GetKnownHttpScheme(out _))
             {
-                OnAbsoluteFormTarget(pathOffset, target);
+                OnAbsoluteFormTarget(targetPath, target);
             }
             else
             {
@@ -335,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         // Compare with Http2Stream.TryValidatePseudoHeaders
-        private void OnOriginFormTarget(PathOffset pathOffset, Span<byte> target)
+        private void OnOriginFormTarget(TargetOffsetPathLength targetPath, Span<byte> target)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
@@ -361,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
-                ParseTarget(pathOffset, target);
+                ParseTarget(targetPath, target);
             }
             else
             {
@@ -376,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _parsedAbsoluteRequestTarget = null;
         }
 
-        private void ParseTarget(PathOffset pathOffset, Span<byte> target)
+        private void ParseTarget(TargetOffsetPathLength targetPath, Span<byte> target)
         {
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
@@ -389,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
                 var queryLength = 0;
-                if (target.Length == pathOffset.End)
+                if (target.Length == targetPath.Length)
                 {
                     // No query string
                     if (ReferenceEquals(_parsedQueryString, string.Empty))
@@ -404,10 +401,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else
                 {
-                    queryLength = ParseQuery(pathOffset, target);
+                    queryLength = ParseQuery(targetPath, target);
                 }
 
-                var pathLength = pathOffset.End;
+                var pathLength = targetPath.Length;
                 if (pathLength == 1)
                 {
                     // If path.Length == 1 it can only be a forward slash (e.g. home page)
@@ -416,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     var path = target[..pathLength];
-                    Path = _parsedPath = PathNormalizer.DecodePath(path, pathOffset.IsEncoded, RawTarget, queryLength);
+                    Path = _parsedPath = PathNormalizer.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength);
                 }
             }
             catch (InvalidOperationException)
@@ -425,10 +422,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private int ParseQuery(PathOffset pathOffset, Span<byte> target)
+        private int ParseQuery(TargetOffsetPathLength targetPath, Span<byte> target)
         {
             var previousValue = _parsedQueryString;
-            var query = target[pathOffset.End..];
+            var query = target[targetPath.Length..];
             var queryLength = query.Length;
             if (ServerOptions.DisableStringReuse ||
                 previousValue == null || previousValue.Length != queryLength ||
@@ -518,9 +515,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _parsedAbsoluteRequestTarget = null;
         }
 
-        private void OnAbsoluteFormTarget(PathOffset pathOffset, Span<byte> target)
+        private void OnAbsoluteFormTarget(TargetOffsetPathLength targetPath, Span<byte> target)
         {
-            Span<byte> query = target[pathOffset.End..];
+            Span<byte> query = target[targetPath.Length..];
             _requestTargetForm = HttpRequestTarget.AbsoluteForm;
 
             // absolute-form
