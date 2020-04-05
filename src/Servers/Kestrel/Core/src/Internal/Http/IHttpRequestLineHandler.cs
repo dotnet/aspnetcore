@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private ulong _versionAndMethod;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public HttpVersionAndMethod(HttpMethod method, int methodEnd)
         {
             _versionAndMethod = ((ulong)(uint)methodEnd << 32) | ((ulong)method << 8);
@@ -25,13 +26,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public HttpVersion Version
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => (HttpVersion)(sbyte)(byte)_versionAndMethod;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _versionAndMethod = (_versionAndMethod & ~0xFFul) | (byte)value;
         }
 
-        public HttpMethod Method => (HttpMethod)(byte)(_versionAndMethod >> 8);
+        public HttpMethod Method
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (HttpMethod)(byte)(_versionAndMethod >> 8);
+        }
 
-        public int MethodEnd => (int)(uint)(_versionAndMethod >> 32);
+        public int MethodEnd
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (int)(uint)(_versionAndMethod >> 32);
+        }
     }
 
     public readonly struct TargetOffsetPathLength
@@ -52,10 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public int Offset
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (int)(_targetOffsetPathLength >> 32);
-            }
+            get => (int)(_targetOffsetPathLength >> 32);
         }
 
         public int Length
@@ -77,10 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool IsEncoded
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (int)_targetOffsetPathLength < 0 ? true : false;
-            }
+            get => (int)_targetOffsetPathLength < 0 ? true : false;
         }
     }
 }

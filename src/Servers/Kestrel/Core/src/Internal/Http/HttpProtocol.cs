@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BeginRequestProcessing();
 
                 var result = default(ReadResult);
-                var endConnection = false;
+                bool endConnection;
                 do
                 {
                     if (BeginRead(out var awaitable))
@@ -1270,7 +1270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestTargetException(target);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
+        private BadHttpRequestException GetInvalidRequestTargetException(ReadOnlySpan<byte> target)
             => BadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)
