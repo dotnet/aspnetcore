@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <BlazorProjectsRoot>$(RepoRoot)src\Components\Blazor\</BlazorProjectsRoot>
+  </PropertyGroup>
+
+  <Import Project="$(BlazorProjectsRoot)Blazor.Version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <Description>Templates for ASP.NET Core Blazor projects.</Description>
+    <PackageTags>$(PackageTags);blazor;spa</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
+    <GeneratedContentProperties>
+      DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+      MicrosoftAspNetCoreBlazorPackageVersion=$(MicrosoftAspNetCoreBlazorPackageVersion);
+      MicrosoftAspNetCoreBlazorBuildPackageVersion=$(MicrosoftAspNetCoreBlazorBuildPackageVersion);
+      MicrosoftAspNetCoreBlazorDevServerPackageVersion=$(MicrosoftAspNetCoreBlazorDevServerPackageVersion);
+      MicrosoftAspNetCoreBlazorHttpClientPackageVersion=$(MicrosoftAspNetCoreBlazorHttpClientPackageVersion);
+      MonoWebAssemblyInteropPackageVersion=$(MonoWebAssemblyInteropPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftAspNetCoreBlazorServerPackageVersion=$(MicrosoftAspNetCoreBlazorServerPackageVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Build\src\Microsoft.AspNetCore.Blazor.Build.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj" />
+    <PackageVersionVariableReference Include="$(BlazorProjectsRoot)Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="BlazorWasm-CSharp.Client.csproj.in" OutputPath="content/BlazorWasm-CSharp/Client/BlazorWasm-CSharp.Client.csproj" />
+    <GeneratedContent Include="BlazorWasm-CSharp.Shared.csproj.in" OutputPath="content/BlazorWasm-CSharp/Shared/BlazorWasm-CSharp.Shared.csproj" />
+    <GeneratedContent Include="BlazorWasm-CSharp.Server.csproj.in" OutputPath="content/BlazorWasm-CSharp/Server/BlazorWasm-CSharp.Server.csproj" />
+  </ItemGroup>
+
+</Project>

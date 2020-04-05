@@ -103,11 +103,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
                 var accessControlRequestMethod =
                         httpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
-                if (string.Equals(
-                        request.Method,
-                        CorsConstants.PreflightHttpMethod,
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+                if (HttpMethods.IsOptions(request.Method)
+                    && !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     // If this was a preflight, there is no need to run anything else.
                     context.Result = new StatusCodeResult(StatusCodes.Status204NoContent);

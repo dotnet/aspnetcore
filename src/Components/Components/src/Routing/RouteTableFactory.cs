@@ -142,6 +142,17 @@ namespace Microsoft.AspNetCore.Components
 
                     if (xSegment.IsParameter)
                     {
+                        // Always favor non-optional parameters over optional ones
+                        if (!xSegment.IsOptional && ySegment.IsOptional)
+                        {
+                            return -1;
+                        }
+
+                        if (xSegment.IsOptional && !ySegment.IsOptional)
+                        {
+                            return 1;
+                        }
+
                         if (xSegment.Constraints.Length > ySegment.Constraints.Length)
                         {
                             return -1;

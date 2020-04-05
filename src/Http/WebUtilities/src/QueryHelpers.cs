@@ -3,12 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// Provides methods for parsing and manipulating query strings.
+    /// </summary>
     public static class QueryHelpers
     {
         /// <summary>
@@ -18,6 +22,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="name">The name of the query key.</param>
         /// <param name="value">The query value.</param>
         /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
         public static string AddQueryString(string uri, string name, string value)
         {
             if (uri == null)
@@ -40,11 +47,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
-        /// Append the given query keys and values to the uri.
+        /// Append the given query keys and values to the URI.
         /// </summary>
-        /// <param name="uri">The base uri.</param>
-        /// <param name="queryString">A collection of name value query pairs to append.</param>
+        /// <param name="uri">The base URI.</param>
+        /// <param name="queryString">A dictionary of query keys and values to append.</param>
         /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
         public static string AddQueryString(string uri, IDictionary<string, string> queryString)
         {
             if (uri == null)
@@ -60,7 +69,38 @@ namespace Microsoft.AspNetCore.WebUtilities
             return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string>>)queryString);
         }
 
-        private static string AddQueryString(
+        /// <summary>
+        /// Append the given query keys and values to the URI.
+        /// </summary>
+        /// <param name="uri">The base URI.</param>
+        /// <param name="queryString">A collection of query names and values to append.</param>
+        /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
+        public static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, StringValues>> queryString)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (queryString == null)
+            {
+                throw new ArgumentNullException(nameof(queryString));
+            }
+
+            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)));
+        }
+
+        /// <summary>
+        /// Append the given query keys and values to the URI.
+        /// </summary>
+        /// <param name="uri">The base URI.</param>
+        /// <param name="queryString">A collection of name value query pairs to append.</param>
+        /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
+        public static string AddQueryString(
             string uri,
             IEnumerable<KeyValuePair<string, string>> queryString)
         {
@@ -77,7 +117,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var anchorIndex = uri.IndexOf('#');
             var uriToBeAppended = uri;
             var anchorText = "";
-            // If there is an anchor, then the query string must be inserted before its first occurence.
+            // If there is an anchor, then the query string must be inserted before its first occurrence.
             if (anchorIndex != -1)
             {
                 anchorText = uri.Substring(anchorIndex);
@@ -91,6 +131,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             sb.Append(uriToBeAppended);
             foreach (var parameter in queryString)
             {
+                if (parameter.Value == null)
+                {
+                    continue;
+                }
+
                 sb.Append(hasQuery ? '&' : '?');
                 sb.Append(UrlEncoder.Default.Encode(parameter.Key));
                 sb.Append('=');
@@ -118,7 +163,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return result;
         }
-
 
         /// <summary>
         /// Parse a query string into its component key and value parts.

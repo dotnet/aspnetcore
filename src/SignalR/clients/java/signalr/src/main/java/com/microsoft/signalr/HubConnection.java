@@ -328,6 +328,7 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
+        localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
         if (headers != null) {
             this.localHeaders.putAll(headers);
         }
@@ -515,6 +516,11 @@ public class HubConnection {
             if (connectionState != null) {
                 connectionState.cancelOutstandingInvocations(exception);
                 connectionState = null;
+            }
+
+            if (pingTimer != null) {
+                pingTimer.cancel();
+                pingTimer = null;
             }
 
             logger.info("HubConnection stopped.");

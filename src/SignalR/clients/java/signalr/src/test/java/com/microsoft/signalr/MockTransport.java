@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import io.reactivex.Completable;
 import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.subjects.SingleSubject;
 
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
@@ -17,6 +18,7 @@ class MockTransport implements Transport {
     final private boolean autoHandshake;
     final private CompletableSubject startSubject = CompletableSubject.create();
     final private CompletableSubject stopSubject = CompletableSubject.create();
+    private SingleSubject<String> sendSubject = SingleSubject.create();
 
     private static final String RECORD_SEPARATOR = "\u001e";
 
@@ -51,6 +53,8 @@ class MockTransport implements Transport {
     public Completable send(String message) {
         if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
             sentMessages.add(message);
+            sendSubject.onSuccess(message);
+            sendSubject = SingleSubject.create();
         }
         return Completable.complete();
     }
@@ -87,6 +91,10 @@ class MockTransport implements Transport {
 
     public String[] getSentMessages() {
         return sentMessages.toArray(new String[sentMessages.size()]);
+    }
+
+    public SingleSubject<String> getNextSentMessage() {
+        return sendSubject;
     }
 
     public String getUrl() {

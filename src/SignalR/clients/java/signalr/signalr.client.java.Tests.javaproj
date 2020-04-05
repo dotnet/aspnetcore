@@ -1,0 +1,91 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+
+    <!-- This package ID is only ever used along with eng/PatchConfig.props to determine when to patch the Java client. -->
+    <PackageId>java:signalr</PackageId>
+
+    <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
+    <IsPackable>true</IsPackable>
+
+    <IsTestProject>true</IsTestProject>
+
+    <!-- Installing Java on ARM will take some work -->
+    <SkipHelixArm>true</SkipHelixArm>
+
+    <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+    <PublishDir>$(OutputPath)</PublishDir>
+    <TestDependsOnJava>true</TestDependsOnJava>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Jars Include="
+        signalr-$(PackageVersion).jar;
+        signalr-$(PackageVersion)-javadoc.jar;
+        signalr-$(PackageVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(PackageVersion).pom" />
+    <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
+  </ItemGroup>
+
+  <Target Name="Restore" />
+
+  <PropertyGroup>
+    <PackDependsOn Condition=" '$(NoBuild)' != 'true' ">
+      $(PackDependsOn);
+      Build
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
+  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
+    <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) createPackage" />
+    <Message Importance="high" Text="java:signalr -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
+    <Copy SourceFiles="build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
+  </Target>
+
+  <Target Name="Build">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
+    <Exec Command="./gradlew $(GradleOptions) compileJava" />
+  </Target>
+
+  <Target Name="Test" Condition="'$(SkipTests)' != 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
+    <Message Text="Running Java client tests" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="Publish">
+    <ItemGroup>
+      <Files Include="**/*.java" />
+      <Files Include="**/gradle-wrapper.jar" />
+      <Files Include="**/gradle-wrapper.properties" />
+      <Files Include="gradlew" />
+      <Files Include="build.gradle" />
+      <Files Include="gradlew.bat" />
+      <Files Include="settings.gradle" />
+      <Files Include="@(Content)" />
+    </ItemGroup>
+    <Copy DestinationFiles="@(Files->'$(PublishDir)\%(RecursiveDir)%(FileName)%(Extension)')" SourceFiles="@(Files)" />
+  </Target>
+
+  <PropertyGroup>
+    <!-- Pass the Java Package Version down to Gradle -->
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
+    <HelixCommand>chmod +x ./gradlew &amp;&amp; ./gradlew $(GradleOptions) test</HelixCommand>
+    <HelixCommand Condition="'$(IsWindowsHelixQueue)' == 'true'">call gradlew $(GradleOptions) test</HelixCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
+  </ItemGroup>
+
+</Project>

@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,7 +17,8 @@ namespace Templates.Test.SpaTemplateTest
         {
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task ReactReduxTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactredux", "reactredux", useLocalDb: false, usesAuth: false);
     }

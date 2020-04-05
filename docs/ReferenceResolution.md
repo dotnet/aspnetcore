@@ -68,7 +68,7 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
        If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
        as its value is unimportant and will be updated the next time the bot runs.
 
-        If the new dependency comes from dotnet/CoreFx, dotnet/code-setup or aspnet/Extensions, add a
+        If the new dependency comes from dotnet/CoreFx, dotnet/code-setup or dotnet/extensions, add a
         `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This example indicates the
         dotnet/CoreFx dependency version should be determined based on the build that produced the chosen
         Microsoft.NETCore.App. That is, the dotnet/CoreFx dependency and Microsoft.NETCore.App should be
@@ -81,7 +81,7 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         ```
 
         The attribute value should be `"Microsoft.Extensions.Logging"` for dotnet/core-setup dependencies and
-        `"Microsoft.CodeAnalysis.Razor"` for aspnet/Extensions dependencies.
+        `"Microsoft.CodeAnalysis.Razor"` for dotnet/extensions dependencies.
 
 ## Example: make a breaking change to references
 

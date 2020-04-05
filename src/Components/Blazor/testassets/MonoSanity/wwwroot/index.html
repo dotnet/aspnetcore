@@ -37,14 +37,6 @@
   </fieldset>
 
   <fieldset>
-    <legend>Invoke wiped method</legend>
-    <form id="invokeWipedMethod">
-      <button type="submit" disabled>Go</button>
-      <div><textarea rows="5" cols="80" readonly id="invokeWipedMethodStackTrace"></textarea></div>
-    </form>
-  </fieldset>
-
-  <fieldset>
     <legend>Call JS from .NET</legend>
     <form id="callJs">
       <input id="callJsEvalExpression" value="location.href" />
@@ -108,16 +100,6 @@
         el('triggerExceptionMessageStackTrace').value = 'WARNING: No exception occurred';
       } catch (ex) {
         el('triggerExceptionMessageStackTrace').value = ex.toString();
-      }
-    };
-
-    el('invokeWipedMethod').onsubmit = function (evt) {
-      evt.preventDefault();
-      try {
-        invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'InvokeWipedMethod', []);
-        el('invokeWipedMethodStackTrace').value = 'WARNING: No exception occurred';
-      } catch (ex) {
-        el('invokeWipedMethodStackTrace').value = ex.toString();
       }
     };
 

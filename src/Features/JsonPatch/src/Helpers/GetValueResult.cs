@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Helpers
         public object PropertyValue { get; private set; }
 
         /// <summary>
-        /// HasError: true when an error occurred, the operation didn't complete succesfully
+        /// HasError: true when an error occurred, the operation didn't complete successfully
         /// </summary>
         public bool HasError { get; private set; }
     }

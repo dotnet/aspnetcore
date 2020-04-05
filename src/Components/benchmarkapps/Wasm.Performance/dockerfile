@@ -1,0 +1,33 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Setup for nodejs
+RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    libunwind-dev \
+    nodejs \
+    git
+
+ARG gitBranch=blazor-wasm
+
+WORKDIR /src
+ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit
+
+RUN git init \
+    && git fetch https://github.com/aspnet/aspnetcore ${gitBranch} \
+    && git reset --hard FETCH_HEAD \
+    && git submodule update --init
+
+RUN ./restore.sh
+RUN .dotnet/dotnet publish -c Release -r linux-x64 -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN chmod +x /app/Wasm.Performance.Driver
+
+WORKDIR /app
+FROM selenium/standalone-chrome:3.141.59-mercury as final
+COPY --from=build ./app ./
+COPY ./exec.sh ./
+
+ENTRYPOINT [ "bash", "./exec.sh" ]

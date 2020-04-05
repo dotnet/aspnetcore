@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
-    /// An error that occured during model binding and validation.
+    /// An error that occurred during model binding and validation.
     /// </summary>
     public class ModelError
     {
         /// <summary>
-        /// Intiializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>.
+        /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>.
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/>.</param>
         public ModelError(Exception exception)
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Intiializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>
+        /// Initializes a new instance of <see cref="ModelError"/> with the specified <paramref name="exception"/>
         /// and specified <paramref name="errorMessage"/>.
         /// </summary>
         /// <param name="exception">The <see cref="System.Exception"/>.</param>

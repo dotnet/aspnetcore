@@ -17,15 +17,19 @@ namespace Templates.Test.SpaTemplateTest
         {
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task ReactTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactnoauth", "react", useLocalDb: false, usesAuth: false);
 
-        [Fact]
+        [QuarantinedTest]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task ReactTemplate_IndividualAuth_NetCore()
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("selenium")]
         public Task ReactTemplate_IndividualAuth_NetCore_LocalDb()
             => SpaTemplateImplAsync("reactindividualuld", "react", useLocalDb: true, usesAuth: true);
     }

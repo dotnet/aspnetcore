@@ -159,10 +159,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
         public DefaultTagHelperActivator(Microsoft.AspNetCore.Mvc.Infrastructure.ITypeActivatorCache typeActivatorCache) { }
         public TTagHelper Create<TTagHelper>(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) where TTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper { throw null; }
     }
-    public sealed partial class TagHelperMemoryCacheProvider
-    {
-        public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { get { throw null; } internal set { } }
-    }
 }
 
 namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers

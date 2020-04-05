@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
     //
     // Perf: our conversion routines present a regular API surface that allows us to specialize on types to avoid boxing.
     // for instance, many of these types could be cast to IFormattable to do the appropriate formatting, but that's going
-    // to allocate. 
+    // to allocate.
     public static class BindConverter
     {
         private static object BoxedTrue = true;
@@ -149,6 +149,41 @@ namespace Microsoft.AspNetCore.Components
         public static string FormatValue(long? value, CultureInfo culture = null) => FormatNullableLongValueCore(value, culture);
 
         private static string FormatNullableLongValueCore(long? value, CultureInfo culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        public static string FormatValue(short value, CultureInfo culture = null) => FormatShortValueCore(value, culture);
+
+        private static string FormatShortValueCore(short value, CultureInfo culture)
+        {
+            return value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        public static string FormatValue(short? value, CultureInfo culture = null) => FormatNullableShortValueCore(value, culture);
+
+        private static string FormatNullableShortValueCore(short? value, CultureInfo culture)
         {
             if (value == null)
             {
@@ -430,7 +465,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static string FormatEnumValueCore<T>(T value, CultureInfo culture) where T : struct, Enum
         {
-            return value.ToString(); // The overload that acccepts a culture is [Obsolete]
+            return value.ToString(); // The overload that accepts a culture is [Obsolete]
         }
 
         private static string FormatNullableEnumValueCore<T>(T? value, CultureInfo culture) where T : struct, Enum
@@ -440,7 +475,7 @@ namespace Microsoft.AspNetCore.Components
                 return null;
             }
 
-            return value.Value.ToString(); // The overload that acccepts a culture is [Obsolete]
+            return value.Value.ToString(); // The overload that accepts a culture is [Obsolete]
         }
 
         /// <summary>
@@ -640,6 +675,71 @@ namespace Microsoft.AspNetCore.Components
             }
 
             if (!long.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToShort(object obj, CultureInfo culture, out short value)
+        {
+            return ConvertToShortCore(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableShort(object obj, CultureInfo culture, out short? value)
+        {
+            return ConvertToNullableShort(obj, culture, out value);
+        }
+
+        internal static BindParser<short> ConvertToShort = ConvertToShortCore;
+        internal static BindParser<short?> ConvertToNullableShort = ConvertToNullableShortCore;
+
+        private static bool ConvertToShortCore(object obj, CultureInfo culture, out short value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableShortCore(object obj, CultureInfo culture, out short? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -1166,99 +1266,107 @@ namespace Microsoft.AspNetCore.Components
 
             public static BindFormatter<T> Get<T>()
             {
-                if (!_cache.TryGetValue(typeof(T), out var formattter))
+                if (!_cache.TryGetValue(typeof(T), out var formatter))
                 {
                     // We need to replicate all of the primitive cases that we handle here so that they will behave the same way.
                     // The result will be cached.
                     if (typeof(T) == typeof(string))
                     {
-                        formattter = (BindFormatter<string>)FormatStringValueCore;
+                        formatter = (BindFormatter<string>)FormatStringValueCore;
                     }
                     else if (typeof(T) == typeof(bool))
                     {
-                        formattter = (BindFormatter<bool>)FormatBoolValueCore;
+                        formatter = (BindFormatter<bool>)FormatBoolValueCore;
                     }
                     else if (typeof(T) == typeof(bool?))
                     {
-                        formattter = (BindFormatter<bool?>)FormatNullableBoolValueCore;
+                        formatter = (BindFormatter<bool?>)FormatNullableBoolValueCore;
                     }
                     else if (typeof(T) == typeof(int))
                     {
-                        formattter = (BindFormatter<int>)FormatIntValueCore;
+                        formatter = (BindFormatter<int>)FormatIntValueCore;
                     }
                     else if (typeof(T) == typeof(int?))
                     {
-                        formattter = (BindFormatter<int?>)FormatNullableIntValueCore;
+                        formatter = (BindFormatter<int?>)FormatNullableIntValueCore;
                     }
                     else if (typeof(T) == typeof(long))
                     {
-                        formattter = (BindFormatter<long>)FormatLongValueCore;
+                        formatter = (BindFormatter<long>)FormatLongValueCore;
                     }
                     else if (typeof(T) == typeof(long?))
                     {
-                        formattter = (BindFormatter<long?>)FormatNullableLongValueCore;
+                        formatter = (BindFormatter<long?>)FormatNullableLongValueCore;
+                    }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        formatter = (BindFormatter<short>)FormatShortValueCore;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        formatter = (BindFormatter<short?>)FormatNullableShortValueCore;
                     }
                     else if (typeof(T) == typeof(float))
                     {
-                        formattter = (BindFormatter<float>)FormatFloatValueCore;
+                        formatter = (BindFormatter<float>)FormatFloatValueCore;
                     }
                     else if (typeof(T) == typeof(float?))
                     {
-                        formattter = (BindFormatter<float?>)FormatNullableFloatValueCore;
+                        formatter = (BindFormatter<float?>)FormatNullableFloatValueCore;
                     }
                     else if (typeof(T) == typeof(double))
                     {
-                        formattter = (BindFormatter<double>)FormatDoubleValueCore;
+                        formatter = (BindFormatter<double>)FormatDoubleValueCore;
                     }
                     else if (typeof(T) == typeof(double?))
                     {
-                        formattter = (BindFormatter<double?>)FormatNullableDoubleValueCore;
+                        formatter = (BindFormatter<double?>)FormatNullableDoubleValueCore;
                     }
                     else if (typeof(T) == typeof(decimal))
                     {
-                        formattter = (BindFormatter<decimal>)FormatDecimalValueCore;
+                        formatter = (BindFormatter<decimal>)FormatDecimalValueCore;
                     }
                     else if (typeof(T) == typeof(decimal?))
                     {
-                        formattter = (BindFormatter<decimal?>)FormatNullableDecimalValueCore;
+                        formatter = (BindFormatter<decimal?>)FormatNullableDecimalValueCore;
                     }
                     else if (typeof(T) == typeof(DateTime))
                     {
-                        formattter = (BindFormatter<DateTime>)FormatDateTimeValueCore;
+                        formatter = (BindFormatter<DateTime>)FormatDateTimeValueCore;
                     }
                     else if (typeof(T) == typeof(DateTime?))
                     {
-                        formattter = (BindFormatter<DateTime?>)FormatNullableDateTimeValueCore;
+                        formatter = (BindFormatter<DateTime?>)FormatNullableDateTimeValueCore;
                     }
                     else if (typeof(T) == typeof(DateTimeOffset))
                     {
-                        formattter = (BindFormatter<DateTimeOffset>)FormatDateTimeOffsetValueCore;
+                        formatter = (BindFormatter<DateTimeOffset>)FormatDateTimeOffsetValueCore;
                     }
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
-                        formattter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
+                        formatter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
                     }
                     else if (typeof(T).IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
                         var method = _formatEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static);
-                        formattter = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindFormatter<T>), target: null);
+                        formatter = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindFormatter<T>), target: null);
                     }
                     else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
                         var method = _formatNullableEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatNullableEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static);
-                        formattter = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindFormatter<T>), target: null);
+                        formatter = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindFormatter<T>), target: null);
                     }
                     else
                     {
-                        formattter = MakeTypeConverterFormatter<T>();
+                        formatter = MakeTypeConverterFormatter<T>();
                     }
 
-                    _cache.TryAdd(typeof(T), formattter);
+                    _cache.TryAdd(typeof(T), formatter);
                 }
 
-                return (BindFormatter<T>)formattter;
+                return (BindFormatter<T>)formatter;
             }
 
             private static BindFormatter<T> MakeTypeConverterFormatter<T>()
@@ -1322,6 +1430,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(long?))
                     {
                         parser = ConvertToNullableLong;
+                    }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        parser = ConvertToShort;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        parser = ConvertToNullableShort;
                     }
                     else if (typeof(T) == typeof(float))
                     {

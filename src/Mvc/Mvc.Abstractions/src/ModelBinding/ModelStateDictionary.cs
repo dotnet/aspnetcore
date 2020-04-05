@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="ModelStateDictionary"/> tracks the number of model errors added by calls to
         /// <see cref="AddModelError(string, Exception, ModelMetadata)"/> or
         /// <see cref="TryAddModelError(string, Exception, ModelMetadata)"/>.
-        /// Once the value of <code>MaxAllowedErrors - 1</code> is reached, if another attempt is made to add an error,
+        /// Once the value of <c>MaxAllowedErrors - 1</c> is reached, if another attempt is made to add an error,
         /// the error message will be ignored and a <see cref="TooManyModelErrorsException"/> will be added.
         /// </para>
         /// <para>

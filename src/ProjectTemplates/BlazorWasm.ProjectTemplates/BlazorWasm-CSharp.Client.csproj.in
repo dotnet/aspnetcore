@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="${MicrosoftAspNetCoreBlazorPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="${MicrosoftAspNetCoreBlazorBuildPackageVersion}" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="${MicrosoftAspNetCoreBlazorDevServerPackageVersion}" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="${MicrosoftAspNetCoreBlazorHttpClientPackageVersion}" />
+  </ItemGroup>
+  <!--#if Hosted -->
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\BlazorWasm-CSharp.Shared.csproj" />
+  </ItemGroup>
+  <!--#endif -->
+
+</Project>

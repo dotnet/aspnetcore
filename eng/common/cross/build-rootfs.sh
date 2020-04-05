@@ -2,15 +2,16 @@
 
 usage()
 {
-    echo "Usage: $0 [BuildArch] [LinuxCodeName] [lldbx.y] [--skipunmount] --rootfsdir <directory>]"
+    echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [--skipunmount] --rootfsdir <directory>]"
     echo "BuildArch can be: arm(default), armel, arm64, x86"
-    echo "LinuxCodeName - optional, Code name for Linux, can be: trusty, xenial(default), zesty, bionic, alpine. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
-    echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine"
+    echo "CodeName - optional, Code name for Linux, can be: trusty, xenial(default), zesty, bionic, alpine. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
+    echo "                              for FreeBSD can be: freebsd11 or freebsd12."
+    echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FReeBSD"
     echo "--skipunmount - optional, will skip the unmount of rootfs folder."
     exit 1
 }
 
-__LinuxCodeName=xenial
+__CodeName=xenial
 __CrossDir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 __InitialDir=$PWD
 __BuildArch=arm
@@ -25,8 +26,9 @@ __UbuntuPackages="build-essential"
 __AlpinePackages="alpine-base"
 __AlpinePackages+=" build-base"
 __AlpinePackages+=" linux-headers"
-__AlpinePackages+=" lldb-dev"
-__AlpinePackages+=" llvm-dev"
+__AlpinePackagesEdgeTesting=" lldb-dev"
+__AlpinePackagesEdgeMain=" llvm9-libs"
+__AlpinePackagesEdgeMain+=" python3"
 
 # symlinks fixer
 __UbuntuPackages+=" symlinks"
@@ -51,6 +53,15 @@ __AlpinePackages+=" curl-dev"
 __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
+
+__FreeBSDBase="12.1-RELEASE"
+__FreeBSDPkg="1.10.5"
+__FreeBSDPackages="libunwind"
+__FreeBSDPackages+=" icu"
+__FreeBSDPackages+=" libinotify"
+__FreeBSDPackages+=" lttng-ust"
+__FreeBSDPackages+=" llvm-90"
+__FreeBSDPackages+=" krb5"
 
 __UnprocessedBuildArgs=
 while :; do
@@ -80,7 +91,7 @@ while :; do
             __BuildArch=armel
             __UbuntuArch=armel
             __UbuntuRepo="http://ftp.debian.org/debian/"
-            __LinuxCodeName=jessie
+            __CodeName=jessie
             ;;
         x86)
             __BuildArch=x86
@@ -109,36 +120,36 @@ while :; do
             unset __LLDB_Package
             ;;
         trusty) # Ubuntu 14.04
-            if [ "$__LinuxCodeName" != "jessie" ]; then
-                __LinuxCodeName=trusty
+            if [ "$__CodeName" != "jessie" ]; then
+                __CodeName=trusty
             fi
             ;;
         xenial) # Ubuntu 16.04
-            if [ "$__LinuxCodeName" != "jessie" ]; then
-                __LinuxCodeName=xenial
+            if [ "$__CodeName" != "jessie" ]; then
+                __CodeName=xenial
             fi
             ;;
         zesty) # Ubuntu 17.04
-            if [ "$__LinuxCodeName" != "jessie" ]; then
-                __LinuxCodeName=zesty
+            if [ "$__CodeName" != "jessie" ]; then
+                __CodeName=zesty
             fi
             ;;
         bionic) # Ubuntu 18.04
-            if [ "$__LinuxCodeName" != "jessie" ]; then
-                __LinuxCodeName=bionic
+            if [ "$__CodeName" != "jessie" ]; then
+                __CodeName=bionic
             fi
             ;;
         jessie) # Debian 8
-            __LinuxCodeName=jessie
+            __CodeName=jessie
             __UbuntuRepo="http://ftp.debian.org/debian/"
             ;;
         stretch) # Debian 9
-            __LinuxCodeName=stretch
+            __CodeName=stretch
             __UbuntuRepo="http://ftp.debian.org/debian/"
             __LLDB_Package="liblldb-6.0-dev"
             ;;
         buster) # Debian 10
-            __LinuxCodeName=buster
+            __CodeName=buster
             __UbuntuRepo="http://ftp.debian.org/debian/"
             __LLDB_Package="liblldb-6.0-dev"
             ;;
@@ -148,13 +159,21 @@ while :; do
                 usage;
                 exit 1;
             fi
-            __LinuxCodeName=
+            __CodeName=
             __UbuntuRepo=
             __Tizen=tizen
             ;;
         alpine)
-            __LinuxCodeName=alpine
+            __CodeName=alpine
             __UbuntuRepo=
+            ;;
+        freebsd11)
+            __FreeBSDBase="11.3-RELEASE"
+            ;&
+        freebsd12)
+            __CodeName=freebsd
+            __BuildArch=x64
+            __SkipUnmount=1
             ;;
         --skipunmount)
             __SkipUnmount=1
@@ -191,25 +210,50 @@ if [ -d "$__RootfsDir" ]; then
     rm -rf $__RootfsDir
 fi
 
-if [[ "$__LinuxCodeName" == "alpine" ]]; then
+if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsVersion=2.9.1
-    __AlpineVersion=3.7
+    __AlpineVersion=3.9
     __ApkToolsDir=$(mktemp -d)
     wget https://github.com/alpinelinux/apk-tools/releases/download/v$__ApkToolsVersion/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -P $__ApkToolsDir
     tar -xf $__ApkToolsDir/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -C $__ApkToolsDir
     mkdir -p $__RootfsDir/usr/bin
     cp -v /usr/bin/qemu-$__QEMUArch-static $__RootfsDir/usr/bin
+
     $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
       -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/main \
       -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/community \
-      -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-      -X http://dl-cdn.alpinelinux.org/alpine/edge/main \
       -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
       add $__AlpinePackages
+
+    $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
+      -X http://dl-cdn.alpinelinux.org/alpine/edge/main \
+      -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
+      add $__AlpinePackagesEdgeMain
+
+    $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
+      -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+      -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
+      add $__AlpinePackagesEdgeTesting
+
     rm -r $__ApkToolsDir
-elif [[ -n $__LinuxCodeName ]]; then
-    qemu-debootstrap --arch $__UbuntuArch $__LinuxCodeName $__RootfsDir $__UbuntuRepo
-    cp $__CrossDir/$__BuildArch/sources.list.$__LinuxCodeName $__RootfsDir/etc/apt/sources.list
+elif [[ "$__CodeName" == "freebsd" ]]; then
+    mkdir -p $__RootfsDir/usr/local/etc
+    wget -O - https://download.freebsd.org/ftp/releases/amd64/${__FreeBSDBase}/base.txz | tar -C $__RootfsDir -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
+    # For now, ask for 11 ABI even on 12. This can be revisited later.
+    echo "ABI = \"FreeBSD:11:amd64\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > ${__RootfsDir}/usr/local/etc/pkg.conf
+    echo "FreeBSD: { url: "pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > ${__RootfsDir}/etc/pkg/FreeBSD.conf
+    mkdir -p $__RootfsDir/tmp
+    # get and build package manager
+    wget -O -  https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz  |  tar -C $__RootfsDir/tmp -zxf -
+    cd $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
+    ./autogen.sh && ./configure --prefix=$__RootfsDir/host && make install
+    rm -rf $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
+    # install packages we need.
+    $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf update
+    $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
+elif [[ -n $__CodeName ]]; then
+    qemu-debootstrap --arch $__UbuntuArch $__CodeName $__RootfsDir $__UbuntuRepo
+    cp $__CrossDir/$__BuildArch/sources.list.$__CodeName $__RootfsDir/etc/apt/sources.list
     chroot $__RootfsDir apt-get update
     chroot $__RootfsDir apt-get -f -y install
     chroot $__RootfsDir apt-get -y install $__UbuntuPackages
@@ -219,7 +263,7 @@ elif [[ -n $__LinuxCodeName ]]; then
         umount $__RootfsDir/*
     fi
 
-    if [[ "$__BuildArch" == "arm" && "$__LinuxCodeName" == "trusty" ]]; then
+    if [[ "$__BuildArch" == "arm" && "$__CodeName" == "trusty" ]]; then
         pushd $__RootfsDir
         patch -p1 < $__CrossDir/$__BuildArch/trusty.patch
         patch -p1 < $__CrossDir/$__BuildArch/trusty-lttng-2.4.patch

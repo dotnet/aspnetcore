@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                _logger.LogInformation("Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
             }
         }
 

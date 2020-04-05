@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             c.Configure(context.ServerOptions);
                         }
 
-                        return new KestrelServer(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                        return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
                     });
                     configureServices(services);
                 })

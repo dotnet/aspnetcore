@@ -27,10 +27,6 @@ namespace Microsoft.AspNetCore.Mvc
         public VirtualFileResult(string fileName, string contentType)
             : this(fileName, MediaTypeHeaderValue.Parse(contentType))
         {
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
         }
 
         /// <summary>

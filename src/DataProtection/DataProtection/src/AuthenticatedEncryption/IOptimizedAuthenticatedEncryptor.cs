@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         /// This method allows for a slight performance improvement over IAuthenticatedEncryptor.Encrypt
         /// in the case where the caller needs to prepend or append some data to the resulting ciphertext.
         /// For instance, if the caller needs to append a 32-bit header to the resulting ciphertext, then
-        /// he can specify 4 for 'preBufferSize' and overwrite the first 32 bits of the buffer returned
+        /// specify 4 for 'preBufferSize' and overwrite the first 32 bits of the buffer returned
         /// by this function. This saves the caller from having to allocate a new buffer to hold the final
         /// transformed result.
-        /// 
+        ///
         /// All cryptography-related exceptions should be homogenized to CryptographicException.
         /// </remarks>
         byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize);

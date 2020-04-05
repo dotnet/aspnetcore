@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
-import { Arg, getDataDetail, Platform } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, Platform } from "./Utils";
 
 /** @private */
 export class WebSocketTransport implements ITransport {
@@ -15,12 +16,13 @@ export class WebSocketTransport implements ITransport {
     private readonly webSocketConstructor: WebSocketConstructor;
     private readonly httpClient: HttpClient;
     private webSocket?: WebSocket;
+    private headers: MessageHeaders;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor) {
+                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders) {
         this.logger = logger;
         this.accessTokenFactory = accessTokenFactory;
         this.logMessageContent = logMessageContent;
@@ -29,13 +31,13 @@ export class WebSocketTransport implements ITransport {
 
         this.onreceive = null;
         this.onclose = null;
+        this.headers = headers;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
         Arg.isRequired(url, "url");
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
-
         this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting.");
 
         if (this.accessTokenFactory) {
@@ -51,12 +53,18 @@ export class WebSocketTransport implements ITransport {
             const cookies = this.httpClient.getCookieString(url);
             let opened = false;
 
-            if (Platform.isNode && cookies) {
-                // Only pass cookies when in non-browser environments
+            if (Platform.isNode) {
+                const headers = {};
+                const [name, value] = getUserAgentHeader();
+                headers[name] = value;
+
+                if (cookies) {
+                    headers[`Cookie`] = `${cookies}`;
+                }
+
+                // Only pass headers when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
-                    headers: {
-                        Cookie: `${cookies}`,
-                    },
+                    headers: { ...headers, ...this.headers },
                 });
             }
 
@@ -92,7 +100,12 @@ export class WebSocketTransport implements ITransport {
             webSocket.onmessage = (message: MessageEvent) => {
                 this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. ${getDataDetail(message.data, this.logMessageContent)}.`);
                 if (this.onreceive) {
-                    this.onreceive(message.data);
+                    try {
+                        this.onreceive(message.data);
+                    } catch (error) {
+                        this.close(error);
+                        return;
+                    }
                 }
             };
 
@@ -128,13 +141,6 @@ export class WebSocketTransport implements ITransport {
 
     public stop(): Promise<void> {
         if (this.webSocket) {
-            // Clear websocket handlers because we are considering the socket closed now
-            this.webSocket.onclose = () => {};
-            this.webSocket.onmessage = () => {};
-            this.webSocket.onerror = () => {};
-            this.webSocket.close();
-            this.webSocket = undefined;
-
             // Manually invoke onclose callback inline so we know the HttpConnection was closed properly before returning
             // This also solves an issue where websocket.onclose could take 18+ seconds to trigger during network disconnects
             this.close(undefined);
@@ -143,15 +149,30 @@ export class WebSocketTransport implements ITransport {
         return Promise.resolve();
     }
 
-    private close(event?: CloseEvent): void {
+    private close(event?: CloseEvent | Error): void {
         // webSocket will be null if the transport did not start successfully
+        if (this.webSocket) {
+            // Clear websocket handlers because we are considering the socket closed now
+            this.webSocket.onclose = () => {};
+            this.webSocket.onmessage = () => {};
+            this.webSocket.onerror = () => {};
+            this.webSocket.close();
+            this.webSocket = undefined;
+        }
+
         this.logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
-            if (event && (event.wasClean === false || event.code !== 1000)) {
+            if (this.isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
                 this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason}).`));
+            } else if (event instanceof Error) {
+                this.onclose(event);
             } else {
                 this.onclose();
             }
         }
+    }
+
+    private isCloseEvent(event?: any): event is CloseEvent {
+        return event && typeof event.wasClean === "boolean" && typeof event.code === "number";
     }
 }
