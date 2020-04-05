@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class NavLink : ComponentBase, IDisposable
     {
         private const string DefaultActiveClass = "active";
+        private const string DefaultTag = "a";
 
         private bool _isActive;
         private string _hrefAbsolute;
@@ -26,6 +27,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter]
         public string ActiveClass { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Tag of Html Element applied to the NavLink
+        /// </summary>
+        [Parameter]
+        public string Tag { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be added to the generated
@@ -157,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenElement(0, "a");
+            builder.OpenElement(0, Tag ?? DefaultTag);
 
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "class", CssClass);
