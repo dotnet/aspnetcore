@@ -8,7 +8,7 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="..\..\..\THIRD-PARTY-NOTICES.txt" />
+    <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="$taskskDir$\**" target="tools/" />

@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Limits the size of the header compression table, in octets, the HPACK decoder on the server can use.
+        /// Limits the size of the header compression tables, in octets, the HPACK encoder and decoder on the server can use.
         /// <para>
-        /// Value must be greater than 0, defaults to 4096
+        /// Value must be greater than or equal to 0, defaults to 4096
         /// </para>
         /// </summary>
         public int HeaderTableSize
@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             get => _headerTableSize;
             set
             {
-                if (value <= 0)
+                if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.GreaterThanZeroRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, CoreStrings.GreaterThanOrEqualToZeroRequired);
                 }
 
                 _headerTableSize = value;

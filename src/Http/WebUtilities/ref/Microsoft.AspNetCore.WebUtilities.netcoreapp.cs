@@ -216,6 +216,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     public static partial class QueryHelpers
     {
         public static string AddQueryString(string uri, System.Collections.Generic.IDictionary<string, string> queryString) { throw null; }
+        public static string AddQueryString(string uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> queryString) { throw null; }
+        public static string AddQueryString(string uri, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> queryString) { throw null; }
         public static string AddQueryString(string uri, string name, string value) { throw null; }
         public static System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> ParseNullableQuery(string queryString) { throw null; }
         public static System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> ParseQuery(string queryString) { throw null; }

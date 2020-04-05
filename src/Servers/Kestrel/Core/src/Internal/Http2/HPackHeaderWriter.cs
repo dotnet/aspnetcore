@@ -4,7 +4,6 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -13,57 +12,105 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         /// <summary>
         /// Begin encoding headers in the first HEADERS frame.
         /// </summary>
-        public static bool BeginEncodeHeaders(int statusCode, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+        public static bool BeginEncodeHeaders(int statusCode, HPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
         {
-            if (!HPackEncoder.EncodeStatusHeader(statusCode, buffer, out var statusCodeLength))
+            length = 0;
+
+            if (!hpackEncoder.EnsureDynamicTableSizeUpdate(buffer, out var sizeUpdateLength))
             {
                 throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
             }
+            length += sizeUpdateLength;
+
+            if (!EncodeStatusHeader(statusCode, hpackEncoder, buffer.Slice(length), out var statusCodeLength))
+            {
+                throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+            }
+            length += statusCodeLength;
 
             if (!headersEnumerator.MoveNext())
             {
-                length = statusCodeLength;
                 return true;
             }
 
             // We're ok with not throwing if no headers were encoded because we've already encoded the status.
             // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
-            var done = EncodeHeaders(headersEnumerator, buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out var headersLength);
-            length = statusCodeLength + headersLength;
-
+            var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: false, out var headersLength);
+            length += headersLength;
             return done;
         }
 
         /// <summary>
         /// Begin encoding headers in the first HEADERS frame.
         /// </summary>
-        public static bool BeginEncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+        public static bool BeginEncodeHeaders(HPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
         {
+            length = 0;
+
+            if (!hpackEncoder.EnsureDynamicTableSizeUpdate(buffer, out var sizeUpdateLength))
+            {
+                throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+            }
+            length += sizeUpdateLength;
+
             if (!headersEnumerator.MoveNext())
             {
-                length = 0;
                 return true;
             }
 
-            return EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
+            var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: true, out var headersLength);
+            length += headersLength;
+            return done;
         }
 
         /// <summary>
         /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
         /// </summary>
-        public static bool ContinueEncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+        public static bool ContinueEncodeHeaders(HPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
         {
-            return EncodeHeaders(headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
+            return EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
         }
 
-        private static bool EncodeHeaders(Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
+        private static bool EncodeStatusHeader(int statusCode, HPackEncoder hpackEncoder, Span<byte> buffer, out int length)
+        {
+            switch (statusCode)
+            {
+                case 200:
+                case 204:
+                case 206:
+                case 304:
+                case 400:
+                case 404:
+                case 500:
+                    // Status codes which exist in the HTTP/2 StaticTable.
+                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], buffer, out length);
+                default:
+                    const string name = ":status";
+                    var value = StatusCodes.ToStatusString(statusCode);
+                    return hpackEncoder.EncodeHeader(buffer, H2StaticTable.Status200, HeaderEncodingHint.Index, name, value, out length);
+            }
+        }
+
+        private static bool EncodeHeadersCore(HPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
         {
             var currentLength = 0;
             do
             {
-                if (!EncodeHeader(headersEnumerator.KnownHeaderType, headersEnumerator.Current.Key, headersEnumerator.Current.Value, buffer.Slice(currentLength), out int headerLength))
+                var staticTableId = headersEnumerator.HPackStaticTableId;
+                var name = headersEnumerator.Current.Key;
+                var value = headersEnumerator.Current.Value;
+
+                var hint = ResolveHeaderEncodingHint(staticTableId, name);
+
+                if (!hpackEncoder.EncodeHeader(
+                    buffer.Slice(currentLength),
+                    staticTableId,
+                    hint,
+                    name,
+                    value,
+                    out var headerLength))
                 {
-                    // The the header wasn't written and no headers have been written then the header is too large.
+                    // If the header wasn't written, and no headers have been written, then the header is too large.
                     // Throw an error to avoid an infinite loop of attempting to write large header.
                     if (currentLength == 0 && throwIfNoneEncoded)
                     {
@@ -79,79 +126,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             while (headersEnumerator.MoveNext());
 
             length = currentLength;
-
             return true;
         }
 
-        private static bool EncodeHeader(KnownHeaderType knownHeaderType, string name, string value, Span<byte> buffer, out int length)
+        private static HeaderEncodingHint ResolveHeaderEncodingHint(int staticTableId, string name)
         {
-            var hPackStaticTableId = GetResponseHeaderStaticTableId(knownHeaderType);
-
-            if (hPackStaticTableId == -1)
+            HeaderEncodingHint hint;
+            if (IsSensitive(staticTableId, name))
             {
-                return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out length);
+                hint = HeaderEncodingHint.NeverIndex;
+            }
+            else if (IsNotDynamicallyIndexed(staticTableId))
+            {
+                hint = HeaderEncodingHint.IgnoreIndex;
             }
             else
             {
-                return HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(hPackStaticTableId, value, buffer, out length);
+                hint = HeaderEncodingHint.Index;
             }
+
+            return hint;
         }
 
-        private static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
+        private static bool IsSensitive(int staticTableIndex, string name)
         {
-            switch (responseHeaderType)
+            // Set-Cookie could contain sensitive data.
+            if (staticTableIndex == H2StaticTable.SetCookie)
             {
-                case KnownHeaderType.CacheControl:
-                    return H2StaticTable.CacheControl;
-                case KnownHeaderType.Date:
-                    return H2StaticTable.Date;
-                case KnownHeaderType.TransferEncoding:
-                    return H2StaticTable.TransferEncoding;
-                case KnownHeaderType.Via:
-                    return H2StaticTable.Via;
-                case KnownHeaderType.Allow:
-                    return H2StaticTable.Allow;
-                case KnownHeaderType.ContentType:
-                    return H2StaticTable.ContentType;
-                case KnownHeaderType.ContentEncoding:
-                    return H2StaticTable.ContentEncoding;
-                case KnownHeaderType.ContentLanguage:
-                    return H2StaticTable.ContentLanguage;
-                case KnownHeaderType.ContentLocation:
-                    return H2StaticTable.ContentLocation;
-                case KnownHeaderType.ContentRange:
-                    return H2StaticTable.ContentRange;
-                case KnownHeaderType.Expires:
-                    return H2StaticTable.Expires;
-                case KnownHeaderType.LastModified:
-                    return H2StaticTable.LastModified;
-                case KnownHeaderType.AcceptRanges:
-                    return H2StaticTable.AcceptRanges;
-                case KnownHeaderType.Age:
-                    return H2StaticTable.Age;
-                case KnownHeaderType.ETag:
-                    return H2StaticTable.ETag;
-                case KnownHeaderType.Location:
-                    return H2StaticTable.Location;
-                case KnownHeaderType.ProxyAuthenticate:
-                    return H2StaticTable.ProxyAuthenticate;
-                case KnownHeaderType.RetryAfter:
-                    return H2StaticTable.RetryAfter;
-                case KnownHeaderType.Server:
-                    return H2StaticTable.Server;
-                case KnownHeaderType.SetCookie:
-                    return H2StaticTable.SetCookie;
-                case KnownHeaderType.Vary:
-                    return H2StaticTable.Vary;
-                case KnownHeaderType.WWWAuthenticate:
-                    return H2StaticTable.WwwAuthenticate;
-                case KnownHeaderType.AccessControlAllowOrigin:
-                    return H2StaticTable.AccessControlAllowOrigin;
-                case KnownHeaderType.ContentLength:
-                    return H2StaticTable.ContentLength;
-                default:
-                    return -1;
+                return true;
             }
+            if (string.Equals(name, "Content-Disposition", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsNotDynamicallyIndexed(int staticTableIndex)
+        {
+            // Content-Length is added to static content. Content length is different for each
+            // file, and is unlikely to be reused because of browser caching.
+            return staticTableIndex == H2StaticTable.ContentLength;
         }
     }
 }

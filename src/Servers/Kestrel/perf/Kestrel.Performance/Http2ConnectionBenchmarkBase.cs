@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net.Http.HPack;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
@@ -24,28 +25,25 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class Http2ConnectionBenchmark
+    public abstract class Http2ConnectionBenchmarkBase
     {
         private MemoryPool<byte> _memoryPool;
         private HttpRequestHeaders _httpRequestHeaders;
         private Http2Connection _connection;
+        private HPackEncoder _hpackEncoder;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
         private byte[] _headersBuffer;
         private DuplexPipe.DuplexPipePair _connectionPair;
         private Http2Frame _httpFrame;
-        private string _responseData;
         private int _dataWritten;
 
-        [Params(0, 10, 1024 * 1024)]
-        public int ResponseDataLength { get; set; }
+        protected abstract Task ProcessRequest(HttpContext httpContext);
 
-        [GlobalSetup]
-        public void GlobalSetup()
+        public virtual void GlobalSetup()
         {
             _memoryPool = SlabMemoryPoolFactory.Create();
             _httpFrame = new Http2Frame();
-            _responseData = new string('!', ResponseDataLength);
 
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
@@ -58,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _httpRequestHeaders.Append(HeaderNames.Authority, new StringValues("localhost:80"));
 
             _headersBuffer = new byte[1024 * 16];
+            _hpackEncoder = new HPackEncoder();
 
             var serviceContext = new ServiceContext
             {
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             _currentStreamId = 1;
 
-            _ = _connection.ProcessRequestsAsync(new DummyApplication(c => ResponseDataLength == 0 ? Task.CompletedTask : c.Response.WriteAsync(_responseData), new MockHttpContextFactory()));
+            _ = _connection.ProcessRequestsAsync(new DummyApplication(ProcessRequest, new MockHttpContextFactory()));
 
             _connectionPair.Application.Output.Write(Http2Connection.ClientPreface);
             _connectionPair.Application.Output.WriteSettings(new Http2PeerSettings
@@ -102,11 +101,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         }
 
         [Benchmark]
-        public async Task EmptyRequest()
+        public async Task MakeRequest()
         {
             _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
             _requestHeadersEnumerator.MoveNext();
-            _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _httpFrame);
+            _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _hpackEncoder, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _httpFrame);
             await _connectionPair.Application.Output.FlushAsync();
 
             while (true)
