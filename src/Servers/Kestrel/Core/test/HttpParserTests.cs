@@ -429,6 +429,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(RequestRejectionReason.TlsOverHttpError, badHttpRequestException.Reason);
         }
 
+        [Theory]
+        [MemberData(nameof(RequestHeaderInvalidData))]
+        public void ParseHeadersThrowsOnInvalidRequestHeadersWithGratuitouslySplitBuffers(string rawHeaders, string expectedExceptionMessage)
+        {
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(true);
+
+            var parser = CreateParser(mockTrace.Object);
+            var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(rawHeaders);
+            var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            {
+                var reader = new SequenceReader<byte>(buffer);
+                parser.ParseHeaders(requestHandler, ref reader);
+            });
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+        }
+
         [Fact]
         public void ParseHeadersWithGratuitouslySplitBuffers()
         {
