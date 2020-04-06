@@ -45,6 +45,8 @@ else {
 }
 
 New-Item -ItemType Directory -Force -Path $InstallDir
+Write-Host "Copying *.txt to $InstallDir"
+Copy-Item -Path ".\tmpRuntime\*.txt" $InstallDir
 Write-Host "Copying managed files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\$RuntimeIdentifier\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
