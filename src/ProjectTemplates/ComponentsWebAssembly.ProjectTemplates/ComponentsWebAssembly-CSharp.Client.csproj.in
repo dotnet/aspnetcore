@@ -6,6 +6,9 @@
     <!--#if PWA -->
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <!--#endif -->
+    <!--#if Hosted -->
+    <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">ComponentsWebAssembly-CSharp.Client</AssemblyName>
+    <!--#endif -->
   </PropertyGroup>
 
   <ItemGroup>
