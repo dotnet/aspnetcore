@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview4.20181.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview4.20205.1">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>cc7210171446daf40ba88d9abe1ce1a7aa9f44a1</Sha>
+      <Sha>eef56fe506c48f78ecd88894aac74eacfe524f80</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="3.2.0-preview4.20177.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -19,17 +19,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20124.2">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20202.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>0b8ce7c1c078eefb4cbc4d7e67ffc02f1f73382d</Sha>
+      <Sha>f6dc83c016f91377a2f3f3d44f08f326652a0337</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20124.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20202.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>0b8ce7c1c078eefb4cbc4d7e67ffc02f1f73382d</Sha>
+      <Sha>f6dc83c016f91377a2f3f3d44f08f326652a0337</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20124.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20202.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>0b8ce7c1c078eefb4cbc4d7e67ffc02f1f73382d</Sha>
+      <Sha>f6dc83c016f91377a2f3f3d44f08f326652a0337</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
