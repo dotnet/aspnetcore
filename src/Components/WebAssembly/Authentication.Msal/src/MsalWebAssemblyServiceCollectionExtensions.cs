@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddMsalAuthentication(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+        public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
         {
             return AddMsalAuthentication<RemoteAuthenticationState>(services, configure);
         }
@@ -34,11 +34,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddMsalAuthentication<TRemoteAuthenticationState>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication<TRemoteAuthenticationState>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         {
-            AddMsalAuthentication<TRemoteAuthenticationState, RemoteUserAccount>(services, configure);
-            return services;
+            return AddMsalAuthentication<TRemoteAuthenticationState, RemoteUserAccount>(services, configure);
         }
 
         /// <summary>
@@ -49,14 +48,24 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddMsalAuthentication<TRemoteAuthenticationState, TAccount>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddMsalAuthentication<TRemoteAuthenticationState, TAccount>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
         {
-            services.AddRemoteAuthentication<RemoteAuthenticationState, TAccount, MsalProviderOptions>(configure);
+            services.AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, MsalProviderOptions>(configure);
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>, MsalDefaultOptionsConfiguration>());
 
-            return services;
+            return new MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>(services);
         }
+    }
+
+    internal class MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount> : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount>
+        where TRemoteAuthenticationState : RemoteAuthenticationState, new()
+        where TRemoteUserAccount : RemoteUserAccount
+    {
+
+        public MsalRemoteAuthenticationBuilder(IServiceCollection services) => Services = services;
+
+        public IServiceCollection Services { get; }
     }
 }
