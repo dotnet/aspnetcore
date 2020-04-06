@@ -1111,10 +1111,10 @@ public class HubConnection implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         try {
             stop().blockingAwait();
-        } catch (Exception ex) {
+        } finally {
             // Don't close HttpClient if it's passed in by the user
             if (this.httpClient != null && this.httpClient instanceof DefaultHttpClient) {
                 this.httpClient.close();
