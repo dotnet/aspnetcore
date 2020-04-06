@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const int NonVoidResult = 3;
 
         private readonly MessagePackSerializerOptions _msgPackSerializerOptions;
+
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
 
@@ -52,37 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="options">The options used to initialize the protocol.</param>
         public MessagePackHubProtocol(IOptions<MessagePackHubProtocolOptions> options)
         {
-            var msgPackOptions = options.Value;
-            var resolver = SignalRResolver.Instance;
-            var hasCustomFormatterResolver = false;
-
-            // if counts don't match then we know users customized resolvers so we set up the options with the provided resolvers
-            if (msgPackOptions.FormatterResolvers.Count != SignalRResolver.Resolvers.Count)
-            {
-                hasCustomFormatterResolver = true;
-            }
-            else
-            {
-                // Compare each "reference" in the FormatterResolvers IList<> against the default "SignalRResolver.Resolvers" IList<>
-                for (var i = 0; i < msgPackOptions.FormatterResolvers.Count; i++)
-                {
-                    // check if the user customized the resolvers
-                    if (msgPackOptions.FormatterResolvers[i] != SignalRResolver.Resolvers[i])
-                    {
-                        hasCustomFormatterResolver = true;
-                        break;
-                    }
-                }
-            }
-
-            if (hasCustomFormatterResolver)
-            {
-                resolver = CompositeResolver.Create(Array.Empty<IMessagePackFormatter>(), (IReadOnlyList<IFormatterResolver>)msgPackOptions.FormatterResolvers);
-            }
-
-            _msgPackSerializerOptions = MessagePackSerializerOptions.Standard
-                                                                    .WithResolver(resolver)
-                                                                    .WithSecurity(MessagePackSecurity.UntrustedData);
+            _msgPackSerializerOptions = options.Value.SerializerOptions;
         }
 
         /// <inheritdoc />
@@ -656,17 +627,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        internal static List<IFormatterResolver> CreateDefaultFormatterResolvers()
-        {
-            // Copy to allow users to add/remove resolvers without changing the static SignalRResolver list
-            return new List<IFormatterResolver>(SignalRResolver.Resolvers);
-        }
+        internal static MessagePackSerializerOptions CreateDefaultMessagePackSerializerOptions() =>
+            MessagePackSerializerOptions
+                .Standard
+                .WithResolver(SignalRResolver.Instance)
+                .WithSecurity(MessagePackSecurity.UntrustedData);
 
         internal class SignalRResolver : IFormatterResolver
         {
             public static readonly IFormatterResolver Instance = new SignalRResolver();
 
-            public static readonly IList<IFormatterResolver> Resolvers = new IFormatterResolver[]
+            public static readonly IReadOnlyList<IFormatterResolver> Resolvers = new IFormatterResolver[]
             {
                 DynamicEnumAsStringResolver.Instance,
                 ContractlessStandardResolver.Instance,

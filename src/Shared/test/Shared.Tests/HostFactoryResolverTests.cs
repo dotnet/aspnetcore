@@ -82,10 +82,10 @@ namespace Microsoft.Extensions.Hosting.Tests
         [Fact]
         public void CreateHostBuilderPattern_CanFindHostBuilder()
         {
-            var factory = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(CreateHostBuilderPatternTestSite.Program).Assembly);
+            var factory = HostFactoryResolver.ResolveHostBuilderFactory<MockHostTypes.IHostBuilder>(typeof(CreateHostBuilderPatternTestSite.Program).Assembly);
 
             Assert.NotNull(factory);
-            Assert.IsAssignableFrom<IHostBuilder>(factory(Array.Empty<string>()));
+            Assert.IsAssignableFrom<MockHostTypes.IHostBuilder>(factory(Array.Empty<string>()));
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Hosting.Tests
         [Fact]
         public void CreateHostBuilderPattern__Invalid_CantFindHostBuilder()
         {
-            var factory = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(CreateHostBuilderInvalidSignature.Program).Assembly);
+            var factory = HostFactoryResolver.ResolveHostBuilderFactory<MockHostTypes.IHostBuilder>(typeof(CreateHostBuilderInvalidSignature.Program).Assembly);
 
             Assert.Null(factory);
         }

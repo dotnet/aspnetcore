@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -15,8 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private HttpResponseTrailers.Enumerator _trailersEnumerator;
         private IEnumerator<KeyValuePair<string, StringValues>> _genericEnumerator;
         private StringValues.Enumerator _stringValuesEnumerator;
+        private KnownHeaderType _knownHeaderType;
 
-        public KnownHeaderType KnownHeaderType { get; private set; }
+        public int HPackStaticTableId => GetResponseHeaderStaticTableId(_knownHeaderType);
         public KeyValuePair<string, string> Current { get; private set; }
         object IEnumerator.Current => Current;
 
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
-            KnownHeaderType = default;
+            _knownHeaderType = default;
         }
 
         public void Initialize(HttpResponseTrailers headers)
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
-            KnownHeaderType = default;
+            _knownHeaderType = default;
         }
 
         public void Initialize(IDictionary<string, StringValues> headers)
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _stringValuesEnumerator = default;
             Current = default;
-            KnownHeaderType = default;
+            _knownHeaderType = default;
         }
 
         public bool MoveNext()
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _genericEnumerator.Current.Value.GetEnumerator();
-                    KnownHeaderType = default;
+                    _knownHeaderType = default;
                     return true;
                 }
             }
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _trailersEnumerator.Current.Value.GetEnumerator();
-                    KnownHeaderType = _trailersEnumerator.CurrentKnownType;
+                    _knownHeaderType = _trailersEnumerator.CurrentKnownType;
                     return true;
                 }
             }
@@ -138,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 else
                 {
                     enumerator = _headersEnumerator.Current.Value.GetEnumerator();
-                    KnownHeaderType = _headersEnumerator.CurrentKnownType;
+                    _knownHeaderType = _headersEnumerator.CurrentKnownType;
                     return true;
                 }
             }
@@ -159,11 +161,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _headersEnumerator.Reset();
             }
             _stringValuesEnumerator = default;
-            KnownHeaderType = default;
+            _knownHeaderType = default;
         }
 
         public void Dispose()
         {
+        }
+
+        internal static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
+        {
+            switch (responseHeaderType)
+            {
+                case KnownHeaderType.CacheControl:
+                    return H2StaticTable.CacheControl;
+                case KnownHeaderType.Date:
+                    return H2StaticTable.Date;
+                case KnownHeaderType.TransferEncoding:
+                    return H2StaticTable.TransferEncoding;
+                case KnownHeaderType.Via:
+                    return H2StaticTable.Via;
+                case KnownHeaderType.Allow:
+                    return H2StaticTable.Allow;
+                case KnownHeaderType.ContentType:
+                    return H2StaticTable.ContentType;
+                case KnownHeaderType.ContentEncoding:
+                    return H2StaticTable.ContentEncoding;
+                case KnownHeaderType.ContentLanguage:
+                    return H2StaticTable.ContentLanguage;
+                case KnownHeaderType.ContentLocation:
+                    return H2StaticTable.ContentLocation;
+                case KnownHeaderType.ContentRange:
+                    return H2StaticTable.ContentRange;
+                case KnownHeaderType.Expires:
+                    return H2StaticTable.Expires;
+                case KnownHeaderType.LastModified:
+                    return H2StaticTable.LastModified;
+                case KnownHeaderType.AcceptRanges:
+                    return H2StaticTable.AcceptRanges;
+                case KnownHeaderType.Age:
+                    return H2StaticTable.Age;
+                case KnownHeaderType.ETag:
+                    return H2StaticTable.ETag;
+                case KnownHeaderType.Location:
+                    return H2StaticTable.Location;
+                case KnownHeaderType.ProxyAuthenticate:
+                    return H2StaticTable.ProxyAuthenticate;
+                case KnownHeaderType.RetryAfter:
+                    return H2StaticTable.RetryAfter;
+                case KnownHeaderType.Server:
+                    return H2StaticTable.Server;
+                case KnownHeaderType.SetCookie:
+                    return H2StaticTable.SetCookie;
+                case KnownHeaderType.Vary:
+                    return H2StaticTable.Vary;
+                case KnownHeaderType.WWWAuthenticate:
+                    return H2StaticTable.WwwAuthenticate;
+                case KnownHeaderType.AccessControlAllowOrigin:
+                    return H2StaticTable.AccessControlAllowOrigin;
+                case KnownHeaderType.ContentLength:
+                    return H2StaticTable.ContentLength;
+                default:
+                    return -1;
+            }
         }
     }
 }

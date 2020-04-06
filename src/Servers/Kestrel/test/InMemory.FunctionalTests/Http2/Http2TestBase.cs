@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackDecoder _hpackDecoder;
+        internal readonly HPackEncoder _hpackEncoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         internal readonly TimeoutControl _timeoutControl;
@@ -165,6 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public Http2TestBase()
         {
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
+            _hpackEncoder = new HPackEncoder();
 
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
@@ -501,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
-            writableBuffer.WriteStartStream(streamId, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
+            writableBuffer.WriteStartStream(streamId, _hpackEncoder, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
             return FlushAsync(writableBuffer);
         }
 
@@ -541,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[0] = padLength;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
+            HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -584,7 +586,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[4] = priority;
             var payload = buffer.Slice(extendedHeaderLength);
 
-            HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
+            HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
 
             frame.PayloadLength = extendedHeaderLength + length;
 
@@ -631,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             extendedHeader[5] = priority;
             var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
 
-            HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), payload, out var length);
+            HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
             var padding = buffer.Slice(extendedHeaderLength + length, padLength);
             padding.Fill(0);
 
@@ -745,7 +747,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareHeaders(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = HPackHeaderWriter.BeginEncodeHeaders(headersEnumerator, buffer.Span, out var length);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, out var length);
             frame.PayloadLength = length;
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
@@ -815,7 +817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareContinuation(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = HPackHeaderWriter.ContinueEncodeHeaders(headersEnumerator, buffer.Span, out var length);
+            var done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, out var length);
             frame.PayloadLength = length;
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);
@@ -843,7 +845,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frame.PrepareContinuation(flags, streamId);
             var buffer = _headerEncodingBuffer.AsMemory();
-            var done = HPackHeaderWriter.BeginEncodeHeaders(GetHeadersEnumerator(headers), buffer.Span, out var length);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), buffer.Span, out var length);
             frame.PayloadLength = length;
 
             Http2FrameWriter.WriteHeader(frame, outputWriter);

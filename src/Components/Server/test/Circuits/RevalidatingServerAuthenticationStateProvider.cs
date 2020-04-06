@@ -185,8 +185,8 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        [QuarantinedTest]
-        public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCanceledTask_TreatAsFailure()
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19940")]
+        public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCancelledTask_TreatAsFailure()
         {
             // Arrange
             var validationTcs = new TaskCompletionSource<bool>();

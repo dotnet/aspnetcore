@@ -6,12 +6,12 @@
   </PropertyGroup>
   <!-- Package: AspNetCoreRuntime.3.0.x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x64' ">
-    <BaselinePackageVersion>3.0.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.3</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x64' AND '$(TargetFramework)' == 'net461' " />
   <!-- Package: AspNetCoreRuntime.3.0.x86-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x86' ">
-    <BaselinePackageVersion>3.0.2</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.3</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x86' AND '$(TargetFramework)' == 'net461' " />
   <!-- Package: dotnet-sql-cache-->
