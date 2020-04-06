@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Validates the existence of some state previously setup by <see cref="SetSignOutState"/> in session storage to allow
         /// logouts from within the <see cref="RemoteAuthenticationDefaults.LogoutPath"/> page.
         /// </summary>
-        /// <returns>A <see cref="ValueTask{bool}"/> that completes when the state has been validated and indicates the validity of the state.</returns>
+        /// <returns>A <see cref="Task"/> that completes when the state has been validated and indicates the validity of the state.</returns>
         public virtual async Task<bool> ValidateSignOutState()
         {
             var state = await GetSignOutState();

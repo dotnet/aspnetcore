@@ -10,7 +10,7 @@ namespace System.ComponentModel.DataAnnotations
     public sealed class ComparePropertyAttribute : CompareAttribute
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="BlazorCompareAttribute"/>.
+        /// Initializes a new instance of <see cref="ComparePropertyAttribute"/>.
         /// </summary>
         /// <param name="otherProperty">The property to compare with the current property.</param>
         public ComparePropertyAttribute(string otherProperty)

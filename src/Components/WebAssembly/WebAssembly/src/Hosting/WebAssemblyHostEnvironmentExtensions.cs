@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public static class WebAssemblyHostEnvironmentExtensions
     {
         /// <summary>
-        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Development"/>.
+        /// Checks if the current hosting environment name is <c>Development</c>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IWebAssemblyHostEnvironment"/>.</param>
-        /// <returns>True if the environment name is <see cref="EnvironmentName.Development"/>, otherwise false.</returns>
+        /// <returns>True if the environment name is <c>Development</c>, otherwise false.</returns>
         public static bool IsDevelopment(this IWebAssemblyHostEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
-        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Staging"/>.
+        /// Checks if the current hosting environment name is <c>Staging</c>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IWebAssemblyHostEnvironment"/>.</param>
-        /// <returns>True if the environment name is <see cref="EnvironmentName.Staging"/>, otherwise false.</returns>
+        /// <returns>True if the environment name is <c>Staging</c>, otherwise false.</returns>
         public static bool IsStaging(this IWebAssemblyHostEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
-        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Production"/>.
+        /// Checks if the current hosting environment name is <c>Production</c>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IWebAssemblyHostEnvironment"/>.</param>
-        /// <returns>True if the environment name is <see cref="EnvironmentName.Production"/>, otherwise false.</returns>
+        /// <returns>True if the environment name is <c>Production</c>, otherwise false.</returns>
         public static bool IsProduction(this IWebAssemblyHostEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)

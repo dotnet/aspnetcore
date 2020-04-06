@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         public string Url { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="TRemoteAuthenticationState"/> instance for the current authentication operation.
+        /// Gets or sets the state instance for the current authentication operation.
         /// </summary>
         public TRemoteAuthenticationState State { get; set; }
     }

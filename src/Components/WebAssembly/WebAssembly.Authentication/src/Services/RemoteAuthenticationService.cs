@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// The default implementation for <see cref="IRemoteAuthenticationService{TRemoteAuthenticationState}"/> that uses JS interop to authenticate the user.
     /// </summary>
     /// <typeparam name="TRemoteAuthenticationState">The state to preserve across authentication operations.</typeparam>
+    /// <typeparam name="TAccount">The type of the <see cref="RemoteUserAccount" />.</typeparam>
     /// <typeparam name="TProviderOptions">The options to be passed down to the underlying JavaScript library handling the authentication operations.</typeparam>
     public class RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions> :
         AuthenticationStateProvider,
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         protected RemoteAuthenticationOptions<TProviderOptions> Options { get; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="RemoteAuthenticationService{TRemoteAuthenticationState, TProviderOptions}"/>.
+        /// Initializes a new instance.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
         /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
