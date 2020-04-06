@@ -3,7 +3,7 @@
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackageId>$(MSBuildProjectName)</PackageId>
-    <AssemblyName>WebAssembly.Net.Http</AssemblyName>
+    <AssemblyName>System.Net.Http.WebAssemblyHttpHandler</AssemblyName>
     <AssemblyVersion>0.2.2.0</AssemblyVersion>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <StrongNameKeyId>Open</StrongNameKeyId>

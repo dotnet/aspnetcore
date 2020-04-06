@@ -8,6 +8,6 @@
   </metadata>
   <files>
     $CommonFileElements$
-    <file src="$OutputPath$WebAssembly.Net.Http.dll" target="lib\netstandard2.1\WebAssembly.Net.Http.dll" />
+    <file src="$OutputPath$System.Net.Http.WebAssemblyHttpHandler.dll" target="lib\netstandard2.1\System.Net.Http.WebAssemblyHttpHandler.dll" />
   </files>
 </package>

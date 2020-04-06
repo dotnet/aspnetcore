@@ -52,8 +52,13 @@ else
     protected override async Task OnParametersSetAsync()
     {
         startDate = StartDate.GetValueOrDefault(DateTime.Now);
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>(
-            $"sample-data/weather.json?date={startDate.ToString("yyyy-MM-dd")}");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"sample-data/weather.json?date={startDate.ToString("yyyy-MM-dd")}");
+        requestMessage.SetBrowserRequestCache(BrowserRequestCache.NoCache);
+
+
+        var response = await Http.SendAsync(requestMessage);
+        forecasts = await response.Content.ReadFromJsonAsync<WeatherForecast[]>();
+
 
         // Because StandaloneApp doesn't really have a server endpoint to get dynamic data from,
         // fake the DateFormatted values here. This would not apply in a real app.

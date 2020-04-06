@@ -16,7 +16,8 @@
     <ProjectReference
       Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj"
       IncludeAssets="commit"
-      ReferenceOutputAssembly="false" />
+      ReferenceOutputAssembly="false"
+      Private="true" />
   </ItemGroup>
 
   <ItemGroup>
