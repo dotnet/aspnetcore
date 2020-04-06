@@ -26,7 +26,7 @@ namespace SignalRSamples
             _logger = logger;
         }
 
-        public async ValueTask<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next)
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             var isReadonly = invocationContext.Context.Items["readonly"];
             if (isReadonly != null && (bool)isReadonly == true)
@@ -69,20 +69,20 @@ namespace SignalRSamples
         private readonly Random _rand = new Random();
         private int _connectionCount;
 
-        public Task OnConnectedAsync(HubCallerContext context, Func<Task> next)
+        public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
             var incremented = Interlocked.Increment(ref _connectionCount);
             if (incremented > 2)
             {
                 context.Items["readonly"] = true;
             }
-            return next();
+            return next(context);
         }
 
-        public Task OnDisconnectedAsync(HubCallerContext context, Func<Task> next)
+        public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
             Interlocked.Decrement(ref _connectionCount);
-            return next();
+            return next(context);
         }
     }
 

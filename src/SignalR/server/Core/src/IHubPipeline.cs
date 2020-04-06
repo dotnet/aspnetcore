@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public interface IHubPipeline
     {
-        ValueTask<object> InvokeHubMethod(Hub hub, HubInvocationContext invocationContext, Func<HubInvocationContext, Task<object>> next);
+        ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next);
 
-        Task OnConnectedAsync(HubCallerContext context, Func<Task> next) => next();
-        Task OnDisconnectedAsync(HubCallerContext context, Func<Task> next) => next();
+        Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next) => next(context);
+        Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next) => next(context);
     }
 }

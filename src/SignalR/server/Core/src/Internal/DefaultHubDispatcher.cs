@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubPipeline.OnConnectedAsync(connection.HubCallerContext, () => hub.OnConnectedAsync());
+                    await _hubPipeline.OnConnectedAsync(connection.HubCallerContext, (context) => hub.OnConnectedAsync());
                     //await hub.OnConnectedAsync();
                 }
                 finally
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubPipeline.OnDisconnectedAsync(connection.HubCallerContext, () => hub.OnDisconnectedAsync(exception));
+                    await _hubPipeline.OnDisconnectedAsync(connection.HubCallerContext, (context) => hub.OnDisconnectedAsync(exception));
                     //await hub.OnDisconnectedAsync(exception);
                 }
                 finally
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection)
         {
-            return await _hubPipeline.InvokeHubMethod(hub, new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments),
+            return await _hubPipeline.InvokeMethodAsync(new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments),
                 async (HubInvocationContext invocationContext) =>
             {
                 if (methodExecutor.IsMethodAsync)
