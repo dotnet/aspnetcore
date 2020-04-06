@@ -10,7 +10,7 @@ using Wasm.Authentication.Server.Models;
 namespace Wasm.Authentication.Server.Controllers
 {
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class PreferencesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -23,15 +23,16 @@ namespace Wasm.Authentication.Server.Controllers
         [HttpGet("[controller]/[action]")]
         public IActionResult HasCompletedAdditionalInformation()
         {
-            var id = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (!_context.UserPreferences.Where(u => u.ApplicationUserId == id.Value).Any())
-            {
-                return Ok(false);
-            }
-            else
-            {
-                return Ok(true);
-            }
+            return Ok(true);
+            //var id = User.FindFirst(ClaimTypes.NameIdentifier);
+            //if (!_context.UserPreferences.Where(u => u.ApplicationUserId == id.Value).Any())
+            //{
+            //    return Ok(false);
+            //}
+            //else
+            //{
+            //    return Ok(true);
+            //}
         }
 
         [HttpPost("[controller]/[action]")]

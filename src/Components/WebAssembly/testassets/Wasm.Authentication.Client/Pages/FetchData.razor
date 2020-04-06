@@ -45,16 +45,15 @@ else
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri(Navigation.BaseUri);
 
-        var tokenResult = await AuthenticationService.RequestAccessToken();
+        var tokenResult = await AuthenticationService.RequestAccessToken(new AccessTokenRequestOptions
+        {
+            Scopes = new[] { "Wasm.Authentication.ServerAPI" }
+        });
 
-        if (tokenResult.TryGetToken(out var token))
+        if (tokenResult.TryGetToken(out var token, redirect: true))
         {
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
             forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
-        }
-        else
-        {
-            Navigation.NavigateTo(tokenResult.RedirectUrl);
         }
     }
 }
