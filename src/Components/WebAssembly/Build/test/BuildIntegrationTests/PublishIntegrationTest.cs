@@ -22,11 +22,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary", "LinkBaseToWebRoot" });
+            project.Configuration = "Debug";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
 
             var publishDirectory = project.PublishOutputDirectory;
+
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
 
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
@@ -51,12 +53,52 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+            Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
 
             VerifyBootManifestHashes(result, blazorPublishDirectory);
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        [Fact]
+        public async Task Publish_InRelease_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary", "LinkBaseToWebRoot" });
+            project.Configuration = "Release";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            // Verify referenced static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify link item assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "js", "LinkedScript.js");
+            var cssFile = Assert.FileExists(result, blazorPublishDirectory, "css", "app.css");
+            Assert.FileContains(result, cssFile, ".publish");
+            Assert.FileDoesNotExist(result, "dist", "Fake-License.txt");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+            Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
         }
 
         [Fact]
