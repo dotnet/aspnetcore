@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void ItContainsVersionFile()
         {
-            var versionFile = Path.Combine(_sharedFxRoot, ".version");
+            var versionFile = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.versions.txt");
             AssertEx.FileExists(versionFile);
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);

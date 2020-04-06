@@ -21,7 +21,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "This test run for over an hour")]
+        [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task WorkerTemplateAsync()
         {

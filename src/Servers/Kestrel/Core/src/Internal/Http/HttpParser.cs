@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly bool _showErrorDetails;
@@ -225,7 +227,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         Debug.Assert(readAhead == 0 || readAhead == 2);
                         // Headers don't end in CRLF line.
-                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
+
+                        KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                     }
 
                     var length = 0;
@@ -451,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
-            => BadHttpRequestException.GetException(
+            => KestrelBadHttpRequestException.GetException(
                 reason,
                 _showErrorDetails
                     ? new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)

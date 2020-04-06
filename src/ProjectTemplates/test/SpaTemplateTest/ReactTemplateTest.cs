@@ -23,7 +23,7 @@ namespace Templates.Test.SpaTemplateTest
             => SpaTemplateImplAsync("reactnoauth", "react", useLocalDb: false, usesAuth: false);
 
         [QuarantinedTest]
-        [ConditionalFact(Skip="This test run for over an hour")]
+        [ConditionalFact]
         [SkipOnHelix("selenium")]
         public Task ReactTemplate_IndividualAuth_NetCore()
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);

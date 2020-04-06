@@ -9,7 +9,7 @@ Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-star
 
 Also check out the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
-See the [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/anurse/issue-policies/docs/IssueManagementPolicies.md) document for more information on how we handle incoming issues.
+See the [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/master/docs/IssueManagementPolicies.md) document for more information on how we handle incoming issues.
 
 ## How to Engage, Contribute, and Give Feedback
 
@@ -37,4 +37,4 @@ These are some other repos for related projects:
 
 ## Code of conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)

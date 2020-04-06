@@ -1118,7 +1118,7 @@ namespace Interop.FunctionalTests
                 Assert.Equal(oneKbString + i, response.Headers.GetValues("header" + i).Single());
             }
 
-            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15612 and flags END_STREAM")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15610 and flags END_STREAM")));
             Assert.Equal(2, TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 15585 and flags NONE")).Count());
             Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 14546 and flags END_HEADERS")));
 

@@ -10,6 +10,12 @@
     <Reference Include="Mono.WebAssembly.Interop" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Options" />
+
+    <!--
+      Supress a "BUILD001: Reference to 'Microsoft.Extensions.Configuration' was removed since the last stable release
+      of this package." warning.
+    -->
+    <SuppressBaselineReference Include="Microsoft.Extensions.Configuration" />
   </ItemGroup>
 
   <ItemGroup>

@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Certificate is invalid. Issuer name: {cert.Issuer}");
+                Logger.LogError($"Certificate is invalid. Issuer name: {cert?.Issuer}");
                 using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
                 {
                     Logger.LogError($"List of current certificates in root store:");

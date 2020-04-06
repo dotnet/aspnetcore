@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await readTask;
                 }
-                catch (BadHttpRequestException ex) when (ex.StatusCode == 408)
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == 408)
                 {
                     exceptionSwallowedTcs.SetResult(null);
                 }

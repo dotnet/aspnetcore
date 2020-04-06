@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Helpers for writing tests for Roslyn analyzers.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>$(PackageTags);testing</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- This is actually a library for test projects, not a test project. -->
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+
+    <!--
+      This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+      XUnit recommends only using xunit.extensibility.*, xunit.assert, and xunit.abstractions for packages which "extend" xunit.
+      This allows consumers to decide which type of xunit runner they want to use to run these tests,
+      and avoids problems with `dotnet pack`.
+
+      See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
+    -->
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*" Pack="true" PackagePath="build" />
+  </ItemGroup>
+
+</Project>

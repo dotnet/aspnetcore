@@ -106,7 +106,8 @@ namespace Microsoft.DotNet.OpenApi.Tests
                 { PackageUrl, Tuple.Create<string, ContentDispositionHeaderValue>(PackageUrlContent, null) },
                 { NoDispositionUrl, Tuple.Create<string, ContentDispositionHeaderValue>(Content, null) },
                 { NoExtensionUrl, Tuple.Create(Content, noExtension) },
-                { NoSegmentUrl, Tuple.Create(Content, justAttachments) }
+                { NoSegmentUrl, Tuple.Create(Content, justAttachments) },
+                { BrokenUrl, null }
             };
         }
 
@@ -139,10 +140,14 @@ namespace Microsoft.DotNet.OpenApi.Tests
         public Task<IHttpResponseMessageWrapper> GetResponseAsync(string url)
         {
             var result = _results[url];
-            byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
-            var stream = new MemoryStream(byteArray);
+            MemoryStream stream = null;
+            if(result != null)
+            {
+                byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
+                stream = new MemoryStream(byteArray);
+            }
 
-            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result.Item2));
+            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result?.Item2));
         }
     }
 
@@ -154,7 +159,17 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         public bool IsSuccessCode()
         {
-            return true;
+            switch(StatusCode)
+            {
+                case HttpStatusCode.OK:
+                case HttpStatusCode.Created:
+                case HttpStatusCode.NoContent:
+                case HttpStatusCode.Accepted:
+                    return true;
+                case HttpStatusCode.NotFound:
+                default:
+                    return false;
+            }
         }
 
         private readonly ContentDispositionHeaderValue _contentDisposition;
@@ -164,6 +179,10 @@ namespace Microsoft.DotNet.OpenApi.Tests
             ContentDispositionHeaderValue header)
         {
             Stream = Task.FromResult<Stream>(stream);
+            if (header is null && stream is null)
+            {
+                StatusCode = HttpStatusCode.NotFound;
+            }
             _contentDisposition = header;
         }
 

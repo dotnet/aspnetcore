@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -288,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         await context.Request.Body.ReadAsync(new byte[1], 0, 1);
                     }
-                    catch (BadHttpRequestException)
+                    catch (Microsoft.AspNetCore.Http.BadHttpRequestException)
                     {
                     }
                 },
@@ -403,11 +404,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task NoErrorResponseSentWhenAppSwallowsBadRequestException()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException readException = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await using (var server = new TestServer(async httpContext =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 readException = await Assert.ThrowsAsync<BadHttpRequestException>(
+#pragma warning restore CS0618 // Type or member is obsolete
                     async () => await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1));
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -430,8 +435,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Assert.NotNull(readException);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -1265,7 +1272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
                 }
-                catch (BadHttpRequestException ex)
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex)
                 {
                     expectedResponse = ex.Message;
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -1749,8 +1756,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -1801,8 +1810,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     {
                         while (TestApplicationErrorLogger.Messages.TryDequeue(out var message))
                         {
+#pragma warning disable CS0618 // Type or member is obsolete
                             if (message.EventId.Id == 17 && message.LogLevel <= LogLevel.Debug && message.Exception is BadHttpRequestException
                                 && ((BadHttpRequestException)message.Exception).StatusCode == StatusCodes.Status400BadRequest)
+#pragma warning restore CS0618 // Type or member is obsolete
                             {
                                 foundMessage = true;
                                 break;
@@ -1862,8 +1873,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Contains(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                 && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -4117,8 +4130,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             if (sendMalformedRequest)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Contains(testSink.Writes, w => w.EventId.Id == 17 && w.LogLevel <= LogLevel.Debug && w.Exception is BadHttpRequestException
                     && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status400BadRequest);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             else
             {

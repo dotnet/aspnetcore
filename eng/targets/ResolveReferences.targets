@@ -216,16 +216,16 @@
         Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
   <!--
-    If we have a ref/ assembly from Extensions for a package, use that when compiling. The build-only reference to
-    Microsoft.Internal.Extensions.Refs ensures package is installed and $(MicrosoftInternalExtensionsRefsPath) is set.
+    If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
   <ItemGroup
       Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
-    <PackageReference Include="Microsoft.Internal.Extensions.Refs"
-        Version="$(MicrosoftInternalExtensionsRefsPackageVersion)"
+    <PackageReference Include="Microsoft.Extensions.Internal.Transport"
+        Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
         IsImplicitlyDefined="true"
-        IncludeAssets="Build"
-        PrivateAssets="All" />
+        IncludeAssets="Compile"
+        PrivateAssets="All"
+        GeneratePathProperty="true" />
   </ItemGroup>
 
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
