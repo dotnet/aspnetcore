@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.SignalR
                 LoggerMessage.Define(LogLevel.Debug, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
 
             private static readonly Action<ILogger, Exception> _failedWritingMessage =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FailedWritingMessage"), "Failed writing message. Aborting connection.");
+                LoggerMessage.Define(LogLevel.Error, new EventId(6, "FailedWritingMessage"), "Failed writing message. Aborting connection.");
 
             private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
                 LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");

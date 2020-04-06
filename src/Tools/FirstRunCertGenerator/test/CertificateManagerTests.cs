@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         public ITestOutputHelper Output { get; }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
@@ -154,8 +154,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [Fact]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
         {
             _fixture.CleanupCertificates();
@@ -170,8 +169,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Empty(httpsCertificateList);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [Fact]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateForEmptyVersionField()
         {
             _fixture.CleanupCertificates();
@@ -188,7 +186,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void EnsureCreateHttpsCertificate_ReturnsValidIfVersionIsZero()
         {
             _fixture.CleanupCertificates();
@@ -203,7 +201,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6721")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void EnsureCreateHttpsCertificate_ReturnValidIfCertIsNewer()
         {
             _fixture.CleanupCertificates();

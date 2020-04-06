@@ -14,8 +14,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
   <ItemGroup>

@@ -95,6 +95,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             return Context.Features.Get<IHttpTransportFeature>().TransportType.ToString();
         }
+
+        public async Task CallWithUnserializableObject()
+        {
+            await Clients.All.SendAsync("Foo", Unserializable.Create());
+        }
+
+        public Unserializable GetUnserializableObject()
+        {
+            return Unserializable.Create();
+        }
+
+        public class Unserializable
+        {
+            public Unserializable Child { get; private set; }
+
+            private Unserializable()
+            {
+            }
+
+            internal static Unserializable Create()
+            {
+                // Loops throw off every serializer ;).
+                var o = new Unserializable();
+                o.Child = o;
+                return o;
+            }
+        }
     }
 
     public class DynamicTestHub : DynamicHub

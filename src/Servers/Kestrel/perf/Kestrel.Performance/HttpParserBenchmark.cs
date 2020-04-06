@@ -27,6 +27,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         }
 
         [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+        public void JsonTechEmpower()
+        {
+            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+            {
+                InsertData(RequestParsingData.JsonTechEmpowerRequest);
+                ParseData();
+            }
+        }
+
+        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
         public void LiveAspNet()
         {
             for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
