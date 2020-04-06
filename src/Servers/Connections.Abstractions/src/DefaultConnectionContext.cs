@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Connections
         public DefaultConnectionContext() :
             this(Guid.NewGuid().ToString())
         {
-            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         /// <summary>
@@ -45,6 +44,8 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
             Features.Set<IConnectionEndPointFeature>(this);
+
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)

@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          ITransferFormatFeature,
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
-                                         IConnectionInherentKeepAliveFeature
+                                         IConnectionInherentKeepAliveFeature,
+                                         IConnectionLifetimeFeature
     {
         private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
 
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+        private CancellationTokenSource _connectionClosedTokenSource;
 
         private CancellationTokenSource _sendCts;
         private bool _activeSend;
@@ -82,6 +84,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
+            Features.Set<IConnectionLifetimeFeature>(this);
+
+            _connectionClosedTokenSource = new CancellationTokenSource();
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -169,6 +175,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public TransferFormat ActiveFormat { get; set; }
 
         public HttpContext HttpContext { get; set; }
+
+        public override CancellationToken ConnectionClosed { get; set; }
+
+        public override void Abort()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+        }
 
         public void OnHeartbeat(Action<object> action, object state)
         {
@@ -284,6 +297,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 // Wait for either to finish
                 var result = await Task.WhenAny(applicationTask, transportTask);
+
+                Abort();
 
                 // If the application is complete, complete the transport pipe (it's the pipe to the transport)
                 if (result == applicationTask)

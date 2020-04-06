@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
-            ConnectionAborted = _connectionAbortedTokenSource.Token;
+            ConnectionAborted = CancellationTokenSource.CreateLinkedTokenSource(_connectionAbortedTokenSource.Token, connectionContext.ConnectionClosed).Token;
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
