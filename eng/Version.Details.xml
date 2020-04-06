@@ -57,10 +57,6 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-preview.4.20201.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>03c40031d618f923aa88da125cb078aabde9ebb1</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.4-runtime.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
@@ -116,10 +112,6 @@
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.4-runtime.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="5.0.0-preview.4.20201.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>03c40031d618f923aa88da125cb078aabde9ebb1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0-preview.4-runtime.20201.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -307,10 +299,6 @@
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-preview.4.20201.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
-    </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-preview.4.20201.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>03c40031d618f923aa88da125cb078aabde9ebb1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20180.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
