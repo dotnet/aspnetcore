@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 IJSRuntime jsRuntime,
                 IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> options,
                 TestNavigationManager navigationManager) :
-                base(jsRuntime, options, navigationManager, new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
+                base(jsRuntime, options, navigationManager, new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
             {
             }
 

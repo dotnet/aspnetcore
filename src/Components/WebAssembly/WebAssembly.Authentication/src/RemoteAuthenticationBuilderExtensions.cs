@@ -23,9 +23,9 @@ namespace Microsoft.Extensions.DependencyInjection
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
-            where TUserFactory : UserFactory<TAccount>
+            where TUserFactory : AccountClaimsPrincipalFactory<TAccount>
         {
-            builder.Services.Replace(ServiceDescriptor.Scoped<UserFactory<TAccount>, TUserFactory>());
+            builder.Services.Replace(ServiceDescriptor.Scoped<AccountClaimsPrincipalFactory<TAccount>, TUserFactory>());
 
             return builder;
         }
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddUserFactory<TRemoteAuthenticationState, TUserFactory>(
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
-            where TUserFactory : UserFactory<RemoteUserAccount> => builder.AddUserFactory<TRemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
+            where TUserFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddUserFactory<TRemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
 
         /// <summary>
         /// Replaces the existing <see cref="UserFactory{TAccount}"/> with the user factory defined by <typeparamref name="TUserFactory"/>.
@@ -50,6 +50,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{RemoteAuthenticationState, Account}"/>.</returns>
         public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddUserFactory<TUserFactory>(
             this IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> builder)
-            where TUserFactory : UserFactory<RemoteUserAccount> => builder.AddUserFactory<RemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
+            where TUserFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddUserFactory<RemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
     }
 }
