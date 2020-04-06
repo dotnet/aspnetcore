@@ -317,9 +317,9 @@ namespace IIS.Tests
                 async ctx =>
                 {
                     var buffer = new byte[1];
-                    requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
+                    requestRejectedEx1 = await Assert.ThrowsAnyAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
-                    requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
+                    requestRejectedEx2 = await Assert.ThrowsAnyAsync<BadHttpRequestException>(
                         async () => await ctx.Request.Body.ReadAsync(buffer, 0, 1));
                     throw requestRejectedEx2;
                 }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))
