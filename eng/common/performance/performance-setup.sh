@@ -167,6 +167,13 @@ fi
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
+
+# Get the tools section from the global.json.
+# This grabs the LKG version number of dotnet and passes it to our scripts
+dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
+setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+
+
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=
     workitem_directory=$source_directory
