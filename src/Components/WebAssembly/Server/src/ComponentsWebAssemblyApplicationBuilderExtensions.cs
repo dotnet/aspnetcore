@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Builder
         /// Configures the application to serve Blazor WebAssembly framework files from the root path "/".
         /// </summary>
         /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
         /// <returns>The <see cref="IApplicationBuilder"/></returns>
         public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder applicationBuilder) =>
             UseBlazorFrameworkFiles(applicationBuilder, default);

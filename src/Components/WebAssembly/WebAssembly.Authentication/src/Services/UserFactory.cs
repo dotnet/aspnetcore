@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
     /// <summary>
-    /// Converts a <see cref="TAccount"/> into a <see cref="ClaimsPrincipal"/>.
+    /// Converts <see cref="RemoteUserAccount" /> into a <see cref="ClaimsPrincipal"/>.
     /// </summary>
     /// <typeparam name="TAccount">The account type.</typeparam>
     public class UserFactory<TAccount> where TAccount : RemoteUserAccount
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Converts the <paramref name="account"/> into the final <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        /// <param name="account">The <see cref="TAccount"/>.</param>
+        /// <param name="account">The account.</param>
         /// <param name="options">The <see cref="RemoteAuthenticationUserOptions"/> to configure the <see cref="ClaimsPrincipal"/> with.</param>
         /// <returns>A <see cref="ValueTask{TResult}"/>that will contain the <see cref="ClaimsPrincipal"/> user when completed.</returns>
         public virtual ValueTask<ClaimsPrincipal> CreateUserAsync(

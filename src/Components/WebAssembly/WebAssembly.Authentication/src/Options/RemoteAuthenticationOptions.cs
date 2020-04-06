@@ -4,13 +4,13 @@
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
     /// <summary>
-    /// Represents the options for the <see cref="RemoteAuthenticationService{TRemoteAuthenticationState, TProviderOptions}"/>.
+    /// Options for remote authentication.
     /// </summary>
     /// <typeparam name="TRemoteAuthenticationProviderOptions">The type of the underlying provider options.</typeparam>
     public class RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions> where TRemoteAuthenticationProviderOptions : new()
     {
         /// <summary>
-        /// Gets or sets the <see cref="TRemoteAuthenticationProviderOptions"/>.
+        /// Gets or sets the provider options.
         /// </summary>
         public TRemoteAuthenticationProviderOptions ProviderOptions { get; set; } = new TRemoteAuthenticationProviderOptions();
 

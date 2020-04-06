@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         string Environment { get; }
 
         /// <summary>
-        /// Gets the base address for the application. This is typically derived from the "<base href>" value in the host page.
+        /// Gets the base address for the application. This is typically derived from the <c>&gt;base href&lt;</c> value in the host page.
         /// </summary>
         string BaseAddress { get; }
     }

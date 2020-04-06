@@ -15,12 +15,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     {
         private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
         private readonly IJSInProcessRuntime _jsRuntime;
-        private bool _disposed;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyConsoleLoggerProvider"/>.
         /// </summary>
-        /// <param name="options">The options to create <see cref="WebAssemblyConsoleLogger"/> instances with.</param>
         public WebAssemblyConsoleLoggerProvider(IJSInProcessRuntime jsRuntime)
         {
             _loggers = new ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>>();
@@ -36,10 +34,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <inheritdoc />
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-            }
         }
     }
 }
