@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
 
-            await WaitForConnectionErrorAsync<BadHttpRequestException>(
+            await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
