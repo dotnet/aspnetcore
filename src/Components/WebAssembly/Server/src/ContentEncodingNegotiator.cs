@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
                     if (StringSegment.Equals("*", encodingName, StringComparison.Ordinal))
                     {
                         // If we *, pick the first preferrent encoding for which a resource exists.
-                        selectedEncoding = PickPreferredEncoding(context, _preferredEncodings[^1], encoding);
+                        selectedEncoding = PickPreferredEncoding(context, default, encoding);
                         selectedEncodingQuality = quality;
                     }
 
@@ -103,17 +103,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
                 {
                     if (preferredEncoding == selectedEncoding)
                     {
-                        break;
+                        return selectedEncoding;
                     }
 
-                    if (preferredEncoding == encoding.Value && ResourceExists(context, _encodingExtensionMap[preferredEncoding]))
+                    if ((preferredEncoding == encoding.Value || encoding.Value == "*") && ResourceExists(context, _encodingExtensionMap[preferredEncoding]))
                     {
-                        selectedEncoding = encoding.Value;
-                        break;
+                        return preferredEncoding;
                     }
                 }
 
-                return selectedEncoding;
+                return StringSegment.Empty;
             }
         }
 
