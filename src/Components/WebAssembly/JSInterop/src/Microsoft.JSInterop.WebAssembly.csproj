@@ -8,6 +8,7 @@
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <HasReferenceAssembly>false</HasReferenceAssembly>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
