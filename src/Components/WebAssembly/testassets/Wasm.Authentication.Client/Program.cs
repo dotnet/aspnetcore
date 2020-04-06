@@ -14,16 +14,7 @@ namespace Wasm.Authentication.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            //builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
-            builder.Services.AddOidcAuthentication<RemoteAppState, OidcAccount>(options =>
-            {
-                options.ProviderOptions.Authority = "https://localhost:5001";
-                options.ProviderOptions.ClientId = "Wasm.Authentication.Client";
-                options.ProviderOptions.ResponseType = "code";
-                options.ProviderOptions.DefaultScopes.Clear();
-                options.ProviderOptions.DefaultScopes.Add("openid");
-                options.ProviderOptions.DefaultScopes.Add("profile");
-            })
+            builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
                 .AddUserFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             builder.Services.AddSingleton<StateService>();

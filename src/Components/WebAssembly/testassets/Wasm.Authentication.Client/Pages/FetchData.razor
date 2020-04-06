@@ -45,10 +45,7 @@ else
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri(Navigation.BaseUri);
 
-        var tokenResult = await AuthenticationService.RequestAccessToken(new AccessTokenRequestOptions
-        {
-            Scopes = new[] { "Wasm.Authentication.ServerAPI" }
-        });
+        var tokenResult = await AuthenticationService.RequestAccessToken();
 
         if (tokenResult.TryGetToken(out var token, redirect: true))
         {
