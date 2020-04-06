@@ -17,13 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, Action<OpenIdConnectOptions> configureOptions)
             => builder.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, configureOptions);
 
-        public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, Action<OpenIdConnectOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddOpenIdConnect<TService>(this AuthenticationBuilder builder, Action<OpenIdConnectOptions, TService> configureOptions) where TService : class
             => builder.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, configureOptions);
 
         public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, Action<OpenIdConnectOptions> configureOptions)
             => builder.AddOpenIdConnect(authenticationScheme, OpenIdConnectDefaults.DisplayName, configureOptions);
 
-        public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, Action<OpenIdConnectOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddOpenIdConnect<TService>(this AuthenticationBuilder builder, string authenticationScheme, Action<OpenIdConnectOptions, TService> configureOptions) where TService : class
             => builder.AddOpenIdConnect(authenticationScheme, OpenIdConnectDefaults.DisplayName, configureOptions);
 
         public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OpenIdConnectOptions> configureOptions)
@@ -41,10 +41,10 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder.AddOpenIdConnect(authenticationScheme, displayName, configureOptionsWithServices);
         }
 
-        public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OpenIdConnectOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddOpenIdConnect<TService>(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OpenIdConnectOptions, TService> configureOptions) where TService : class
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, OpenIdConnectPostConfigureOptions>());
-            return builder.AddRemoteScheme<OpenIdConnectOptions, OpenIdConnectHandler>(authenticationScheme, displayName, configureOptions);
+            return builder.AddRemoteScheme<OpenIdConnectOptions, OpenIdConnectHandler, TService>(authenticationScheme, displayName, configureOptions);
         }
     }
 }

@@ -42,10 +42,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds certificate authentication.
         /// </summary>
+        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="configureOptions"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddCertificate<TService>(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions, TService> configureOptions) where TService : class
             => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
         /// <summary>
@@ -76,14 +77,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds certificate authentication.
         /// </summary>
+        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme"></param>
         /// <param name="configureOptions"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        public static AuthenticationBuilder AddCertificate(
+        public static AuthenticationBuilder AddCertificate<TService>(
             this AuthenticationBuilder builder,
             string authenticationScheme,
-            Action<CertificateAuthenticationOptions, IServiceProvider> configureOptions)
-            => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
+            Action<CertificateAuthenticationOptions, TService> configureOptions) where TService : class
+            => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler, TService>(authenticationScheme, configureOptions);
     }
 }

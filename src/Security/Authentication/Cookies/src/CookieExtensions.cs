@@ -20,13 +20,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions> configureOptions)
             => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
+        public static AuthenticationBuilder AddCookie<TService>(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions, TService> configureOptions) where TService : class
+            => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
+
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions)
             => builder.AddCookie(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
-            => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
-
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddCookie<TService>(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions, TService> configureOptions) where TService : class
             => builder.AddCookie(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions> configureOptions)
@@ -44,11 +44,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder.AddCookie(authenticationScheme, displayName, configureOptionsWithServices);
         }
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions, IServiceProvider> configureOptions)
+        public static AuthenticationBuilder AddCookie<TService>(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions, TService> configureOptions) where TService : class
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureCookieAuthenticationOptions>());
             builder.Services.AddOptions<CookieAuthenticationOptions>(authenticationScheme).Validate(o => o.Cookie.Expiration == null, "Cookie.Expiration is ignored, use ExpireTimeSpan instead.");
-            return builder.AddScheme<CookieAuthenticationOptions, CookieAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
+            return builder.AddScheme<CookieAuthenticationOptions, CookieAuthenticationHandler, TService>(authenticationScheme, displayName, configureOptions);
         }
     }
 }
