@@ -332,8 +332,8 @@ export class AuthenticationService {
         return AuthenticationService.instance.getUser();
     }
 
-    public static getAccessToken() {
-        return AuthenticationService.instance.getAccessToken();
+    public static getAccessToken(options: AccessTokenRequestOptions) {
+        return AuthenticationService.instance.getAccessToken(options);
     }
 
     public static signIn(state: unknown) {
