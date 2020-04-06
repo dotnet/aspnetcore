@@ -298,8 +298,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Wait for either to finish
                 var result = await Task.WhenAny(applicationTask, transportTask);
 
-                Abort();
-
                 // If the application is complete, complete the transport pipe (it's the pipe to the transport)
                 if (result == applicationTask)
                 {
@@ -320,6 +318,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Now complete the application
                         Application?.Output.Complete();
                         Application?.Input.Complete();
+
+                        // Trigger ConnectionClosed
+                        Abort();
                     }
                 }
                 else
@@ -327,6 +328,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // If the transport is complete, complete the application pipes
                     Application?.Output.Complete(transportTask.Exception?.InnerException);
                     Application?.Input.Complete();
+
+                    // Trigger ConnectionClosed
+                    Abort();
 
                     try
                     {
