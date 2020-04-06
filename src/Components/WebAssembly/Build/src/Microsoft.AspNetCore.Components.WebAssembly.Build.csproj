@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
@@ -68,6 +68,38 @@
     <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
+  </Target>
+
+  <ItemGroup>
+    <_BrotliToolPathInput Include="..\..\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj" />
+    <_BrotliToolPathInput Include="..\..\Compression\src\*.cs" />
+    <_BrotliToolPathInput Include="..\..\Compression\src\*.runtimeconfig.json" />
+    <_BrotliToolPathOutput Include="$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\compression\blazor-brotli.dll" />
+  </ItemGroup>
+
+  <Target
+    Name="GetBrotliTools"
+    BeforeTargets="Build;GenerateNuspec"
+    Inputs="@(_BrotliToolPathInput)"
+    Outputs="@(_BrotliToolPathOutput)">
+    <ItemGroup>
+      <_BrotliToolsPath Include="$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\compression\" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_BrotliToolsOutputPath>@(_BrotliToolsPath->'%(FullPath)')</_BrotliToolsOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <NuspecProperty Include="brotliDir=$(_BrotliToolsOutputPath)" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="..\..\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj"
+      Targets="Publish"
+      Properties="Configuration=$(Configuration);TargetFramework=netcoreapp3.1;PublishDir=$(_BrotliToolsOutputPath)">
+    </MSBuild>
+
   </Target>
 
 </Project>

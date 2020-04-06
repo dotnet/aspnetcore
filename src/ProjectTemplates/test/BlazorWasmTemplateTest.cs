@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -84,6 +86,7 @@ namespace Templates.Test
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await AssertCompressionFormat(aspNetProcess, "br");
             if (BrowserFixture.IsHostAutomationSupported())
             {
                 aspNetProcess.VisitInBrowser(Browser);
@@ -93,6 +96,22 @@ namespace Templates.Test
             {
                 BrowserFixture.EnforceSupportedConfigurations();
             }
+        }
+
+        private static async Task AssertCompressionFormat(AspNetProcess aspNetProcess, string expectedEncoding)
+        {
+            var response = await aspNetProcess.SendRequest(() =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
+                // These are the same as chrome
+                request.Headers.AcceptEncoding.Clear();
+                request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
+                request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
+                request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));
+
+                return request;
+            });
+            Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
         }
 
         [Fact]
@@ -389,6 +408,8 @@ namespace Templates.Test
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            // We only do brotli precompression for published apps
+            await AssertCompressionFormat(aspNetProcess, "gzip");
             if (BrowserFixture.IsHostAutomationSupported())
             {
                 aspNetProcess.VisitInBrowser(Browser);

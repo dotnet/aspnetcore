@@ -10,6 +10,8 @@
     $CommonFileElements$
     <file src="..\..\..\THIRD-PARTY-NOTICES.txt" />
     <file src="build\**" target="build" />
+    <file src="$brotliDir$blazor-brotli.dll" target="tools/compression" />
+    <file src="$brotliDir$blazor-brotli.runtimeconfig.json" target="tools/compression" />
     <file src="targets\**" target="targets" />
     <file src="$taskskDir$\**" target="tools/" />
     <file src="..\..\..\Web.JS\dist\$configuration$\blazor.webassembly.js" target="tools/blazor" />

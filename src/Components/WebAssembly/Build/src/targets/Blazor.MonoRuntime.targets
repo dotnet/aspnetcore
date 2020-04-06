@@ -6,7 +6,7 @@
 
   <Target
     Name="_PrepareBlazorOutputs"
-    DependsOnTargets="_ResolveBlazorInputs;_ResolveBlazorOutputs;_GenerateBlazorBootJson">
+    DependsOnTargets="_ResolveBlazorInputs;_ResolveBlazorOutputs;_GenerateBlazorBootJson;_GenerateBlazorBootJsonIntegrity">
   </Target>
 
   <Target Name="_ResolveBlazorInputs" DependsOnTargets="ResolveReferences;ResolveRuntimePackAssets">
@@ -31,6 +31,16 @@
       <_BlazorLinkerOutputCache>$(_BlazorIntermediateOutputPath)linker.output</_BlazorLinkerOutputCache>
 
       <_BlazorApplicationAssembliesCacheFile>$(_BlazorIntermediateOutputPath)unlinked.output</_BlazorApplicationAssembliesCacheFile>
+    </PropertyGroup>
+
+    <!--
+      When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
+      In this case, explicitly specify the path to the dotnet host.
+    -->
+    <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
+      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
+      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
+      <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -123,6 +133,7 @@
       <_BlazorOutputWithTargetPath Include="@(_BlazorJSFile)">
         <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
+
     </ItemGroup>
 
     <!--
@@ -133,6 +144,33 @@
     <ItemGroup Condition="'$(BlazorEnableDebugging)' != 'true'">
       <_BlazorOutputWithTargetPath Remove="@(_BlazorOutputWithTargetPath)" Condition="'%(Extension)' == '.pdb'" />
     </ItemGroup>
+
+    <ItemGroup>
+      <_ExistingBlazorOutputWithTargetPath Include="@(_BlazorOutputWithTargetPath)" Condition="Exists('%(FullPath)')" /> 
+    </ItemGroup>
+    
+    <GetFileHash Files="@(_ExistingBlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
+    </GetFileHash>
+
+    <ItemGroup>
+      <_BlazorOutputWithIntegrity Include="@(_BlazorOutputWithHash)">
+        <Integrity>%(_BlazorOutputWithHash.FileHash)</Integrity>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+      </_BlazorOutputWithIntegrity>
+
+      <_BlazorOutputWithTargetPath Remove="@(_BlazorOutputWithIntegrity)" />
+      <_BlazorOutputWithTargetPath Include="@(_BlazorOutputWithIntegrity)" RemoveMetadata="FileHash;FileHashAlgorithm" />
+
+      <MakeDir Directories="$(IntermediateOutputPath)integrity" />
+    </ItemGroup>
+
+    <WriteLinesToFile Lines="%(_BlazorOutputWithIntegrity.Integrity)" File="%(_BlazorOutputWithIntegrity.IntegrityFile)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
+    <ItemGroup>
+      <FileWrites Include="%(_BlazorOutputWithIntegrity.IntegrityFile)" />
+    </ItemGroup>
+
   </Target>
 
   <!--
@@ -232,16 +270,6 @@
     </ItemGroup>
 
     <Delete Files="@(_OldLinkedFile)" />
-
-    <!--
-      When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
-      In this case, explicitly specify the path to the dotnet host.
-    -->
-    <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
-      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
-      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
-      <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
-    </PropertyGroup>
 
     <BlazorILLink
         ILLinkPath="$(ComponentsWebAssemblyLinkerPath)"
@@ -360,23 +388,41 @@
       <_BlazorBootResource Include="@(_BlazorOutputWithTargetPath->HasMetadata('BootManifestResourceType'))" />
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorBootResource)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorBootResourceWithHash" />
-    </GetFileHash>
-
     <GenerateBlazorBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      Resources="@(_BlazorBootResourceWithHash)"
+      Resources="@(_BlazorBootResource)"
       DebugBuild="$(_IsDebugBuild)"
       LinkerEnabled="$(BlazorWebAssemblyEnableLinking)"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(_BlazorBootJsonIntermediateOutputPath)"
       ConfigurationFiles="@(_BlazorConfigFile)" />
 
+  </Target>
+
+  <Target Name="_GenerateBlazorBootJsonIntegrity">
+
+    <GetFileHash Files="$(_BlazorBootJsonIntermediateOutputPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorBootJsonWithHash" />
+    </GetFileHash>
+
     <ItemGroup>
-      <_BlazorOutputWithTargetPath Include="$(_BlazorBootJsonIntermediateOutputPath)" TargetOutputPath="$(_BaseBlazorRuntimeOutputPath)$(_BlazorBootJsonName)" />
+
+      <_BlazorBootJsonWithIntegrity Include="@(_BlazorBootJsonWithHash)">
+        <Integrity>%(FileHash)</Integrity>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+      </_BlazorBootJsonWithIntegrity>
+
+      <_BlazorOutputWithTargetPath Include="@(_BlazorBootJsonWithIntegrity)" RemoveMetadata="FileHash;FileHashAlgorithm">
+        <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)$(_BlazorBootJsonName)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
+
       <FileWrites Include="$(_BlazorBootJsonIntermediateOutputPath)" />
+      <FileWrites Include="%(_BlazorBootJsonWithIntegrity.IntegrityFile)" />
+
     </ItemGroup>
+
+    <WriteLinesToFile Lines="%(_BlazorBootJsonWithIntegrity.Integrity)" File="%(_BlazorBootJsonWithIntegrity.IntegrityFile)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
   </Target>
 
 </Project>

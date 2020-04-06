@@ -211,5 +211,7 @@ $@"<Project>
                 .FirstOrDefault(f => f.Key == key)
                 ?.Value;
         }
+
+        public override string ToString() => DirectoryPath;
     }
 }

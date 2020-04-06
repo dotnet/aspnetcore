@@ -1,17 +1,33 @@
 <Project>
 
   <Target Name="_ComputeServiceWorkerAssetsManifestInputs"
-          Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-          BeforeTargets="_ResolveBlazorOutputs">
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    BeforeTargets="_ResolveBlazorOutputs;_ResolveBlazorFilesToCompress">
 
     <PropertyGroup>
-      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(_BlazorIntermediateOutputPath)serviceworkerassets.js</_ServiceWorkerAssetsManifestIntermediateOutputPath>
+      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(_BlazorIntermediateOutputPath)$(ServiceWorkerAssetsManifest)</_ServiceWorkerAssetsManifestIntermediateOutputPath>
+      <_ServiceWorkerAssetsManifestFullPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(_ServiceWorkerAssetsManifestIntermediateOutputPath)'))</_ServiceWorkerAssetsManifestFullPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_BlazorOutputWithTargetPath Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-        Include="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
-        TargetOutputPath="$(_BaseBlazorDistPath)$(ServiceWorkerAssetsManifest)" />
+      <_BlazorOutputWithTargetPath
+        Include="$(_ServiceWorkerAssetsManifestFullPath)"
+        TargetOutputPath="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" />
+
+      <_ManifestStaticWebAsset Include="$(_ServiceWorkerAssetsManifestFullPath)">
+        <SourceType></SourceType>
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>$([MSBuild]::MakeRelative($([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(_BlazorIntermediateOutputPath)')), $(_ServiceWorkerAssetsManifestFullPath)))</RelativePath>
+      </_ManifestStaticWebAsset>
+
+      <StaticWebAsset Include="@(_ManifestStaticWebAsset)" />
+      <_CompressionCandidate Include="@(_ManifestStaticWebAsset)" />
+      <_CompressionCandidateWithIntegrity Include="@(_ManifestStaticWebAsset)">
+        <InputSource>$(_ServiceWorkerAssetsManifestFullPath)</InputSource>
+      </_CompressionCandidateWithIntegrity>
+
     </ItemGroup>
 
   </Target>
@@ -19,11 +35,11 @@
   <UsingTask TaskName="GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorTasksPath)" />
 
   <Target Name="_WriteServiceWorkerAssetsManifest"
-          Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-          Inputs="@(ServiceWorkerAssetsManifestItem)"
-          Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
-          BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory"
-          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes; _ComputeDefaultServiceWorkerAssetsManifestVersion; _GenerateServiceWorkerIntermediateFiles">
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    Inputs="@(ServiceWorkerAssetsManifestItem)"
+    Outputs="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)"
+    BeforeTargets="_ComputeManifestIntegrity"
+    DependsOnTargets="ResolveStaticWebAssetsInputs;_GenerateServiceWorkerIntermediateFiles">
 
     <GenerateServiceWorkerAssetsManifest
       Version="$(ServiceWorkerAssetsManifestVersion)"
@@ -36,7 +52,52 @@
 
   </Target>
 
-  <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes">
+  <Target Name="_ComputeManifestIntegrity"
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory;_GzipCompressBlazorApplicationFiles">
+    
+    <GetFileHash Files="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_ServiceWorkerManifestWithHash" />
+    </GetFileHash>
+
+    <ItemGroup>
+
+      <_ServiceWorkerManifestWithIntegrity Include="@(_ServiceWorkerManifestWithHash)">
+        <Integrity>%(FileHash)</Integrity>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+      </_ServiceWorkerManifestWithIntegrity>
+
+      <FileWrites Include="%(_ServiceWorkerManifestWithIntegrity.IntegrityFile)" />
+
+    </ItemGroup>
+
+    <WriteLinesToFile Lines="%(_ServiceWorkerManifestWithIntegrity.Integrity)" File="%(_ServiceWorkerManifestWithIntegrity.IntegrityFile)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
+    <PropertyGroup>
+      <_ServiceWorkerManifestIntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(_ServiceWorkerManifestWithIntegrity.FileHash)').Replace('/','-').Replace('+','_')).hash'</_ServiceWorkerManifestIntegrityFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_GzipFileToPatch Include="@(_GzipBlazorFileToCompress)" Condition="'%(Identity)' == '$(_ServiceWorkerAssetsManifestFullPath)'" KeepDuplicates="false">
+        <InputSource>$(_ServiceWorkerManifestIntegrityFile)</InputSource>
+      </_GzipFileToPatch>
+
+      <_GzipBlazorFileToCompress Remove="@(_GzipFileToPatch)" />
+      <_GzipBlazorFileToCompress Include="@(_GzipFileToPatch)" />
+
+      <_BrotliFileToPatch Include="@(_BrotliBlazorFileToCompress)" Condition="'%(Identity)' == '$(_ServiceWorkerAssetsManifestFullPath)'" KeepDuplicates="false">
+        <InputSource>$(_ServiceWorkerManifestIntegrityFile)</InputSource>
+      </_BrotliFileToPatch>
+
+      <_BrotliBlazorFileToCompress Remove="@(_BrotliFileToPatch)" />
+      <_BrotliBlazorFileToCompress Include="@(_BrotliFileToPatch)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_ComputeServiceWorkerAssetsManifestFileHashes"
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    DependsOnTargets="ResolveStaticWebAssetsInputs;_BlazorComputeOtherAssetsIntegrity">
 
     <ItemGroup>
       <ServiceWorkerAssetsManifestItem
@@ -50,20 +111,46 @@
 
       <!-- Don't include the service worker files in the manifest, as the service worker doesn't need to fetch itself -->
       <ServiceWorkerAssetsManifestItem Remove="%(_ServiceWorkerIntermediateFile.FullPath)" />
+
+      <_ServiceWorkerExclude Include="@(_StaticWebAssetIntegrity)" />
+      <_ServiceWorkerItemBase Include="@(ServiceWorkerAssetsManifestItem)" />
+      <_ServiceWorkerItemBase Remove="@(_ServiceWorkerExclude)" />
+      <_ServiceWorkerItemHash Include="@(ServiceWorkerAssetsManifestItem)" />
+      <_ServiceWorkerItemHash Remove="@(_ServiceWorkerItemBase)" />
+      <_ServiceWorkerAssetsManifestItemWithHash Include="%(Identity)">
+        <AssetUrl>@(_ServiceWorkerItemHash->'%(AssetUrl)')</AssetUrl>
+        <Integrity>@(_StaticWebAssetIntegrity->'%(Integrity)')</Integrity>
+      </_ServiceWorkerAssetsManifestItemWithHash>
+
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BlazorComputeOtherAssetsIntegrity" Condition="'$(ServiceWorkerAssetsManifest)' != ''">
+    <ItemGroup>
+      <_StaticWebAssetsWithoutHash Include="@(StaticWebAsset)" Condition="'%(SourceType)' != '' or '%(ContentRoot)' == '$(_BlazorCurrentProjectWWWroot)'" />
+      <_StaticWebAssetsWithoutHash Remove="@(_StaticWebAssetIntegrity)" />
     </ItemGroup>
 
-    <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_ServiceWorkerAssetsManifestItemWithHash" />
+    <GetFileHash Files="@(_StaticWebAssetsWithoutHash)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_StaticWebAssetHash" />
     </GetFileHash>
+
+    <ItemGroup>
+      <_StaticWebAssetIntegrity Include="%(_StaticWebAssetHash.Identity)">
+        <Integrity>%(_StaticWebAssetHash.FileHash)</Integrity>
+      </_StaticWebAssetIntegrity>
+    </ItemGroup>
+
   </Target>
+
 
   <!--
     Compute a default ServiceWorkerAssetsManifestVersion value by combining all the asset hashes.
     This is useful because then clients will only have to repopulate caches if the contents have changed.
   -->
   <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
-          DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes"
-          Condition="'$(ServiceWorkerAssetsManifest)' != ''">
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    DependsOnTargets="_ComputeServiceWorkerAssetsManifestFileHashes">
     <PropertyGroup>
       <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
@@ -89,7 +176,10 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_OmitServiceWorkerContent" BeforeTargets="AssignTargetPaths; ResolveCurrentProjectStaticWebAssetsInputs">
+  <Target Name="_OmitServiceWorkerContent"
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    BeforeTargets="AssignTargetPaths">
+
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
       <Content Remove="@(ServiceWorker)" />
@@ -98,30 +188,45 @@
   </Target>
 
   <Target Name="_ResolveServiceWorkerOutputs"
-          BeforeTargets="_ResolveBlazorOutputs"
-          DependsOnTargets="_ComputeServiceWorkerOutputs">
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    BeforeTargets="_ResolveBlazorOutputs"
+    DependsOnTargets="_ComputeServiceWorkerOutputs">
+
     <ItemGroup>
-      <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerIntermediateFile)" />
+      <_BlazorFileCompressExclusion Include="@(_ServiceWorkerIntermediateFile->'%(FullPath)')" />
+
+      <_ServiceWorkerStaticWebAsset Include="@(_ServiceWorkerIntermediateFile->'%(FullPath)')">
+        <SourceType></SourceType>
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>%(TargetOutputPath)</RelativePath>
+      </_ServiceWorkerStaticWebAsset>
+
+      <StaticWebAsset Include="@(_ServiceWorkerStaticWebAsset)" />
+
     </ItemGroup>
   </Target>
 
-  <Target Name="_ComputeServiceWorkerOutputs">
+  <Target Name="_ComputeServiceWorkerOutputs"
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''">
+
     <ItemGroup>
       <!-- Figure out where we're getting the content for each @(ServiceWorker) entry, depending on whether there's a PublishedContent value -->
       <_ServiceWorkerIntermediateFile Include="@(ServiceWorker->'$(IntermediateOutputPath)blazor\serviceworkers\%(Identity)')">
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</ContentSourcePath>
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</ContentSourcePath>
         <TargetOutputPath>%(ServiceWorker.Identity)</TargetOutputPath>
-        <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot\'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
-        <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').StartsWith('wwwroot/'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
+        <TargetOutputPath Condition="$([System.String]::Copy('%(ServiceWorker.Identity)').Replace('\','/').StartsWith('wwwroot/'))">$([System.String]::Copy('%(ServiceWorker.Identity)').Substring(8))</TargetOutputPath>
       </_ServiceWorkerIntermediateFile>
     </ItemGroup>
   </Target>
 
   <Target Name="_GenerateServiceWorkerIntermediateFiles"
-          Inputs="@(_ServiceWorkerIntermediateFile->'%(ContentSourcePath)'); $(_CombinedHashIntermediatePath)"
-          Outputs="@(_ServiceWorkerIntermediateFile)"
-          DependsOnTargets="_ComputeDefaultServiceWorkerAssetsManifestVersion">
+    Condition="'$(ServiceWorkerAssetsManifest)' != ''"
+    Inputs="@(_ServiceWorkerIntermediateFile->'%(ContentSourcePath)'); $(_CombinedHashIntermediatePath)"
+    Outputs="@(_ServiceWorkerIntermediateFile)"
+    DependsOnTargets="_ComputeDefaultServiceWorkerAssetsManifestVersion">
     <Copy SourceFiles="%(_ServiceWorkerIntermediateFile.ContentSourcePath)" DestinationFiles="%(_ServiceWorkerIntermediateFile.Identity)" />
     <WriteLinesToFile
       File="%(_ServiceWorkerIntermediateFile.Identity)"
