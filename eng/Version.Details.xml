@@ -13,21 +13,21 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.3.20204.5">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.3.20205.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>54d7e2616d22ccb45b0d52a84931ba56aa3c9e65</Sha>
+      <Sha>8587529296124ad1d7e2a9b75f536e2a2c301e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.3.20204.5">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.3.20205.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>54d7e2616d22ccb45b0d52a84931ba56aa3c9e65</Sha>
+      <Sha>8587529296124ad1d7e2a9b75f536e2a2c301e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.3.20204.5">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.3.20205.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>54d7e2616d22ccb45b0d52a84931ba56aa3c9e65</Sha>
+      <Sha>8587529296124ad1d7e2a9b75f536e2a2c301e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20204.5">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.3.20205.2">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>54d7e2616d22ccb45b0d52a84931ba56aa3c9e65</Sha>
+      <Sha>8587529296124ad1d7e2a9b75f536e2a2c301e48</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-preview.3.20181.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
@@ -57,165 +57,165 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>7a6aa0a4f513c28b5a0501a2db8880885def2236</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Http" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Options" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-preview.3.20202.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -324,9 +324,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>2b487f31064fe07d3b3398a7432edd1fa5777796</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-preview.3.20202.8" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-preview.3.20204.4" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>ec073cff7d938e94cea1b239e9d8934627239a8a</Sha>
+      <Sha>bdc30606a08a10db8fb6909b75e9ebf6f9f482d4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20180.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
