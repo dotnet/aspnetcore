@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets the <see cref="UserFactory{TAccount}"/> to map accounts to <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        protected UserFactory<TAccount> UserFactory { get; }
+        protected AccountClaimsPrincipalFactory<TAccount> UserFactory { get; }
 
         /// <summary>
         /// Gets the options for the underlying JavaScript library handling the authentication operations.
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             IJSRuntime jsRuntime,
             IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
             NavigationManager navigation,
-            UserFactory<TAccount> userFactory)
+            AccountClaimsPrincipalFactory<TAccount> userFactory)
         {
             JsRuntime = jsRuntime;
             Navigation = navigation;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, Navigation, result.RedirectUrl);
         }
 
         /// <inheritdoc />
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, Navigation, result.RedirectUrl);
         }
 
         private Uri GetRedirectUrl(string customReturnUrl)

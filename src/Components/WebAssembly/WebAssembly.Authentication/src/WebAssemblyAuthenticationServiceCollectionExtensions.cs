@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<IAccessTokenProviderAccessor, AccessTokenProviderAccessor>();
             services.TryAddScoped<SignOutSessionStateManager>();
 
-            services.TryAddScoped<UserFactory<TAccount>>();
+            services.TryAddScoped<AccountClaimsPrincipalFactory<TAccount>>();
 
             return new RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>(services);
         }

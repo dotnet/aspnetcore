@@ -113,10 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
 
             // Assert
-            Assert.Equal(
-                "https://www.example.com/base/authentication/login-failed?message=There was an error trying to log in",
-                jsRuntime.LastInvocation.args[0]);
-
+            Assert.Equal("https://www.example.com/base/authentication/login-failed", remoteAuthenticator.Navigation.Uri.ToString());
         }
 
         [Fact]
@@ -368,9 +365,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
 
             // Assert
-            Assert.Equal(
-                "https://www.example.com/base/authentication/logout-failed?message=There was an error trying to log out",
-                jsRuntime.LastInvocation.args[0]);
+            Assert.Equal("https://www.example.com/base/authentication/logout-failed", remoteAuthenticator.Navigation.Uri.ToString());
         }
 
         [Fact]
@@ -603,7 +598,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             public TestNavigationManager(string baseUrl, string currentUrl) => Initialize(baseUrl, currentUrl);
 
-            protected override void NavigateToCore(string uri, bool forceLoad) => Uri = uri;
+            protected override void NavigateToCore(string uri, bool forceLoad)
+                => Uri = System.Uri.IsWellFormedUriString(uri, UriKind.Absolute) ? uri : new Uri(new Uri(BaseUri), uri).ToString();
         }
 
         private class TestSignOutSessionStateManager : SignOutSessionStateManager
@@ -667,7 +663,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 IJSRuntime jsRuntime,
                 IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> options,
                 TestNavigationManager navigationManager) :
-                base(jsRuntime, options, navigationManager, new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
+                base(jsRuntime, options, navigationManager, new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
             {
             }
 

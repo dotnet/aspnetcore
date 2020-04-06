@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// Converts <see cref="RemoteUserAccount" /> into a <see cref="ClaimsPrincipal"/>.
     /// </summary>
     /// <typeparam name="TAccount">The account type.</typeparam>
-    public class UserFactory<TAccount> where TAccount : RemoteUserAccount
+    public class AccountClaimsPrincipalFactory<TAccount> where TAccount : RemoteUserAccount
     {
         private readonly IAccessTokenProviderAccessor _accessor;
 
 #pragma warning disable PUB0001 // Pubternal type in public API
-        public UserFactory(IAccessTokenProviderAccessor accessor) => _accessor = accessor;
+        public AccountClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor) => _accessor = accessor;
 
         /// <summary>
         /// Gets or sets the <see cref="IAccessTokenProvider"/>.
