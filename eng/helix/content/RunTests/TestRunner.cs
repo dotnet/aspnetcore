@@ -65,17 +65,17 @@ namespace RunTests
             }
         }
 
-        public void DisplayContents()
+        public void DisplayContents(string path = "./")
         {
             try 
             {
                 Console.WriteLine();
-                Console.WriteLine("Displaying directory contents:");
-                foreach (var file in Directory.EnumerateFiles("./"))
+                Console.WriteLine($"Displaying directory contents for {path}:");
+                foreach (var file in Directory.EnumerateFiles(path))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
-                foreach (var file in Directory.EnumerateDirectories("./"))
+                foreach (var file in Directory.EnumerateDirectories(path))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
@@ -83,7 +83,7 @@ namespace RunTests
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Exception in DisplayInitialState: {e.ToString()}");
+                Console.WriteLine($"Exception in DisplayContents: {e.ToString()}");
             }
         }
 
@@ -104,6 +104,8 @@ namespace RunTests
                     {
                         File.Copy(file, Path.Combine(appRuntimePath, Path.GetFileName(file)), overwrite: true);
                     }
+                    
+                    DisplayContents(appRuntimePath);
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
