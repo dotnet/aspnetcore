@@ -33,8 +33,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public override string Name => Assembly.GetName().Name;
 
         /// <inheritdoc />
-        public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
-
-        
+        public IEnumerable<TypeInfo> Types
+        {
+            get
+            {
+                try
+                {
+                    return Assembly.DefinedTypes;
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    return ex.Types;
+                }
+            }
+        }
     }
 }
