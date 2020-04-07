@@ -29,31 +29,31 @@
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
       <Sha>564857e3cd1c2017aa76204a129ce556f7b9301f</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="dotnet-ef" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite"  Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer"  Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools"  Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
