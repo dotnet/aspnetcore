@@ -199,10 +199,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 charsRead += charsRemaining;
                 count -= charsRemaining;
 
-                if (count > 0)
-                {
-                    buffer = buffer.Slice(charsRemaining, count);
-                }
+                buffer = buffer.Slice(charsRemaining, count);
 
                 // If we got back fewer chars than we asked for, then it's likely the underlying stream is blocked.
                 // Send the data back to the caller so they can process it.
@@ -254,10 +251,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             while (count > 0)
             {
                 // n is the characters available in _charBuffer
-                var charsAvailable = _charsRead - _charBufferIndex;
+                var charsRemaining = _charsRead - _charBufferIndex;
 
                 // charBuffer is empty, let's read from the stream
-                if (charsAvailable == 0)
+                if (charsRemaining == 0)
                 {
                     _charsRead = 0;
                     _charBufferIndex = 0;
@@ -267,7 +264,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     // We break out of the loop if the stream is blocked (EOF is reached).
                     do
                     {
-                        Debug.Assert(charsAvailable == 0);
+                        Debug.Assert(charsRemaining == 0);
                         _bytesRead = await _stream.ReadAsync(
                             _byteBuffer,
                             0,
@@ -281,47 +278,43 @@ namespace Microsoft.AspNetCore.WebUtilities
                         // _isBlocked == whether we read fewer bytes than we asked for.
                         _isBlocked = (_bytesRead < _byteBufferSize);
 
-                        Debug.Assert(charsAvailable == 0);
+                        Debug.Assert(charsRemaining == 0);
 
                         _charBufferIndex = 0;
-                        charsAvailable = _decoder.GetChars(
+                        charsRemaining = _decoder.GetChars(
                             _byteBuffer,
                             0,
                             _bytesRead,
                             _charBuffer,
                             0);
 
-                        Debug.Assert(charsAvailable > 0);
+                        Debug.Assert(charsRemaining > 0);
 
-                        _charsRead += charsAvailable; // Number of chars in StreamReader's buffer.
+                        _charsRead += charsRemaining; // Number of chars in StreamReader's buffer.
                     }
-                    while (charsAvailable == 0);
+                    while (charsRemaining == 0);
 
-                    if (charsAvailable == 0)
+                    if (charsRemaining == 0)
                     {
                         break; // We're at EOF
                     }
                 }
 
                 // Got more chars in charBuffer than the user requested
-                if (charsAvailable > count)
+                if (charsRemaining > count)
                 {
-                    charsAvailable = count;
+                    charsRemaining = count;
                 }
 
-                var source = new Memory<char>(_charBuffer, _charBufferIndex, charsAvailable);
+                var source = new Memory<char>(_charBuffer, _charBufferIndex, charsRemaining);
                 source.CopyTo(buffer);
 
-                if (charsAvailable < count)
-                {
-                    // update the buffer to the remaining portion
-                    buffer = buffer.Slice(charsAvailable);
-                }
+                _charBufferIndex += charsRemaining;
 
-                _charBufferIndex += charsAvailable;
+                charsRead += charsRemaining;
+                count -= charsRemaining;
 
-                charsRead += charsAvailable;
-                count -= charsAvailable;
+                buffer = buffer.Slice(charsRemaining, count);
 
                 // This function shouldn't block for an indefinite amount of time,
                 // or reading from a network stream won't work right.  If we got
@@ -399,16 +392,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     return stepResult.Result ?? sb?.ToString();
                 }
-
-                continue;
             }
         }
 
         private ReadLineStepResult ReadLineStep(ref StringBuilder sb, ref bool consumeLineFeed)
         {
+            const char carriageReturn = '\r';
+            const char lineFeed = '\n';
+
             if (consumeLineFeed)
             {
-                if (_charBuffer[_charBufferIndex] == '\n')
+                if (_charBuffer[_charBufferIndex] == lineFeed)
                 {
                     _charBufferIndex++;
                 }
@@ -417,19 +411,19 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var span = new Span<char>(_charBuffer, _charBufferIndex, _charsRead - _charBufferIndex);
 
-            var index = span.IndexOfAny('\r', '\n');
+            var index = span.IndexOfAny(carriageReturn, lineFeed);
 
             if (index != -1)
             {
-                if (span[index] == '\r')
+                if (span[index] == carriageReturn)
                 {
                     span = span.Slice(0, index);
                     _charBufferIndex += index + 1;
 
                     if (_charBufferIndex < _charsRead)
                     {
-                        // consume following \n
-                        if (_charBuffer[_charBufferIndex] == '\n')
+                        // consume following line feed
+                        if (_charBuffer[_charBufferIndex] == lineFeed)
                         {
                             _charBufferIndex++;
                         }
@@ -451,7 +445,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     return ReadLineStepResult.Continue;
                 }
 
-                if (span[index] == '\n')
+                if (span[index] == lineFeed)
                 {
                     span = span.Slice(0, index);
                     _charBufferIndex += index + 1;
