@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Testing
             writer.Write(payload);
         }
 
-        public static void WriteStartStream(this PipeWriter writer, int streamId, Http2HeadersEnumerator headers, byte[] headerEncodingBuffer, bool endStream, Http2Frame frame = null)
+        public static void WriteStartStream(this PipeWriter writer, int streamId, HPackEncoder hpackEncoder, Http2HeadersEnumerator headers, byte[] headerEncodingBuffer, bool endStream, Http2Frame frame = null)
         {
             frame ??= new Http2Frame();
             frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
             var buffer = headerEncodingBuffer.AsSpan();
-            var done = HPackHeaderWriter.BeginEncodeHeaders(headers, buffer, out var length);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, headers, buffer, out var length);
             frame.PayloadLength = length;
 
             if (done)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = HPackHeaderWriter.ContinueEncodeHeaders(headers, buffer, out length);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headers, buffer, out length);
                 frame.PayloadLength = length;
 
                 if (done)

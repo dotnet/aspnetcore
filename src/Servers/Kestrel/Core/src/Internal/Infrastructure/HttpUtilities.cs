@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // in the string
                 if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }
             }
         }

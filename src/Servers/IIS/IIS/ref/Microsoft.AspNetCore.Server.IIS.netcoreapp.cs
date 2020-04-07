@@ -21,10 +21,11 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.IIS
 {
-    public sealed partial class BadHttpRequestException : System.IO.IOException
+    [System.ObsoleteAttribute("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
+    public sealed partial class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
-        internal BadHttpRequestException() { }
-        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        internal BadHttpRequestException() : base (default(string), default(int)) { }
+        public new int StatusCode { get { throw null; } }
     }
     public static partial class HttpContextExtensions
     {

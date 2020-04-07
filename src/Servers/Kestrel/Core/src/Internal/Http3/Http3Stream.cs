@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     base.OnHeader(name, value);
                 }
             }
-            catch (BadHttpRequestException bre)
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
             {
                 throw new Http3StreamErrorException(bre.Message, Http3ErrorCode.ProtocolError);
             }
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void HandleRequestHeadersTimeout()
         {
-            Log.ConnectionBadRequest(ConnectionId, BadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
+            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
             Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
         }
 

@@ -1,7 +1,7 @@
 <Project>
-  <PropertyGroup Condition=" HasTrailingSlash('$(ArtifactsDir)') ">
+  <PropertyGroup>
     <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
-    <ArtifactsDir>$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+    <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
 
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallersAndChecksums</PublishDependsOnTargets>
 
@@ -50,12 +50,10 @@
       <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT'" />
 
-      <!-- Skip publishing checksums for now - the checksums for the .zip files don't match (https://github.com/dotnet/aspnetcore/issues/18792)
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
-      -->
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
         <IsShipping>true</IsShipping>

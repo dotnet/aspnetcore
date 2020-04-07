@@ -26,6 +26,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
@@ -293,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;

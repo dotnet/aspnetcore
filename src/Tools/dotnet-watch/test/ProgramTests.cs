@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ConsoleCancelKey()
         {
             _tempDir

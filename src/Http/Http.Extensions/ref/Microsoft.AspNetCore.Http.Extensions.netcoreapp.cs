@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
     public partial class QueryBuilder : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>, System.Collections.IEnumerable
     {
         public QueryBuilder() { }
+        public QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> parameters) { }
         public QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> parameters) { }
         public void Add(string key, System.Collections.Generic.IEnumerable<string> values) { }
         public void Add(string key, string value) { }

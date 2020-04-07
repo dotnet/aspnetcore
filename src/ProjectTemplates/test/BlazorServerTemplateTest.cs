@@ -81,10 +81,11 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "See: https://github.com/dotnet/aspnetcore/issues/20520")]
         [InlineData(true)]
         [InlineData(false)]
         [SkipOnHelix("ef restore no worky")]
+        [QuarantinedTest]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
