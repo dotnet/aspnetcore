@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 }
                 catch (ReflectionTypeLoadException ex)
                 {
-                    return ex.Types;
+                    return ex.Types.Select(x => x.GetTypeInfo());
                 }
             }
         }
