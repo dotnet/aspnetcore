@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.NotAllConnectionsClosedGracefully();
         }
 
-        public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+        public void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
         {
             _trace1.ConnectionBadRequest(connectionId, ex);
             _trace2.ConnectionBadRequest(connectionId, ex);

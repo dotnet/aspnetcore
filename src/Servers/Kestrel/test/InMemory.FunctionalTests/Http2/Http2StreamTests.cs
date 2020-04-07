@@ -1569,7 +1569,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_ContentLengthOver_413()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
@@ -1580,7 +1582,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1651,7 +1655,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task MaxRequestBodySize_NoContentLength_Over_413()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
             var headers = new[]
             {
@@ -1661,7 +1667,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -1699,7 +1707,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(false)]
         public async Task MaxRequestBodySize_AppCanLowerLimit(bool includeContentLength)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
             var headers = new[]
             {
@@ -1718,7 +1728,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
                 context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 17;
+#pragma warning disable CS0618 // Type or member is obsolete
                 exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }

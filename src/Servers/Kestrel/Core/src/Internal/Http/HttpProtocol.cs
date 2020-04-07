@@ -26,6 +26,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
@@ -513,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
 
             HttpRequestHeaders.Append(name, value);
@@ -525,7 +527,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
 
             string key = name.GetHeaderName();
@@ -1215,9 +1217,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             SetErrorResponseHeaders(ex.StatusCode);
 
-            if (!StringValues.IsNullOrEmpty(ex.AllowedHeader))
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (ex is Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException kestrelEx && !StringValues.IsNullOrEmpty(kestrelEx.AllowedHeader))
+#pragma warning restore CS0618 // Type or member is obsolete
             {
-                HttpResponseHeaders.HeaderAllow = ex.AllowedHeader;
+                HttpResponseHeaders.HeaderAllow = kestrelEx.AllowedHeader;
             }
         }
 
@@ -1271,7 +1275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
-            => BadHttpRequestException.GetException(
+            => KestrelBadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)
                     ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
