@@ -3256,7 +3256,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             private readonly object _dummy;
             private readonly int _dummyPrimitive;
-            public StateManager(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor visitor, object newModel) { throw null; }
+            public StateManager(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor visitor) { throw null; }
             public void Dispose() { }
             public static Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager Recurse(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor visitor, string key, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object model, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IValidationStrategy strategy) { throw null; }
         }
