@@ -16,12 +16,12 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(TestDependsOnAspNetRef)' == 'true'">
+  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg" />
     <HelixPreCommand Include="call RunPowershell.cmd InstallAspNetRef.ps1 Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false' AND '$(TestDependsOnAspNetRef)' == 'true'">
+  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false' AND '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg" />
     <HelixPreCommand Include="./installaspnetref.sh Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref || exit /b 1" />
   </ItemGroup>
