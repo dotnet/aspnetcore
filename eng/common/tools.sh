@@ -77,7 +77,7 @@ function ResolvePath {
 function ReadGlobalVersion {
   local key=$1
 
-  local line=`grep -m 1 "$key" "$global_json_file"`
+  local line=$(awk "/$key/ {print; exit}" "$global_json_file")
   local pattern="\"$key\" *: *\"(.*)\""
 
   if [[ ! $line =~ $pattern ]]; then
@@ -438,7 +438,7 @@ temp_dir="$artifacts_dir/tmp/$configuration"
 global_json_file="$repo_root/global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
-dotnetlocal_key=`grep -m 1 "runtimes" "$global_json_file"` || true
+dotnetlocal_key=$(awk "/runtimes/ {print; exit}" "$global_json_file") || true
 if [[ -n "$dotnetlocal_key" ]]; then
   global_json_has_runtimes=true
 fi

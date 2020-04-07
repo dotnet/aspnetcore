@@ -24,6 +24,8 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  mergeTestResults: false
+  testRunTitle: $(AgentOsName)-$(BuildConfiguration)-xunit
   name: ''
   preSteps: []
   runAsPublic: false
@@ -194,6 +196,8 @@ jobs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ parameters.testRunTitle }}
+        mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()
     
