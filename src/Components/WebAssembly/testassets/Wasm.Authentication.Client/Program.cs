@@ -15,7 +15,7 @@ namespace Wasm.Authentication.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
             builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
-                .AddUserFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
+                .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             builder.Services.AddSingleton<StateService>();
 

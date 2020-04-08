@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var state = new RemoteAuthenticationState();
             testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new UserFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
+                new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
             testJsRuntime.GetUserResult = default;
 
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+                new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var account = new CoolRoleAccount
             {
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+                new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var account = new CoolRoleAccount
             {
@@ -571,9 +571,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
     }
 
-    internal class TestUserFactory : UserFactory<CoolRoleAccount>
+    internal class TestAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<CoolRoleAccount>
     {
-        public TestUserFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
+        public TestAccountClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
         {
         }
 

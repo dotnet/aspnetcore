@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 
 namespace Wasm.Authentication.Client
 {
-    public class PreferencesUserFactory : UserFactory<OidcAccount>
+    public class PreferencesUserFactory : AccountClaimsPrincipalFactory<OidcAccount>
     {
         private readonly HttpClient _httpClient;
 
