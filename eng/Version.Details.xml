@@ -13,21 +13,21 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.4.20206.3">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.4.20207.1">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>b3ac44798c16fff5b95dbcfe62dea84aa9a1bd72</Sha>
+      <Sha>41aa4887fba81a40c272a18011a32e04e28bbc77</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.4.20206.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.4.20207.1">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>b3ac44798c16fff5b95dbcfe62dea84aa9a1bd72</Sha>
+      <Sha>41aa4887fba81a40c272a18011a32e04e28bbc77</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.4.20206.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.4.20207.1">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>b3ac44798c16fff5b95dbcfe62dea84aa9a1bd72</Sha>
+      <Sha>41aa4887fba81a40c272a18011a32e04e28bbc77</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.4.20206.3">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.4.20207.1">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>b3ac44798c16fff5b95dbcfe62dea84aa9a1bd72</Sha>
+      <Sha>41aa4887fba81a40c272a18011a32e04e28bbc77</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
@@ -41,15 +41,15 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite"  Version="5.0.0-preview.4.20203.1" Pinned="true">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer"  Version="5.0.0-preview.4.20203.1" Pinned="true">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools"  Version="5.0.0-preview.4.20203.1" Pinned="true">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-preview.4.20203.1" Pinned="true">
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0636ed8050797d0a9c16da8b98c2eea7d7e1f16</Sha>
     </Dependency>
@@ -312,9 +312,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>bce0a98620c1c5a110b2bba9912f3d5929069c6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-2.20166.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-3.20205.2" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>7c35456e3bce4d90e2fd3053ba7b7227b1aec0b6</Sha>
+      <Sha>359f526947e69db7cd153a67eb27c2b8ed372358</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
