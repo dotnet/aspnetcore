@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal
     /// infrastructure and not subject to the same compatibility standards as public APIs.
     /// It may be changed or removed without notice in any release.
     /// </summary>
-    public interface IRemoteAuthenticationPathsProvider
+    internal interface IRemoteAuthenticationPathsProvider
     {
         /// <summary>
         /// This is an internal API that supports the Microsoft.AspNetCore.Components.WebAssembly.Authentication

@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the status of the current operation. See <see cref="AccessTokenResultStatus"/> for a list of statuses.
         /// </summary>
-        public AccessTokenResultStatus Status { get; set; }
+        public AccessTokenResultStatus Status { get; }
 
         /// <summary>
         /// Gets or sets the URL to redirect to if <see cref="Status"/> is <see cref="AccessTokenResultStatus.RequiresRedirect"/>.
         /// </summary>
-        public string RedirectUrl { get; set; }
+        public string RedirectUrl { get; }
 
         /// <summary>
         /// Determines whether the token request was successful and makes the <see cref="AccessToken"/> available for use when it is.

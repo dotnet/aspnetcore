@@ -200,31 +200,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddApiAuthorization(options =>
             {
-                options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
-                {
-                    LogInPath = "a",
-                    LogInCallbackPath = "b",
-                    LogInFailedPath = "c",
-                    RegisterPath = "d",
-                    ProfilePath = "e",
-                    RemoteRegisterPath = "f",
-                    RemoteProfilePath = "g",
-                    LogOutPath = "h",
-                    LogOutCallbackPath = "i",
-                    LogOutFailedPath = "j",
-                    LogOutSucceededPath = "k",
-                };
-                options.UserOptions = new RemoteAuthenticationUserOptions
-                {
-                    AuthenticationType = "l",
-                    ScopeClaim = "m",
-                    RoleClaim = "n",
-                    NameClaim = "o",
-                };
-                options.ProviderOptions = new ApiAuthorizationProviderOptions
-                {
-                    ConfigurationEndpoint = "p"
-                };
+                options.AuthenticationPaths.LogInPath = "a";
+                options.AuthenticationPaths.LogInCallbackPath = "b";
+                options.AuthenticationPaths.LogInFailedPath = "c";
+                options.AuthenticationPaths.RegisterPath = "d";
+                options.AuthenticationPaths.ProfilePath = "e";
+                options.AuthenticationPaths.RemoteRegisterPath = "f";
+                options.AuthenticationPaths.RemoteProfilePath = "g";
+                options.AuthenticationPaths.LogOutPath = "h";
+                options.AuthenticationPaths.LogOutCallbackPath = "i";
+                options.AuthenticationPaths.LogOutFailedPath = "j";
+                options.AuthenticationPaths.LogOutSucceededPath = "k";
+                options.UserOptions.AuthenticationType = "l";
+                options.UserOptions.ScopeClaim = "m";
+                options.UserOptions.RoleClaim = "n";
+                options.UserOptions.NameClaim = "o";
+                options.ProviderOptions.ConfigurationEndpoint = "p";
             });
 
             var host = builder.Build();
@@ -298,35 +289,26 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
             builder.Services.AddOidcAuthentication(options =>
             {
-                options.AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
-                {
-                    LogInPath = "a",
-                    LogInCallbackPath = "b",
-                    LogInFailedPath = "c",
-                    RegisterPath = "d",
-                    ProfilePath = "e",
-                    RemoteRegisterPath = "f",
-                    RemoteProfilePath = "g",
-                    LogOutPath = "h",
-                    LogOutCallbackPath = "i",
-                    LogOutFailedPath = "j",
-                    LogOutSucceededPath = "k",
-                };
-                options.UserOptions = new RemoteAuthenticationUserOptions
-                {
-                    AuthenticationType = "l",
-                    ScopeClaim = "m",
-                    RoleClaim = "n",
-                    NameClaim = "o",
-                };
-                options.ProviderOptions = new OidcProviderOptions
-                {
-                    Authority = "p",
-                    ClientId = "q",
-                    DefaultScopes = Array.Empty<string>(),
-                    RedirectUri = "https://www.example.com/base/custom-login",
-                    PostLogoutRedirectUri = "https://www.example.com/base/custom-logout",
-                };
+                options.AuthenticationPaths.LogInPath = "a";
+                options.AuthenticationPaths.LogInCallbackPath = "b";
+                options.AuthenticationPaths.LogInFailedPath = "c";
+                options.AuthenticationPaths.RegisterPath = "d";
+                options.AuthenticationPaths.ProfilePath = "e";
+                options.AuthenticationPaths.RemoteRegisterPath = "f";
+                options.AuthenticationPaths.RemoteProfilePath = "g";
+                options.AuthenticationPaths.LogOutPath = "h";
+                options.AuthenticationPaths.LogOutCallbackPath = "i";
+                options.AuthenticationPaths.LogOutFailedPath = "j";
+                options.AuthenticationPaths.LogOutSucceededPath = "k";
+                options.UserOptions.AuthenticationType = "l";
+                options.UserOptions.ScopeClaim = "m";
+                options.UserOptions.RoleClaim = "n";
+                options.UserOptions.NameClaim = "o";
+                options.ProviderOptions.Authority = "p";
+                options.ProviderOptions.ClientId = "q";
+                options.ProviderOptions.DefaultScopes.Clear();
+                options.ProviderOptions.RedirectUri = "https://www.example.com/base/custom-login";
+                options.ProviderOptions.PostLogoutRedirectUri = "https://www.example.com/base/custom-logout";
             });
 
             var host = builder.Build();

@@ -12,44 +12,44 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class RemoteAuthenticationBuilderExtensions
     {
         /// <summary>
-        /// Replaces the existing <see cref="UserFactory{TAccount}"/> with the user factory defined by <typeparamref name="TUserFactory"/>.
+        /// Replaces the existing <see cref="AccountClaimsPrincipalFactory{TAccount}"/> with the user factory defined by <typeparamref name="TAccountClaimsPrincipalFactory"/>.
         /// </summary>
         /// <typeparam name="TRemoteAuthenticationState">The remote authentication state.</typeparam>
         /// <typeparam name="TAccount">The account type.</typeparam>
-        /// <typeparam name="TUserFactory">The new user factory type.</typeparam>
+        /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, TAccount}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, TAccount}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddUserFactory<TRemoteAuthenticationState, TAccount, TUserFactory>(
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccount, TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
-            where TUserFactory : UserFactory<TAccount>
+            where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<TAccount>
         {
-            builder.Services.Replace(ServiceDescriptor.Scoped<UserFactory<TAccount>, TUserFactory>());
+            builder.Services.Replace(ServiceDescriptor.Scoped<AccountClaimsPrincipalFactory<TAccount>, TAccountClaimsPrincipalFactory>());
 
             return builder;
         }
 
         /// <summary>
-        /// Replaces the existing <see cref="UserFactory{Account}"/> with the user factory defined by <typeparamref name="TUserFactory"/>.
+        /// Replaces the existing <see cref="AccountClaimsPrincipalFactory{Account}"/> with the user factory defined by <typeparamref name="TAccountClaimsPrincipalFactory"/>.
         /// </summary>
         /// <typeparam name="TRemoteAuthenticationState">The remote authentication state.</typeparam>
-        /// <typeparam name="TUserFactory">The new user factory type.</typeparam>
+        /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, Account}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, Account}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddUserFactory<TRemoteAuthenticationState, TUserFactory>(
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
-            where TUserFactory : UserFactory<RemoteUserAccount> => builder.AddUserFactory<TRemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
+            where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, RemoteUserAccount, TAccountClaimsPrincipalFactory>();
 
         /// <summary>
-        /// Replaces the existing <see cref="UserFactory{TAccount}"/> with the user factory defined by <typeparamref name="TUserFactory"/>.
+        /// Replaces the existing <see cref="AccountClaimsPrincipalFactory{TAccount}"/> with the user factory defined by <typeparamref name="TAccountClaimsPrincipalFactory"/>.
         /// </summary>
-        /// <typeparam name="TUserFactory">The new user factory type.</typeparam>
+        /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{RemoteAuthenticationState, Account}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{RemoteAuthenticationState, Account}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddUserFactory<TUserFactory>(
+        public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> builder)
-            where TUserFactory : UserFactory<RemoteUserAccount> => builder.AddUserFactory<RemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
+            where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, TAccountClaimsPrincipalFactory>();
     }
 }
