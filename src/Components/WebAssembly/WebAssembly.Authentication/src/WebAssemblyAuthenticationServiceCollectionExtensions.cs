@@ -38,6 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
                     return (IRemoteAuthenticationService<TRemoteAuthenticationState>)sp.GetRequiredService<AuthenticationStateProvider>();
                 });
 
+            services.TryAddTransient<RemoteAuthenticationMessageHandler>();
+
             services.TryAddScoped(sp =>
             {
                 return (IAccessTokenProvider)sp.GetRequiredService<AuthenticationStateProvider>();

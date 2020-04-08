@@ -1,8 +1,7 @@
 @page "/fetchdata"
 @using Wasm.Authentication.Shared
 @attribute [Authorize]
-@inject IAccessTokenProvider AuthenticationService
-@inject NavigationManager Navigation
+@inject IHttpClientFactory HttpClientFactory
 
 <h1>Weather forecast</h1>
 
@@ -39,18 +38,19 @@ else
 
 @code {
     private WeatherForecast[] forecasts;
+    private HttpClient _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri(Navigation.BaseUri);
+        _httpClient = HttpClientFactory.CreateClient("ServerAPI");
 
-        var tokenResult = await AuthenticationService.RequestAccessToken();
-
-        if (tokenResult.TryGetToken(out var token, redirect: true))
+        try
         {
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-            forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            forecasts = await _httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.RedirectToLogin();
         }
     }
 }
