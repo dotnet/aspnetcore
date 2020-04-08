@@ -1,8 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
-using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Extensions;
 using IdentityServer4.EntityFramework.Interfaces;
@@ -11,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -18,7 +15,42 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    public class ApiAuthorizationDbContext<TUser> : IdentityDbContext<TUser>, IPersistedGrantDbContext where TUser : IdentityUser
+    public class ApiAuthorizationDbContext<TUser> :
+        ApiAuthorizationDbContext<TUser, IdentityRole, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityRoleClaim<string>, IdentityUserToken<string>>,
+        IPersistedGrantDbContext 
+        where TUser : IdentityUser
+    {
+        private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        public ApiAuthorizationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : base(options, operationalStoreOptions)
+        {
+            _operationalStoreOptions = operationalStoreOptions;
+        }
+    }
+
+    /// <summary>
+    /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
+    /// </summary>
+    /// <typeparam name="TUser"></typeparam>
+    public class ApiAuthorizationDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> :
+        IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>,
+        IPersistedGrantDbContext
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>
+        where TUserRole : IdentityUserRole<TKey>
+        where TUserLogin : IdentityUserLogin<TKey>
+        where TRoleClaim : IdentityRoleClaim<TKey>
+        where TUserToken : IdentityUserToken<TKey>
     {
         private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
 
@@ -50,6 +82,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder builder)
         {
+
             base.OnModelCreating(builder);
             builder.ConfigurePersistedGrantContext(_operationalStoreOptions.Value);
         }
