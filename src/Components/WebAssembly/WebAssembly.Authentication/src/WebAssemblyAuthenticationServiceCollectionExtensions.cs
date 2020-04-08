@@ -205,6 +205,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>, DefaultApiAuthorizationOptionsConfiguration>(_ =>
                 new DefaultApiAuthorizationOptionsConfiguration(inferredClientId)));
 
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationMessageHandlerOptions>, ApiAuthorizationMessageHandlerConfiguration>());
+
             services.AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, ApiAuthorizationProviderOptions>(configure);
 
             return new RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>(services);
