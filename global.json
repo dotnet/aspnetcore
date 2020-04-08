@@ -1,11 +1,11 @@
 {
   "sdk": {
-    "version": "5.0.100-preview.2.20163.4",
+    "version": "5.0.100-preview.2.20177.6",
     "allowPrerelease": true,
     "rollForward": "major"
   },
   "tools": {
-    "dotnet": "5.0.100-preview.2.20163.4",
+    "dotnet": "5.0.100-preview.2.20177.6",
     "runtimes": {
       "dotnet/x64": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
