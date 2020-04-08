@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
+            _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+                ? Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"))
+                : Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Microsoft.AspNetCore.App.Ref");
             _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 

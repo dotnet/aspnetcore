@@ -30,8 +30,6 @@ $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
 Set-StrictMode -Version 1
 
-Write-Host "Extracting to $InstallDir"
-
 $zipPackage = [io.path]::ChangeExtension($AppRuntimePath, ".zip")
 Write-Host "Renaming to $zipPackage"
 Rename-Item -Path $AppRuntimePath -NewName $zipPackage
@@ -46,8 +44,9 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPackage, ".\tmpRuntime")
 }
 
-Get-ChildItem -Path ".\tmpRuntime" -Recurse
-
+New-Item -ItemType Directory -Force -Path $InstallDir
+Write-Host "Copying *.txt to $InstallDir"
+Copy-Item -Path ".\tmpRuntime\*.txt" $InstallDir
 Write-Host "Copying managed files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\$RuntimeIdentifier\lib\$Framework\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"

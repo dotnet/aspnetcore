@@ -14,7 +14,7 @@ dotnet/AspNetCore code paths:
 
 ## Building dotnet/runtime code:
 - https://github.com/dotnet/runtime/tree/master/docs/workflow
-- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -runtimeConfiguration Release  -subsetCategory coreclr-libraries`
+- Run *build.cmd* from the root once: `PS D:\github\runtime> .\build.cmd -runtimeConfiguration Release  -subset clr+libs`
 - Build the individual projects:
 - `PS D:\github\dotnet\src\libraries\Common\tests> dotnet build`
 - `PS D:\github\dotnet\src\libraries\System.Net.Http\src> dotnet build`
