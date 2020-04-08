@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Pipe _bodyInputPipe;
         protected OutputProducer _bodyOutput;
 
+        private HeaderCollection _trailers;
+
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
@@ -114,7 +116,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public IHeaderDictionary ResponseHeaders { get; set; }
+        public IHeaderDictionary ResponseTrailers { get; set; }
         private HeaderCollection HttpResponseHeaders { get; set; }
+        private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
+        internal bool HasTrailers => _trailers?.Count > 0;
+
         internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
         private bool HasStartedConsumingRequestBody { get; set; }
@@ -418,6 +424,41 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        public unsafe void SetResponseTrailers()
+        {
+            HttpResponseTrailers.IsReadOnly = true;
+            foreach (var headerPair in HttpResponseTrailers)
+            {
+                var headerValues = headerPair.Value;
+
+                if (headerValues.Count == 0)
+                {
+                    continue;
+                }
+
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerPair.Key);
+                fixed (byte* pHeaderName = headerNameBytes)
+                {
+                    for (var i = 0; i < headerValues.Count; i++)
+                    {
+                        var isFirst = i == 0;
+
+                        var headerValue = headerValues[i];
+                        if (string.IsNullOrEmpty(headerValue))
+                        {
+                            continue;
+                        }
+
+                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValue);
+                        fixed (byte* pHeaderValue = headerValueBytes)
+                        {
+                            NativeMethods.HttpResponseSetTrailer(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, replace: isFirst);
+                        }
+                    }
+                }
+            }
+        }
+
         public abstract Task<bool> ProcessRequestAsync();
 
         public void OnStarting(Func<object, Task> callback, object state)
@@ -615,7 +656,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (Exception ex)
             {
-               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
             }
             finally
             {
