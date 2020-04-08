@@ -15,25 +15,31 @@
     Condition="'$(BlazorPrunePublishOutput)' != 'false'">
 
     <ItemGroup>
-      <!-- Delete stray contents from the root of the the app. -->
+      <!-- Delete stray DLLs from the application. -->
       <ResolvedFileToPublish
         Remove="%(ResolvedFileToPublish.Identity)"
-        Condition="!$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))"/>
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').EndsWith('dll'))"/>
+      <!--Remove stray debugging files.-->
+      <ResolvedFileToPublish
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').EndsWith('pdb'))"/>
+      <!--Remove excluded static assets.-->
+      <ResolvedFileToPublish
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('Excluded-Static-Web-Assets/'))"/>
     </ItemGroup>
   </Target>
 
+  <!--After moving the resolved files to the publish directory, we can determine
+  whether or not to copy the standalone config if the user has not provided
+  their own.-->
   <Target
       Name="_BlazorCopyStandaloneWebConfig"
-      AfterTargets="_BlazorCleanupPublishOutput;ComputeResolvedFilesToPublishList">
-
-    <ItemGroup>
-      <ResolvedFileToPublish Include="$(MSBuildThisFileDirectory)Standalone.Web.config">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <RelativePath>web.config</RelativePath>
-      </ResolvedFileToPublish>
-    </ItemGroup>
-
+      AfterTargets="CopyFilesToPublishDirectory"
+      Condition="!Exists('$(PublishDir)web.config')">
+    <WriteLinesToFile
+      File="$(PublishDir)web.config"
+      Lines="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Standalone.Web.config'))" />
   </Target>
 
 </Project>
