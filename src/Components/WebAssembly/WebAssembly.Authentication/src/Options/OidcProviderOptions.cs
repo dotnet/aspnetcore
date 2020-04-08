@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the list of scopes to request when signing in.
         /// </summary>
-        public IList<string> DefaultScopes { get; set; } = new List<string> { "openid", "profile" };
+        public IList<string> DefaultScopes { get; } = new List<string> { "openid", "profile" };
 
         /// <summary>
         /// Gets or sets the redirect uri for the application. The application will be redirected here after the user has completed the sign in

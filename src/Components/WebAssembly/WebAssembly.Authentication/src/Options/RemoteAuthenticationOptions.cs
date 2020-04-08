@@ -12,16 +12,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the provider options.
         /// </summary>
-        public TRemoteAuthenticationProviderOptions ProviderOptions { get; set; } = new TRemoteAuthenticationProviderOptions();
+        public TRemoteAuthenticationProviderOptions ProviderOptions { get; } = new TRemoteAuthenticationProviderOptions();
 
         /// <summary>
         /// Gets or sets the <see cref="RemoteAuthenticationApplicationPathsOptions"/>.
         /// </summary>
-        public RemoteAuthenticationApplicationPathsOptions AuthenticationPaths { get; set; } = new RemoteAuthenticationApplicationPathsOptions();
+        public RemoteAuthenticationApplicationPathsOptions AuthenticationPaths { get; } = new RemoteAuthenticationApplicationPathsOptions();
 
         /// <summary>
         /// Gets or sets the <see cref="RemoteAuthenticationUserOptions"/>.
         /// </summary>
-        public RemoteAuthenticationUserOptions UserOptions { get; set; } = new RemoteAuthenticationUserOptions();
+        public RemoteAuthenticationUserOptions UserOptions { get; } = new RemoteAuthenticationUserOptions();
     }
 }
