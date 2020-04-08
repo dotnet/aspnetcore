@@ -420,6 +420,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task OpenAPi_Add_URL_InvalidUrl()
         {
             var project = CreateBasicProject(withOpenApi: false);
