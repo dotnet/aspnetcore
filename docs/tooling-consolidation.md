@@ -75,7 +75,7 @@ Given that some of the work in tooling scenarios may involve projects in both as
 
 ### Build time
 
-A concern that has been voiced is that working in aspnetcore would be significantly slower than in aspnetcore-tooling given that the PR validation in aspnetcore takes longer. Note that this will only apply to the migrated projects.
+A concern that has been voiced is that working in aspnetcore would be significantly slower than in aspnetcore-tooling given that the PR validation in aspnetcore takes longer. Note that this will only apply to the migrated projects. Given that reducing build times is a desirable but not an explicit objective of this operation, we will not be prioritizing optimizing for build time.
 
 ## Cost and schedules
 
