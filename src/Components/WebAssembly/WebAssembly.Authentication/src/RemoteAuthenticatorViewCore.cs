@@ -88,34 +88,34 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the <see cref="IJSRuntime"/> to use for performin JavaScript interop.
         /// </summary>
-        [Inject] public IJSRuntime JS { get; set; }
+        [Inject] internal IJSRuntime JS { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="NavigationManager"/> to use for redirecting the browser.
         /// </summary>
-        [Inject] public NavigationManager Navigation { get; set; }
+        [Inject] internal NavigationManager Navigation { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IRemoteAuthenticationService{TRemoteAuthenticationState}"/> to use for handling the underlying authentication protocol.
         /// </summary>
-        [Inject] public IRemoteAuthenticationService<TAuthenticationState> AuthenticationService { get; set; }
+        [Inject] internal IRemoteAuthenticationService<TAuthenticationState> AuthenticationService { get; set; }
 
         /// <summary>
         /// Gets or sets a default <see cref="IRemoteAuthenticationPathsProvider"/> to use as fallback if an <see cref="ApplicationPaths"/> has not been explicitly specified.
         /// </summary>
 #pragma warning disable PUB0001 // Pubternal type in public API
-        [Inject] public IRemoteAuthenticationPathsProvider RemoteApplicationPathsProvider { get; set; }
+        [Inject] internal IRemoteAuthenticationPathsProvider RemoteApplicationPathsProvider { get; set; }
 #pragma warning restore PUB0001 // Pubternal type in public API
 
         /// <summary>
         /// Gets or sets a default <see cref="AuthenticationStateProvider"/> with the current user.
         /// </summary>
-        [Inject] public AuthenticationStateProvider AuthenticationProvider { get; set; }
+        [Inject] internal AuthenticationStateProvider AuthenticationProvider { get; set; }
 
         /// <summary>
         /// Gets or sets a default <see cref="AuthenticationStateProvider"/> with the current user.
         /// </summary>
-        [Inject] public SignOutSessionStateManager SignOutManager { get; set; }
+        [Inject] internal SignOutSessionStateManager SignOutManager { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="RemoteAuthenticationApplicationPathsOptions"/> with the paths to different authentication pages.
