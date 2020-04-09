@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void AddRolesServicesAdded()
         {
+            Assert.True(false);
             var services = new ServiceCollection();
             services.AddIdentityCore<PocoUser>(o => { })
                 .AddRoles<PocoRole>()
