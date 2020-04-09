@@ -9,6 +9,8 @@ module.exports = env => baseConfig(__dirname, "signalr", {
     externals: [
         "websocket",
         "eventsource",
-        "request"
+        "node-fetch",
+        "abort-controller",
+        "fetch-cookie",
     ]
 });

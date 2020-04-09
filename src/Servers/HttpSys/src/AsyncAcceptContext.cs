@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -18,8 +17,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private TaskCompletionSource<RequestContext> _tcs;
         private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
-        private const int DefaultBufferSize = 4096;
-        private const int AlignmentPadding = 8;
 
         internal AsyncAcceptContext(HttpSysListener server)
         {
@@ -192,32 +189,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             _nativeRequestContext?.ReleasePins();
             _nativeRequestContext?.Dispose();
-            //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
-            uint newSize = size.HasValue ? size.Value : DefaultBufferSize;
-            var backingBuffer = new byte[newSize + AlignmentPadding];
-
             var boundHandle = Server.RequestQueue.BoundHandle;
             var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
-                boundHandle.AllocateNativeOverlapped(IOCallback, this, backingBuffer));
+                boundHandle.AllocateNativeOverlapped(IOCallback, this, pinData: null));
 
-            var requestAddress = Marshal.UnsafeAddrOfPinnedArrayElement(backingBuffer, 0);
-
-            // TODO:
-            // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
-            // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
-            // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
-            // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
-            // alignment to 0 for now.
-            // 
-            // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
-
-            var bufferAlignment = 0;
-
-            var nativeRequest = (HttpApiTypes.HTTP_REQUEST*)(requestAddress + bufferAlignment);
             // nativeRequest
-            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, bufferAlignment, nativeRequest, backingBuffer, requestId);
+            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, Server.MemoryPool, size, requestId);
         }
 
         public object AsyncState

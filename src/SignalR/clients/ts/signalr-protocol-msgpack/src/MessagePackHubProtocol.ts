@@ -221,16 +221,28 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-        invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
+        let payload: any;
+        if (invocationMessage.streamIds) {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
+        } else {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+                invocationMessage.target, invocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-        streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+        let payload: any;
+        if (streamInvocationMessage.streamIds) {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+        } else {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+                streamInvocationMessage.target, streamInvocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }

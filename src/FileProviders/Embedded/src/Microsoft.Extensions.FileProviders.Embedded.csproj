@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
+    <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <NuspecFile>$(MSBuildProjectName).multitarget.nuspec</NuspecFile>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">$(MSBuildProjectName).netcoreapp.nuspec</NuspecFile>
+    <IsPackable>true</IsPackable>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>files;filesystem</PackageTags>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.FileProviders.Embedded.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
+    <NuspecProperty Include="OutputPath=$(OutputPath)" />
+    <NuspecProperty Include="AbstractionsPackageVersion=$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
+    <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
+    <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
+  </ItemGroup>
+</Project>

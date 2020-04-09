@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Defaults to 32kb.
         /// </param>
         /// <param name="bufferLimit">
-        /// The maximum amouont of bytes that the <see cref="FileBufferingWriteStream"/> is allowed to buffer.
+        /// The maximum amount of bytes that the <see cref="FileBufferingWriteStream"/> is allowed to buffer.
         /// </param>
         /// <param name="tempFileDirectoryAccessor">Provides the location of the directory to write buffered contents to.
         /// When unspecified, uses the value specified by the environment variable <c>ASPNETCORE_TEMP</c> if available, otherwise
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                // If the MemoryStream is incapable of accomodating the content to be written
+                // If the MemoryStream is incapable of accommodating the content to be written
                 // spool to disk.
                 EnsureFileStream();
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (Disposed)
             {
-                throw new ObjectDisposedException(nameof(FileBufferingReadStream));
+                throw new ObjectDisposedException(nameof(FileBufferingWriteStream));
             }
         }
 

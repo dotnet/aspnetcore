@@ -7,8 +7,9 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>
 </Project>

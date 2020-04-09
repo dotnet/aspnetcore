@@ -37,11 +37,12 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>
 
 </Project>

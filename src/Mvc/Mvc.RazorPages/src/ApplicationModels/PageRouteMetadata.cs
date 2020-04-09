@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// <summary>
     /// Metadata used to construct an endpoint route to the page.
     /// </summary>
-    // Note: This type name is referenced by name in AuthorizationMiddleware, do not change this without addressing https://github.com/aspnet/AspNetCore/issues/7011
+    // Note: This type name is referenced by name in AuthorizationMiddleware, do not change this without addressing https://github.com/dotnet/aspnetcore/issues/7011
     public sealed class PageRouteMetadata
     {
         /// <summary>

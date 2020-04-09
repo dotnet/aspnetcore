@@ -4,11 +4,11 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using TestServer;
 using Xunit;
@@ -16,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class ComponentHubInvalidEventTest : IgnitorTest<ServerStartup>
     {
         public ComponentHubInvalidEventTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)

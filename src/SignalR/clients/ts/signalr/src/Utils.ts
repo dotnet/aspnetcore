@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
+
+// Version token that will be replaced by the prepack command
+/** The version of the SignalR client. */
+export const VERSION: string = "0.0.0-DEV_BUILD";
 
 /** @private */
 export class Arg {
@@ -25,7 +30,6 @@ export class Arg {
 
 /** @private */
 export class Platform {
-
     public static get isBrowser(): boolean {
         return typeof window === "object";
     }
@@ -81,8 +85,9 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
-    let headers;
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
+    let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -92,13 +97,17 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         }
     }
 
+    const [name, value] = getUserAgentHeader();
+    headers[name] = value;
+
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers,
+        headers: { ...headers, ...defaultHeaders},
         responseType,
+        withCredentials,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
@@ -179,5 +188,73 @@ export class ConsoleLogger implements ILogger {
                     break;
             }
         }
+    }
+}
+
+/** @private */
+export function getUserAgentHeader(): [string, string] {
+    let userAgentHeaderName = "X-SignalR-User-Agent";
+    if (Platform.isNode) {
+        userAgentHeaderName = "User-Agent";
+    }
+    return [ userAgentHeaderName, constructUserAgent(VERSION, getOsName(), getRuntime(), getRuntimeVersion()) ];
+}
+
+/** @private */
+export function constructUserAgent(version: string, os: string, runtime: string, runtimeVersion: string | undefined): string {
+    // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
+    let userAgent: string = "Microsoft SignalR/";
+
+    const majorAndMinor = version.split(".");
+    userAgent += `${majorAndMinor[0]}.${majorAndMinor[1]}`;
+    userAgent += ` (${version}; `;
+
+    if (os && os !== "") {
+        userAgent += `${os}; `;
+    } else {
+        userAgent += "Unknown OS; ";
+    }
+
+    userAgent += `${runtime}`;
+
+    if (runtimeVersion) {
+        userAgent += `; ${runtimeVersion}`;
+    } else {
+        userAgent += "; Unknown Runtime Version";
+    }
+
+    userAgent += ")";
+    return userAgent;
+}
+
+function getOsName(): string {
+    if (Platform.isNode) {
+        switch (process.platform) {
+            case "win32":
+                return "Windows NT";
+            case "darwin":
+                return "macOS";
+            case "linux":
+                return "Linux";
+            default:
+                return process.platform;
+        }
+    } else {
+        return "";
+    }
+}
+
+function getRuntimeVersion(): string | undefined {
+    if (Platform.isNode) {
+        return process.versions.node;
+    }
+    return undefined;
+}
+
+function getRuntime(): string {
+    if (Platform.isNode) {
+        return "NodeJS";
+    } else {
+        return "Browser";
     }
 }

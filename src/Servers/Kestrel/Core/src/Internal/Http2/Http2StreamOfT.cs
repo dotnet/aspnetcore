@@ -11,8 +11,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context) : base(context)
+        public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context) 
         {
+            Initialize(context);
             _application = application;
         }
 

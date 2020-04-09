@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 throw new InvalidOperationException(
                     "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
-                    $"statically rendererd. When prerendering is enabled, JavaScript interop calls can only be performed " +
+                    $"statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
                     $"during the OnAfterRenderAsync lifecycle method.");
             }
 

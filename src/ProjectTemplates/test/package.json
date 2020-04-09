@@ -6,11 +6,11 @@
   "private": true,
   "scripts": {
     "selenium-standalone": "selenium-standalone",
-    "prepare": "selenium-standalone install"
+    "prepare": "selenium-standalone install --config ../../Shared/E2ETesting/selenium-config.json"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "selenium-standalone": "^6.15.4"
+    "selenium-standalone": "^6.17.0"
   }
 }

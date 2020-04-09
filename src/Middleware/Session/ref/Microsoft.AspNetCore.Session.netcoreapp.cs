@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Builder
     {
         public SessionOptions() { }
         public Microsoft.AspNetCore.Http.CookieBuilder Cookie { get { throw null; } set { } }
-        public System.TimeSpan IdleTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan IOTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.TimeSpan IdleTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.TimeSpan IOTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Session
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Session
     public partial class SessionFeature : Microsoft.AspNetCore.Http.Features.ISessionFeature
     {
         public SessionFeature() { }
-        public Microsoft.AspNetCore.Http.ISession Session { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.ISession Session { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class SessionMiddleware
     {

@@ -39,6 +39,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AddServerHeader { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
+        /// For more information about the security considerations of HPack dynamic header compression, visit
+        /// https://tools.ietf.org/html/rfc7541#section-7.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AllowResponseHeaderCompression { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
@@ -71,6 +81,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The default is null.
         /// </summary>
         public KestrelConfigurationLoader ConfigurationLoader { get; set; }
+
+        /// <summary>
+        /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
+        /// </summary>
+        public bool EnableAltSvc { get; set; } = false;
 
         /// <summary>
         /// A default configuration action for all endpoints. Use for Listen, configuration, the default url, and URLs.

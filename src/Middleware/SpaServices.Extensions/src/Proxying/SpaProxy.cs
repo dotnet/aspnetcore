@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int DefaultWebSocketBufferSize = 4096;
         private const int StreamCopyBufferSize = 81920;
 
+        // https://github.com/dotnet/aspnetcore/issues/16797
+        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
+
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
         private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
@@ -132,6 +135,11 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             // Copy the request headers
             foreach (var header in request.Headers)
             {
+                if (NotForwardedHttpHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) && requestMessage.Content != null)
                 {
                     requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());

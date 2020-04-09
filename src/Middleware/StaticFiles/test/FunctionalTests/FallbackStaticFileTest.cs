@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("hello");
                     var responseText = await response.Content.ReadAsStringAsync();
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("hello");
                     var responseText = await response.Content.ReadAsStringAsync();

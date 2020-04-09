@@ -96,6 +96,14 @@ namespace Microsoft.AspNetCore.Hosting
             if (_defaultHttpContextFactory != null)
             {
                 _defaultHttpContextFactory.Dispose((DefaultHttpContext)httpContext);
+
+                if (_defaultHttpContextFactory.HttpContextAccessor != null)
+                {
+                    // Clear the HttpContext if the accessor was used. It's likely that the lifetime extends
+                    // past the end of the http request and we want to avoid changing the reference from under
+                    // consumers.
+                    context.HttpContext = null;
+                }
             }
             else
             {
@@ -114,6 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
             public HttpContext HttpContext { get; set; }
             public IDisposable Scope { get; set; }
             public Activity Activity { get; set; }
+            internal HostingRequestStartingLog StartLog { get; set; }
 
             public long StartTimestamp { get; set; }
             internal bool HasDiagnosticListener { get; set; }
@@ -125,6 +134,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 Scope = null;
                 Activity = null;
+                StartLog = null;
 
                 StartTimestamp = 0;
                 HasDiagnosticListener = false;

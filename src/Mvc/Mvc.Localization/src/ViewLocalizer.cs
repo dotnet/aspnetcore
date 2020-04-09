@@ -80,13 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
 
         /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        public IHtmlLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        /// <inheritdoc />
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
             _localizer.GetAllStrings(includeParentCultures);
 

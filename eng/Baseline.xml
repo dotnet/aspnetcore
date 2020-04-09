@@ -5,8 +5,8 @@ Update this list when preparing for a new patch.
 
 -->
 <Baseline Version="3.1.3">
-  <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.2" />
-  <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.2" />
+  <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.3" />
+  <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.3" />
   <Package Id="dotnet-sql-cache" Version="3.1.3" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.1.3" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.1.3" />

@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     //
     // NOTE: for number parsing, the HTML5 spec dictates that <input type="number"> the DOM will represent
-    // number values as floating point numbers using `.` as the period separator. This is NOT culture senstive.
+    // number values as floating point numbers using `.` as the period separator. This is NOT culture sensitive.
     // Put another way, the user might see `,` as their decimal separator, but the value available in events
-    // to JS code is always simpilar to what .NET parses with InvariantCulture.
+    // to JS code is always similar to what .NET parses with InvariantCulture.
     //
     // See: https://www.w3.org/TR/html5/sec-forms.html#number-state-typenumber
     // See: https://www.w3.org/TR/html5/infrastructure.html#valid-floating-point-number
@@ -148,11 +148,49 @@ namespace Microsoft.AspNetCore.Components
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
+            Action<short> setter,
+            short existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<short>(factory, receiver, setter, culture, ConvertToShort);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
             Action<long?> setter,
             long? existingValue,
             CultureInfo culture = null)
         {
             return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short?> setter,
+            short? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
         }
 
         /// <summary>

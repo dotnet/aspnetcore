@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,17 +33,22 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
+            "Microsoft.DotNet.Web.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates"
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates",
+            "Microsoft.AspNetCore.Blazor.Templates",
         };
 
-        public static string CustomHivePath { get; } = typeof(TemplatePackageInstaller)
-            .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(s => s.Key == "CustomTemplateHivePath").Value;
-
+        public static string CustomHivePath { get; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
+                    ? typeof(TemplatePackageInstaller)
+                        .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .Single(s => s.Key == "CustomTemplateHivePath").Value
+                    : Path.Combine("Hives", ".templateEngine");
+                                        
         public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
         {
             await InstallerLock.WaitAsync();
@@ -78,11 +84,19 @@ namespace Templates.Test.Helpers
 
         private static async Task InstallTemplatePackages(ITestOutputHelper output)
         {
-            var builtPackages = Directory.EnumerateFiles(
-                    typeof(TemplatePackageInstaller).Assembly
+            string packagesDir;
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            {
+                packagesDir = ".";
+            }
+            else
+            {
+                packagesDir = typeof(TemplatePackageInstaller).Assembly
                     .GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value,
-                    "*.nupkg")
+                    .Single(a => a.Key == "ArtifactsShippingPackagesDir").Value;
+            }
+
+            var builtPackages = Directory.EnumerateFiles(packagesDir, "*Templates*.nupkg")
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
@@ -90,7 +104,7 @@ namespace Templates.Test.Helpers
 
             /*
              * The templates are indexed by path, for example:
-              &USERPROFILE%\.templateengine\dotnetcli\v3.0.100-preview7-012821\packages\nunit3.dotnetnew.template.1.6.1.nupkg
+              &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
                 Templates:
                     NUnit 3 Test Project (nunit) C#
                     NUnit 3 Test Item (nunit-test) C#
@@ -99,7 +113,7 @@ namespace Templates.Test.Helpers
                     NUnit 3 Test Project (nunit) VB
                     NUnit 3 Test Item (nunit-test) VB
                 Uninstall Command:
-                    dotnet new -u &USERPROFILE%\.templateengine\dotnetcli\v3.0.100-preview7-012821\packages\nunit3.dotnetnew.template.1.6.1.nupkg
+                    dotnet new -u &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
 
              * We don't want to construct this path so we'll rely on dotnet new --uninstall --help to construct the uninstall command.
              */

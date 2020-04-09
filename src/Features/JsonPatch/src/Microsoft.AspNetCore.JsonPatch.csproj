@@ -6,7 +6,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;json;jsonpatch</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.False(result);
         }
 
-        // Test for https://github.com/aspnet/AspNetCore/issues/6945
+        // Test for https://github.com/dotnet/aspnetcore/issues/6945
         [Fact]
         public async Task IsProblematicParameter_ReturnsFalse_ForSimpleTypes()
         {

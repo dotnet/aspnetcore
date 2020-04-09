@@ -72,14 +72,26 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Adds a delegate to be invoked just before response headers will be sent to the client.
+        /// Callbacks registered here run in reverse order.
         /// </summary>
+        /// <remarks>
+        /// Callbacks registered here run in reverse order. The last one registered is invoked first.
+        /// The reverse order is done to replicate the way middleware works, with the inner-most middleware looking at the
+        /// response first.
+        /// </remarks>
         /// <param name="callback">The delegate to execute.</param>
         /// <param name="state">A state object to capture and pass back to the delegate.</param>
         public abstract void OnStarting(Func<object, Task> callback, object state);
 
         /// <summary>
         /// Adds a delegate to be invoked just before response headers will be sent to the client.
+        /// Callbacks registered here run in reverse order.
         /// </summary>
+        /// <remarks>
+        /// Callbacks registered here run in reverse order. The last one registered is invoked first.
+        /// The reverse order is done to replicate the way middleware works, with the inner-most middleware looking at the
+        /// response first.
+        /// </remarks>
         /// <param name="callback">The delegate to execute.</param>
         public virtual void OnStarting(Func<Task> callback) => OnStarting(_callbackDelegate, callback);
 

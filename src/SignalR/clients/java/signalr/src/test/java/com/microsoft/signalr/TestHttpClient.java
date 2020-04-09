@@ -12,6 +12,7 @@ import io.reactivex.Single;
 class TestHttpClient extends HttpClient {
     private TestHttpRequestHandler handler;
     private List<HttpRequest> sentRequests;
+    private boolean closeCalled;
 
     public TestHttpClient() {
         this.sentRequests = new ArrayList<>();
@@ -74,6 +75,15 @@ class TestHttpClient extends HttpClient {
     @Override
     public HttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         return this;
+    }
+
+    @Override
+    public void close() {
+        this.closeCalled = true;
+    }
+
+    public boolean getCloseCalled() {
+        return this.closeCalled;
     }
 
     interface TestHttpRequestHandler {
