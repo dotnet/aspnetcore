@@ -522,11 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
-            => KestrelBadHttpRequestException.GetException(
-                reason,
-                _showErrorDetails
-                    ? new ReadOnlySpan<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
-                    : string.Empty);
+            => GetInvalidRequestException(reason, new ReadOnlySpan<byte>(detail, length));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, ReadOnlySpan<byte> headerLine)
