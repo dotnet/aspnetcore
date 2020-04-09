@@ -238,12 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // If not found length with be -1; casting to uint will turn it to uint.MaxValue
                         // which will be larger than any possible span.Length. This also serves to eliminate
                         // the bounds check for the next lookup of span[length]
-                        if ((uint)length >= (uint)span.Length)
-                        {
-                            // Not enough data yet.
-                            goto Continue;
-                        }
-                        else
+                        if ((uint)length < (uint)span.Length)
                         {
                             // Early memory read to hide latency
                             var expectedCR = span[length];
@@ -253,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (expectedCR != ByteCR)
                             {
                                 // Sequence needs to be CRLF not LF first.
-                                goto Reject;
+                                RejectRequestHeader(span[..length]);
                             }
 
                             if ((uint)length < (uint)span.Length)
@@ -263,48 +258,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 // Correctly has a LF, move to next
                                 length++;
 
-                                if (expectedLF != ByteLF)
+                                if (expectedLF != ByteLF ||
+                                    length < 5 ||
+                                    // Exclude the CRLF from the headerLine and parse the header name:value pair
+                                    !TryTakeSingleHeader(handler, span[..(length - 2)]))
                                 {
                                     // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
-                                    goto Reject;
-                                }
-
-                                if (length < 5)
-                                {
                                     // Less than min possible headerSpan of 5 bytes a:b\r\n
-                                    goto Reject;
-                                }
-
-                                // Exclude the CRLF from the headerLine and parse the header name:value pair
-                                if (!TryTakeSingleHeader(handler, span[..(length - 2)]))
-                                {
                                     // Not parsable as a valid name:value header pair.
-                                    goto Reject;
+                                    RejectRequestHeader(span[..length]);
                                 }
 
                                 // Read the header successfully, skip the reader forward past the headerSpan.
                                 span = span.Slice(length);
                                 reader.Advance(length);
-
-                                goto Success;
                             }
                             else
                             {
-                                // Not enough data yet.
-                                goto Continue;
+                                // No enough data, set length to 0.
+                                length = 0;
                             }
-
                         }
-
-                    // Reject and Continue are conditional jump forwards as we expect most headers to be processed first time,
-                    // so we want them to be unpredicted by an unprimied branch predictor.
-                    Reject:
-                        RejectRequestHeader(span[..length]);
-                    Continue:
-                        // Not enough data, reset consumed length to 0
-                        length = 0;
-                    Success:
-                        ;
                     }
 
                     // End found in current span
@@ -349,7 +323,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             SequencePosition lineEnd;
             ReadOnlySpan<byte> headerSpan;
-            int length;
             if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
             {
                 // No enough data, so CRLF can't currently be there.
@@ -358,10 +331,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Advance 1 to include CR/LF in lineEnd
                 lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
                 headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
-                length = headerSpan.Length;
                 if (headerSpan[^1] != ByteCR)
                 {
-                    goto Reject;
+                    RejectRequestHeader(headerSpan);
                 }
                 return -1;
             }
@@ -370,42 +342,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lineEnd = currentSlice.GetPosition(2, lineEndPosition.Value);
             headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
 
-            length = headerSpan.Length;
-            if (length < 5)
+            if (headerSpan.Length < 5)
             {
                 // Less than min possible headerSpan is 5 bytes a:b\r\n
-                goto Reject;
+                RejectRequestHeader(headerSpan);
             }
 
-            // Sequence needs to be CRLF not LF first.
             if (headerSpan[^2] != ByteCR)
             {
-                goto RejectEarly;
+                // Sequence needs to be CRLF not LF first.
+                RejectRequestHeader(headerSpan[..^1]);
             }
 
-            if (headerSpan[^1] != ByteLF)
+            if (headerSpan[^1] != ByteLF ||
+                // Exclude the CRLF from the headerLine and parse the header name:value pair
+                !TryTakeSingleHeader(handler, headerSpan[..^2]))
             {
                 // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
-                goto Reject;
-            }
-
-            // Exclude the CRLF from the headerLine and parse the header name:value pair
-            if (!TryTakeSingleHeader(handler, headerSpan[..^2]))
-            {
                 // Not parsable as a valid name:value header pair.
-                goto Reject;
+                RejectRequestHeader(headerSpan);
             }
 
-            goto Success;
-
-        // Reject is a conditional jump forwards as we expect most headers to be processed first time,
-        // so we want them to be unpredicted by an unprimied branch predictor.
-        RejectEarly:
-            length--;
-        Reject:
-            RejectRequestHeader(headerSpan[..length]);
-
-        Success:
             return headerSpan.Length;
         }
 
