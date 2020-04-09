@@ -21,9 +21,9 @@ echo "Installing Runtime"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
 set exit_code=0
-echo "Restore for RunTests..."
+echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests..."
+echo "Running tests: dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime %3 --queue %4 --arch %5 --quarantined %6 --ef %7 --aspnetruntime %8..."
 dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime %3 --queue %4 --arch %5 --quarantined %6 --ef %7 --aspnetruntime %8
 if errorlevel 1 (
     set exit_code=1
