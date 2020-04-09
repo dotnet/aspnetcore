@@ -456,15 +456,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             valueEnd++;
             handler.OnHeader(name: headerLine[..nameEnd], value: headerLine[valueStart..valueEnd]);
 
-            var result = true;
-            goto Return;
+            return true;
 
         Reject:
             // Reject is a conditional jump forward as we expect most headers to be accepted,
             // so we want it to be unpredicted by an unprimied branch predictor.
-            result = false;
-        Return:
-            return result;
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
