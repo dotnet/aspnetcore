@@ -39,6 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
 
             services.TryAddTransient<BaseAddressAuthorizationMessageHandler>();
+            services.TryAddTransient<AuthorizationMessageHandler>();
 
             services.TryAddScoped(sp =>
             {
