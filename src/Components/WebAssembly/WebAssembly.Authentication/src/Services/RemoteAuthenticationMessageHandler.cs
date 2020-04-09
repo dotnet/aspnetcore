@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -13,39 +14,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     public class RemoteAuthenticationMessageHandler : DelegatingHandler
     {
         private readonly IAccessTokenProvider _provider;
-        private readonly IOptionsMonitor<RemoteAuthenticationMessageHandlerOptions> _optionsMonitor;
-
         private AccessToken _lastToken;
         private AuthenticationHeaderValue _cachedHeader;
+        private Uri[] _allowedUris;
+        private string[] _scopes;
+        private string _returnUrl;
+        private AccessTokenRequestOptions _tokenOptions;
 
         public RemoteAuthenticationMessageHandler(
-            IAccessTokenProvider provider,
-            IOptionsMonitor<RemoteAuthenticationMessageHandlerOptions> optionsMonitor)
+            IAccessTokenProvider provider)
         {
             _provider = provider;
-            _optionsMonitor = optionsMonitor;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var optionsKey = request.Properties.TryGetValue(
-                RemoteAuthenticationServiceConfigurationMessageHandler.AccessTokenRequestOptionsKey,
-                out var propsKey) ? (string)propsKey : Options.DefaultName;
-
-            var options = _optionsMonitor.Get(optionsKey);
-
-            var shouldAttachToken = options.AllowedOrigins.Contains(new Uri(request.RequestUri.GetLeftPart(UriPartial.Authority)));
-
             var now = DateTimeOffset.Now;
-            if (shouldAttachToken)
+            if (_allowedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
             {
                 if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
                 {
-                    // Request token options are not meant to be dynamic, but it is also not worth checking that the same options are passed all
-                    // the time since it is done as an implementation detail and users need to go out of their way to pass in different options
-                    // for different requests.
-                    var tokenResult = options.TokenRequestOptions != null ?
-                        await _provider.RequestAccessToken(options.TokenRequestOptions) :
+                    var tokenOptions = _scopes != null || _returnUrl != null ?
+                        (_tokenOptions ??= new AccessTokenRequestOptions { Scopes = _scopes, ReturnUrl = _returnUrl })
+                        : null;
+
+                    var tokenResult = tokenOptions != null ?
+                        await _provider.RequestAccessToken(tokenOptions) :
                         await _provider.RequestAccessToken();
 
                     if (tokenResult.TryGetToken(out var token))
@@ -63,10 +57,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     // not be able to provision a token without user interaction).
                     request.Headers.Authorization = _cachedHeader;
                 }
-
             }
 
             return await base.SendAsync(request, cancellationToken);
+        }
+
+        public RemoteAuthenticationMessageHandler UseAllowedUrls(params string[] urls)
+        {
+            _allowedUris = urls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
+            return this;
+        }
+
+        public RemoteAuthenticationMessageHandler UseScopes(params string[] scopes)
+        {
+            _scopes = scopes;
+            return this;
+        }
+
+        public RemoteAuthenticationMessageHandler UseReturnUrl(string returnUrl)
+        {
+            _returnUrl = returnUrl;
+            return this;
         }
     }
 }

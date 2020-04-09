@@ -17,22 +17,14 @@ namespace Wasm.Authentication.Client
 
             builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
                 .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
-                .ConfigureAccessTokenOptions("ExternalAPI", options =>
-                {
-                    options.AllowedOrigins.Add(new Uri("https://example.com"));
-                    options.TokenRequestOptions = new AccessTokenRequestOptions
-                    {
-                        Scopes = new[] { "Wasm.Authentication.ServerAPI" }
-                    };
-                });
 
             builder.Services.AddHttpClient("ExternalAPI", client => client.BaseAddress = new Uri("https://example.com"))
-                .AddHttpMessageHandler(() => new RemoteAuthenticationServiceConfigurationMessageHandler("ExternalAPI"))
-                .AddHttpMessageHandler<RemoteAuthenticationMessageHandler>();
+                .AddHttpMessageHandler(sp => sp.GetRequiredService<RemoteAuthenticationMessageHandler>()
+                    .UseAllowedUrls("https://example.com")
+                    .UseScopes("Wasm.Authentication.ServerAPI"));
 
-            // Default API (Configured by default by AddApiAuthorization
-            builder.Services.AddHttpClient("ServerAPI", client => client.BaseAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress).GetLeftPart(UriPartial.Authority)))
-                .AddHttpMessageHandler<RemoteAuthenticationMessageHandler>();
+            builder.Services.AddHttpClient("ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<BaseAddressAuthenticationMessageHandler>();
 
             builder.Services.AddSingleton<StateService>();
 

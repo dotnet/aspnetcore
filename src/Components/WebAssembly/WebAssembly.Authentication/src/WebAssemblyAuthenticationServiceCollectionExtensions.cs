@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return (IRemoteAuthenticationService<TRemoteAuthenticationState>)sp.GetRequiredService<AuthenticationStateProvider>();
                 });
 
-            services.TryAddTransient<RemoteAuthenticationMessageHandler>();
+            services.TryAddTransient<BaseAddressAuthenticationMessageHandler>();
 
             services.TryAddScoped(sp =>
             {
@@ -204,9 +204,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>, DefaultApiAuthorizationOptionsConfiguration>(_ =>
                 new DefaultApiAuthorizationOptionsConfiguration(inferredClientId)));
-
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IPostConfigureOptions<RemoteAuthenticationMessageHandlerOptions>, ApiAuthorizationMessageHandlerConfiguration>());
 
             services.AddRemoteAuthentication<TRemoteAuthenticationState, TAccount, ApiAuthorizationProviderOptions>(configure);
 
