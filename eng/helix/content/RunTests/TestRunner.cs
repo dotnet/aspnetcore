@@ -94,13 +94,13 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRuntime))
                 {
-                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Creating directory: {appRuntimePath}");
                     Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-                    using (var archive = ZipFile.OpenRead(zipPath))
+                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
+                    using (var archive = ZipFile.OpenRead(Options.AspNetRuntime))
                     {
                         foreach (var entry in archive.Entries)
                         {
@@ -111,11 +111,7 @@ namespace RunTests
                             {
                                 // Gets the full path to ensure that relative segments are removed.
                                 var destinationPath = Path.GetFullPath(Path.Combine(appRuntimePath, entry.FullName));
-
-                                // Ordinal match is safest, case-sensitive volumes can be mounted within volumes that
-                                // are case-insensitive.
-                                if (destinationPath.StartsWith(extractPath, StringComparison.Ordinal))
-                                    entry.ExtractToFile(destinationPath);
+                                entry.ExtractToFile(destinationPath);
                             }
                         }
                     }
