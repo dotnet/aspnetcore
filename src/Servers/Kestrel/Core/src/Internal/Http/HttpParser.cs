@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if ((uint)nameEnd >= (uint)headerLine.Length)
             {
                 // Colon not found.
-                goto Reject;
+                return false;
             }
 
             // Early memory read to hide latency
@@ -386,12 +386,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (nameEnd == 0)
             {
                 // Header name is empty.
-                goto Reject;
+                return false;
             }
             if (expectedColon != ByteColon)
             {
                 // Header name space or tab.
-                goto Reject;
+                return false;
             }
 
             // Skip colon to get to the value start.
@@ -457,11 +457,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             handler.OnHeader(name: headerLine[..nameEnd], value: headerLine[valueStart..valueEnd]);
 
             return true;
-
-        Reject:
-            // Reject is a conditional jump forward as we expect most headers to be accepted,
-            // so we want it to be unpredicted by an unprimied branch predictor.
-            return false;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
