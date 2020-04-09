@@ -24,11 +24,13 @@ namespace ComponentsWebAssembly_CSharp
 #if (!Hosted || NoAuth)
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
-            builder.Services.AddSingleton(
-                sp => new HttpClient(sp.GetRequiredService<BaseAddressAuthorizationMessageHandler>())
-                {
-                    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
-                });
+            builder.Services.AddSingleton(sp =>
+            {
+                var handler = sp.GetRequiredService<BaseAddressAuthorizationMessageHandler>();
+                handler.InnerHandler = new HttpClientHandler();
+                return new HttpClient(handler) { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+            });
+
 #endif
 #if (IndividualLocalAuth)
     #if (Hosted)

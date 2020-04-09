@@ -36,8 +36,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             _provider = provider;
             _navigation = navigation;
-
-            InnerHandler = new HttpClientHandler();
         }
 
         /// <inheritdoc />
