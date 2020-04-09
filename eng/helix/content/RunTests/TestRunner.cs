@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -91,14 +92,28 @@ namespace RunTests
         {
             try 
             {
-                Console.WriteLine("Checking for Microsoft.AspNetCore.App/");
-                if (Directory.Exists("Microsoft.AspNetCore.App"))
+                if (!string.IsNullOrEmpty(Options.AspNetRuntime))
                 {
+                    Console.WriteLine($"AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
-                    Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
-                    foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
+                    using (var archive = ZipFile.OpenRead(zipPath))
                     {
-                        File.Copy(file, Path.Combine(appRuntimePath, file), overwrite: true);
+                        foreach (var entry in archive.Entries)
+                        {
+                            // These are the only extensions that end up in the shared fx directory
+                            if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
+                                entry.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+                                entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Gets the full path to ensure that relative segments are removed.
+                                var destinationPath = Path.GetFullPath(Path.Combine(appRuntimePath, entry.FullName));
+
+                                // Ordinal match is safest, case-sensitive volumes can be mounted within volumes that
+                                // are case-insensitive.
+                                if (destinationPath.StartsWith(extractPath, StringComparison.Ordinal))
+                                    entry.ExtractToFile(destinationPath);
+                            }
+                        }
                     }
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
@@ -129,7 +144,7 @@ namespace RunTests
                 }
                 else 
                 {
-                    Console.WriteLine($"No app runtime found, skipping...");
+                    Console.WriteLine($"No app runtime specified, skipping...");
                 }
                 return true;
             }
