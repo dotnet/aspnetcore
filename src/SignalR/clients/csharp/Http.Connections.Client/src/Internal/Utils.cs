@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         internal static bool IsRunningInBrowser()
         {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
         }
     }
 }
