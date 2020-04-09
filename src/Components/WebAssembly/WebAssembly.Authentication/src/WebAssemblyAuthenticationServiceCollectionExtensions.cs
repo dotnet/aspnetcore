@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return (IRemoteAuthenticationService<TRemoteAuthenticationState>)sp.GetRequiredService<AuthenticationStateProvider>();
                 });
 
-            services.TryAddTransient<BaseAddressAuthenticationMessageHandler>();
+            services.TryAddTransient<BaseAddressAuthorizationMessageHandler>();
 
             services.TryAddScoped(sp =>
             {
