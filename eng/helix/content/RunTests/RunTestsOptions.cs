@@ -61,6 +61,7 @@ namespace RunTests
             options.Architecture = parseResult.ValueForOption<string>("--arch");
             options.Quarantined = parseResult.ValueForOption<bool>("--quarantined");
             options.EfVersion = parseResult.ValueForOption<string>("--ef");
+            options.AspNetRuntime = parseResult.ValueForOption<string>("--aspnetruntime");
             options.HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
             options.Path = Environment.GetEnvironmentVariable("PATH");
             options.DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -70,6 +71,7 @@ namespace RunTests
         public string Target { get; set;}
         public string SdkVersion { get; set;}
         public string RuntimeVersion { get; set;}
+        public string AspNetRuntime { get; set;}
         public string HelixQueue { get; set;}
         public string Architecture { get; set;}
         public bool Quarantined { get; set;}
