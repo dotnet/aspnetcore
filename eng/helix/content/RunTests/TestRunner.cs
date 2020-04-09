@@ -92,9 +92,9 @@ namespace RunTests
         {
             try 
             {
-                if (!string.IsNullOrEmpty(Options.AspNetRuntime))
+                if (File.Exists(Options.AspNetRuntime))
                 {
-                    Console.WriteLine($"AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
+                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Creating directory: {appRuntimePath}");
                     Directory.CreateDirectory(appRuntimePath);
@@ -150,7 +150,7 @@ namespace RunTests
                 }
                 else 
                 {
-                    Console.WriteLine($"No app runtime specified, skipping...");
+                    Console.WriteLine($"No AspNetRuntime found: {Options.AspNetRuntime}, skipping...");
                 }
                 return true;
             }
