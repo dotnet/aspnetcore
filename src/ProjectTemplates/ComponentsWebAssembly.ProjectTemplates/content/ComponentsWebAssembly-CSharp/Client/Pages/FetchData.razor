@@ -2,8 +2,6 @@
 @*#if  (!NoAuth && Hosted)
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@inject IAccessTokenProvider AuthenticationService
-@inject NavigationManager Navigation
 #endif*@
 @*#if  (Hosted)
 @using ComponentsWebAssembly_CSharp.Shared
@@ -11,9 +9,7 @@
 @*#if  (!NoAuth && Hosted)
 @attribute [Authorize]
 #endif*@
-@*#if  (NoAuth || !Hosted)
 @inject HttpClient Http
-#endif*@
 
 <h1>Weather forecast</h1>
 
@@ -55,17 +51,14 @@ else
     {
         @*#if (Hosted)
             @*#if (!NoAuth)
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri(Navigation.BaseUri);
-
-        var tokenResult = await AuthenticationService.RequestAccessToken();
-
-        if (tokenResult.TryGetToken(out var token, redirect: true))
+        try
         {
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-            forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
         }
-
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.RedirectToLogin();
+        }
             #else
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
             #endif*@

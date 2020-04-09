@@ -3,9 +3,11 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+#if (!NoAuth && Hosted)
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+#endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-
 #if (Hosted)
 namespace ComponentsWebAssembly_CSharp.Client
 #else
@@ -19,7 +21,15 @@ namespace ComponentsWebAssembly_CSharp
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
+#if (!Hosted || NoAuth)
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+#else
+            builder.Services.AddSingleton(
+                sp => new HttpClient(sp.GetRequiredService<BaseAddressAuthorizationMessageHandler>())
+                {
+                    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+                });
+#endif
 #if (IndividualLocalAuth)
     #if (Hosted)
             builder.Services.AddApiAuthorization();
