@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             var tokenProvider = new Mock<IAccessTokenProvider>();
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             // Act & Assert
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             // Arrange
             var tokenProvider = new Mock<IAccessTokenProvider>();
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(new[] { "https://localhost:5001" });
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -63,10 +63,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                         GrantedScopes = new string[] { "All" },
                         Value = "asdf"
                     },
-                    Mock.Of<NavigationManager>(),
                     "https://www.example.com")));
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(new[] { "https://localhost:5001" });
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -92,10 +91,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                         GrantedScopes = new string[] { "All" },
                         Value = "asdf"
                     },
-                    Mock.Of<NavigationManager>(),
                     "https://www.example.com")));
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(new[] { "https://localhost:5001" });
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -124,10 +122,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                         GrantedScopes = new string[] { "All" },
                         Value = "asdf"
                     },
-                    Mock.Of<NavigationManager>(),
                     "https://www.example.com")));
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(new[] { "https://localhost:5001" });
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -151,10 +148,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             tokenProvider.Setup(tp => tp.RequestAccessToken())
                     .Returns(new ValueTask<AccessTokenResult>(new AccessTokenResult(AccessTokenResultStatus.RequiresRedirect,
                     null,
-                    Mock.Of<NavigationManager>(),
                     "https://www.example.com")));
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(new[] { "https://localhost:5001" });
 
             var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -177,10 +173,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     GrantedScopes = new string[] { "All" },
                     Value = "asdf"
                 },
-                Mock.Of<NavigationManager>(),
                 "https://www.example.com/return")));
 
-            var handler = new AuthorizationMessageHandler(tokenProvider.Object);
+            var handler = new AuthorizationMessageHandler(tokenProvider.Object, Mock.Of<NavigationManager>());
             handler.ConfigureHandler(
                 new[] { "https://localhost:5001" },
                 scopes: new[] { "example.read", "example.write" },

@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     public class AuthorizationMessageHandler : DelegatingHandler
     {
         private readonly IAccessTokenProvider _provider;
+        private readonly NavigationManager _navigation;
         private AccessToken _lastToken;
         private AuthenticationHeaderValue _cachedHeader;
         private Uri[] _allowedUris;
@@ -28,10 +29,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// Initializes a new instance of <see cref="AuthorizationMessageHandler"/>.
         /// </summary>
         /// <param name="provider">The <see cref="IAccessTokenProvider"/> to use for provisioning tokens.</param>
+        /// <param name="navigation">The <see cref="NavigationManager"/> to use for performing redirections.</param>
         public AuthorizationMessageHandler(
-            IAccessTokenProvider provider)
+            IAccessTokenProvider provider,
+            NavigationManager navigation)
         {
             _provider = provider;
+            _navigation = navigation;
+
+            InnerHandler = new HttpClientHandler();
         }
 
         /// <inheritdoc />
@@ -58,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     }
                     else
                     {
-                        throw new AccessTokenNotAvailableException(tokenResult);
+                        throw new AccessTokenNotAvailableException(tokenResult, _navigation);
                     }
 
                     // We don't try to handle 401s and retry the request with a new token automatically since that would mean we need to copy the request

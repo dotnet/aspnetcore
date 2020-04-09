@@ -16,10 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// </summary>
         /// <param name="provider">The <see cref="IAccessTokenProvider"/> to use for requesting tokens.</param>
         /// <param name="navigationManager">The <see cref="NavigationManager"/> used to compute the base address.</param>
-        public BaseAddressAuthorizationMessageHandler(IAccessTokenProvider provider, NavigationManager navigationManager) : base(provider)
-        {
-            ConfigureHandler(new[] { navigationManager.BaseUri });
-            InnerHandler = new HttpClientHandler();
-        }
+        public BaseAddressAuthorizationMessageHandler(IAccessTokenProvider provider, NavigationManager navigationManager)
+            : base(provider, navigationManager) => ConfigureHandler(new[] { navigationManager.BaseUri });
     }
 }
