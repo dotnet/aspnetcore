@@ -65,17 +65,17 @@ namespace RunTests
             }
         }
 
-        public void DisplayContents(string path = "./")
+        public void DisplayContents()
         {
             try 
             {
                 Console.WriteLine();
-                Console.WriteLine($"Displaying directory contents for {path}:");
-                foreach (var file in Directory.EnumerateFiles(path))
+                Console.WriteLine("Displaying directory contents:");
+                foreach (var file in Directory.EnumerateFiles("./"))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
-                foreach (var file in Directory.EnumerateDirectories(path))
+                foreach (var file in Directory.EnumerateDirectories("./"))
                 {
                     Console.WriteLine(Path.GetFileName(file));
                 }
@@ -83,7 +83,7 @@ namespace RunTests
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Exception in DisplayContents: {e.ToString()}");
+                Console.WriteLine($"Exception in DisplayInitialState: {e.ToString()}");
             }
         }
 
@@ -95,17 +95,11 @@ namespace RunTests
                 if (Directory.Exists("Microsoft.AspNetCore.App"))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
-                    Console.WriteLine($"Creating directory: {appRuntimePath}");
-                    Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
-                    Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
-                    EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
                     foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
                     {
-                        File.Copy(file, Path.Combine(appRuntimePath, Path.GetFileName(file)), overwrite: true);
+                        File.Copy(file, Path.Combine(appRuntimePath, file), overwrite: true);
                     }
-                    
-                    DisplayContents(appRuntimePath);
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
