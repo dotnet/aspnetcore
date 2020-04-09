@@ -1,8 +1,8 @@
 @page "/fetchdata"
 @using Wasm.Authentication.Shared
+@implements IDisposable
 @attribute [Authorize]
-@inject IHttpClientFactory HttpClientFactory
-
+@inject WeatherForecastClient WeatherForecast
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
@@ -38,19 +38,21 @@ else
 
 @code {
     private WeatherForecast[] forecasts;
-    private HttpClient _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        _httpClient = HttpClientFactory.CreateClient("ServerAPI");
-
         try
         {
-            forecasts = await _httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            forecasts = await WeatherForecast.GetForecastAsync();
         }
         catch (AccessTokenNotAvailableException exception)
         {
             exception.RedirectToLogin();
         }
+    }
+
+    public void Dispose()
+    {
+        WeatherForecast.Dispose();
     }
 }

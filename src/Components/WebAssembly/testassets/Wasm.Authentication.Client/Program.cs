@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -18,12 +19,7 @@ namespace Wasm.Authentication.Client
             builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
                 .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
-            builder.Services.AddHttpClient("ExternalAPI", client => client.BaseAddress = new Uri("https://example.com"))
-                .AddHttpMessageHandler(sp => sp.GetRequiredService<RemoteAuthenticationMessageHandler>()
-                    .UseAllowedUrls("https://example.com")
-                    .UseScopes("Wasm.Authentication.ServerAPI"));
-
-            builder.Services.AddHttpClient("ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+            builder.Services.AddHttpClient<WeatherForecastClient>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthenticationMessageHandler>();
 
             builder.Services.AddSingleton<StateService>();
