@@ -90,6 +90,6 @@ echo "Restore for RunTests..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
 echo "Running tests..."
 $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7
-exit_code = $?
+exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 exit $exit_code
