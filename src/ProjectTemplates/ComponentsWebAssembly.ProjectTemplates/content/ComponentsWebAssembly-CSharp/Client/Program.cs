@@ -24,7 +24,7 @@ namespace ComponentsWebAssembly_CSharp
 #if (!Hosted || NoAuth)
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
-            builder.Services.AddSingleton(sp =>
+            builder.Services.AddScoped(sp =>
             {
                 var handler = sp.GetRequiredService<BaseAddressAuthorizationMessageHandler>();
                 handler.InnerHandler = new HttpClientHandler();
