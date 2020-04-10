@@ -105,13 +105,11 @@ namespace RunTests
                         foreach (var entry in archive.Entries)
                         {
                             // These are the only extensions that end up in the shared fx directory
-                            if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
-                                entry.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
-                                entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                            if (entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
+                                entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Gets the full path to ensure that relative segments are removed.
-                                var destinationPath = Path.GetFullPath(Path.Combine(appRuntimePath, entry.FullName));
-                                entry.ExtractToFile(destinationPath);
+                                entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name));
                             }
                         }
                     }
