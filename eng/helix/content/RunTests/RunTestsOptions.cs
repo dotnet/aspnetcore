@@ -55,6 +55,11 @@ namespace RunTests
                     aliases: new string[] { "--aspnetruntime" },
                     description: "The path to the aspnet runtime nupkg to install")
                 { Argument = new Argument<string>(), Required = true },
+                
+                new Option(
+                    aliases: new string[] { "--aspnetref" },
+                    description: "The path to the aspnet ref nupkg to install")
+                { Argument = new Argument<string>(), Required = true },
             };
 
             var parseResult = command.Parse(args);
