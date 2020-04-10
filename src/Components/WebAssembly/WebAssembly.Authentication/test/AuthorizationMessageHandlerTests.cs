@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             // Assert
             Assert.Single(tokenProvider.Invocations);
+            Assert.Equal("asdf", response.RequestMessage.Headers.Authorization.Parameter);
         }
 
         [Fact]

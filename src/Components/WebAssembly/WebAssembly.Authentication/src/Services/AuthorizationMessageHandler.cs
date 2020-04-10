@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
     /// <summary>
-    /// A <see cref="DelegatingHandler"/> that attaches access tokens to outgoing <see cref="HttpResponseMessage"/>s to endpoints
-    /// for requests where any <see cref="Uri"/> in the list of <see cref="Uri"/>s defined in <see cref="AuthorizationMessageHandler.ConfigureHandler(IEnumerable{string}, IEnumerable{string}, string)"/>
-    /// is a base of <see cref="HttpRequestMessage.RequestUri"/>.
+    /// A <see cref="DelegatingHandler"/> that attaches access tokens to outgoing <see cref="HttpResponseMessage"/> instances.
+    /// Access tokens will only be added when the request URI is within one of the base addresses configured using
+    /// <see cref="ConfigureHandler(IEnumerable{string}, IEnumerable{string}, string)"/>.
     /// </summary>
     public class AuthorizationMessageHandler : DelegatingHandler
     {
@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 throw new InvalidOperationException($"The '{nameof(AuthorizationMessageHandler)}' is not configured. " +
                     $"Call '{nameof(AuthorizationMessageHandler.ConfigureHandler)}' and provide a list of endpoint urls to attach the token to.");
             }
+
             if (_allowedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
             {
                 if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
@@ -64,24 +65,24 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     {
                         throw new AccessTokenNotAvailableException(tokenResult, _navigation);
                     }
-
-                    // We don't try to handle 401s and retry the request with a new token automatically since that would mean we need to copy the request
-                    // headers and buffer the body and we expect that the user instead handles the 401s. (Also, we can't really handle all 401s as we might
-                    // not be able to provision a token without user interaction).
-                    request.Headers.Authorization = _cachedHeader;
                 }
+
+                // We don't try to handle 401s and retry the request with a new token automatically since that would mean we need to copy the request
+                // headers and buffer the body and we expect that the user instead handles the 401s. (Also, we can't really handle all 401s as we might
+                // not be able to provision a token without user interaction).
+                request.Headers.Authorization = _cachedHeader;
             }
 
             return await base.SendAsync(request, cancellationToken);
         }
 
         /// <summary>
-        /// Configures this handler to attach the token to the given list of urls and optionally request the given scopes and use the given return url
-        /// instead of the defaults provided by the authentication implementation.
+        /// Configures this handler to authorize outbound HTTP requests using an access token. The access token is only attached if only attached if at least one of
+        /// <paramref name="endpointUrls" /> is a base of <see cref="HttpRequestMessage.RequestUri" />.
         /// </summary>
-        /// <param name="endpointUrls">The list of base addresses of endpoint urls to which the token will be attached to.</param>
-        /// <param name="scopes">The list of scopes to use when requesting a token to attach to outgoing requests.</param>
-        /// <param name="returnUrl">The return url to use in case there is an issue provisioning the token and a redirection to the
+        /// <param name="endpointUrls">The base addresses of endpoint URLs to which the token will be attached.</param>
+        /// <param name="scopes">The list of scopes to use when requesting an access token.</param>
+        /// <param name="returnUrl">The return URL to use in case there is an issue provisioning the token and a redirection to the
         /// identity provider is necessary.
         /// </param>
         /// <returns>This <see cref="AuthorizationMessageHandler"/>.</returns>
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var uris = endpointUrls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
             if (uris.Length == 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(endpointUrls));
+                throw new ArgumentException("At least one uri must be configured.", nameof(endpointUrls));
             }
 
             _allowedUris = uris;
