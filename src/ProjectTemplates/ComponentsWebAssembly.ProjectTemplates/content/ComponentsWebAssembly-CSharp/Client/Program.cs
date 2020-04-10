@@ -24,12 +24,9 @@ namespace ComponentsWebAssembly_CSharp
 #if (!Hosted || NoAuth)
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
-            builder.Services.AddScoped(sp =>
-            {
-                var handler = sp.GetRequiredService<BaseAddressAuthorizationMessageHandler>();
-                handler.InnerHandler = new HttpClientHandler();
-                return new HttpClient(handler) { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-            });
+            builder.Services.AddHttpClient("ComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+            builder.Services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ComponentsWebAssembly_CSharp.ServerAPI"));
 
 #endif
 #if (IndividualLocalAuth)

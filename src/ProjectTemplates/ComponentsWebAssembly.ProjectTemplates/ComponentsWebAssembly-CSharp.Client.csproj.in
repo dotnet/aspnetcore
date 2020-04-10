@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="${MicrosoftAspNetCoreComponentsWebAssemblyDevServerPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
     <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="${MicrosoftAuthenticationWebAssemblyMsalPackageVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="${MicrosoftExtensionsHttpPackageVersion}" Condition="'$(NoAuth)' != 'true' AND '$(Hosted)' == 'true'" />
     <PackageReference Include="System.Net.Http.Json" Version="${SystemNetHttpJsonPackageVersion}" />
   </ItemGroup>
 
