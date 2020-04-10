@@ -106,20 +106,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         /// <remarks>
         /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/integrity
         /// </remarks>
-        public static HttpRequestMessage SetBrowserIntegrity(this HttpRequestMessage requestMessage, string integrity)
+        public static HttpRequestMessage SetBrowserRequestIntegrity(this HttpRequestMessage requestMessage, string integrity)
             => SetBrowserFetchOption(requestMessage, "integrity", integrity);
 
         /// <summary>
         /// Configures a value for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="name">The name of the HTTP fetch option.</param>
+        /// <param name="name">The name of the option, which should correspond to a key defined on https://fetch.spec.whatwg.org/#requestinit</param>
         /// <param name="value">The value, which must be JSON-serializable.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
         /// <remarks>
         /// See https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
         /// </remarks>
-        public static HttpRequestMessage SetBrowserFetchOption(this HttpRequestMessage requestMessage, string name, object value)
+        public static HttpRequestMessage SetBrowserRequestOption(this HttpRequestMessage requestMessage, string name, object value)
         {
             if (requestMessage is null)
             {
@@ -154,14 +154,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         /// This API is only effective when the browser HTTP Fetch supports streaming.
         /// See https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream.
         /// </remarks>
-        public static HttpRequestMessage EnableStreamingResponse(this HttpRequestMessage requestMessage)
+        public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool enabled)
         {
             if (requestMessage is null)
             {
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
-            requestMessage.Properties["WebAssemblyReadResponseAsStream"] = true;
+            requestMessage.Properties["WebAssemblyReadResponseAsStream"] = enabled;
 
             return requestMessage;
         }
