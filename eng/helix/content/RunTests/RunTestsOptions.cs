@@ -50,6 +50,11 @@ namespace RunTests
                     aliases: new string[] { "--ef" },
                     description: "The version of the EF tool to use")
                 { Argument = new Argument<string>(), Required = true },
+                
+                new Option(
+                    aliases: new string[] { "--aspnetruntime" },
+                    description: "The path to the aspnet runtime nupkg to install")
+                { Argument = new Argument<string>(), Required = true },
             };
 
             var parseResult = command.Parse(args);
