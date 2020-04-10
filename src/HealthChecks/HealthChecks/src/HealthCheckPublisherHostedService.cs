@@ -117,14 +117,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             var duration = ValueStopwatch.StartNew();
             Logger.HealthCheckPublisherProcessingBegin(_logger);
 
+            CancellationTokenSource cancellation = null;
             try
             {
                 var timeout = _options.Value.Timeout;
 
-                _runTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
-                _runTokenSource.CancelAfter(timeout);
+                cancellation = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
+                _runTokenSource = cancellation;
+                cancellation.CancelAfter(timeout);
 
-                await RunAsyncCore(_runTokenSource.Token);
+                await RunAsyncCore(cancellation.Token);
 
                 Logger.HealthCheckPublisherProcessingEnd(_logger, duration.GetElapsedTime());
             }
@@ -140,7 +142,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
             finally
             {
-                _runTokenSource.Dispose();
+                cancellation.Dispose();
             }
         }
 
