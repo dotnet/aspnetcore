@@ -155,7 +155,7 @@ namespace RunTests
             }
         }
 
-        public async Task<bool> InstallAspNetRefIfNeededAsync() 
+        public Task<bool> InstallAspNetRefIfNeededAsync() 
         {
             try 
             {
@@ -163,20 +163,20 @@ namespace RunTests
                 {
                     var refPath = $"Microsoft.AspNetCore.App.Ref";
                     Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
-                    ZipFile.ExtratToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
+                    ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
                     
-                    DisplayContents(appRuntimePath);
+                    DisplayContents(refPath);
                 }
                 else 
                 {
                     Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
                 }
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Exception in InstallAspNetRefIfNeeded: {e.ToString()}");
-                return false;
+                return Task.FromResult(false);
             }
         }
         
