@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
 
 namespace BasicTestApp
@@ -45,8 +46,9 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
-            builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s => new PrependMessageLoggerProvider("Custom logger", s.GetService<IJSRuntime>()));
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
+                new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
+            builder.Logging.AddConfiguration(builder.Configuration);
 
             var host = builder.Build();
             ConfigureCulture(host);

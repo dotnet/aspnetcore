@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" />
+    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
   </ItemGroup>
 
   <ItemGroup>
