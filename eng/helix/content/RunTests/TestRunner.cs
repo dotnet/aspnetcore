@@ -155,6 +155,31 @@ namespace RunTests
             }
         }
 
+        public async Task<bool> InstallAspNetRefIfNeededAsync() 
+        {
+            try 
+            {
+                if (File.Exists(Options.AspNetRef))
+                {
+                    var refPath = $"Microsoft.AspNetCore.App.Ref";
+                    Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
+                    ZipFile.ExtratToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
+                    
+                    DisplayContents(appRuntimePath);
+                }
+                else 
+                {
+                    Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in InstallAspNetRefIfNeeded: {e.ToString()}");
+                return false;
+            }
+        }
+        
         public async Task<bool> CheckTestDiscoveryAsync()
         {
             try
