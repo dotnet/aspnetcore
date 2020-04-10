@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -14,8 +17,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private readonly NavigationManager _navigation;
         private readonly AccessTokenResult _tokenResult;
 
-        public AccessTokenNotAvailableException(AccessTokenResult tokenResult, NavigationManager navigation)
-            : base(message: "Unable to provision an access token for the requested scopes.")
+        public AccessTokenNotAvailableException(
+            NavigationManager navigation,
+            AccessTokenResult tokenResult,
+            IEnumerable<string> scopes)
+            : base(message: "Unable to provision an access token for the requested scopes: " +
+                  scopes != null ? $"'{string.Join(", ", scopes ?? Array.Empty<string>())}'" : "(default scopes)")
         {
             _tokenResult = tokenResult;
             _navigation = navigation;

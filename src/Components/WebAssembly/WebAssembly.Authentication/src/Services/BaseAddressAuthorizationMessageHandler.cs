@@ -6,8 +6,8 @@ using System.Net.Http;
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
     /// <summary>
-    /// A <see cref="DelegatingHandler"/> that will attach authorization tokens using the default scopes to
-    /// outgoing requests where the application base address is a base of the target request url.
+    /// A <see cref="DelegatingHandler"/> that attaches access tokens to outgoing <see cref="HttpResponseMessage"/> instances.
+    /// Access tokens will only be added when the request URI is within the application's base URI.
     /// </summary>
     public class BaseAddressAuthorizationMessageHandler : AuthorizationMessageHandler
     {

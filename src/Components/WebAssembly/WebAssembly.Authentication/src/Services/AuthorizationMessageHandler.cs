@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     }
                     else
                     {
-                        throw new AccessTokenNotAvailableException(tokenResult, _navigation);
+                        throw new AccessTokenNotAvailableException(_navigation, tokenResult, _tokenOptions?.Scopes);
                     }
                 }
 
@@ -78,16 +78,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
         /// <summary>
         /// Configures this handler to authorize outbound HTTP requests using an access token. The access token is only attached if only attached if at least one of
-        /// <paramref name="endpointUrls" /> is a base of <see cref="HttpRequestMessage.RequestUri" />.
+        /// <paramref name="authorizedUrls" /> is a base of <see cref="HttpRequestMessage.RequestUri" />.
         /// </summary>
-        /// <param name="endpointUrls">The base addresses of endpoint URLs to which the token will be attached.</param>
+        /// <param name="authorizedUrls">The base addresses of endpoint URLs to which the token will be attached.</param>
         /// <param name="scopes">The list of scopes to use when requesting an access token.</param>
         /// <param name="returnUrl">The return URL to use in case there is an issue provisioning the token and a redirection to the
         /// identity provider is necessary.
         /// </param>
         /// <returns>This <see cref="AuthorizationMessageHandler"/>.</returns>
         public AuthorizationMessageHandler ConfigureHandler(
-            IEnumerable<string> endpointUrls,
+            IEnumerable<string> authorizedUrls,
             IEnumerable<string> scopes = null,
             string returnUrl = null)
         {
@@ -96,15 +96,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 throw new InvalidOperationException("Handler already configured.");
             }
 
-            if (endpointUrls == null)
+            if (authorizedUrls == null)
             {
-                throw new ArgumentNullException(nameof(endpointUrls));
+                throw new ArgumentNullException(nameof(authorizedUrls));
             }
 
-            var uris = endpointUrls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
+            var uris = authorizedUrls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
             if (uris.Length == 0)
             {
-                throw new ArgumentException("At least one uri must be configured.", nameof(endpointUrls));
+                throw new ArgumentException("At least one URL must be configured.", nameof(authorizedUrls));
             }
 
             _allowedUris = uris;
