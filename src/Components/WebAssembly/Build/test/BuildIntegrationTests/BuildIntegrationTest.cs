@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.timezones.dat");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.timezones.dat");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
@@ -81,6 +83,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var runtime = bootJsonData.resources.runtime.Keys;
             Assert.Contains(DotNetJsFileName, runtime);
             Assert.Contains("dotnet.wasm", runtime);
+            Assert.Contains("dotnet.timezones.dat", runtime);
 
             var assemblies = bootJsonData.resources.assembly.Keys;
             Assert.Contains("standalone.dll", assemblies);
@@ -112,6 +115,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var runtime = bootJsonData.resources.runtime.Keys;
             Assert.Contains(DotNetJsFileName, runtime);
             Assert.Contains("dotnet.wasm", runtime);
+            Assert.Contains("dotnet.timezones.dat", runtime);
 
             var assemblies = bootJsonData.resources.assembly.Keys;
             Assert.Contains("standalone.dll", assemblies);
@@ -120,6 +124,35 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.Null(bootJsonData.resources.pdb);
             Assert.Null(bootJsonData.resources.satelliteResources);
+        }
+
+        [Fact]
+        public async Task Build_WithBlazorEnableTimeZoneSupportDisabled_DoesNotCopyTimeZoneInfo()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var runtime = bootJsonData.resources.runtime.Keys;
+            Assert.Contains("dotnet.wasm", runtime);
+            Assert.DoesNotContain("dotnet.timezones.dat", runtime);
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.timezones.dat");
         }
 
         [Fact]
@@ -163,6 +196,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.timezones.dat");
+
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
         }

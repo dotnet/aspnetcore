@@ -24,6 +24,7 @@ export interface BootJsonData {
   readonly resources: ResourceGroups;
   readonly debugBuild: boolean;
   readonly linkerEnabled: boolean;
+  readonly timezoneEnabled: boolean;
   readonly cacheBootResources: boolean;
   readonly config: string[];
 }

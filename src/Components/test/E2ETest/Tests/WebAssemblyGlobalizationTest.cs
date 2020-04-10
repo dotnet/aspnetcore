@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        protected override TimeSpan UtcOffset => TimeSpan.Zero;
-
         protected override void SetCulture(string culture)
         {
             Navigate($"{ServerPathBase}/?culture={culture}", noReload: false);
