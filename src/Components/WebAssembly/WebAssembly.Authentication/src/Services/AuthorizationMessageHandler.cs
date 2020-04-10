@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private readonly NavigationManager _navigation;
         private AccessToken _lastToken;
         private AuthenticationHeaderValue _cachedHeader;
-        private Uri[] _allowedUris;
+        private Uri[] _authorizedUris;
         private AccessTokenRequestOptions _tokenOptions;
 
         /// <summary>
@@ -42,13 +42,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.Now;
-            if (_allowedUris == null)
+            if (_authorizedUris == null)
             {
                 throw new InvalidOperationException($"The '{nameof(AuthorizationMessageHandler)}' is not configured. " +
                     $"Call '{nameof(AuthorizationMessageHandler.ConfigureHandler)}' and provide a list of endpoint urls to attach the token to.");
             }
 
-            if (_allowedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
+            if (_authorizedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
             {
                 if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
                 {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             IEnumerable<string> scopes = null,
             string returnUrl = null)
         {
-            if (_allowedUris != null)
+            if (_authorizedUris != null)
             {
                 throw new InvalidOperationException("Handler already configured.");
             }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 throw new ArgumentException("At least one URL must be configured.", nameof(authorizedUrls));
             }
 
-            _allowedUris = uris;
+            _authorizedUris = uris;
             var scopesList = scopes?.ToArray();
             if (scopesList != null || returnUrl != null)
             {
