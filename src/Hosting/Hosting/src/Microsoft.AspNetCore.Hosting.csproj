@@ -25,7 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)"/>
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Vesion="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)"/>
