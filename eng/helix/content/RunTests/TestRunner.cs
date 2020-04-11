@@ -155,7 +155,7 @@ namespace RunTests
             }
         }
 
-        public Task<bool> InstallAspNetRefIfNeededAsync() 
+        public bool InstallAspNetRefIfNeeded() 
         {
             try 
             {
@@ -171,12 +171,12 @@ namespace RunTests
                 {
                     Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
                 }
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Exception in InstallAspNetRefIfNeeded: {e.ToString()}");
-                return Task.FromResult(false);
+                return false;
             }
         }
         
