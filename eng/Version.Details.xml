@@ -9,13 +9,13 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview4.20205.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0-preview5.20210.1">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>eef56fe506c48f78ecd88894aac74eacfe524f80</Sha>
+      <Sha>7659b5fda2406d854c72436bdc24f1ff958995f8</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="3.2.0-preview4.20177.1">
+    <Dependency Name="System.Net.Http.Json" Version="3.2.0-preview5.20210.3">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>b3f1f8f7f3c6549bd7f632bb948835f785835548</Sha>
+      <Sha>557f293f3469cb64a4f3d06b6941b387e44df2d2</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

@@ -177,7 +177,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     await ProcessLogInCallback();
                     break;
                 case RemoteAuthenticationActions.LogInFailed:
-                    _message = GetErrorMessage();
                     break;
                 case RemoteAuthenticationActions.Profile:
                     if (ApplicationPaths.RemoteProfilePath == null)
@@ -209,7 +208,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     await ProcessLogOutCallback();
                     break;
                 case RemoteAuthenticationActions.LogOutFailed:
-                    _message = GetErrorMessage();
                     break;
                 case RemoteAuthenticationActions.LogOutSucceeded:
                     break;
@@ -235,8 +233,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     await NavigateToReturnUrl(GetReturnUrl(result.State, returnUrl));
                     break;
                 case RemoteAuthenticationStatus.Failure:
-                    var uri = Navigation.ToAbsoluteUri($"{ApplicationPaths.LogInFailedPath}?message={Uri.EscapeDataString(result.ErrorMessage)}").ToString();
-                    await NavigateToReturnUrl(uri);
+                    _message = result.ErrorMessage;
+                    Navigation.NavigateTo(ApplicationPaths.LogInFailedPath);
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
                 default:
@@ -297,8 +295,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     case RemoteAuthenticationStatus.OperationCompleted:
                         break;
                     case RemoteAuthenticationStatus.Failure:
-                        var uri = Navigation.ToAbsoluteUri($"{ApplicationPaths.LogOutFailedPath}?message={Uri.EscapeDataString(result.ErrorMessage)}").ToString();
-                        await NavigateToReturnUrl(uri);
+                        _message = result.ErrorMessage;
+                        Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath);
                         break;
                     default:
                         throw new InvalidOperationException($"Invalid authentication result status.");
@@ -362,8 +360,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
 
         private ValueTask RedirectToProfile() => JS.InvokeVoidAsync("location.replace", Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery);
-
-        private string GetErrorMessage() => QueryStringHelper.GetParameter(new Uri(Navigation.Uri).Query, "message");
 
         private static void DefaultLogInFragment(RenderTreeBuilder builder)
         {
