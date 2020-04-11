@@ -27,19 +27,9 @@ namespace BasicTestApp
             await SimulateErrorsIfNeededForTest();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-            var httpClient = new HttpClient();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
-            {
-                // Needed because the test server runs on a different port than the client app,
-                // and we want to test sending/receiving cookies under this config
-                httpClient = new HttpClient(new ConfigureForCorsHandler(new WebAssemblyHttpHandler()));
-            }
-            httpClient.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-
-            builder.Services.AddSingleton(httpClient);
-
             builder.RootComponents.Add<Index>("root");
+
+            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
             builder.Services.AddAuthorizationCore(options =>
             {
@@ -97,19 +87,6 @@ namespace BasicTestApp
             if (currentUrl.Contains("error=async"))
             {
                 throw new InvalidTimeZoneException("This is an asynchronous startup exception");
-            }
-        }
-
-        private class ConfigureForCorsHandler : DelegatingHandler
-        {
-            public ConfigureForCorsHandler(HttpMessageHandler innerHandler) : base(innerHandler)
-            {
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
-            {
-                request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-                return base.SendAsync(request, cancellationToken);
             }
         }
     }

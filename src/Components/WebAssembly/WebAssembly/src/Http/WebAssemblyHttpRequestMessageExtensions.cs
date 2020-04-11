@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 _ => throw new InvalidOperationException($"Unsupported enum value {requestCredentials}.")
             };
 
-            return SetBrowserFetchOption(requestMessage, "credentials", stringOption);
+            return SetBrowserRequestOption(requestMessage, "credentials", stringOption);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 _ => throw new InvalidOperationException($"Unsupported enum value {requestCache}.")
             };
 
-            return SetBrowserFetchOption(requestMessage, "cache", stringOption);
+            return SetBrowserRequestOption(requestMessage, "cache", stringOption);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 _ => throw new InvalidOperationException($"Unsupported enum value {requestMode}.")
             };
 
-            return SetBrowserFetchOption(requestMessage, "mode", stringOption);
+            return SetBrowserRequestOption(requestMessage, "mode", stringOption);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/integrity
         /// </remarks>
         public static HttpRequestMessage SetBrowserRequestIntegrity(this HttpRequestMessage requestMessage, string integrity)
-            => SetBrowserFetchOption(requestMessage, "integrity", integrity);
+            => SetBrowserRequestOption(requestMessage, "integrity", integrity);
 
         /// <summary>
         /// Configures a value for the HTTP request.
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
             }
             else
             {
-                fetchOptions = new Dictionary<string, object>();
+                fetchOptions = new Dictionary<string, object>(StringComparer.Ordinal);
                 requestMessage.Properties[FetchRequestOptionsKey] = fetchOptions;
             }
 
@@ -154,14 +154,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         /// This API is only effective when the browser HTTP Fetch supports streaming.
         /// See https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream.
         /// </remarks>
-        public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool enabled)
+        public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool streamingEnabled)
         {
             if (requestMessage is null)
             {
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
-            requestMessage.Properties["WebAssemblyReadResponseAsStream"] = enabled;
+            requestMessage.Properties["WebAssemblyEnableStreamingResponse"] = streamingEnabled;
 
             return requestMessage;
         }
