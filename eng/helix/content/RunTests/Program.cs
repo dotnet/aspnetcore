@@ -23,6 +23,10 @@ namespace RunTests
                 {
                     keepGoing = await runner.InstallAspNetAppIfNeededAsync();
                 }
+                if (keepGoing)
+                {
+                    keepGoing = runner.InstallAspNetRefIfNeeded();
+                }
 
                 runner.DisplayContents();
 

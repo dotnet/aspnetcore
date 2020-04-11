@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -91,18 +92,26 @@ namespace RunTests
         {
             try 
             {
-                Console.WriteLine("Checking for Microsoft.AspNetCore.App/");
-                if (Directory.Exists("Microsoft.AspNetCore.App"))
+                if (File.Exists(Options.AspNetRuntime))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Creating directory: {appRuntimePath}");
                     Directory.CreateDirectory(appRuntimePath);
-                    Console.WriteLine($"Found Microsoft.AspNetCore.App/, copying to {appRuntimePath}");
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-                    foreach (var file in Directory.EnumerateFiles("Microsoft.AspNetCore.App", "*.*", SearchOption.AllDirectories))
+                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll to {appRuntimePath}");
+                    using (var archive = ZipFile.OpenRead(Options.AspNetRuntime))
                     {
-                        File.Copy(file, Path.Combine(appRuntimePath, Path.GetFileName(file)), overwrite: true);
+                        foreach (var entry in archive.Entries)
+                        {
+                            // These are the only extensions that end up in the shared fx directory
+                            if (entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
+                                entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                            {
+                                entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name));
+                            }
+                        }
                     }
                     
                     DisplayContents(appRuntimePath);
@@ -135,7 +144,7 @@ namespace RunTests
                 }
                 else 
                 {
-                    Console.WriteLine($"No app runtime found, skipping...");
+                    Console.WriteLine($"No AspNetRuntime found: {Options.AspNetRuntime}, skipping...");
                 }
                 return true;
             }
@@ -146,6 +155,31 @@ namespace RunTests
             }
         }
 
+        public bool InstallAspNetRefIfNeeded() 
+        {
+            try 
+            {
+                if (File.Exists(Options.AspNetRef))
+                {
+                    var refPath = $"Microsoft.AspNetCore.App.Ref";
+                    Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
+                    ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
+                    
+                    DisplayContents(refPath);
+                }
+                else 
+                {
+                    Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in InstallAspNetRefIfNeeded: {e.ToString()}");
+                return false;
+            }
+        }
+        
         public async Task<bool> CheckTestDiscoveryAsync()
         {
             try

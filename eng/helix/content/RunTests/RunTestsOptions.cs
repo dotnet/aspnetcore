@@ -50,6 +50,16 @@ namespace RunTests
                     aliases: new string[] { "--ef" },
                     description: "The version of the EF tool to use")
                 { Argument = new Argument<string>(), Required = true },
+                
+                new Option(
+                    aliases: new string[] { "--aspnetruntime" },
+                    description: "The path to the aspnet runtime nupkg to install")
+                { Argument = new Argument<string>(), Required = true },
+                
+                new Option(
+                    aliases: new string[] { "--aspnetref" },
+                    description: "The path to the aspnet ref nupkg to install")
+                { Argument = new Argument<string>(), Required = true },
             };
 
             var parseResult = command.Parse(args);
@@ -61,6 +71,8 @@ namespace RunTests
             options.Architecture = parseResult.ValueForOption<string>("--arch");
             options.Quarantined = parseResult.ValueForOption<bool>("--quarantined");
             options.EfVersion = parseResult.ValueForOption<string>("--ef");
+            options.AspNetRuntime = parseResult.ValueForOption<string>("--aspnetruntime");
+            options.AspNetRef = parseResult.ValueForOption<string>("--aspnetref");
             options.HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
             options.Path = Environment.GetEnvironmentVariable("PATH");
             options.DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -70,6 +82,8 @@ namespace RunTests
         public string Target { get; set;}
         public string SdkVersion { get; set;}
         public string RuntimeVersion { get; set;}
+        public string AspNetRuntime { get; set;}
+        public string AspNetRef { get; set;}
         public string HelixQueue { get; set;}
         public string Architecture { get; set;}
         public bool Quarantined { get; set;}
