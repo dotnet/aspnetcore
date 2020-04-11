@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
         /// Configures streaming response for the HTTP request.
         /// </summary>
         /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-        /// <param name="streamingEnabled"><see langword="true"> if streaming is enabled; otherwise false.</param>
+        /// <param name="streamingEnabled"><see langword="true"/> if streaming is enabled; otherwise false.</param>
         /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
         /// <remarks>
         /// This API is only effective when the browser HTTP Fetch supports streaming.
