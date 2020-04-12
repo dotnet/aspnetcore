@@ -3,11 +3,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Attributes.Jobs;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    [SimpleJob]
     public class HttpRequestStreamReaderReadLineBenchmark
     {
         private MemoryStream _stream;
