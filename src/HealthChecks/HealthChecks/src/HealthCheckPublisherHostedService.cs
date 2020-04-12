@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private CancellationTokenSource _stopping;
         private Timer _timer;
+        private CancellationTokenSource _runTokenSource;
 
         public HealthCheckPublisherHostedService(
             HealthCheckService healthCheckService,
@@ -69,7 +70,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
 
             // IMPORTANT - make sure this is the last thing that happens in this method. The timer can
-            // fire before other code runs. 
+            // fire before other code runs.
             _timer = NonCapturingTimer.Create(Timer_Tick, null, dueTime: _options.Value.Delay, period: _options.Value.Period);
 
             return Task.CompletedTask;
@@ -105,6 +106,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         // Internal for testing
+        internal void CancelToken()
+        {
+            _runTokenSource.Cancel();
+        }
+
+        // Internal for testing
         internal async Task RunAsync()
         {
             var duration = ValueStopwatch.StartNew();
@@ -116,6 +123,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 var timeout = _options.Value.Timeout;
 
                 cancellation = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
+                _runTokenSource = cancellation;
                 cancellation.CancelAfter(timeout);
 
                 await RunAsyncCore(cancellation.Token);
