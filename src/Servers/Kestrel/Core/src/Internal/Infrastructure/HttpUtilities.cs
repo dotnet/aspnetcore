@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetRequestHeaderStringNonNullCharacters(this ReadOnlySpan<byte> span, bool useLatin1) =>
             useLatin1 ? GetLatin1StringNonNullCharacters(span) : GetAsciiOrUTF8StringNonNullCharacters(span);
 
-        public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
+        public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
         {
             var sb = new StringBuilder();
 
