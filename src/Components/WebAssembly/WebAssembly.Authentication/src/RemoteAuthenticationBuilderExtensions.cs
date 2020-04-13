@@ -26,7 +26,6 @@ namespace Microsoft.Extensions.DependencyInjection
             where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<TAccount>
         {
             builder.Services.Replace(ServiceDescriptor.Scoped<AccountClaimsPrincipalFactory<TAccount>, TAccountClaimsPrincipalFactory>());
-            builder.Services.Replace(ServiceDescriptor.Scoped<AccountClaimsPrincipalFactory<TAccount>, TUserFactory>());
 
             return builder;
         }
@@ -52,6 +51,5 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> builder)
             where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, TAccountClaimsPrincipalFactory>();
-            where TUserFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddUserFactory<RemoteAuthenticationState, RemoteUserAccount, TUserFactory>();
     }
 }
