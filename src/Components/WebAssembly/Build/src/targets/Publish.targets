@@ -15,31 +15,26 @@
     Condition="'$(BlazorPrunePublishOutput)' != 'false'">
 
     <ItemGroup>
-      <!-- Delete stray DLLs from the application. -->
+      <!-- Delete stray contents from the root of the the app. -->
       <ResolvedFileToPublish
         Remove="%(ResolvedFileToPublish.Identity)"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').EndsWith('dll'))"/>
-      <!--Remove stray debugging files.-->
-      <ResolvedFileToPublish
-        Remove="%(ResolvedFileToPublish.Identity)"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').EndsWith('pdb'))"/>
-      <!--Remove excluded static assets.-->
-      <ResolvedFileToPublish
-        Remove="%(ResolvedFileToPublish.Identity)"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('Excluded-Static-Web-Assets/'))"/>
+        Condition="'%(ResolvedFileToPublish.RelativePath)' != 'web.config' AND !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))"/>
     </ItemGroup>
   </Target>
 
-  <!--After moving the resolved files to the publish directory, we can determine
-  whether or not to copy the standalone config if the user has not provided
-  their own.-->
   <Target
       Name="_BlazorCopyStandaloneWebConfig"
-      AfterTargets="CopyFilesToPublishDirectory"
-      Condition="!Exists('$(PublishDir)web.config')">
-    <WriteLinesToFile
-      File="$(PublishDir)web.config"
-      Lines="$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Standalone.Web.config'))" />
+      AfterTargets="_BlazorCleanupPublishOutput;ComputeResolvedFilesToPublishList"
+      Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(MSBuildThisFileDirectory)Standalone.Web.config">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <RelativePath>web.config</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
   </Target>
 
 </Project>

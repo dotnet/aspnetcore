@@ -117,8 +117,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var publishDirectory = project.PublishOutputDirectory;
 
-            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
-
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
             Assert.FileContains(result, Path.Combine(publishDirectory, "web.config"), webConfigContents);
@@ -420,7 +418,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var path = Path.Combine(project.DirectoryPath, filename);
             File.WriteAllText(path, content);
         }
-
 
         private static void VerifyBootManifestHashes(MSBuildResult result, string blazorPublishDirectory)
         {
