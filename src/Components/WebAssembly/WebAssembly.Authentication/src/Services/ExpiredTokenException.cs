@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             _navigation = navigation;
         }
 
-        public void RedirectToLogin() => _navigation.NavigateTo(_tokenResult.RedirectUrl);
+        public void Redirect() => _navigation.NavigateTo(_tokenResult.RedirectUrl);
     }
 }

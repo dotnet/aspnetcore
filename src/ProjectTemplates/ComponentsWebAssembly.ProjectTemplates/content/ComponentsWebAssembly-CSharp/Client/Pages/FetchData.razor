@@ -57,7 +57,7 @@ else
         }
         catch (AccessTokenNotAvailableException exception)
         {
-            exception.RedirectToLogin();
+            exception.Redirect();
         }
             #else
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
