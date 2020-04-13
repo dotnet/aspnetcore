@@ -22,8 +22,6 @@ namespace ComponentsWebAssembly_CSharp
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Logging.AddConfiguration(builder.Configuration);
-
 #if (!Hosted || NoAuth)
             builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
@@ -37,19 +35,19 @@ namespace ComponentsWebAssembly_CSharp
 
 #endif
 #if (IndividualLocalAuth)
-#if (Hosted)
+    #if (Hosted)
             builder.Services.AddApiAuthorization();
-#else
+    #else
             builder.Services.AddOidcAuthentication(options =>
             {
-#if (MissingAuthority)
+                #if (MissingAuthority)
                 // Configure your authentication provider options here.
                 // For more information, see https://aka.ms/blazor-standalone-auth
-#endif
+                #endif
                 builder.Configuration.Bind("Authority", options.ProviderOptions.Authority);
                 builder.Configuration.Bind("ClientId", options.ProviderOptions.ClientId);
             });
-#endif
+    #endif
 #endif
 #if (IndividualB2CAuth)
             builder.Services.AddMsalAuthentication(options =>
@@ -63,7 +61,7 @@ namespace ComponentsWebAssembly_CSharp
 #endif
             });
 #endif
-#if (OrganizationalAuth)
+#if(OrganizationalAuth)
             builder.Services.AddMsalAuthentication(options =>
             {
                 var authentication = options.ProviderOptions.Authentication;
