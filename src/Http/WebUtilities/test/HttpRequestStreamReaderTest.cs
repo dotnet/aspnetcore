@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class HttpResponseStreamReaderTest
+    public class HttpRequestStreamReaderTest
     {
         private static readonly char[] CharData = new char[]
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public static async Task Read_ReadInTwoChunks()
+        public static async Task ReadAsync_ReadInTwoChunks()
         {
             // Arrange
             var reader = CreateReader();
@@ -135,29 +135,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        [Fact]
-        public static void ReadLine_ReadMultipleLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadMultipleLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
             var valueString = new string(CharData);
 
             // Act & Assert
-            var data = reader.ReadLine();
+            var data = await action(reader);
             Assert.Equal(valueString.Substring(0, valueString.IndexOf('\r')), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\r') + 1, 3), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal(valueString.Substring(valueString.IndexOf('\n') + 1, 2), data);
 
-            data = reader.ReadLine();
+            data = await action(reader);
             Assert.Equal((valueString.Substring(valueString.LastIndexOf('\n') + 1)), data);
         }
 
-        [Fact]
-        public static void ReadLine_ReadWithNoNewlines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_ReadWithNoNewlines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var reader = CreateReader();
@@ -166,33 +168,165 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Act
             reader.Read(temp, 0, 1);
-            var data = reader.ReadLine();
+            var data = await action(reader);
 
             // Assert
             Assert.Equal(valueString.Substring(1, valueString.IndexOf('\r') - 1), data);
         }
 
-        [Fact]
-        public static async Task ReadLineAsync_MultipleContinuousLines()
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_MultipleContinuousLines(Func<HttpRequestStreamReader, Task<string>> action)
         {
             // Arrange
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
-            writer.Write("\n\n\r\r\n");
+            writer.Write("\n\n\r\r\n\r");
             writer.Flush();
             stream.Position = 0;
 
             var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
 
             // Act & Assert
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
             {
-                var data = await reader.ReadLineAsync();
+                var data = await action(reader);
                 Assert.Equal(string.Empty, data);
             }
 
-            var eol = await reader.ReadLineAsync();
-            Assert.Null(eol);
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_CarriageReturnAndLineFeedAcrossBufferBundaries(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("123456789\r\nfoo");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8, 10);
+
+            // Act & Assert
+            var data = await action(reader);
+            Assert.Equal("123456789", data);
+
+            data = await action(reader);
+            Assert.Equal("foo", data);
+
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_EOF(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var eof = await action(reader);
+            Assert.Null(eof);
+        }
+
+        [Theory]
+        [MemberData(nameof(ReadLineData))]
+        public static async Task ReadLine_NewLineOnly(Func<HttpRequestStreamReader, Task<string>> action)
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write("\r\n");
+            writer.Flush();
+            stream.Position = 0;
+
+            var reader = new HttpRequestStreamReader(stream, Encoding.UTF8);
+
+            // Act & Assert
+            var empty = await action(reader);
+            Assert.Equal(string.Empty, empty);
+        }
+
+        [Fact]
+        public static void Read_Span_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public static void Read_Span_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var span = new Span<char>(chars);
+
+            // Act
+            var read = reader.Read(span);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_ReadAllCharactersAtOnce()
+        {
+            // Arrange
+            var reader = CreateReader();
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
+        }
+
+        [Fact]
+        public async static Task ReadAsync_Memory_WithMoreDataThanInternalBufferSize()
+        {
+            // Arrange
+            var reader = CreateReader(10);
+            var chars = new char[CharData.Length];
+            var memory = new Memory<char>(chars);
+
+            // Act
+            var read = await reader.ReadAsync(memory);
+
+            // Assert
+            Assert.Equal(chars.Length, read);
+            for (var i = 0; i < CharData.Length; i++)
+            {
+                Assert.Equal(CharData[i], chars[i]);
+            }
         }
 
         [Theory]
@@ -204,8 +338,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var httpRequestStreamReader = new HttpRequestStreamReader(stream, encoding, 1, bytePool, charPool);
             });
         }
-
-
 
         [Theory]
         [InlineData(0)]
@@ -242,26 +374,36 @@ namespace Microsoft.AspNetCore.WebUtilities
             });
         }
 
-        [Fact]
-        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync()
+        [Theory]
+        [MemberData(nameof(HttpRequestDisposeDataAsync))]
+        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync(Func<HttpRequestStreamReader, Task> action)
         {
             var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
             httpRequestStreamReader.Dispose();
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
-            {
-                return httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
-            });
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => action(httpRequestStreamReader));
         }
+
         private static HttpRequestStreamReader CreateReader()
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+        }
+
+        private static HttpRequestStreamReader CreateReader(int bufferSize)
+        {
+            MemoryStream stream = CreateStream();
+            return new HttpRequestStreamReader(stream, Encoding.UTF8, bufferSize);
+        }
+
+        private static MemoryStream CreateStream()
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
             writer.Write(CharData);
             writer.Flush();
             stream.Position = 0;
-
-            return new HttpRequestStreamReader(stream, Encoding.UTF8);
+            return stream;
         }
 
         private static MemoryStream GetSmallStream()
@@ -302,12 +444,38 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                  var res = httpRequestStreamReader.Read(new char[10], 0, 1);
             })};
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                 var res = httpRequestStreamReader.Read(new Span<char>(new char[10], 0, 1));
+            })};
 
             yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
             {
                 var res = httpRequestStreamReader.Peek();
             })};
 
+        }
+
+        public static IEnumerable<object[]> HttpRequestDisposeDataAsync()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
+            })};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task>(async (httpRequestStreamReader) =>
+            {
+                 await httpRequestStreamReader.ReadAsync(new Memory<char>(new char[10], 0, 1));
+            })};
+        }
+
+        public static IEnumerable<object[]> ReadLineData()
+        {
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+                 Task.FromResult(httpRequestStreamReader.ReadLine())
+            )};
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+                 httpRequestStreamReader.ReadLineAsync()
+            )};
         }
     }
 }
