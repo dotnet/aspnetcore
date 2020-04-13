@@ -29,4 +29,5 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
+  
 </Project>

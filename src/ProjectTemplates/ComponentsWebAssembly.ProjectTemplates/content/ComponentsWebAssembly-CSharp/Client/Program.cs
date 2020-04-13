@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 #if (Hosted)
@@ -40,22 +41,18 @@ namespace ComponentsWebAssembly_CSharp
     #else
             builder.Services.AddOidcAuthentication(options =>
             {
-                #if (MissingAuthority)
+                #if(MissingAuthority)
                 // Configure your authentication provider options here.
                 // For more information, see https://aka.ms/blazor-standalone-auth
                 #endif
-                builder.Configuration.Bind("Authority", options.ProviderOptions.Authority);
-                builder.Configuration.Bind("ClientId", options.ProviderOptions.ClientId);
+                builder.Configuration.Bind("Local", options.ProviderOptions.Authority);
             });
     #endif
 #endif
 #if (IndividualB2CAuth)
             builder.Services.AddMsalAuthentication(options =>
             {
-                var authentication = options.ProviderOptions.Authentication;
-                builder.Configuration.Bind("Authority", authentication.Authority);
-                builder.Configuration.Bind("ClientId", authentication.ClientId);
-                builder.Configuration.Bind("ValidateAuthority", authentication.ValidateAuthority)
+                builder.Configuration.Bind("AzureAdB2C", options.ProviderOptions.Authentication);
 #if (Hosted)
                 options.ProviderOptions.DefaultAccessTokenScopes.Add("https://qualified.domain.name/api.id.uri/api-scope");
 #endif
@@ -64,9 +61,7 @@ namespace ComponentsWebAssembly_CSharp
 #if(OrganizationalAuth)
             builder.Services.AddMsalAuthentication(options =>
             {
-                var authentication = options.ProviderOptions.Authentication;
-                builder.Configuration.Bind("Authority", authentication.Authority);
-                builder.Configuration.Bind("ClientId", authentiation.ClientId);
+                builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
 #if (Hosted)
                 options.ProviderOptions.DefaultAccessTokenScopes.Add("api://api.id.uri/api-scope");
 #endif
