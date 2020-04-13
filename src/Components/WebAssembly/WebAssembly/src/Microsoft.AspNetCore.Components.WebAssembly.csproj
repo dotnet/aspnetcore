@@ -14,7 +14,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
     <ProjectReference
-      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj"
+      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
       IncludeAssets="commit"
       ReferenceOutputAssembly="false"
       Private="true" />

@@ -109,7 +109,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Server.Tests", "WebAssembly\Server\test\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj", "{72D3D00C-5281-455F-9E19-646EE766009A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler", "WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj", "{52744BCB-1046-48C0-93A4-19A311A907B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.HttpHandler", "WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj", "{52744BCB-1046-48C0-93A4-19A311A907B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

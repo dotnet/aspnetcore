@@ -20,7 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <ProjectReference
-      Include="..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj"
+      Include="..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
       CopyLocal="false" />
   </ItemGroup>
 
@@ -39,7 +39,7 @@
     -->
     <ItemGroup>
       <_HttpHandlerAssembly Include="@(_BlazorUserRuntimeAssembly)"
-        Condition="%(_BlazorUserRuntimeAssembly.ProjectReferenceOriginalItemSpec) == '..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Comopnents.WebAssembly.HttpHandler.csproj'" />
+        Condition="%(_BlazorUserRuntimeAssembly.ProjectReferenceOriginalItemSpec) == '..\..\..\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj'" />
 
       <_BlazorUserRuntimeAssembly Remove="@(_HttpHandlerAssembly)" />
     </ItemGroup>
