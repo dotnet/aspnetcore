@@ -160,8 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
-        /// Builds an <see cref="IConfiguration"/> with keys and values from the set of providers registered in
-        /// <see cref="Providers"/>.
+        /// Builds an <see cref="IConfiguration"/> with keys and values from the set of registered providers.
         /// </summary>
         /// <returns>An <see cref="IConfigurationRoot"/> with keys and values from the registered providers.</returns>
         public IConfigurationRoot Build()
