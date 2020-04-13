@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -28,14 +27,6 @@ namespace BasicTestApp
             await SimulateErrorsIfNeededForTest();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
-            {
-                // Needed because the test server runs on a different port than the client app,
-                // and we want to test sending/receiving cookies under this config
-                WebAssemblyHttpMessageHandlerOptions.DefaultCredentials = FetchCredentialsOption.Include;
-            }
-
             builder.RootComponents.Add<Index>("root");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
