@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -432,6 +433,99 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpoints = templates.Select((t) => CreateEndpoint(t)).ToArray();
             var expected = endpoints[Array.IndexOf(templates, expectedTemplate)];
+
+            var matcher = CreateMatcher(endpoints);
+            var httpContext = CreateContext(path);
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, expected, ignoreValues: true);
+        }
+
+        // https://github.com/dotnet/aspnetcore/issues/16579
+        [Fact]
+        public virtual async Task Match_Regression_16579_Order1()
+        {
+            var endpoints = new RouteEndpoint[]
+            {
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/folder/{*path}",
+                    order: 0,
+                    defaults: new { controller = "File", action = "Folder", },
+                    requiredValues: new { controller = "File", }),
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/{action}/{filename}",
+                    order: 1,
+                    defaults: new { controller = "File", action = "Index", },
+                    requiredValues: new { controller = "File", action = "Index", }),
+            };
+
+            var expected = endpoints[0];
+
+            var matcher = CreateMatcher(endpoints);
+            var httpContext = CreateContext("/file/folder/abc/abc");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, expected, ignoreValues: true);
+        }
+
+        // https://github.com/dotnet/aspnetcore/issues/16579
+        [Fact]
+        public virtual async Task Match_Regression_16579_Order2()
+        {
+            var endpoints = new RouteEndpoint[]
+            {
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/{action}/{filename}",
+                    order: 0,
+                    defaults: new { controller = "File", action = "Index", },
+                    requiredValues: new { controller = "File", action = "Index", }),
+
+                EndpointFactory.CreateRouteEndpoint(
+                    "{controller}/folder/{*path}",
+                    order: 1,
+                    defaults: new { controller = "File", action = "Folder", },
+                    requiredValues: new { controller = "File", }),
+            };
+
+            var expected = endpoints[1];
+
+            var matcher = CreateMatcher(endpoints);
+            var httpContext = CreateContext("/file/folder/abc/abc");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, expected, ignoreValues: true);
+        }
+
+        // https://github.com/dotnet/aspnetcore/issues/18677
+        [Theory]
+        [InlineData("/middleware", 1)]
+        [InlineData("/middleware/test", 1)]
+        [InlineData("/middleware/test1/test2", 1)]
+        [InlineData("/bill/boga", 0)]
+        public virtual async Task Match_Regression_18677(string path, int endpointIndex)
+        {
+            var endpoints = new RouteEndpoint[]
+            {
+                EndpointFactory.CreateRouteEndpoint(
+                    "{firstName}/{lastName}",
+                    order: 0,
+                    defaults: new { controller = "TestRoute", action = "Index", }),
+
+                EndpointFactory.CreateRouteEndpoint(
+                    "middleware/{**_}",
+                    order: 0),
+            };
+
+            var expected = endpoints[endpointIndex];
 
             var matcher = CreateMatcher(endpoints);
             var httpContext = CreateContext(path);
