@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
@@ -27,16 +26,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly IHubContext<THub> _hubContext;
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
-        private readonly IHubPipeline _hubPipeline;
+        private readonly IHubFilter _hubFilter;
 
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-            ILogger<DefaultHubDispatcher<THub>> logger, IHubPipeline hubPipeline)
+            ILogger<DefaultHubDispatcher<THub>> logger, IHubFilter hubFilter)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _hubContext = hubContext;
             _enableDetailedErrors = enableDetailedErrors;
             _logger = logger;
-            _hubPipeline = hubPipeline;
+            _hubFilter = hubFilter;
             DiscoverHubMethods();
         }
 
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubPipeline.OnConnectedAsync(connection.HubCallerContext, (context) => hub.OnConnectedAsync());
+                    await _hubFilter.OnConnectedAsync(connection.HubCallerContext, (context) => hub.OnConnectedAsync());
                     //await hub.OnConnectedAsync();
                 }
                 finally
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubPipeline.OnDisconnectedAsync(connection.HubCallerContext, (context) => hub.OnDisconnectedAsync(exception));
+                    await _hubFilter.OnDisconnectedAsync(connection.HubCallerContext, (context) => hub.OnDisconnectedAsync(exception));
                     //await hub.OnDisconnectedAsync(exception);
                 }
                 finally
@@ -225,7 +224,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
-                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments))
+                hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+                hub = hubActivator.Create();
+
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments, hub))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -237,9 +239,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     return;
                 }
-
-                hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                hub = hubActivator.Create();
 
                 try
                 {
@@ -454,7 +453,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection)
         {
-            return await _hubPipeline.InvokeMethodAsync(new HubInvocationContext(connection.HubCallerContext, typeof(THub), methodExecutor.MethodInfo.Name, arguments),
+            return await _hubFilter.InvokeMethodAsync(new HubInvocationContext(connection.HubCallerContext, hub, methodExecutor.MethodInfo.Name, arguments),
                 async (HubInvocationContext invocationContext) =>
             {
                 if (methodExecutor.IsMethodAsync)
@@ -494,7 +493,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments, Hub hub)
         {
             // If there are no policies we don't need to run auth
             if (policies.Count == 0)
@@ -502,7 +501,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, typeof(THub), hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hub, hubMethodName, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)

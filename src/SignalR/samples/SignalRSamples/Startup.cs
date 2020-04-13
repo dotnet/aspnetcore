@@ -15,15 +15,18 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.Threading;
+using Microsoft.AspNetCore.Http;
 
 namespace SignalRSamples
 {
-    public class CustomHubPipeline : IHubPipeline
+    public class CustomHubFilter : IHubFilter
     {
         private readonly ILogger _logger;
-        public CustomHubPipeline(ILogger<CustomHubPipeline> logger)
+        private readonly IHttpContextAccessor _h;
+        public CustomHubFilter(ILogger<CustomHubFilter> logger, IHttpContextAccessor h)
         {
             _logger = logger;
+            _h = h;
         }
 
         public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
@@ -36,6 +39,7 @@ namespace SignalRSamples
 
             try
             {
+                _h.HttpContext = invocationContext.Context.GetHttpContext();
                 _logger.LogInformation("Starting invoke");
                 var res = await next(invocationContext);
                 if (invocationContext.HubMethodName == nameof(Chat.Echo))
@@ -71,6 +75,7 @@ namespace SignalRSamples
 
         public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
+            _h.HttpContext = context.GetHttpContext();
             var incremented = Interlocked.Increment(ref _connectionCount);
             if (incremented > 2)
             {
@@ -81,6 +86,7 @@ namespace SignalRSamples
 
         public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
+            _h.HttpContext = context.GetHttpContext();
             Interlocked.Decrement(ref _connectionCount);
             return next(context);
         }
@@ -95,6 +101,7 @@ namespace SignalRSamples
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddConnections();
 
             services.AddSignalR(options =>
@@ -105,7 +112,7 @@ namespace SignalRSamples
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
 
-            services.AddSingleton<IHubPipeline, CustomHubPipeline>();
+            services.AddSingleton<IHubFilter, CustomHubFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
