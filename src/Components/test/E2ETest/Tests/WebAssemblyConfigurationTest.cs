@@ -48,6 +48,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void WebAssemblyConfiguration_ReloadingWorks()
+        {
+            // Verify values from the default 'appsettings.json' are read.
+            Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
+
+            // Change the value of key1 using the form in the UI
+            var input = _appElement.FindElement(By.Id("key1-input"));
+            input.SendKeys("newValue");
+            var submit = _appElement.FindElement(By.Id("trigger-change"));
+            submit.Click();
+
+            // Asser that the value of the key has been updated
+            Browser.Equal("newValue", () => _appElement.FindElement(By.Id("key1")).Text);
+        }
+
+        [Fact]
         public void WebAssemblyHostingEnvironment_Works()
         {
             // Dev-Server defaults to Development. It's in the name!

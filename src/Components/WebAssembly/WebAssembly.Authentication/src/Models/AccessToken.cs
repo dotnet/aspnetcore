@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets the list of granted scopes for the token.
         /// </summary>
-        public string[] GrantedScopes { get; set; }
+        public IReadOnlyList<string> GrantedScopes { get; set; }
 
         /// <summary>
         /// Gets the expiration time of the token.

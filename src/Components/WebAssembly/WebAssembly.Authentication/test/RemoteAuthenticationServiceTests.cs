@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+                new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var account = new CoolRoleAccount
             {
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 testJsRuntime,
                 options,
                 new TestNavigationManager(),
-                new TestUserFactory(Mock.Of<IAccessTokenProviderAccessor>()));
+                new TestAccountClaimsPrincipalFactory(Mock.Of<IAccessTokenProviderAccessor>()));
 
             var account = new CoolRoleAccount
             {
@@ -481,39 +481,30 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
         private static IOptions<RemoteAuthenticationOptions<OidcProviderOptions>> CreateOptions(string scopeClaim = null)
         {
-            return Options.Create(
-                new RemoteAuthenticationOptions<OidcProviderOptions>()
-                {
-                    AuthenticationPaths = new RemoteAuthenticationApplicationPathsOptions
-                    {
-                        LogInPath = "login",
-                        LogInCallbackPath = "a",
-                        LogInFailedPath = "a",
-                        RegisterPath = "a",
-                        ProfilePath = "a",
-                        RemoteRegisterPath = "a",
-                        RemoteProfilePath = "a",
-                        LogOutPath = "a",
-                        LogOutCallbackPath = "a",
-                        LogOutFailedPath = "a",
-                        LogOutSucceededPath = "a",
-                    },
-                    UserOptions = new RemoteAuthenticationUserOptions
-                    {
-                        AuthenticationType = "a",
-                        ScopeClaim = scopeClaim,
-                        RoleClaim = "coolRole",
-                        NameClaim = "coolName",
-                    },
-                    ProviderOptions = new OidcProviderOptions
-                    {
-                        Authority = "a",
-                        ClientId = "a",
-                        DefaultScopes = new[] { "openid" },
-                        RedirectUri = "https://www.example.com/base/custom-login",
-                        PostLogoutRedirectUri = "https://www.example.com/base/custom-logout",
-                    }
-                });
+            var options = new RemoteAuthenticationOptions<OidcProviderOptions>();
+
+            options.AuthenticationPaths.LogInPath = "login";
+            options.AuthenticationPaths.LogInCallbackPath = "a";
+            options.AuthenticationPaths.LogInFailedPath = "a";
+            options.AuthenticationPaths.RegisterPath = "a";
+            options.AuthenticationPaths.ProfilePath = "a";
+            options.AuthenticationPaths.RemoteRegisterPath = "a";
+            options.AuthenticationPaths.RemoteProfilePath = "a";
+            options.AuthenticationPaths.LogOutPath = "a";
+            options.AuthenticationPaths.LogOutCallbackPath = "a";
+            options.AuthenticationPaths.LogOutFailedPath = "a";
+            options.AuthenticationPaths.LogOutSucceededPath = "a";
+            options.UserOptions.AuthenticationType = "a";
+            options.UserOptions.ScopeClaim = scopeClaim;
+            options.UserOptions.RoleClaim = "coolRole";
+            options.UserOptions.NameClaim = "coolName";
+            options.ProviderOptions.Authority = "a";
+            options.ProviderOptions.ClientId = "a";
+            options.ProviderOptions.DefaultScopes.Add("openid");
+            options.ProviderOptions.RedirectUri = "https://www.example.com/base/custom-login";
+            options.ProviderOptions.PostLogoutRedirectUri = "https://www.example.com/base/custom-logout";
+
+            return Options.Create(options);
         }
 
         private class TestJsRuntime : IJSRuntime
@@ -571,9 +562,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         }
     }
 
-    internal class TestUserFactory : AccountClaimsPrincipalFactory<CoolRoleAccount>
+    internal class TestAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<CoolRoleAccount>
     {
-        public TestUserFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
+        public TestAccountClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor) : base(accessor)
         {
         }
 
