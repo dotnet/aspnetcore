@@ -73,9 +73,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #endif
 
             services.AddControllersWithViews();
-#if (IndividualLocalAuth)
             services.AddRazorPages();
-#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -119,9 +117,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #endif
             app.UseEndpoints(endpoints =>
             {
-#if (IndividualLocalAuth)
                 endpoints.MapRazorPages();
-#endif
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
             });
