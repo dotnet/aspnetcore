@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -14,6 +15,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests
@@ -22,13 +25,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
     {
         private KestrelServerOptions CreateServerOptions()
         {
+            var testSink = new TestSink();
             var serverOptions = new KestrelServerOptions();
             var env = new MockHostingEnvironment { ApplicationName = "TestApplication" };
             serverOptions.ApplicationServices = new ServiceCollection()
-                .AddLogging()
+                .AddLogging(l => l.AddProvider(new TestLoggerProvider(testSink)))
                 .AddSingleton<IHostEnvironment>(env)
+                .AddSingleton(testSink)
                 .BuildServiceProvider();
             return serverOptions;
+        }
+
+        [Fact]
+        [SkipOnHelix("(none)", Queues = "Ubuntu.1604.Amd64.Open;Windows.10.Amd64.Open")]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "This check only applies to Mac OS as it is the one that checks the key for validity.")]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "This check only applies to Mac OS as it is the one that checks the key for validity.")]
+        public void DevCertWithInvalidPrivateKeyProducesCustomWarning()
+        {
+            var serverOptions = CreateServerOptions();
+            var sink = serverOptions.ApplicationServices.GetRequiredService<TestSink>();
+            var messages = new List<WriteContext>();
+            sink.MessageLogged += wc => messages.Add(wc);
+            serverOptions.Configure()
+                .LocalhostEndpoint(5001, endpointOptions => { });
+
+            Assert.Empty(serverOptions.ListenOptions);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.Single(serverOptions.ListenOptions);
+            Assert.Equal(5001, serverOptions.ListenOptions[0].IPEndPoint.Port);
+
+            Assert.Equal(5, messages[^1].EventId);
+            Assert.Equal(LogLevel.Warning, messages[^1].LogLevel);
         }
 
         [Fact]

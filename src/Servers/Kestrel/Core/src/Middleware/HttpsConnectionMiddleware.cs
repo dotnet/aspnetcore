@@ -220,10 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 }
                 catch (AuthenticationException ex)
                 {
-                    if (_serverCertificate == null)
-                    {
-                        _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                    }
+                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
 
                     await sslStream.DisposeAsync();
                     return;
