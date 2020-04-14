@@ -210,7 +210,14 @@ function InstallDotNet {
 
       local runtimeSourceFeedKey=''
       if [[ -n "${7:-}" ]]; then
-        decodedFeedKey=`echo $7 | base64 --decode`
+        # The 'base64' binary on alpine uses '-d' and doesn't support '--decode'
+        # '-d'. To work around this, do a simple detection and switch the parameter
+        # accordingly.
+        decodeArg="--decode"
+        if base64 --help 2>&1 | grep -q "BusyBox"; then
+            decodeArg="-d"
+        fi
+        decodedFeedKey=`echo $7 | base64 $decodeArg`
         runtimeSourceFeedKey="--feed-credential $decodedFeedKey"
       fi
 
