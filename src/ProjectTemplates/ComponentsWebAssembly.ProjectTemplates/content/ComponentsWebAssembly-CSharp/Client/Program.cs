@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 #if (Hosted)
@@ -44,18 +45,14 @@ namespace ComponentsWebAssembly_CSharp
                 // Configure your authentication provider options here.
                 // For more information, see https://aka.ms/blazor-standalone-auth
                 #endif
-                options.ProviderOptions.Authority = "https://login.microsoftonline.com/";
-                options.ProviderOptions.ClientId = "33333333-3333-3333-33333333333333333";
+                builder.Configuration.Bind("Local", options.ProviderOptions);
             });
     #endif
 #endif
 #if (IndividualB2CAuth)
             builder.Services.AddMsalAuthentication(options =>
             {
-                var authentication = options.ProviderOptions.Authentication;
-                authentication.Authority = "https:////aadB2CInstance.b2clogin.com/qualified.domain.name/MySignUpSignInPolicyId";
-                authentication.ClientId = "33333333-3333-3333-33333333333333333";
-                authentication.ValidateAuthority = false;
+                builder.Configuration.Bind("AzureAdB2C", options.ProviderOptions.Authentication);
 #if (Hosted)
                 options.ProviderOptions.DefaultAccessTokenScopes.Add("https://qualified.domain.name/api.id.uri/api-scope");
 #endif
@@ -64,9 +61,7 @@ namespace ComponentsWebAssembly_CSharp
 #if(OrganizationalAuth)
             builder.Services.AddMsalAuthentication(options =>
             {
-                var authentication = options.ProviderOptions.Authentication;
-                authentication.Authority = "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222";
-                authentication.ClientId = "33333333-3333-3333-33333333333333333";
+                builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
 #if (Hosted)
                 options.ProviderOptions.DefaultAccessTokenScopes.Add("api://api.id.uri/api-scope");
 #endif
