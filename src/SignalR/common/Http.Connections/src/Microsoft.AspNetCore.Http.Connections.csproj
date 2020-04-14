@@ -5,7 +5,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,9 +31,8 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
-
-    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)"/>
-    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)"/>
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
+    <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
   <ItemGroup>

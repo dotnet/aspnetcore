@@ -9,7 +9,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +18,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    
-    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>
