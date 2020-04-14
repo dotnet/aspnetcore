@@ -57,15 +57,15 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>7c74e87eccf3a1785ff73d77b769226e6b2ab458</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -85,7 +85,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -177,7 +177,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -189,7 +189,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -237,7 +237,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -261,7 +261,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -269,11 +269,11 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -389,7 +389,7 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20202.1" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20181.2" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>57d5bbb58f17a8cb3a82c81839c9379b4fcfe0d8</Sha>
     </Dependency>
@@ -409,7 +409,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>282d5b9f83e7a4e7fe0cef268f4f8f85e6162510</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
@@ -425,7 +425,7 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1a55276ab9d16792cec595ba870df39a9d97d5ca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.4-servicing.20202.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.4-servicing.20181.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cf044102f01a3402a680fa58cabea8a9ca53aa3d</Sha>
     </Dependency>
