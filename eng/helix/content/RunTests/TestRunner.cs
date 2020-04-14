@@ -109,7 +109,7 @@ namespace RunTests
                                 entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
                                 entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                             {
-                                entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name));
+                                entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name), overwrite: true);
                             }
                         }
                     }
