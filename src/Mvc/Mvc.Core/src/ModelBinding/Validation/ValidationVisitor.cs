@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 object model,
                 IValidationStrategy strategy)
             {
-                var recursifier = new StateManager(visitor);
+                var recursifier = new StateManager(visitor, null);
 
                 visitor.Container = visitor.Model;
                 visitor.Key = key;
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return recursifier;
             }
 
-            public StateManager(ValidationVisitor visitor)
+            public StateManager(ValidationVisitor visitor, object newModel)
             {
                 _visitor = visitor;
 
