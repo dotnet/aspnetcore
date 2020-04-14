@@ -1,4 +1,5 @@
 import { readInt32LE } from "../../BinaryDecoder";
+import { decodeUtf8 } from "../../Utf8Decoder";
 
 export async function loadTimezoneData(arrayBuffer: ArrayBuffer) : Promise<void> {
     let remainingData = new Uint8Array(arrayBuffer);
@@ -19,7 +20,7 @@ export async function loadTimezoneData(arrayBuffer: ArrayBuffer) : Promise<void>
     // that appear prior to it.
     const manifestSize = readInt32LE(remainingData, 0);
     remainingData = remainingData.slice(4);
-    const manifestContent = new TextDecoder().decode(remainingData.slice(0, manifestSize));
+    const manifestContent = decodeUtf8(remainingData.slice(0, manifestSize));
     const manifest = JSON.parse(manifestContent) as ManifestEntry[];
     remainingData = remainingData.slice(manifestSize);
 
