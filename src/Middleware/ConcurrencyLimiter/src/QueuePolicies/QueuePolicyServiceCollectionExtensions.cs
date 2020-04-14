@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class QueuePolicyServiceCollectionExtensions
     {
         /// <summary>
-        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a FIFO queue as its queueing strategy.
+        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a FIFO queue as its default queueing strategy.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configure">Set the options used by the queue.
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a LIFO stack as its queueing strategy.
+        /// Tells <see cref="ConcurrencyLimiterMiddleware"/> to use a LIFO stack as its default queueing strategy.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configure">Set the options used by the queue.

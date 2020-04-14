@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,19 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            var waitInQueueTask = _queuePolicy.TryEnterAsync();
+            var endpoint = context.GetEndpoint();
+
+            if (endpoint?.Metadata.GetMetadata<ISuppressQueuePolicyMetadata>() != null)
+            {
+                await _next(context);
+
+                return;
+            }
+
+            var queuePolicy = endpoint?.Metadata.GetMetadata<IQueuePolicy>()
+                ?? _queuePolicy;
+
+            var waitInQueueTask = queuePolicy.TryEnterAsync();
 
             // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
             bool result;
@@ -72,7 +85,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 }
                 finally
                 {
-                    _queuePolicy.OnExit();
+                    queuePolicy.OnExit();
                 }
             }
             else
