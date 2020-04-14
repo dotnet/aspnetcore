@@ -2,7 +2,7 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
-import { readInt32LE } from '../../BinaryDecoder';
+import { loadTimezoneData } from './TimezoneDataFile';
 
 let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
@@ -186,7 +186,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
 
   let timeZoneResource: LoadingResource | undefined;
-  if (Object.keys(resourceLoader.bootConfig.resources.runtime).indexOf(dotnetTimeZoneResourceName) != -1) {
+  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(dotnetTimeZoneResourceName)) {
     timeZoneResource = resourceLoader.loadResource(
       dotnetTimeZoneResourceName,
       `_framework/wasm/${dotnetTimeZoneResourceName}`,
@@ -356,48 +356,13 @@ function attachInteropInvoker(): void {
 async function loadTimezone(timeZoneResource: LoadingResource) : Promise<void> {
   const runDependencyId = `blazor:timezonedata`;
   Module.addRunDependency(runDependencyId);
+
   const request = await timeZoneResource.response;
-  let arrayBuffer = await request.arrayBuffer();
-
-  // The contents of the TZ file look like so
-  //
-  // [4 - byte length of manifest]
-  // [json manifest]
-  // [data bytes]
-  //
-  // The json manifest is an array that looks like so:
-  //
-  // [...["America/Fort_Nelson",2249],["America/Glace_Bay",2206]..]
-  //
-  // where the first token in each array is the relative path of the file on disk, and the second is the
-  // length of the file. The starting offset of a file can be calculated using the lengths of all files
-  // that appear prior to it.
-
-  const manifestSize = readInt32LE(new Uint8Array(arrayBuffer.slice(0, 4)), 0);
-  arrayBuffer = arrayBuffer.slice(4);
-  const manifestContent = new TextDecoder().decode(arrayBuffer.slice(0, manifestSize));
-  const manifest = JSON.parse(manifestContent) as ManifestEntry[];
-  arrayBuffer = arrayBuffer.slice(manifestSize);
-
-  // Create the folder structure
-  // /zoneinfo
-  // /zoneinfo/Africa
-  // /zoneinfo/Asia
-  // ..
-  Module['FS_createPath']('/', 'zoneinfo', true, true);
-  new Set(manifest.map(m => m[0].split('/')![0])).forEach(folder =>
-    Module['FS_createPath']('/zoneinfo', folder, true, true));
-
-  for (const [name, length] of manifest) {
-    const bytes = new Uint8Array(arrayBuffer.slice(0, length));
-    Module['FS_createDataFile'](`/zoneinfo/${name}`, null, bytes, true, true, true);
-    arrayBuffer = arrayBuffer.slice(length);
-  }
+  const arrayBuffer = await request.arrayBuffer();
+  loadTimezoneData(arrayBuffer)
 
   Module.removeRunDependency(runDependencyId);
 }
-
-type ManifestEntry = [string, number];
 
 async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
   // This is the same logic as used in emscripten's generated js. We can't use emscripten's js because
