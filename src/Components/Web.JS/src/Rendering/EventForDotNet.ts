@@ -201,6 +201,8 @@ function parseMouseEvent(event: MouseEvent) {
     screenY: event.screenY,
     clientX: event.clientX,
     clientY: event.clientY,
+    offsetX: event.offsetX,
+    offsetY: event.offsetY,
     button: event.button,
     buttons: event.buttons,
     ctrlKey: event.ctrlKey,
@@ -317,6 +319,8 @@ interface UIMouseEventArgs extends UIEventArgs {
   screenY: number;
   clientX: number;
   clientY: number;
+  offsetX: number;
+  offsetY: number;
   button: number;
   buttons: number;
   ctrlKey: boolean;
