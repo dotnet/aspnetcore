@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-            }              
+            }
 
             StringBuilder sb = null;
             var consumeLineFeed = false;
@@ -526,6 +526,20 @@ namespace Microsoft.AspNetCore.WebUtilities
             while (_charsRead == 0);
 
             return _charsRead;
+        }
+
+        public async override Task<string> ReadToEndAsync()
+        {
+            StringBuilder sb = new StringBuilder(_charsRead - _charBufferIndex);
+            do
+            {
+                int tmpCharPos = _charBufferIndex;
+                sb.Append(_charBuffer, tmpCharPos, _charsRead - tmpCharPos);
+                _charBufferIndex = _charsRead;  // We consumed these characters
+                await ReadIntoBufferAsync().ConfigureAwait(false);
+            } while (_charsRead > 0);
+
+            return sb.ToString();
         }
 
         private readonly struct ReadLineStepResult
