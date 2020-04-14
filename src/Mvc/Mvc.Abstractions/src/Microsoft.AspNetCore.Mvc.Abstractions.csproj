@@ -9,6 +9,7 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,7 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)"/>
   </ItemGroup>
 
 </Project>

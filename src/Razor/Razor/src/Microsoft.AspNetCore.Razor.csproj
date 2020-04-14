@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
 
     <!-- Required to implement an HtmlEncoder -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -21,7 +22,8 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)"/>
   </ItemGroup>
 
 </Project>
