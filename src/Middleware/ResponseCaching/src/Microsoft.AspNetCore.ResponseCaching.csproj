@@ -9,14 +9,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cache;caching</PackageTags>
     <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"/>
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,15 +43,16 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"/>
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
+    <PackageReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)"/>
   </ItemGroup>
 
 </Project>
