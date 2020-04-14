@@ -62,6 +62,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.18' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Formatters.Json;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

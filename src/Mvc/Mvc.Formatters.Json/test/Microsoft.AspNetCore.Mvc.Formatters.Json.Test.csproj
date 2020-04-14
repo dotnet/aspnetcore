@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
     <Reference Include="Microsoft.AspNetCore.Mvc.TestCommon" />
 
     <Reference Include="Microsoft.AspNetCore.Http" />
