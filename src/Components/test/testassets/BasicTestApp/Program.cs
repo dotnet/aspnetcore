@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -16,6 +15,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
 
 namespace BasicTestApp
@@ -27,14 +27,6 @@ namespace BasicTestApp
             await SimulateErrorsIfNeededForTest();
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
-            {
-                // Needed because the test server runs on a different port than the client app,
-                // and we want to test sending/receiving cookies under this config
-                WebAssemblyHttpMessageHandlerOptions.DefaultCredentials = FetchCredentialsOption.Include;
-            }
-
             builder.RootComponents.Add<Index>("root");
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
@@ -45,8 +37,9 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
-            builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s => new PrependMessageLoggerProvider("Custom logger", s.GetService<IJSRuntime>()));
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
+                new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
+            builder.Logging.AddConfiguration(builder.Configuration);
 
             var host = builder.Build();
             ConfigureCulture(host);

@@ -39,6 +39,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevServer", "DevServer", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DevServer", "WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj", "{0ED336B7-6FAB-4872-8D75-1CDD5A5DDBB2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{F4995C96-8D4E-4B26-8FB8-614B020156C2}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly.JSInterop", "WebAssembly.JSInterop", "{37FA056D-A7B3-4F72-A8B9-8D3C175E831E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.WebAssembly", "WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{FBD7C733-200E-4BED-8B31-2610C2263F72}"
@@ -106,6 +108,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression", "WebAssembly\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj", "{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Server.Tests", "WebAssembly\Server\test\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj", "{72D3D00C-5281-455F-9E19-646EE766009A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.HttpHandler", "WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj", "{52744BCB-1046-48C0-93A4-19A311A907B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -537,6 +541,18 @@ Global
 		{72D3D00C-5281-455F-9E19-646EE766009A}.Release|x64.Build.0 = Release|Any CPU
 		{72D3D00C-5281-455F-9E19-646EE766009A}.Release|x86.ActiveCfg = Release|Any CPU
 		{72D3D00C-5281-455F-9E19-646EE766009A}.Release|x86.Build.0 = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|x64.Build.0 = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|x64.ActiveCfg = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|x64.Build.0 = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{52744BCB-1046-48C0-93A4-19A311A907B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -558,6 +574,7 @@ Global
 		{9C41BA92-FBC8-4E11-9A71-0B07906A2D6C} = {B4ACD900-27B6-482B-B434-2C1E86E9D8BC}
 		{A44FB7D1-78AB-41C4-B1C7-94399396EA6C} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{0ED336B7-6FAB-4872-8D75-1CDD5A5DDBB2} = {A44FB7D1-78AB-41C4-B1C7-94399396EA6C}
+		{F4995C96-8D4E-4B26-8FB8-614B020156C2} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{37FA056D-A7B3-4F72-A8B9-8D3C175E831E} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{FBD7C733-200E-4BED-8B31-2610C2263F72} = {37FA056D-A7B3-4F72-A8B9-8D3C175E831E}
 		{7920B09F-8016-49CF-A229-E72D0CECDD17} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
@@ -591,6 +608,7 @@ Global
 		{710765DD-C2AD-4DBB-A114-14E62F31F463} = {B29FB58D-FAE5-405E-9695-BCF93582BE9A}
 		{DB1DC77D-122E-49E8-AB16-1AC8AEEFEEFF} = {710765DD-C2AD-4DBB-A114-14E62F31F463}
 		{72D3D00C-5281-455F-9E19-646EE766009A} = {7920B09F-8016-49CF-A229-E72D0CECDD17}
+		{52744BCB-1046-48C0-93A4-19A311A907B2} = {F4995C96-8D4E-4B26-8FB8-614B020156C2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27A36094-AA50-4FFD-ADE6-C055E391F741}

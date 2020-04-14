@@ -1,9 +1,8 @@
 @page "/fetchdata"
 @using Wasm.Authentication.Shared
+@implements IDisposable
 @attribute [Authorize]
-@inject IAccessTokenProvider AuthenticationService
-@inject NavigationManager Navigation
-
+@inject WeatherForecastClient WeatherForecast
 <h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
@@ -42,15 +41,18 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri(Navigation.BaseUri);
-
-        var tokenResult = await AuthenticationService.RequestAccessToken();
-
-        if (tokenResult.TryGetToken(out var token, redirect: true))
+        try
         {
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-            forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            forecasts = await WeatherForecast.GetForecastAsync();
         }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    public void Dispose()
+    {
+        WeatherForecast.Dispose();
     }
 }

@@ -52,12 +52,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Private right now because we don't have much reason to expose it. This can be exposed
             // in the future if we want to give people a choice between CreateDefault and something
             // less opinionated.
-            Configuration = new ConfigurationBuilder();
+            Configuration = new WebAssemblyHostConfiguration();
             RootComponents = new RootComponentMappingCollection();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
-
-            Logging.SetMinimumLevel(LogLevel.Warning);
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntimeInvoker);
@@ -111,10 +109,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
-        /// Gets an <see cref="IConfigurationBuilder"/> that can be used to customize the application's
-        /// configuration sources.
+        /// Gets an <see cref="WebAssemblyHostConfiguration"/> that can be used to customize the application's
+        /// configuration sources and read configuration attributes.
         /// </summary>
-        public IConfigurationBuilder Configuration { get; }
+        public WebAssemblyHostConfiguration Configuration { get; }
 
         /// <summary>
         /// Gets the collection of root component mappings configured for the application.
@@ -177,8 +175,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public WebAssemblyHost Build()
         {
             // Intentionally overwrite configuration with the one we're creating.
-            var configuration = Configuration.Build();
-            Services.AddSingleton<IConfiguration>(configuration);
+            Services.AddSingleton<IConfiguration>(Configuration);
 
             // A Blazor application always runs in a scope. Since we want to make it possible for the user
             // to configure services inside *that scope* inside their startup code, we create *both* the
@@ -186,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());
+            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray());
         }
 
         internal void InitializeDefaultServices()

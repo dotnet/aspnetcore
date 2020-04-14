@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         protected NavigationManager Navigation { get; }
 
         /// <summary>
-        /// Gets the <see cref="UserFactory{TAccount}"/> to map accounts to <see cref="ClaimsPrincipal"/>.
+        /// Gets the <see cref="AccountClaimsPrincipalFactory{TAccount}"/> to map accounts to <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        protected AccountClaimsPrincipalFactory<TAccount> UserFactory { get; }
+        protected AccountClaimsPrincipalFactory<TAccount> AccountClaimsPrincipalFactory { get; }
 
         /// <summary>
         /// Gets the options for the underlying JavaScript library handling the authentication operations.
@@ -58,16 +58,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
         /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
         /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
-        /// <param name="userFactory">The <see cref="UserFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
+        /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
         public RemoteAuthenticationService(
             IJSRuntime jsRuntime,
             IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
             NavigationManager navigation,
-            AccountClaimsPrincipalFactory<TAccount> userFactory)
+            AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
         {
             JsRuntime = jsRuntime;
             Navigation = navigation;
-            UserFactory = userFactory;
+            AccountClaimsPrincipalFactory = accountClaimsPrincipalFactory;
             Options = options.Value;
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(parsedStatus, result.Token, Navigation, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
         }
 
         /// <inheritdoc />
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 result.RedirectUrl = redirectUrl.ToString();
             }
 
-            return new AccessTokenResult(parsedStatus, result.Token, Navigation, result.RedirectUrl);
+            return new AccessTokenResult(parsedStatus, result.Token, result.RedirectUrl);
         }
 
         private Uri GetRedirectUrl(string customReturnUrl)
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         {
             await EnsureAuthService();
             var account = await JsRuntime.InvokeAsync<TAccount>("AuthenticationService.getUser");
-            var user = await UserFactory.CreateUserAsync(account, Options.UserOptions);
+            var user = await AccountClaimsPrincipalFactory.CreateUserAsync(account, Options.UserOptions);
 
             return user;
         }

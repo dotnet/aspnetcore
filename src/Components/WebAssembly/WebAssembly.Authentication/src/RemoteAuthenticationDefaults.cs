@@ -11,46 +11,46 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// The default login path.
         /// </summary>
-        public const string LoginPath = "authentication/login";
+        public static readonly string LoginPath = "authentication/login";
 
         /// <summary>
         /// The default login callback path.
         /// </summary>
-        public const string LoginCallbackPath = "authentication/login-callback";
+        public static readonly string LoginCallbackPath = "authentication/login-callback";
 
         /// <summary>
         /// The default login failed path.
         /// </summary>
-        public const string LoginFailedPath = "authentication/login-failed";
+        public static readonly string LoginFailedPath = "authentication/login-failed";
 
         /// <summary>
         /// The default logout path.
         /// </summary>
-        public const string LogoutPath = "authentication/logout";
+        public static readonly string LogoutPath = "authentication/logout";
 
         /// <summary>
         /// The default logout callback path.
         /// </summary>
-        public const string LogoutCallbackPath = "authentication/logout-callback";
+        public static readonly string LogoutCallbackPath = "authentication/logout-callback";
 
         /// <summary>
         /// The default logout failed path.
         /// </summary>
-        public const string LogoutFailedPath = "authentication/logout-failed";
+        public static readonly string LogoutFailedPath = "authentication/logout-failed";
 
         /// <summary>
         /// The default logout succeeded path.
         /// </summary>
-        public const string LogoutSucceededPath = "authentication/logged-out";
+        public static readonly string LogoutSucceededPath = "authentication/logged-out";
 
         /// <summary>
         /// The default profile path.
         /// </summary>
-        public const string ProfilePath = "authentication/profile";
+        public static readonly string ProfilePath = "authentication/profile";
 
         /// <summary>
         /// The default register path.
         /// </summary>
-        public const string RegisterPath = "authentication/register";
+        public static readonly string RegisterPath = "authentication/register";
     }
 }

@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "System.Memory.dll",
                 "System.Net.Http.dll",
                 "System.Net.Http.Json.dll",
+                "System.Net.Http.WebAssemblyHttpHandler.dll",
                 "System.Numerics.dll",
                 "System.Numerics.Vectors.dll",
                 "System.Runtime.CompilerServices.Unsafe.dll",
@@ -94,7 +95,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "System.Xml.dll",
                 "System.Xml.Linq.dll",
                 "WebAssembly.Bindings.dll",
-                "WebAssembly.Net.Http.dll",
                 "WebAssembly.Net.WebSockets.dll",
             }.OrderBy(i => i, StringComparer.Ordinal)
             .ToArray();

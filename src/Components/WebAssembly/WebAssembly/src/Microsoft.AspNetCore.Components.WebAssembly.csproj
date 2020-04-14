@@ -13,13 +13,17 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
+    <ProjectReference
+      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
+      IncludeAssets="commit"
+      ReferenceOutputAssembly="false"
+      Private="true" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
-
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
   </ItemGroup>
 
