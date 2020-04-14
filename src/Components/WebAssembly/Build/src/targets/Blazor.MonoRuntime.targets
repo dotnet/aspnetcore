@@ -82,7 +82,11 @@
     <ItemGroup>
       <_BlazorJSFile Include="$(_BlazorJSPath)" />
       <_BlazorJSFile Include="$(_BlazorJSMapPath)" Condition="Exists('$(_BlazorJSMapPath)')" />
-      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*" />
+
+      <_DotNetWasmRuntimeFile Include="$(ComponentsWebAssemblyRuntimePath)*"/>
+      <_DotNetWasmRuntimeFile
+        Remove="%(Identity)"
+        Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(FileName)%(Extension)' == 'dotnet.timezones.dat'" />
 
       <!--
         ReferenceCopyLocalPaths includes all files that are part of the build out with CopyLocalLockFileAssemblies on.

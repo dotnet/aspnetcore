@@ -26,8 +26,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        protected override TimeSpan UtcOffset => TimeZoneInfo.Local.BaseUtcOffset;
-
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase);
