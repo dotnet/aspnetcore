@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            var extensions = new[] { ".dll", ".js", ".pdb", ".wasm", ".map", ".json" };
+            var extensions = new[] { ".dll", ".js", ".pdb", ".wasm", ".map", ".json", ".dat" };
             // Act
             var compressedFilesPath = Path.Combine(
                 project.DirectoryPath,
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var buildOutputDirectory = project.BuildOutputDirectory;
 
-            var extensions = new[] { ".dll", ".js", ".pdb", ".wasm", ".map", ".json" };
+            var extensions = new[] { ".dll", ".js", ".pdb", ".wasm", ".map", ".json", ".dat" };
             // Act
             var compressedFilesPath = Path.Combine(
                 project.DirectoryPath,

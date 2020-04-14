@@ -183,8 +183,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     /* name */ dotnetWasmResourceName,
     /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
-  const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
 
+  const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
   let timeZoneResource: LoadingResource | undefined;
   if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(dotnetTimeZoneResourceName)) {
     timeZoneResource = resourceLoader.loadResource(

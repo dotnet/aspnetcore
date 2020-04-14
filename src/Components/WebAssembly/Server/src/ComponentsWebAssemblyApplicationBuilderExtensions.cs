@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Builder
             // release builds unless BlazorEnableDebugging is explicitly set to true.
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
+            AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
 
