@@ -6,7 +6,7 @@
     <AssemblyName>blazor-brotli</AssemblyName>
     <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
-    <MicrosoftAspNetCoreAppVersion>3.1.0</MicrosoftAspNetCoreAppVersion>
+    <MicrosoftNETCoreAppRuntimeVersion>3.1.0</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
 
 </Project>
