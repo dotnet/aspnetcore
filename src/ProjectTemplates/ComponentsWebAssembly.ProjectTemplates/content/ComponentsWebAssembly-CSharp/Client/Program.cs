@@ -45,7 +45,7 @@ namespace ComponentsWebAssembly_CSharp
                 // Configure your authentication provider options here.
                 // For more information, see https://aka.ms/blazor-standalone-auth
                 #endif
-                builder.Configuration.Bind("Local", options.ProviderOptions.Authority);
+                builder.Configuration.Bind("Local", options.ProviderOptions);
             });
     #endif
 #endif

@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -177,9 +176,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         {
             // Intentionally overwrite configuration with the one we're creating.
             Services.AddSingleton<IConfiguration>(Configuration);
-
-            // Add configuration for logging builder
-            Logging.AddConfiguration(Configuration);
 
             // A Blazor application always runs in a scope. Since we want to make it possible for the user
             // to configure services inside *that scope* inside their startup code, we create *both* the

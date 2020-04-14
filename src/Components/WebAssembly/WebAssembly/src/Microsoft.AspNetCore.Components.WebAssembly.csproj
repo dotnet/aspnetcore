@@ -12,7 +12,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
   </ItemGroup>
 
@@ -29,5 +28,5 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
-  
+
 </Project>

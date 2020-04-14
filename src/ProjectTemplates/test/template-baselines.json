@@ -5,8 +5,6 @@
       "Arguments": "new blazorwasm",
       "Files": [
         "App.razor",
-        "appsettings.Development.json",
-        "appsettings.json",
         "Pages/Counter.razor",
         "Pages/FetchData.razor",
         "Pages/Index.razor",
@@ -38,8 +36,6 @@
       "Arguments": "new blazorwasm -ho",
       "Files": [
         "Client/App.razor",
-        "Client/appsettings.json",
-        "Client/appsettings.Development.json",
         "Client/Pages/Counter.razor",
         "Client/Pages/FetchData.razor",
         "Client/Pages/Index.razor",
@@ -80,8 +76,6 @@
       "Arguments": "new blazorwasm --pwa",
       "Files": [
         "App.razor",
-        "appsettings.Development.json",
-        "appsettings.json",
         "Pages/Counter.razor",
         "Pages/FetchData.razor",
         "Pages/Index.razor",

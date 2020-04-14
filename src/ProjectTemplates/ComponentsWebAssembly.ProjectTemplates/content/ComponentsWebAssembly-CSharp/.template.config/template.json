@@ -97,7 +97,8 @@
             "Server/Data/SqlLite/**",
             "Server/Data/SqlServer/**",
             "Server/Data/ApplicationDbContext.cs",
-            "Server/Areas/**"
+            "Server/Areas/**",
+            "Client/wwwroot/appsettings.Development.json"
           ]
         },
         {
@@ -127,7 +128,9 @@
             "Client/Pages/Authentication.razor",
             "Client/Shared/LoginDisplay.*.razor",
             "Client/Shared/MainLayout.Auth.razor",
-            "Client/Shared/RedirectToLogin.razor"
+            "Client/Shared/RedirectToLogin.razor",
+            "Client/wwwroot/appsettings.Development.json",
+            "Client/wwwroot/appsettings.json"
           ]
         },
         {
@@ -166,7 +169,9 @@
             "Client/Pages/Authentication.razor",
             "Client/Shared/LoginDisplay.*.razor",
             "Client/Shared/MainLayout.Auth.razor",
-            "Client/Shared/RedirectToLogin.razor"
+            "Client/Shared/RedirectToLogin.razor",
+            "Client/wwwroot/appsettings.Development.json",
+            "Client/wwwroot/appsettings.json"
           ]
         },
         {
