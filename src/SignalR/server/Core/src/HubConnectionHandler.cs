@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userIdProvider">The user ID provider used to get the user ID from a hub connection.</param>
         /// <param name="serviceScopeFactory">The service scope factory.</param>
-        /// <param name="hubPipeline"></param>
+        /// <param name="hubFilter"></param>
         /// <remarks>This class is typically created via dependency injection.</remarks>
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
                                     IServiceScopeFactory serviceScopeFactory,
-                                    IHubPipeline hubPipeline
+                                    IHubFilter hubFilter
         )
         {
             _protocolResolver = protocolResolver;
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR
                 new HubContext<THub>(lifetimeManager),
                 _enableDetailedErrors,
                 new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
-                hubPipeline);
+                hubFilter);
         }
 
         /// <inheritdoc />
@@ -98,6 +98,21 @@ namespace Microsoft.AspNetCore.SignalR
             }
 
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
+            List<object> hubFilters;
+            if (_globalHubOptions.HubFilters != null)
+            {
+                hubFilters = new List<object>();
+                hubFilters.AddRange(_globalHubOptions.HubFilters);
+                if (_hubOptions.HubFilters != null)
+                {
+                    hubFilters.AddRange(_hubOptions.HubFilters);
+                }
+            }
+            else
+            {
+                hubFilters = new List<object>();
+                hubFilters.AddRange(_hubOptions.HubFilters);
+            }
 
             var contextOptions = new HubConnectionContextOptions()
             {
@@ -106,6 +121,7 @@ namespace Microsoft.AspNetCore.SignalR
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
                 SystemClock = SystemClock,
+                HubFilters = hubFilters,
             };
 
             Log.ConnectedStarting(_logger);

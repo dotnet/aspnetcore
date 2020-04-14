@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);
             services.TryAddSingleton<SignalRMarkerService>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<HubOptions>, HubOptionsSetup>());
-            services.TryAddSingleton<IHubPipeline, DefaultHubFilter>();
+            services.TryAddSingleton<IHubFilter, DefaultHubFilter>();
             return services.AddSignalRCore();
         }
 

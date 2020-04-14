@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -32,5 +33,7 @@ namespace Microsoft.AspNetCore.SignalR
         public long? MaximumReceiveMessageSize { get; set; }
 
         internal ISystemClock SystemClock { get; set; }
+
+        internal List<object> HubFilters { get; set; }
     }
 }

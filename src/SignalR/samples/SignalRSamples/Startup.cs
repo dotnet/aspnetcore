@@ -70,7 +70,6 @@ namespace SignalRSamples
             }
         }
 
-        private readonly Random _rand = new Random();
         private int _connectionCount;
 
         public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
@@ -92,6 +91,14 @@ namespace SignalRSamples
         }
     }
 
+    public class InstanceFilter : IHubFilter
+    {
+        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+        {
+            return next(invocationContext);
+        }
+    }
+
     public class Startup
     {
 
@@ -106,8 +113,12 @@ namespace SignalRSamples
 
             services.AddSignalR(options =>
             {
-                // Faster pings for testing
-                options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+                options.AddFilter<CustomHubFilter>();
+                options.AddFilter(new InstanceFilter());
+            })
+            .AddHubOptions<Chat>(options =>
+            {
+                options.AddFilter(new InstanceFilter());
             })
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();

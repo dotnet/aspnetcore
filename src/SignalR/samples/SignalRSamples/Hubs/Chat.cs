@@ -3,26 +3,36 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
 namespace SignalRSamples.Hubs
 {
     public class Chat : Hub
     {
+        private readonly IHttpContextAccessor _h;
+        public Chat(IHttpContextAccessor h)
+        {
+            _h = h;
+        }
+
         public override Task OnConnectedAsync()
         {
+            _ = _h.HttpContext.Request.Query["name"];
             var name = Context.GetHttpContext().Request.Query["name"];
             return Clients.All.SendAsync("Send", $"{name} joined the chat");
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
+            _ = _h.HttpContext.Request.Query["name"];
             var name = Context.GetHttpContext().Request.Query["name"];
             return Clients.All.SendAsync("Send", $"{name} left the chat");
         }
 
         public Task Send(string name, string message)
         {
+            _ = _h.HttpContext.Request.Query["name"];
             return Clients.All.SendAsync("Send", $"{name}: {message}");
         }
 

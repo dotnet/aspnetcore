@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
+            HubFilters = contextOptions.HubFilters;
             _systemClock = contextOptions.SystemClock ?? new SystemClock();
             _lastSendTimeStamp = _systemClock.UtcNowTicks;
         }
@@ -88,6 +89,8 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         internal HubCallerContext HubCallerContext { get; }
+
+        internal List<object> HubFilters { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

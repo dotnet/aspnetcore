@@ -52,8 +52,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubFilter.OnConnectedAsync(connection.HubCallerContext, (context) => hub.OnConnectedAsync());
-                    //await hub.OnConnectedAsync();
+                    var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
+                    if (hubFilters != null)
+                    {
+                        Func<HubCallerContext, Task> app = (context) => hub.OnConnectedAsync();
+                        foreach (var filter in hubFilters)
+                        {
+                            var a = app;
+                            app = (context) => filter.OnConnectedAsync(context, a);
+                        }
+                        await app(connection.HubCallerContext);
+                    }
+                    else
+                    {
+                        await hub.OnConnectedAsync();
+                    }
                 }
                 finally
                 {
@@ -583,6 +596,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 throw new HubException("Method does not exist.");
             }
             return descriptor.ParameterTypes;
+        }
+
+        private List<IHubFilter> ResolveHubFilters(HubConnectionContext connection, IServiceProvider serviceProvider)
+        {
+            if (connection.HubFilters == null)
+            {
+                return null;
+            }
+
+            var count = connection.HubFilters.Count;
+            var filters = new List<IHubFilter>(count);
+            for (var i = 1; i <= count; i++)
+            {
+                filters.Add(connection.HubFilters[count - i] switch
+                {
+                    Type type => (IHubFilter)ActivatorUtilities.CreateInstance(serviceProvider, type),
+                    IHubFilter instance => instance,
+                    _ => throw new Exception("unexpected")
+                });
+            }
+
+            return filters;
         }
     }
 }
