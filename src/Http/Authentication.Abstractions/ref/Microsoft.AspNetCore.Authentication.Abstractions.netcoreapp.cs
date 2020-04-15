@@ -174,5 +174,5 @@ namespace Microsoft.AspNetCore.Authentication
     public partial interface IHttpAuthenticationResultFeature
     {
         Microsoft.AspNetCore.Authentication.AuthenticateResult Result { get; set; }
-    }    
+    }
 }
