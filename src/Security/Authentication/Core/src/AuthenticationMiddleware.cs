@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Authentication
                 OriginalPath = context.Request.Path,
                 OriginalPathBase = context.Request.PathBase
             });
+
             // Give any IAuthenticationRequestHandler schemes a chance to handle the request
             var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
             foreach (var scheme in await Schemes.GetRequestHandlerSchemesAsync())
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication
             if (defaultAuthenticate != null)
             {
                 var result = await context.AuthenticateAsync(defaultAuthenticate.Name);
-                context.Features.Set<IAuthenticationResultFeature>(new AuthenticationFeature
+                context.Features.Set<IAuthenticationResultFeature>(new AuthenticationResultFeature
                 {
                     Result = result
                 });
