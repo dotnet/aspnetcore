@@ -405,6 +405,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     do
                     {
+                        var firstWrite = true;
+
                         readResult = await _pipeReader.ReadAsync();
 
                         if (readResult.IsCanceled)
@@ -420,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             {
                                 // Only flush if required (i.e. content length exceeds flow control availability)
                                 // Writing remaining content without flushing allows content and trailers to be sent in the same packet
-                                await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, forceFlush: false);
+                                await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, firstWrite, forceFlush: false);
                             }
 
                             _stream.ResponseTrailers.SetReadOnly();
@@ -440,13 +442,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         else
                         {
                             var endStream = readResult.IsCompleted;
+
                             if (endStream)
                             {
                                 _stream.DecrementActiveClientStreamCount();
                             }
-                            flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, forceFlush: true);
+
+                            flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, firstWrite, forceFlush: true);
                         }
 
+                        firstWrite = false;
                         _pipeReader.AdvanceTo(readResult.Buffer.End);
                     } while (!readResult.IsCompleted);
                 }

@@ -29,6 +29,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2ConnectionTests : Http2TestBase
     {
         [Fact]
+        public async Task FlowControl_NoAvailability_ResponseHeadersStillFlushed()
+        {
+            _clientSettings.InitialWindowSize = 0;
+
+            await InitializeConnectionAsync(c =>
+            {
+                return c.Response.Body.WriteAsync(new byte[1]).AsTask();
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(streamId: 1, 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         [QuarantinedTest]
         public async Task FlowControl_ParallelStreams_FirstInFirstOutOrder()
         {
@@ -38,34 +70,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 3. Update the connection window one byte at a time.
             // 4. Read from them in a FIFO order until they are each complete.
 
-            var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            // Ensure there that all backpressure is due to connection flow control, not the pipe.
+            _serviceContext.ServerOptions.Limits.MaxResponseBufferSize = long.MaxValue;
+            // Ensure there that all backpressure is due to connection flow control, not stream flow control.
+            _clientSettings.InitialWindowSize = int.MaxValue;
 
-            await InitializeConnectionAsync(async c =>
+            await InitializeConnectionAsync(c =>
             {
-                // Send headers
-                await c.Response.Body.FlushAsync();
-
                 var responseBodySize = Convert.ToInt32(c.Request.Headers["ResponseBodySize"]);
-                var writeTask = c.Response.Body.WriteAsync(new byte[responseBodySize]);
-
-                // Notify test that write has started
-                writeTcs.SetResult(null);
-
-                // Wait for write to complete
-                await writeTask;
+                return c.Response.Body.WriteAsync(new byte[responseBodySize]).AsTask();
             });
 
+            // Consume the entire connection output flow control window with a large response.
             await StartStreamAsync(1, GetHeaders(responseBodySize: 65535), endStream: true);
-            // Ensure the stream window size is large enough
-            await SendWindowUpdateAsync(streamId: 1, 65535);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 32,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
-
-            await writeTcs.Task;
-
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
@@ -87,8 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
-            writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
             await StartStreamAsync(3, GetHeaders(responseBodySize: 3), endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -96,18 +116,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
 
-            await writeTcs.Task;
-
-            writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
             await StartStreamAsync(5, GetHeaders(responseBodySize: 3), endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 2,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 5);
-
-            await writeTcs.Task;
 
             await SendWindowUpdateAsync(streamId: 0, 1);
 
