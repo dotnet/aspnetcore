@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 {
     public class CertificateManagerTests : IClassFixture<CertFixture>
     {
-        private CertFixture _fixture;
+        private readonly CertFixture _fixture;
         private CertificateManager _manager => _fixture.Manager;
 
         public CertificateManagerTests(ITestOutputHelper output, CertFixture fixture)
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
                 const string CertificateName = nameof(EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates) + ".cer";
 
-                    // Act
-                DateTimeOffset now = DateTimeOffset.UtcNow;
+                // Act
+                var now = DateTimeOffset.UtcNow;
                 now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
                 var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, isInteractive: false);
 
@@ -102,12 +102,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             catch (Exception e)
             {
                 Output.WriteLine(e.Message);
-                ListCertificates(Output);
+                ListCertificates();
                 throw;
             }
         }
 
-        private void ListCertificates(ITestOutputHelper output)
+        private void ListCertificates()
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
@@ -133,12 +133,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
             _fixture.CleanupCertificates();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
 
             var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
-
             // Act
             var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, isInteractive: false);
 
@@ -159,9 +160,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             _fixture.CleanupCertificates();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
 
             _manager.AspNetHttpsCertificateVersion = 2;
 
@@ -174,10 +177,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             _fixture.CleanupCertificates();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             _manager.AspNetHttpsCertificateVersion = 0;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
 
             _manager.AspNetHttpsCertificateVersion = 1;
 
@@ -191,10 +196,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             _fixture.CleanupCertificates();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             _manager.AspNetHttpsCertificateVersion = 0;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
 
             var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
             Assert.NotEmpty(httpsCertificateList);
@@ -206,10 +213,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             _fixture.CleanupCertificates();
 
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             _manager.AspNetHttpsCertificateVersion = 2;
-            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
 
             _manager.AspNetHttpsCertificateVersion = 1;
             var httpsCertificateList = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
@@ -234,10 +243,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         internal CertificateManager Manager { get; set; }
 
-        public void Dispose()
-        {
-            CleanupCertificates();
-        }
+        public void Dispose() => CleanupCertificates();
 
         internal void CleanupCertificates()
         {
