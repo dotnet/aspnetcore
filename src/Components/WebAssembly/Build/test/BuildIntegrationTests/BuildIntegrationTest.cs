@@ -297,6 +297,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.Other.dll");
+            // When running without linker, we copy all I18N assemblies. Look for one additional
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.West.dll");
         }
 
         [Fact]
@@ -320,6 +322,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.Other.dll");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.West.dll");
         }
 
         private static GenerateBlazorBootJson.BootJsonData ReadBootJsonData(MSBuildResult result, string path)
