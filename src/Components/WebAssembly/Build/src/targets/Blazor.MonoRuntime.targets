@@ -265,7 +265,7 @@
       Condition="'$(BuildingInsideVisualStudio)' != 'true' OR '$(DeployOnBuild)' != 'true'">
 
     <PropertyGroup>
-      <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
+      <_BlazorLinkerAdditionalOptions>-l $(BlazorWebAssembly18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
     </PropertyGroup>
 
     <ItemGroup>
@@ -332,6 +332,14 @@
 
       <Output TaskParameter="Dependencies" ItemName="_BlazorResolvedAssemblyUnlinked" />
     </ResolveBlazorRuntimeDependencies>
+
+    <ItemGroup Condition="'$(BlazorWebAssembly18NAssemblies)' != 'none'">
+      <!--
+        Unless the user has asked for no-assemblies, copy all I18N assemblies to the build output.
+        We do not want to decipher the linker's format for passing in I18N options in our build targets
+      -->
+      <_BlazorResolvedAssemblyUnlinked Include="$(ComponentsWebAssemblyBaseClassLibraryPath)I18N*.dll" />
+    </ItemGroup>
 
     <!--
     Workaround for https://github.com/dotnet/aspnetcore/issues/19926. Using the files from their initial locations
