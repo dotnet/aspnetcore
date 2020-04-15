@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Http
 
         public override HttpResponse Response => _response;
 
-        public override ConnectionInfo Connection => _connection ?? (_connection = new DefaultConnectionInfo(_features.Collection));
+        public override ConnectionInfo Connection => _connection ?? (_connection = new DefaultConnectionInfo(Features));
 
-        public override WebSocketManager WebSockets => _websockets ?? (_websockets = new DefaultWebSocketManager(_features.Collection));
+        public override WebSocketManager WebSockets => _websockets ?? (_websockets = new DefaultWebSocketManager(Features));
 
         public override ClaimsPrincipal User
         {

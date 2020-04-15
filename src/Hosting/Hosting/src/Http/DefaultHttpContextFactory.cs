@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Http
             _serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         }
 
+        internal IHttpContextAccessor HttpContextAccessor => _httpContextAccessor;
+
         public HttpContext Create(IFeatureCollection featureCollection)
         {
             if (featureCollection is null)
