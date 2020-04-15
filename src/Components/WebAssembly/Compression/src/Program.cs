@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression
                 var targetCompressionPath = file.Target;
 
                 if (!File.Exists(inputSource) ||
-                    (File.Exists(targetCompressionPath) && File.GetLastWriteTime(inputSource) > File.GetLastWriteTime(targetCompressionPath)))
+                    (File.Exists(targetCompressionPath) && File.GetLastWriteTime(inputSource) < File.GetLastWriteTime(targetCompressionPath)))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
                     if (!File.Exists(inputSource))
