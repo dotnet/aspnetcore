@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 #if (Hosted)
