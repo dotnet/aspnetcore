@@ -92,6 +92,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 3);
             await writeTcs.Task;
 
+            // Delay so first stream is in a stable state before starting second stream
+            await Task.Delay(200);
+
             // Start stream 5
             writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(5, GetHeaders(responseBodySize: 3), endStream: true);
