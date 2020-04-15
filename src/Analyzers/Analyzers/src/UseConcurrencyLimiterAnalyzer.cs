@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
             foreach (var middlewareAnalysis in _context.GetRelatedAnalyses<MiddlewareAnalysis>(type))
             {
-                MiddlewareItem? useAuthorizationItem = default;
+                MiddlewareItem? useConcurrencyLimiterItem = default;
                 MiddlewareItem? useRoutingItem = default;
                 MiddlewareItem? useEndpoint = default;
 
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Analyzers
 
                     if (middleware == "UseConcurrencyLimiter")
                     {
-                        if (useRoutingItem != null && useAuthorizationItem == null)
+                        if (useRoutingItem != null && useConcurrencyLimiterItem == null)
                         {
                             // This looks like
                             //
-                            //  app.UseAuthorization();
+                            //  app.UseConcurrencyLimiter();
                             //  ...
                             //  app.UseRouting();
                             //  app.UseEndpoints(...);
@@ -52,23 +52,23 @@ namespace Microsoft.AspNetCore.Analyzers
                                 middlewareItem.UseMethod.Name));
                         }
 
-                        useAuthorizationItem = middlewareItem;
+                        useConcurrencyLimiterItem = middlewareItem;
                     }
                     else if (middleware == "UseEndpoints")
                     {
-                        if (useAuthorizationItem != null)
+                        if (useConcurrencyLimiterItem != null)
                         {
                             // This configuration looks like
                             //
                             //  app.UseRouting();
                             //  app.UseEndpoints(...);
                             //  ...
-                            //  app.UseAuthorization();
+                            //  app.UseConcurrencyLimiter();
                             //
 
                             context.ReportDiagnostic(Diagnostic.Create(
                                 StartupAnalyzer.Diagnostics.IncorrectlyConfiguredConcurrencyLimiterMiddleware,
-                                useAuthorizationItem.Operation.Syntax.GetLocation(),
+                                useConcurrencyLimiterItem.Operation.Syntax.GetLocation(),
                                 middlewareItem.UseMethod.Name));
                         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Analyzers
                         {
                             // We're likely here because the middleware uses an expression chain e.g.
                             // app.UseRouting()
-                            //   .UseAuthorization()
+                            //   .UseConcurrencyLimiter()
                             //   .UseEndpoints(..));
                             // This analyzer expects MiddlewareItem instances to appear in the order in which they appear in source
                             // which unfortunately isn't true for chained calls (the operations appear in reverse order).
