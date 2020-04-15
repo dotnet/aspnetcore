@@ -374,7 +374,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1/1");
         }
 
-
         [Fact]
         public void ActivityTraceParentAndTraceStateFromHeaders()
         {
