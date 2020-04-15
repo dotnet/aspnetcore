@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Authentication
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.IAuthenticationHandler> GetHandlerAsync(Microsoft.AspNetCore.Http.HttpContext context, string authenticationScheme) { throw null; }
     }
-    public partial class AuthenticationResultFeature : Microsoft.AspNetCore.Authentication.IHttpAuthenticationResultFeature
+    public partial class AuthenticationResultFeature : Microsoft.AspNetCore.Authentication.IAuthenticationResultFeature
     {
         public AuthenticationResultFeature() { }
         public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
