@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public async Task EditFormWorksWithDataAnnotationsValidator()
         {
-            var appElement = MountSimpleValidationComponent();;
+            var appElement = MountSimpleValidationComponent();
             var form = appElement.FindElement(By.TagName("form"));
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));

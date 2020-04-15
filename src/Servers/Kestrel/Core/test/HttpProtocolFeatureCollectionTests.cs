@@ -249,8 +249,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestHttp2Stream : Http2Stream
         {
-            public TestHttp2Stream(Http2StreamContext context) : base(context)
+            public TestHttp2Stream(Http2StreamContext context) 
             {
+                Initialize(context);
             }
 
             public override void Execute()

@@ -5,8 +5,6 @@
 
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
-    <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
-    <BundledNETCorePlatformsPackageVersion>${MicrosoftNETCorePlatformsPackageVersion}</BundledNETCorePlatformsPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,15 +20,6 @@
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
       TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
-  </ItemGroup>
-
-  <!-- This can be removed after we update our build to use .NET Core Preivew7 SDK or newer. (Needs https://github.com/dotnet/core-sdk/pull/2401) -->
-  <ItemGroup>
-    <KnownFrameworkReference
-      Update="Microsoft.NETCore.App"
-      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-      AppHostPackNamePattern=""
-      AppHostRuntimeIdentifiers="" />
   </ItemGroup>
 
   <ItemGroup>

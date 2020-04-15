@@ -26,6 +26,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
@@ -293,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;
@@ -409,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public abstract Task<bool> ProcessRequestAsync();
+        public abstract Task ProcessRequestAsync();
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
@@ -599,10 +601,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private async Task HandleRequest()
         {
-            bool successfulRequest = false;
             try
             {
-                successfulRequest = await ProcessRequestAsync();
+                await ProcessRequestAsync();
             }
             catch (Exception ex)
             {
@@ -610,19 +611,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
-                // Post completion after completing the request to resume the state machine
-                PostCompletion(ConvertRequestCompletionResults(successfulRequest));
-
-
                 // Dispose the context
                 Dispose();
             }
-        }
-
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-        {
-            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
     }
 }

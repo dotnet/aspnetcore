@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -230,6 +230,65 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Null(response.Headers.Location);
+        }
+
+        [Theory]
+        [InlineData(StatusCodes.Status301MovedPermanently)]
+        [InlineData(StatusCodes.Status302Found)]
+        [InlineData(StatusCodes.Status307TemporaryRedirect)]
+        [InlineData(StatusCodes.Status308PermanentRedirect)]
+        public async Task CheckRedirectToNonWwwWithStatusCode(int statusCode)
+        {
+            var options = new RewriteOptions().AddRedirectToNonWww(statusCode: statusCode);
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
+
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(statusCode, (int)response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("http://www.example.com", "http://example.com/")]
+        [InlineData("https://www.example.com", "https://example.com/")]
+        [InlineData("http://www.example.com:8081", "http://example.com:8081/")]
+        [InlineData("http://www.example.com:8081/example?q=1", "http://example.com:8081/example?q=1")]
+        public async Task CheckRedirectToNonWww(string requestUri, string redirectUri)
+        {
+            var options = new RewriteOptions().AddRedirectToNonWww();
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri(requestUri));
+
+            Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CheckPermanentRedirectToNonWww()
+        {
+            var options = new RewriteOptions().AddRedirectToNonWwwPermanent();
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
+
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
         }
 
         [Fact]

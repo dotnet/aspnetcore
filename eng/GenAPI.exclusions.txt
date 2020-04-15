@@ -3,23 +3,3 @@ T:Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
 # Manually implemented - https://github.com/dotnet/arcade/issues/2066
 T:Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel
 T:Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel
-# Manually implemented - Need to include internal setter
-P:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.Cache
-P:Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions.Conventions
-P:Microsoft.AspNetCore.Routing.Matching.CandidateState.Values
-P:Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.KestrelServerOptions
-# public structs with public fields that GenAPI doesn't handle
-T:Microsoft.AspNetCore.Components.EventCallback
-T:Microsoft.AspNetCore.Components.EventCallback`1
-# Break GenAPI - https://github.com/dotnet/arcade/issues/4488
-T:Microsoft.AspNetCore.Components.Rendering.HtmlRenderer.<CreateInitialRenderAsync>d__17
-T:Microsoft.AspNetCore.Components.Rendering.HtmlRenderer.<RenderComponentAsync>d__8
-T:Microsoft.AspNetCore.Mvc.ApplicationModels.ActionAttributeRouteModel.<>c
-T:Microsoft.AspNetCore.Mvc.ApplicationModels.ActionAttributeRouteModel.<GetAttributeRoutes>d__3
-T:Microsoft.AspNetCore.Mvc.ControllerBase.<TryUpdateModelAsync>d__181`1
-T:Microsoft.AspNetCore.Mvc.ControllerBase.<TryUpdateModelAsync>d__183`1
-T:Microsoft.AspNetCore.Mvc.ControllerBase.<TryUpdateModelAsync>d__184`1
-T:Microsoft.AspNetCore.Mvc.ControllerBase.<TryUpdateModelAsync>d__187
-T:Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0
-T:Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider.<TryCreateAsync>d__4
-T:Microsoft.AspNetCore.Mvc.Routing.ConsumesMatcherPolicy.<>c

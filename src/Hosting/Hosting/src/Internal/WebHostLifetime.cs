@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Hosting
             if (_exitedGracefully)
             {
                 // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
-                // Suppress that since we shut down gracefully. https://github.com/aspnet/AspNetCore/issues/6526
+                // Suppress that since we shut down gracefully. https://github.com/dotnet/aspnetcore/issues/6526
                 Environment.ExitCode = 0;
             }
         }
 
         private void Shutdown()
         {
-            try 
+            try
             {
                 if (!_cts.IsCancellationRequested)
                 {

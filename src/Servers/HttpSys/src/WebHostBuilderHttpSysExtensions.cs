@@ -9,16 +9,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Provides extensions method to use Http.sys as the server for the web host.
+    /// </summary>    
     public static class WebHostBuilderHttpSysExtensions
     {
         /// <summary>
-        /// Specify HttpSys as the server to be used by the web host.
+        /// Specify Http.sys as the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
         /// <returns>
-        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.
         /// </returns>
         public static IWebHostBuilder UseHttpSys(this IWebHostBuilder hostBuilder)
         {
@@ -38,16 +41,16 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify HttpSys as the server to be used by the web host.
+        /// Specify Http.sys as the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
         /// <param name="options">
-        /// A callback to configure HttpSys options.
+        /// A callback to configure Http.sys options.
         /// </param>
         /// <returns>
-        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.
         /// </returns>
         public static IWebHostBuilder UseHttpSys(this IWebHostBuilder hostBuilder, Action<HttpSysOptions> options)
         {

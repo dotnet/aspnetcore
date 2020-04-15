@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly"
+  ],
+  "name": "Blazor WebAssembly App",
+  "defaultName": "WebApplication",
+  "description": "A project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "groupIdentity": "Microsoft.Web.Blazor.Wasm",
+  "precedence": "7001",
+  "guids": [
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
+    "0AFFA7FD-4E37-4636-AB91-3753E746DB98"
+  ],
+  "identity": "Microsoft.Web.Blazor.Wasm.CSharp",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "condition": "(Hosted && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "BlazorWasm-CSharp.sln"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Server/BlazorWasm-CSharp.Server.csproj"
+    },
+    {
+      "condition": "(!Hosted)",
+      "path": "BlazorWasm-CSharp.Client.csproj"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Client/BlazorWasm-CSharp.Client.csproj"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Shared/BlazorWasm-CSharp.Shared.csproj"
+    }
+  ],
+  "shortName": "blazorwasm",
+  "sourceName": "BlazorWasm-CSharp",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(!Hosted)",
+          "exclude": [
+            "Server/**",
+            "Shared/**",
+            "*.sln"
+          ],
+          "rename": {
+            ".Client.csproj": ".csproj",
+            "Client": "."
+          }
+        },
+        {
+          "condition": "(Hosted)",
+          "exclude": [
+            "Client/wwwroot/sample-data/**"
+          ]
+        },
+        {
+          "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
+        }
+      ],
+      "replaces": "netcoreapp5.0",
+      "defaultValue": "netcoreapp5.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "Hosted": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, includes an ASP.NET Core host for the Blazor app."
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "condition": "(!skipRestore && Hosted)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "condition": "(!skipRestore && !Hosted)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "args": {
+        "files": ["BlazorWasm-CSharp.Client.csproj"]
+      },
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Fact]
-        public void PredicateTrue_BranchTaken_WillRejoin()
+        public async Task PredicateTrue_BranchTaken_WillRejoin()
         {
             // Arrange
             var context = CreateContext();
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             parent.Use(Increment("parent"));
 
             // Act
-            parent.Build().Invoke(context).Wait();
+            await parent.Build().Invoke(context);
 
             // Assert
             Assert.Equal(1, Count(context, "parent"));
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Fact]
-        public void PredicateTrue_BranchTaken_CanTerminate()
+        public async Task PredicateTrue_BranchTaken_CanTerminate()
         {
             // Arrange
             var context = CreateContext();
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             parent.Use(Increment("parent"));
 
             // Act
-            parent.Build().Invoke(context).Wait();
+            await parent.Build().Invoke(context);
 
             // Assert
             Assert.Equal(0, Count(context, "parent"));
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Fact]
-        public void PredicateFalse_PassThrough()
+        public async Task PredicateFalse_PassThrough()
         {
             // Arrange
             var context = CreateContext();
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             parent.Use(Increment("parent"));
 
             // Act
-            parent.Build().Invoke(context).Wait();
+            await parent.Build().Invoke(context);
 
             // Assert
             Assert.Equal(1, Count(context, "parent"));

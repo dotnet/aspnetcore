@@ -39,27 +39,27 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Determines the settings used to create the cookie.
         /// </para>
         /// <para>
-        /// <seealso cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
-        /// <seealso cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
-        /// <seealso cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
+        /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
+        /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+        /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
         /// </para>
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The default value for cookie name is ".AspNetCore.Cookies".
-        /// This value should be changed if you change the name of the AuthenticationScheme, especially if your
+        /// The default value for cookie <see cref="CookieBuilder.Name"/> is ".AspNetCore.Cookies".
+        /// This value should be changed if you change the name of the <c>AuthenticationScheme</c>, especially if your
         /// system uses the cookie authentication handler multiple times.
         /// </para>
         /// <para>
-        /// <seealso cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
-        /// The default is Lax, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.
+        /// <see cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
+        /// The default is <c>Lax</c>, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.
         /// </para>
         /// <para>
-        /// <seealso cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side javascript.
+        /// <see cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side javascript.
         /// The default is true, which means the cookie will only be passed to http requests and is not made available to script on the page.
         /// </para>
         /// <para>
-        /// <seealso cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.
+        /// <see cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.
         /// </para>
         /// </remarks>
         public CookieBuilder Cookie
@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// The LoginPath property is used by the handler for the redirection target when handling ChallengeAsync.
-        /// The current url which is added to the LoginPath as a query string parameter named by the ReturnUrlParameter. 
-        /// Once a request to the LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect 
+        /// The current url which is added to the LoginPath as a query string parameter named by the ReturnUrlParameter.
+        /// Once a request to the LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect
         /// the browser back to the original url.
         /// </summary>
         public PathString LoginPath { get; set; }
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the handler
-        /// when during a Challenge. This is also the query string parameter looked for when a request arrives on the 
+        /// when during a Challenge. This is also the query string parameter looked for when a request arrives on the
         /// login path or logout path, in order to return to the original url after the action is performed.
         /// </summary>
         public string ReturnUrlParameter { get; set; }
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// even if it is passed to the server after the browser should have purged it.
         /// </para>
         /// <para>
-        /// This is separate from the value of <seealso cref="CookieOptions.Expires"/>, which specifies
+        /// This is separate from the value of <see cref="CookieOptions.Expires"/>, which specifies
         /// how long the browser will keep the cookie.
         /// </para>
         /// </summary>

@@ -8,5 +8,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.WebSockets.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.WebSockets.MicroBenchmarks" Key="" />
   </ItemGroup>
 </Project>

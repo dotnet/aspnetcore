@@ -26,9 +26,8 @@
       </ContentWithTargetPath>
 
       <!-- Publish all the 'dist' files -->
-      <_BlazorGCTPDIDistFiles Include="@(BlazorItemOutput->'%(TargetOutputPath)')" />
-      <_BlazorGCTPDI Include="@(_BlazorGCTPDIDistFiles)">
-        <TargetPath>$(BlazorPublishDistDir)$([MSBuild]::MakeRelative('$(TargetDir)dist\', %(Identity)))</TargetPath>
+      <_BlazorGCTPDI Include="%(BlazorOutputWithTargetPath.Identity)">
+        <TargetPath>$(AssemblyName)\%(TargetOutputPath)</TargetPath>
       </_BlazorGCTPDI>
 
       <ContentWithTargetPath Include="@(_BlazorGCTPDI)">
@@ -41,8 +40,17 @@
     <PropertyGroup>
       <_BlazorConfigPath>$(OutDir)$(AssemblyName).blazor.config</_BlazorConfigPath>
     </PropertyGroup>
-    <WriteLinesToFile File="$(_BlazorConfigPath)" Lines="." Overwrite="true" />
-    <WriteLinesToFile File="$(_BlazorConfigPath)" Lines="$(AssemblyName)/" Overwrite="false" />
+
+    <ItemGroup>
+      <_BlazorPublishConfigContent Include="." />
+      <_BlazorPublishConfigContent Include="$(AssemblyName)/" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(_BlazorConfigPath)"
+      Lines="@(_BlazorPublishConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <!-- The following target runs only for standalone publishing -->

@@ -1,0 +1,69 @@
+name: AspNetCore-Runtime Code Sync
+on:
+  # Test this script using on: push
+  # push:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
+    # Once per day at midnight PST (8 UTC)
+    - cron: '0 8 * * *'
+
+jobs:
+  compare_repos:
+    # Comment out this line to test the scripts in a fork
+    if: github.repository == 'dotnet/aspnetcore'
+    name: Compare the shared code in the AspNetCore and Runtime repos and notify if they're out of sync.
+    runs-on: windows-latest
+    steps:
+    - name: Checkout aspnetcore
+      uses: actions/checkout@v2.0.0
+      with:
+        # Test this script using changes in a fork 
+        repository: 'dotnet/aspnetcore'
+        path: aspnetcore
+    - name: Checkout runtime
+      uses: actions/checkout@v2.0.0
+      with:
+        # Test this script using changes in a fork 
+        repository: 'dotnet/runtime'
+        path: runtime
+    - name: Copy
+      shell: cmd
+      working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\aspnetcore\
+      env:
+        ASPNETCORE_REPO: d:\a\aspnetcore\aspnetcore\aspnetcore\
+      run: CopyToAspNetCore.cmd
+    - name: Diff
+      shell: cmd
+      working-directory: .\aspnetcore\
+      run: |
+        mkdir ..\artifacts
+        git status > ..\artifacts\status.txt
+        git diff > ..\artifacts\diff.txt
+    - uses: actions/upload-artifact@v1
+      with:
+        name: results
+        path: artifacts
+    - name: Check and Notify
+      id: check
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Test this script using an issue in the local forked repo
+        $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
+        $changed = .\aspnetcore\.github\workflows\ReportDiff.ps1
+        echo "::set-output name=changed::$changed"
+    - name: Send PR
+      if: steps.check.outputs.changed == 'true'
+      # https://github.com/marketplace/actions/create-pull-request
+      uses: peter-evans/create-pull-request@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: .\aspnetcore
+        commit-message: 'Sync shared code from runtime'
+        title: 'Sync shared code from runtime'
+        body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
+        labels: area-servers
+        branch: github-action/sync-runtime
+        branch-suffix: timestamp

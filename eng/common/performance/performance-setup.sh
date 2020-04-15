@@ -13,9 +13,9 @@ build_number=$BUILD_BUILDNUMBER
 internal=false
 compare=false
 kind="micro"
-run_categories="coreclr corefx"
+run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
-configurations=
+configurations="CompliationMode=$compilation_mode RunKind=$kind"
 run_from_perf_repo=false
 use_core_run=true
 use_baseline_core_run=true
@@ -164,8 +164,15 @@ if [[ "$internal" == true ]]; then
     fi
 fi
 
-common_setup_arguments="--frameworks $framework --queue $queue --build-number $build_number --build-configs $configurations"
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
+
+
+# Get the tools section from the global.json.
+# This grabs the LKG version number of dotnet and passes it to our scripts
+dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
+setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+
 
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=

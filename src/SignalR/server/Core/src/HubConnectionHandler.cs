@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,9 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
         private readonly long? _maximumMessageSize;
+
+        // Internal for testing
+        internal ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -98,6 +102,7 @@ namespace Microsoft.AspNetCore.SignalR
                 ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
+                SystemClock = SystemClock,
             };
 
             Log.ConnectedStarting(_logger);
@@ -222,8 +227,6 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 var result = await input.ReadAsync();
                 var buffer = result.Buffer;
-
-                connection.ResetClientTimeout();
 
                 try
                 {

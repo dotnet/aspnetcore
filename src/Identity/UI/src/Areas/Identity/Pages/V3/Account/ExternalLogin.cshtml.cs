@@ -217,6 +217,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
 
                         await _signInManager.SignInAsync(user, isPersistent: false);
 
+                        // If account confirmation is required, we need to show the link if we don't have a real email sender
+                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                        {
+                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
+                        }
+
+                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+
                         return LocalRedirect(returnUrl);
                     }
                 }

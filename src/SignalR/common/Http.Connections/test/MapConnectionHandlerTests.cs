@@ -150,10 +150,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void MapConnectionHandlerEndPointRoutingFindsAttributesOnHub()
         {
             var authCount = 0;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+            using (var host = BuildWebHost<AuthConnectionHandler>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
-            })))
+            }))
             {
                 host.Start();
 
@@ -179,11 +179,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void MapConnectionHandlerEndPointRoutingFindsAttributesFromOptions()
         {
             var authCount = 0;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+            using (var host = BuildWebHost<AuthConnectionHandler>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
                 options.AuthorizationData.Add(new AuthorizeAttribute());
-            })))
+            }))
             {
                 host.Start();
 
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                       .RequireAuthorization(new AuthorizeAttribute("Foo"));
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (var host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 endpoints.MapConnectionHandler<AuthConnectionHandler>("/path");
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (var host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 endpoints.MapConnectionHandler<CorsConnectionHandler>("/path");
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (var host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var host = BuildWebHost<MyConnectionHandler>("/socket",
                 options => options.WebSockets.SubProtocolSelector = subprotocols =>
                 {
-                    Assert.Equal(new [] { "protocol1", "protocol2" }, subprotocols.ToArray());
+                    Assert.Equal(new[] { "protocol1", "protocol2" }, subprotocols.ToArray());
                     return "protocol1";
                 });
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private IWebHost BuildWebHostWithEndPointRouting(Action<IEndpointRouteBuilder> configure)
+        private IWebHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
             return new WebHostBuilder()
                 .UseKestrel()
@@ -405,12 +405,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 })
                 .Configure(app =>
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    app.UseConnections(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(routes =>
                     {
                         routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
                     });
-#pragma warning restore CS0618 // Type or member is obsolete
                 })
                 .ConfigureLogging(factory =>
                 {

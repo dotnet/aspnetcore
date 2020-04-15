@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         internal void SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
-        {            
+        {
             Debug.Assert(info != IntPtr.Zero, "SetUrlGroupProperty called with invalid pointer");
             CheckDisposed();
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 var exception = new HttpSysException((int)statusCode);
-                LogHelper.LogException(_logger, "SetUrlGroupProperty", exception);
+                _logger.LogError(LoggerEventIds.SetUrlPropertyError, exception, "SetUrlGroupProperty");
                 if (throwOnError)
                 {
                     throw exception;
@@ -71,9 +71,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void RegisterPrefix(string uriPrefix, int contextId)
         {
-            LogHelper.LogInfo(_logger, "Listening on prefix: " + uriPrefix);
+            _logger.LogDebug(LoggerEventIds.RegisteringPrefix, "Listening on prefix: {0}" , uriPrefix);
             CheckDisposed();
-
             var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
@@ -88,10 +87,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
         }
-        
+
         internal bool UnregisterPrefix(string uriPrefix)
         {
-            LogHelper.LogInfo(_logger, "Stop listening on prefix: " + uriPrefix);
+            _logger.LogInformation(LoggerEventIds.UnregisteringPrefix, "Stop listening on prefix: {0}" , uriPrefix);
             CheckDisposed();
 
             var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                LogHelper.LogError(_logger, "CleanupV2Config", "Result: " + statusCode);
+                _logger.LogError(LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {0}" , statusCode);
             }
             Id = 0;
         }
