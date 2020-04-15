@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication
     {
         public HttpAuthenticationResultFeature() { }
         public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-    }    
+    }
     public partial class NoopClaimsTransformation : Microsoft.AspNetCore.Authentication.IClaimsTransformation
     {
         public NoopClaimsTransformation() { }
