@@ -171,4 +171,8 @@ namespace Microsoft.AspNetCore.Authentication
     {
         System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal> TransformAsync(System.Security.Claims.ClaimsPrincipal principal);
     }
+    public partial interface IHttpAuthenticationResultFeature
+    {
+        Microsoft.AspNetCore.Authentication.AuthenticateResult Result { get; set; }
+    }    
 }
