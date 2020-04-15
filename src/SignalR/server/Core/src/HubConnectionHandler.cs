@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
 
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
-            List<object> hubFilters;
+            List<object> hubFilters = null;
             if (_globalHubOptions.HubFilters != null)
             {
                 hubFilters = new List<object>();
@@ -110,8 +110,11 @@ namespace Microsoft.AspNetCore.SignalR
             }
             else
             {
-                hubFilters = new List<object>();
-                hubFilters.AddRange(_hubOptions.HubFilters);
+                if (_hubOptions.HubFilters != null)
+                {
+                    hubFilters = new List<object>();
+                    hubFilters.AddRange(_hubOptions.HubFilters);
+                }
             }
 
             var contextOptions = new HubConnectionContextOptions()
