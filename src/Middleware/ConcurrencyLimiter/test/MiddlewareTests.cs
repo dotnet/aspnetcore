@@ -11,6 +11,47 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
     public class MiddlewareTests
     {
         [Fact]
+        public async Task RequestCallNextIfSuppressLimiter()
+        {
+            var flag = false;
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: TestQueue.AlwaysFalse,
+                next: httpContext =>
+                {
+                    flag = true;
+                    return Task.CompletedTask;
+                });
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(CreateEndpoint(new SuppressQueuePolicyMetadata()));
+
+            await middleware.Invoke(httpContext);
+
+            Assert.True(flag);
+        }
+        [Fact]
+        public async Task RequestCallNextIfMetadataQueuePolicyReturnsTrue()
+        {
+            var flag = false;
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: TestQueue.AlwaysFalse,
+                next: httpContext =>
+                {
+                    flag = true;
+                    return Task.CompletedTask;
+                });
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(CreateEndpoint(TestQueue.AlwaysTrue));
+
+            await middleware.Invoke(httpContext);
+
+            Assert.True(flag);
+        }
+
+        [Fact]
         public async Task RequestsCallNextIfQueueReturnsTrue()
         {
             var flag = false;
@@ -197,6 +238,11 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             await middleware.Invoke(new DefaultHttpContext());
 
             Assert.True(flag);
+        }
+
+        private Endpoint CreateEndpoint(params object[] metadata)
+        {
+            return new Endpoint(context => Task.CompletedTask, new EndpointMetadataCollection(metadata), "Test endpoint");
         }
 
         private class TestQueueForResettableBoolean : IQueuePolicy

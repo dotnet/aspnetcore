@@ -66,6 +66,16 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
 
             return new QueuePolicy(options);
         }
+
+        internal static QueuePolicyAttribute CreateQueuePolicyAttribute(int maxConcurrentRequests, int requestQueueLimit = 100)
+        {
+            return new QueuePolicyAttribute(maxConcurrentRequests, requestQueueLimit);
+        }
+
+        internal static StackPolicyAttribute CreateStackPolicyAttribute(int maxConcurrentRequests, int requestQueueLimit = 100)
+        {
+            return new StackPolicyAttribute(maxConcurrentRequests, requestQueueLimit);
+        }
     }
 
     internal class TestQueue : IQueuePolicy
