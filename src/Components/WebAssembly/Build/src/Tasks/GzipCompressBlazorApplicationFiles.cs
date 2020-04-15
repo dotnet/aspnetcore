@@ -32,18 +32,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 var inputSource = file.InputSource;
                 var targetCompressionPath = file.Target;
 
-                if (!File.Exists(inputSource) ||
-                    (File.Exists(targetCompressionPath) && File.GetLastWriteTime(inputSource) < File.GetLastWriteTime(targetCompressionPath)))
+                if (!File.Exists(inputSource))
+                {
+                    Log.LogMessage($"Skipping '{inputPath}' because '{inputSource}' does not exist.");
+                    return;
+                }
+
+                if (File.Exists(targetCompressionPath) && File.GetLastWriteTimeUtc(inputSource) < File.GetLastWriteTimeUtc(targetCompressionPath))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
-                    if (!File.Exists(inputSource))
-                    {
-                        Log.LogMessage($"Skipping '{inputPath}' because '{inputSource}' does not exist.");
-                    }
-                    else
-                    {
-                        Log.LogMessage($"Skipping '{inputPath}' because '{inputSource}' is newer than '{targetCompressionPath}'.");
-                    }
+                    Log.LogMessage($"Skipping '{inputPath}' because '{targetCompressionPath}' is newer than '{inputSource}'.");
                     return;
                 }
 

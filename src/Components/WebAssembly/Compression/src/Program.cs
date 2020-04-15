@@ -35,18 +35,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression
                 var inputSource = file.InputSource;
                 var targetCompressionPath = file.Target;
 
-                if (!File.Exists(inputSource) ||
-                    (File.Exists(targetCompressionPath) && File.GetLastWriteTime(inputSource) < File.GetLastWriteTime(targetCompressionPath)))
+                if (!File.Exists(inputSource))
+                {
+                    Console.WriteLine($"Skipping '{inputPath}' because '{inputSource}' does not exist.");
+                    return;
+                }
+
+                if (File.Exists(targetCompressionPath) && File.GetLastWriteTimeUtc(inputSource) < File.GetLastWriteTimeUtc(targetCompressionPath))
                 {
                     // Incrementalism. If input source doesn't exist or it exists and is not newer than the expected output, do nothing.
-                    if (!File.Exists(inputSource))
-                    {
-                        Console.WriteLine($"Skipping '{inputPath}' because '{inputSource}' does not exist.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Skipping '{inputPath}' because '{inputSource}' is newer than '{targetCompressionPath}'.");
-                    }
+                    Console.WriteLine($"Skipping '{inputPath}' because '{targetCompressionPath}' is newer than '{inputSource}'.");
                     return;
                 }
 
