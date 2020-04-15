@@ -146,9 +146,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_ExistingBlazorOutputWithTargetPath Include="@(_BlazorOutputWithTargetPath)" Condition="Exists('%(FullPath)')" /> 
+      <_ExistingBlazorOutputWithTargetPath Include="@(_BlazorOutputWithTargetPath)" Condition="Exists('%(FullPath)')" />
     </ItemGroup>
-    
+
     <GetFileHash Files="@(_ExistingBlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
     </GetFileHash>
@@ -156,7 +156,7 @@
     <ItemGroup>
       <_BlazorOutputWithIntegrity Include="@(_BlazorOutputWithHash)">
         <Integrity>%(_BlazorOutputWithHash.FileHash)</Integrity>
-        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash</IntegrityFile>
       </_BlazorOutputWithIntegrity>
 
       <_BlazorOutputWithTargetPath Remove="@(_BlazorOutputWithIntegrity)" />
@@ -409,7 +409,7 @@
 
       <_BlazorBootJsonWithIntegrity Include="@(_BlazorBootJsonWithHash)">
         <Integrity>%(FileHash)</Integrity>
-        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash</IntegrityFile>
       </_BlazorBootJsonWithIntegrity>
 
       <_BlazorOutputWithTargetPath Include="@(_BlazorBootJsonWithIntegrity)" RemoveMetadata="FileHash;FileHashAlgorithm">

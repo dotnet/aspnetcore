@@ -64,7 +64,7 @@
 
       <_ServiceWorkerManifestWithIntegrity Include="@(_ServiceWorkerManifestWithHash)">
         <Integrity>%(FileHash)</Integrity>
-        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash'</IntegrityFile>
+        <IntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(FileHash)').Replace('/','-').Replace('+','_')).hash</IntegrityFile>
       </_ServiceWorkerManifestWithIntegrity>
 
       <FileWrites Include="%(_ServiceWorkerManifestWithIntegrity.IntegrityFile)" />
@@ -74,7 +74,7 @@
     <WriteLinesToFile Lines="%(_ServiceWorkerManifestWithIntegrity.Integrity)" File="%(_ServiceWorkerManifestWithIntegrity.IntegrityFile)" WriteOnlyWhenDifferent="true" Overwrite="true" />
 
     <PropertyGroup>
-      <_ServiceWorkerManifestIntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(_ServiceWorkerManifestWithIntegrity.FileHash)').Replace('/','-').Replace('+','_')).hash'</_ServiceWorkerManifestIntegrityFile>
+      <_ServiceWorkerManifestIntegrityFile>$(IntermediateOutputPath)integrity\$([System.String]::Copy('%(_ServiceWorkerManifestWithIntegrity.FileHash)').Replace('/','-').Replace('+','_')).hash</_ServiceWorkerManifestIntegrityFile>
     </PropertyGroup>
 
     <ItemGroup>
