@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Authentication
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task SignOutAsync(Microsoft.AspNetCore.Http.HttpContext context, string scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
     }
+    public partial class HttpAuthenticationResultFeature : Microsoft.AspNetCore.Authentication.IHttpAuthenticationResultFeature
+    {
+        public HttpAuthenticationResultFeature() { }
+        public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }    
     public partial class NoopClaimsTransformation : Microsoft.AspNetCore.Authentication.IClaimsTransformation
     {
         public NoopClaimsTransformation() { }
