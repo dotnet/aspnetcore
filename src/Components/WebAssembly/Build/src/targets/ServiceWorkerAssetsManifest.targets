@@ -55,7 +55,7 @@
   <Target Name="_ComputeManifestIntegrity"
     Condition="'$(ServiceWorkerAssetsManifest)' != ''"
     BeforeTargets="_BlazorStaticWebAssetsCopyGeneratedFilesToOutputDirectory;_GzipCompressBlazorApplicationFiles">
-    
+
     <GetFileHash Files="$(_ServiceWorkerAssetsManifestIntermediateOutputPath)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_ServiceWorkerManifestWithHash" />
     </GetFileHash>
@@ -178,7 +178,7 @@
 
   <Target Name="_OmitServiceWorkerContent"
     Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-    BeforeTargets="AssignTargetPaths">
+    BeforeTargets="AssignTargetPaths;ResolveCurrentProjectStaticWebAssets">
 
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
