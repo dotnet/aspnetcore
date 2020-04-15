@@ -52,10 +52,10 @@ namespace Microsoft.AspNetCore.Authentication
             if (defaultAuthenticate != null)
             {
                 var result = await context.AuthenticateAsync(defaultAuthenticate.Name);
-                context.Features.Set<IAuthenticationResultFeature>(new AuthenticationResultFeature
-                {
-                    Result = result
-                });
+                //context.Features.Set<IAuthenticationResultFeature>(new AuthenticationResultFeature
+                //{
+                //    Result = result
+                //});
 
                 if (result?.Principal != null)
                 {
