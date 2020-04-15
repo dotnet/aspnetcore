@@ -282,9 +282,33 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
             project.AddProjectFileContent(
 @"
 <PropertyGroup>
+    <BlazorWebAssembly18NAssemblies>other</BlazorWebAssembly18NAssemblies>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.Other.dll");
+        }
+
+        [Fact]
+        public async Task Build_WithI8NOption_CopiesI8NAssembliesWithLinkerEnabled()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
     <BlazorWebAssembly18NAssemblies>other</BlazorWebAssembly18NAssemblies>
 </PropertyGroup>");
 
