@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool forceFlush)
+        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool firstWrite, bool forceFlush)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
                 if (dataLength != 0 && dataLength > flowControl.Available)
                 {
-                    return WriteDataAsync(streamId, flowControl, data, dataLength, endStream);
+                    return WriteDataAsync(streamId, flowControl, data, dataLength, endStream, firstWrite);
                 }
 
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
         {
             FlushResult flushResult = default;
 
@@ -406,6 +406,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         // flow control induced backpressure below.
                         writeTask = _flusher.FlushAsync();
                     }
+                    else if (firstWrite)
+                    {
+                        // If we're facing flow control induced backpressure on the first write for a given stream's response body,
+                        // we make sure to flush the response headers immediately.
+                        writeTask = _flusher.FlushAsync();
+                    }
+
+                    firstWrite = false;
 
                     if (_minResponseDataRate != null)
                     {
