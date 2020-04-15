@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
                     new BuildServiceProviderValidator(analysis).AnalyzeSymbol(context);
                     new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
+                    new UseConcurrencyLimiterAnalyzer(analysis).AnalyzeSymbol(context);
                 });
 
             }, SymbolKind.NamedType);

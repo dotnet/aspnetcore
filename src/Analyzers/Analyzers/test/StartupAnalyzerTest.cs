@@ -346,5 +346,123 @@ namespace Microsoft.AspNetCore.Analyzers
             Assert.NotEmpty(middlewareAnalysis.Middleware);
             Assert.Empty(diagnostics);
         }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterConfiguredConfiguredCorrectly_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterConfiguredCorrectly));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterConfiguredAsAChain_ReportsNoDiagnostics()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15203
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterConfiguredCorrectlyChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterMultipleTimes));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterConfiguredBeforeUseRouting_ReportsDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterBeforeUseRouting));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredConcurrencyLimiterMiddleware, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterConfiguredBeforeUseRoutingChained_ReportsDiagnostics()
+        {
+            // This one asserts a false negative for https://github.com/dotnet/aspnetcore/issues/15203.
+            // We don't correctly identify chained calls, this test verifies the behavior.
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterBeforeUseRoutingChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseConcurrencyLimiterConfiguredAfterUseEndpoints_ReportsDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterAfterUseEndpoints));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredConcurrencyLimiterMiddleware, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MultipleUseConcurrencyLimiter_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseConcurrencyLimiterFallbackPolicy));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
     }
 }

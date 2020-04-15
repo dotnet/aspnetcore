@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     // ASP
                     BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
                     IncorrectlyConfiguredAuthorizationMiddleware,
+                    IncorrectlyConfiguredConcurrencyLimiterMiddleware,
 
                     // MVC
                     UnsupportedUseMvcWithEndpointRouting,
@@ -52,6 +53,15 @@ namespace Microsoft.AspNetCore.Analyzers
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
                 helpLinkUri: "https://aka.ms/AA64fv1");
+
+            internal readonly static DiagnosticDescriptor IncorrectlyConfiguredConcurrencyLimiterMiddleware = new DiagnosticDescriptor(
+                "ASP0002",
+                "ConcurrencyLimiter middleware is incorrectly configured.",
+                "The call to UseConcurrencyLimiter should appear between app.UseRouting() and app.UseEndpoints(..) for ConcurrencyLimiter to be correctly limit.",
+                "Usage",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                helpLinkUri: "TBD");
         }
     }
 }
