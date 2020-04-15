@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Authentication
     /// <summary>
     /// Used to store the AuthenticateResult for the HttpContext.
     /// </summary>
-    public interface IHttpAuthenticationResultFeature
+    public interface IAuthenticationResultFeature
     {
         /// <summary>
         /// The <see cref="AuthenticateResult"/> for the request.

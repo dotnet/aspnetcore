@@ -16,6 +16,11 @@ namespace Microsoft.AspNetCore.Authentication
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.IAuthenticationHandler> GetHandlerAsync(Microsoft.AspNetCore.Http.HttpContext context, string authenticationScheme) { throw null; }
     }
+    public partial class AuthenticationResultFeature : Microsoft.AspNetCore.Authentication.IHttpAuthenticationResultFeature
+    {
+        public AuthenticationResultFeature() { }
+        public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }
     public partial class AuthenticationSchemeProvider : Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider
     {
         public AuthenticationSchemeProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions> options) { }
@@ -49,11 +54,6 @@ namespace Microsoft.AspNetCore.Authentication
         public virtual System.Threading.Tasks.Task SignInAsync(Microsoft.AspNetCore.Http.HttpContext context, string scheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task SignOutAsync(Microsoft.AspNetCore.Http.HttpContext context, string scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
-    }
-    public partial class HttpAuthenticationResultFeature : Microsoft.AspNetCore.Authentication.IHttpAuthenticationResultFeature
-    {
-        public HttpAuthenticationResultFeature() { }
-        public Microsoft.AspNetCore.Authentication.AuthenticateResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class NoopClaimsTransformation : Microsoft.AspNetCore.Authentication.IClaimsTransformation
     {

@@ -48,6 +48,58 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(607, (int)response.StatusCode);
         }
 
+        [Fact]
+        public async Task CanUseAuthenticationResultFeature()
+        {
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(), "Default");
+            var result = AuthenticateResult.Success(ticket);
+            SimpleHandler.Result = result;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseAuthentication();
+                    app.Use((context, next) =>
+                    {
+                        var auth = context.Features.Get<IAuthenticationResultFeature>();
+                        Assert.True(auth.Result.Ticket.Principal == ticket.Principal);
+                        context.Response.StatusCode = 200;
+                        return Task.CompletedTask;
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication(o =>
+                {
+                    o.AddScheme("Default", s =>
+                    {
+                        s.HandlerType = typeof(SimpleHandler);
+                    });
+                    o.DefaultScheme = "Default";
+                }));
+            var server = new TestServer(builder);
+            var response = await server.CreateClient().GetAsync("http://example.com/");
+            response.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
+        public async Task CanUseAuthenticationResultFeatureWithNoDefaultScheme()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseAuthentication();
+                    app.Use((context, next) =>
+                    {
+                        var auth = context.Features.Get<IAuthenticationResultFeature>();
+                        Assert.Null(auth.Result);
+                        context.Response.StatusCode = 200;
+                        return Task.CompletedTask;
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
+            var response = await server.CreateClient().GetAsync("http://example.com/");
+            response.EnsureSuccessStatusCode();
+        }
+
         private class ThreeOhFiveHandler : StatusCodeHandler {
             public ThreeOhFiveHandler() : base(305) { }
         }
@@ -60,6 +112,25 @@ namespace Microsoft.AspNetCore.Authentication
         private class SevenOhSevenHandler : StatusCodeHandler
         {
             public SevenOhSevenHandler() : base(707) { }
+        }
+
+        public class SimpleHandler : IAuthenticationHandler
+        {
+            public static AuthenticateResult Result { get; set; }
+
+            public Task<AuthenticateResult> AuthenticateAsync() => Task.FromResult(Result);
+
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context) => Task.CompletedTask;
         }
 
         private class StatusCodeHandler : IAuthenticationRequestHandler

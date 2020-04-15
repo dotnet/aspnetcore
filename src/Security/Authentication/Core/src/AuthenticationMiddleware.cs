@@ -48,21 +48,21 @@ namespace Microsoft.AspNetCore.Authentication
                 }
             }
 
+            AuthenticateResult result = null;
             var defaultAuthenticate = await Schemes.GetDefaultAuthenticateSchemeAsync();
             if (defaultAuthenticate != null)
             {
-                var result = await context.AuthenticateAsync(defaultAuthenticate.Name);
-                //context.Features.Set<IAuthenticationResultFeature>(new AuthenticationResultFeature
-                //{
-                //    Result = result
-                //});
-
+                result = await context.AuthenticateAsync(defaultAuthenticate.Name);
                 if (result?.Principal != null)
                 {
                     context.User = result.Principal;
                 }
             }
 
+            context.Features.Set<IAuthenticationResultFeature>(new AuthenticationResultFeature
+            {
+                Result = result
+            });
             await _next(context);
         }
     }

@@ -137,6 +137,10 @@ namespace Microsoft.AspNetCore.Authentication
     {
         System.Threading.Tasks.Task<bool> HandleRequestAsync();
     }
+    public partial interface IAuthenticationResultFeature
+    {
+        Microsoft.AspNetCore.Authentication.AuthenticateResult Result { get; set; }
+    }
     public partial interface IAuthenticationSchemeProvider
     {
         void AddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme);
@@ -170,9 +174,5 @@ namespace Microsoft.AspNetCore.Authentication
     public partial interface IClaimsTransformation
     {
         System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal> TransformAsync(System.Security.Claims.ClaimsPrincipal principal);
-    }
-    public partial interface IHttpAuthenticationResultFeature
-    {
-        Microsoft.AspNetCore.Authentication.AuthenticateResult Result { get; set; }
     }
 }
