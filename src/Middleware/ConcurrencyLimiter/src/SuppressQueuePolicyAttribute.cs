@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class SuppressQueuePolicyMetadata : ISuppressQueuePolicyMetadata
+    /// <summary>
+    /// Specifies that the class or method that this attribute applied to does not limit concurrency request.
+    /// </summary>
+    public class SuppressQueuePolicyAttribute : ISuppressQueuePolicyMetadata
     {
-        public static ISuppressQueuePolicyMetadata Default = new SuppressQueuePolicyMetadata();
     }
 }

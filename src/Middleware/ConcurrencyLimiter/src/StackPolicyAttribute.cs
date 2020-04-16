@@ -11,13 +11,13 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
     /// <summary>
-    /// 
+    /// Specifies that the class or method that this attribute applied to requires limit concurrency request with LIFO stack as queueing strategy.
     /// </summary>
     public class StackPolicyAttribute : Attribute, IQueuePolicy
     {
         private readonly StackPolicy _stackPolicy;
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="StackPolicyAttribute"/> class.
         /// </summary>
         /// <param name="maxConcurrentRequests">
         /// Maximum number of concurrent requests. Any extras will be queued on the server. 
@@ -36,9 +36,11 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             }));
         }
 
+        /// <inheritdoc />
         public void OnExit()
             => _stackPolicy.OnExit();
 
+        /// <inheritdoc />
         public ValueTask<bool> TryEnterAsync()
             => _stackPolicy.TryEnterAsync();
     }

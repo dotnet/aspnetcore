@@ -11,13 +11,14 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
     /// <summary>
-    /// 
+    /// Specifies that the class or method that this attribute applied to requires limit concurrency request with FIFO queue as queueing strategy.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class QueuePolicyAttribute : Attribute, IQueuePolicy
     {
         private readonly QueuePolicy _queuePolicy;
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="QueuePolicyAttribute"/> class.
         /// </summary>
         /// <param name="maxConcurrentRequests">
         /// Maximum number of concurrent requests. Any extras will be queued on the server. 
@@ -35,11 +36,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 RequestQueueLimit = requestQueueLimit
             }));
         }
-
+        /// <inheritdoc />
         public void OnExit()
             => _queuePolicy.OnExit();
 
 
+        /// <inheritdoc />
         public ValueTask<bool> TryEnterAsync()
             => _queuePolicy.TryEnterAsync();
     }

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
             return builder;
         }
         /// <summary>
-        /// Adds the concurrency limit with FIFO stack as queueing strategy to the endpoint(s).
+        /// Adds the concurrency limit with FIFO queue as queueing strategy to the endpoint(s).
         /// </summary>
         /// <typeparam name="TBuilder"></typeparam>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Builder
 
             builder.Add(endpoints =>
             {
-                endpoints.Metadata.Add(SuppressQueuePolicyMetadata.Default);
+                endpoints.Metadata.Add(new SuppressQueuePolicyAttribute());
             });
 
             return builder;

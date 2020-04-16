@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 });
 
             var httpContext = new DefaultHttpContext();
-            httpContext.SetEndpoint(CreateEndpoint(new SuppressQueuePolicyMetadata()));
+            httpContext.SetEndpoint(CreateEndpoint(new SuppressQueuePolicyAttribute()));
 
             await middleware.Invoke(httpContext);
 
