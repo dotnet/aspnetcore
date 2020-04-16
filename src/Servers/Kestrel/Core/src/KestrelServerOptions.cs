@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Bind to given IP address and port.
+        /// Bind to the given endpoint.
         /// The callback configures endpoint-specific settings.
         /// </summary>
         public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
