@@ -266,7 +266,7 @@
   <Target Name="GetReferenceProjectTargetPathMetadata">
     <Error Condition=" !($(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies)) "
         Text="GetReferenceProjectTargetPathMetadata called in project without a reference assembly or when targeting non-default TFM." />
-    <MSBuild Projects="$(_ReferenceProjectFile)" Targets="GetTargetPathMetadata" RebaseOutputs="true">
+    <MSBuild Projects="$(_ReferenceProjectFile)" Targets="GetTargetPathMetadata" RebaseOutputs="true" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)">
       <Output TaskParameter="TargetOutputs" ItemName="ReferenceProjectTargetPathMetadata" />
     </MSBuild>
   </Target>
