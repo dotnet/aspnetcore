@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             project.AddProjectFileContent(
 @"
 <PropertyGroup>
-    <BlazorWebAssembly18NAssemblies>other</BlazorWebAssembly18NAssemblies>
+    <BlazorWebAssemblyI18NAssemblies>other</BlazorWebAssemblyI18NAssemblies>
 </PropertyGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 @"
 <PropertyGroup>
     <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
-    <BlazorWebAssembly18NAssemblies>other</BlazorWebAssembly18NAssemblies>
+    <BlazorWebAssemblyI18NAssemblies>other</BlazorWebAssemblyI18NAssemblies>
 </PropertyGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project);

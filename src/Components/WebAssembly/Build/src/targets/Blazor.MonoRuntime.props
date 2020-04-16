@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <BlazorWebAssembly18NAssemblies>none</BlazorWebAssembly18NAssemblies> <!-- See Mono linker docs - allows comma-separated values from: none,all,cjk,mideast,other,rare,west -->
+    <BlazorWebAssemblyI18NAssemblies>none</BlazorWebAssemblyI18NAssemblies> <!-- See Mono linker docs - allows comma-separated values from: none,all,cjk,mideast,other,rare,west -->
     <AdditionalMonoLinkerOptions>--disable-opt unreachablebodies --verbose --strip-security true --exclude-feature com -v false -c link -u link -b true</AdditionalMonoLinkerOptions>
 
     <_BlazorJsPath Condition="'$(_BlazorJsPath)' == ''">$(MSBuildThisFileDirectory)..\tools\blazor\blazor.webassembly.js</_BlazorJsPath>
