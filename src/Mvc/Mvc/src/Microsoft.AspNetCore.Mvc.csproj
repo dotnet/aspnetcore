@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +18,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"/>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"/>
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>
