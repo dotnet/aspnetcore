@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
@@ -23,9 +22,6 @@ namespace Templates.Test.Helpers
     public class Project
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
-
-        public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Any(a => a.Key == "ContinuousIntegrationBuild");
 
         public static string ArtifactsLogDir => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT")))
             ? GetAssemblyMetadata("ArtifactsLogDir")
@@ -47,12 +43,6 @@ namespace Templates.Test.Helpers
 
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
-
-        private string TemplateServerDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Server");
-        private string TemplateClientDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Client");
-        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", TargetFramework);
-        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", TargetFramework, "publish");
-        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", TargetFramework, "publish");
 
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
@@ -164,50 +154,6 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal AspNetProcess StartBuiltServerAsync()
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
-            };
-
-            var projectDll = Path.Combine(TemplateServerDir, $"{ProjectName}.Server.dll");
-            return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, published: false);
-        }
-
-        internal AspNetProcess StartBuiltClientAsync(AspNetProcess serverProcess)
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
-            };
-
-            var projectDll = Path.Combine(TemplateClientDebugDir, $"{ProjectName}.Client.dll {serverProcess.ListeningUri.Port}");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: false);
-        }
-
-        internal AspNetProcess StartPublishedServerAsync()
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_URLS"] = _urls,
-            };
-
-            var projectDll = $"{ProjectName}.Server.dll";
-            return new AspNetProcess(Output, TemplateServerReleaseDir, projectDll, environment);
-        }
-
-        internal AspNetProcess StartPublishedClientAsync()
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_URLS"] = _urls,
-            };
-
-            var projectDll = $"{ProjectName}.Client.dll";
-            return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
-        }
-
         internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
         {
             var environment = new Dictionary<string, string>
@@ -239,105 +185,9 @@ namespace Templates.Test.Helpers
             return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
-        internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)
-        {
-            // "npm restore" sometimes fails randomly in AppVeyor with errors like:
-            //    EPERM: operation not permitted, scandir <path>...
-            // This appears to be a general NPM reliability issue on Windows which has
-            // been reported many times (e.g., https://github.com/npm/npm/issues/18380)
-            // So, allow multiple attempts at the restore.
-            const int maxAttempts = 3;
-            var attemptNumber = 0;
-            ProcessEx restoreResult;
-            do
-            {
-                restoreResult = await RestoreAsync(output, workingDirectory);
-                if (restoreResult.HasExited && restoreResult.ExitCode == 0)
-                {
-                    return restoreResult;
-                }
-                else
-                {
-                    // TODO: We should filter for EPEM here to avoid masking other errors silently.
-                    output.WriteLine(
-                        $"NPM restore in {workingDirectory} failed on attempt {attemptNumber} of {maxAttempts}. " +
-                        $"Error was: {restoreResult.GetFormattedOutput()}");
-
-                    // Clean up the possibly-incomplete node_modules dir before retrying
-                    CleanNodeModulesFolder(workingDirectory, output);
-                }
-                attemptNumber++;
-            } while (attemptNumber < maxAttempts);
-
-            output.WriteLine($"Giving up attempting NPM restore in {workingDirectory} after {attemptNumber} attempts.");
-            return restoreResult;
-
-            void CleanNodeModulesFolder(string workingDirectory, ITestOutputHelper output)
-            {
-                var nodeModulesDir = Path.Combine(workingDirectory, "node_modules");
-                try
-                {
-                    if (Directory.Exists(nodeModulesDir))
-                    {
-                        Directory.Delete(nodeModulesDir, recursive: true);
-                    }
-                }
-                catch
-                {
-                    output.WriteLine($"Failed to clean up node_modules folder at {nodeModulesDir}.");
-                }
-            }
-        }
-
-        private async Task<ProcessEx> RestoreAsync(ITestOutputHelper output, string workingDirectory)
-        {
-            // It's not safe to run multiple NPM installs in parallel
-            // https://github.com/npm/npm/issues/2500
-            await NodeLock.WaitAsync();
-            try
-            {
-                output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                var result = ProcessEx.RunViaShell(output, workingDirectory, "npm install");
-                return result;
-            }
-            finally
-            {
-                NodeLock.Release();
-            }
-        }
-
         internal async Task<ProcessEx> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
             var args = $"--verbose --no-build migrations add {migrationName}";
-
-            // Only run one instance of 'dotnet new' at once, as a workaround for
-            // https://github.com/aspnet/templating/issues/63
-            await DotNetNewLock.WaitAsync();
-            try
-            {
-                var command = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    args = $"\"{DotNetEfFullPath}\" " + args;
-                }
-                else
-                {
-                    command = "dotnet-ef";
-                }
-
-                var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-                await result.Exited;
-                return result;
-            }
-            finally
-            {
-                DotNetNewLock.Release();
-            }
-        }
-
-        internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
-        {
-            var args = "--verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63

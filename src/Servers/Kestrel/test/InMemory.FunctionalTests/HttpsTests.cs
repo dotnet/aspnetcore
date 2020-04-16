@@ -386,35 +386,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task DevCertWithInvalidPrivateKeyProducesCustomWarning()
-        {
-            var loggerProvider = new HandshakeErrorLoggerProvider();
-            LoggerFactory.AddProvider(loggerProvider);
-
-            await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
-                listenOptions =>
-                {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate("aspnetdevcert.pfx", "testPassword"));
-                }))
-            {
-                using (var connection = server.CreateConnection())
-                using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
-                {
-                    // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAnyAsync<Exception>(() =>
-                        sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls,
-                            checkCertificateRevocation: false));
-                }
-            }
-
-            await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
-            Assert.Equal(3, loggerProvider.FilterLogger.LastEventId);
-            Assert.Equal(LogLevel.Error, loggerProvider.FilterLogger.LastLogLevel);
-        }
-
-        [Fact]
         public async Task OnAuthenticate_SeesOtherSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
