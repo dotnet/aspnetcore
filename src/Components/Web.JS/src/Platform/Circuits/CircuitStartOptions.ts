@@ -1,13 +1,13 @@
 import { LogLevel } from '../Logging/Logger';
 
-export interface BlazorOptions {
+export interface CircuitStartOptions {
   configureSignalR: (builder: signalR.HubConnectionBuilder) => void;
   logLevel: LogLevel;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
 }
 
-export function resolveOptions(userOptions?: Partial<BlazorOptions>): BlazorOptions {
+export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
     const result = { ...defaultOptions, ...userOptions };
 
     // The spread operator can't be used for a deep merge, so do the same for subproperties
@@ -29,7 +29,7 @@ export interface ReconnectionHandler {
   onConnectionUp(): void;
 }
 
-const defaultOptions: BlazorOptions = {
+const defaultOptions: CircuitStartOptions = {
     configureSignalR: (_) => { },
     logLevel: LogLevel.Warning,
     reconnectionOptions: {

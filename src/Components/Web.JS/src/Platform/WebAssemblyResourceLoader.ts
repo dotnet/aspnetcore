@@ -1,5 +1,6 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
+import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
@@ -7,27 +8,23 @@ export class WebAssemblyResourceLoader {
   private networkLoads: { [name: string]: LoadLogEntry } = {};
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
-  static async initAsync(bootConfig: BootJsonData): Promise<WebAssemblyResourceLoader> {
+  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
     const cache = await getCacheToUseIfEnabled(bootConfig);
-    return new WebAssemblyResourceLoader(bootConfig, cache);
+    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions);
   }
 
-  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null) {
+  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>) {
   }
 
-  loadResources(resources: ResourceList, url: (name: string) => string): LoadingResource[] {
+  loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): LoadingResource[] {
     return Object.keys(resources)
-      .map(name => this.loadResource(name, url(name), resources[name]));
+      .map(name => this.loadResource(name, url(name), resources[name], resourceType));
   }
 
-  loadResource(name: string, url: string, contentHash: string): LoadingResource {
-    // Note that if cacheBootResources was explicitly disabled, we also bypass hash checking
-    // This is to give developers an easy opt-out from the entire caching/validation flow if
-    // there's anything they don't like about it.
-
+  loadResource(name: string, url: string, contentHash: string, resourceType: WebAssemblyBootResourceType): LoadingResource {
     const response = this.cacheIfUsed
-      ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash)
-      : fetch(url, { cache: networkFetchCacheMode, integrity: this.bootConfig.cacheBootResources ? contentHash : undefined });
+      ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
+      : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
 
     return { name, url, response };
   }
@@ -77,7 +74,7 @@ export class WebAssemblyResourceLoader {
     }
   }
 
-  private async loadResourceWithCaching(cache: Cache, name: string, url: string, contentHash: string) {
+  private async loadResourceWithCaching(cache: Cache, name: string, url: string, contentHash: string, resourceType: WebAssemblyBootResourceType) {
     // Since we are going to cache the response, we require there to be a content hash for integrity
     // checking. We don't want to cache bad responses. There should always be a hash, because the build
     // process generates this data.
@@ -96,10 +93,32 @@ export class WebAssemblyResourceLoader {
       return cachedResponse;
     } else {
       // It's not in the cache. Fetch from network.
-      const networkResponse = await fetch(url, { cache: networkFetchCacheMode, integrity: contentHash });
+      const networkResponse = await this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
       this.addToCacheAsync(cache, name, cacheKey, networkResponse); // Don't await - add to cache in background
       return networkResponse;
     }
+  }
+
+  private loadResourceWithoutCaching(name: string, url: string, contentHash: string, resourceType: WebAssemblyBootResourceType): Promise<Response> {
+    // Allow developers to override how the resource is loaded
+    if (this.startOptions.loadBootResource) {
+      const customLoadResult = this.startOptions.loadBootResource(resourceType, name, url, contentHash);
+      if (customLoadResult instanceof Promise) {
+        // They are supplying an entire custom response, so just use that
+        return customLoadResult;
+      } else if (typeof customLoadResult === 'string') {
+        // They are supplying a custom URL, so use that with the default fetch behavior
+        url = customLoadResult;
+      }
+    }
+
+    // Note that if cacheBootResources was explicitly disabled, we also bypass hash checking
+    // This is to give developers an easy opt-out from the entire caching/validation flow if
+    // there's anything they don't like about it.
+    return fetch(url, {
+      cache: networkFetchCacheMode,
+      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined
+    });
   }
 
   private async addToCacheAsync(cache: Cache, name: string, cacheKey: string, response: Response) {
