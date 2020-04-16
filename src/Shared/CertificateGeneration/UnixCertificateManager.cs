@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var export = certificate.Export(X509ContentType.Pkcs12, "");
             certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
-            certificate.FriendlyName = certificate.FriendlyName;
 
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
