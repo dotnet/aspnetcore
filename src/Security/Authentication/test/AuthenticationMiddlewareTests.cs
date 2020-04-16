@@ -54,49 +54,59 @@ namespace Microsoft.AspNetCore.Authentication
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(), "Default");
             var result = AuthenticateResult.Success(ticket);
             SimpleHandler.Result = result;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
                 {
-                    app.UseAuthentication();
-                    app.Use((context, next) =>
+                    webBuilder.ConfigureServices(services => services.AddAuthentication(o =>
                     {
-                        var auth = context.Features.Get<IAuthenticationResultFeature>();
-                        Assert.True(auth.Result.Ticket.Principal == ticket.Principal);
-                        context.Response.StatusCode = 200;
-                        return Task.CompletedTask;
+                        o.AddScheme("Default", s =>
+                        {
+                            s.HandlerType = typeof(SimpleHandler);
+                        });
+                        o.DefaultScheme = "Default";
+                    }))
+                    .Configure(app => 
+                    { 
+                        app.UseAuthentication();
+                        app.Use((context, next) =>
+                        {
+                            var auth = context.Features.Get<IAuthenticationResultFeature>();
+                            Assert.True(auth.Result.Ticket.Principal == ticket.Principal);
+                            context.Response.StatusCode = 200;
+                            return Task.CompletedTask;
+                        });
                     });
-                })
-                .ConfigureServices(services => services.AddAuthentication(o =>
-                {
-                    o.AddScheme("Default", s =>
-                    {
-                        s.HandlerType = typeof(SimpleHandler);
-                    });
-                    o.DefaultScheme = "Default";
-                }));
-            var server = new TestServer(builder);
-            var response = await server.CreateClient().GetAsync("http://example.com/");
+                }).Build();
+            await host.StartAsync();
+
+            var response = await host.GetTestServer().CreateClient().GetAsync("/");
             response.EnsureSuccessStatusCode();
+            
         }
 
         [Fact]
         public async Task CanUseAuthenticationResultFeatureWithNoDefaultScheme()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
                 {
-                    app.UseAuthentication();
-                    app.Use((context, next) =>
-                    {
-                        var auth = context.Features.Get<IAuthenticationResultFeature>();
-                        Assert.Null(auth.Result);
-                        context.Response.StatusCode = 200;
-                        return Task.CompletedTask;
+                    webBuilder.ConfigureServices(services => services.AddAuthentication())
+                    .Configure(app => 
+                    { 
+                        app.UseAuthentication();
+                        app.Use((context, next) =>
+                        {
+                            var auth = context.Features.Get<IAuthenticationResultFeature>();
+                            Assert.Null(auth.Result);
+                            context.Response.StatusCode = 200;
+                            return Task.CompletedTask;
+                        });
                     });
-                })
-                .ConfigureServices(services => services.AddAuthentication());
-            var server = new TestServer(builder);
-            var response = await server.CreateClient().GetAsync("http://example.com/");
+                }).Build();
+            await host.StartAsync();
+
+            var response = await host.GetTestServer().CreateClient().GetAsync("/");
             response.EnsureSuccessStatusCode();
         }
 
