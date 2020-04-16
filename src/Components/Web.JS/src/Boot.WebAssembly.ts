@@ -10,10 +10,11 @@ import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader'
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
+import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 
 let started = false;
 
-async function boot(options?: any): Promise<void> {
+async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   if (started) {
     throw new Error('Blazor has already started.');
@@ -43,7 +44,7 @@ async function boot(options?: any): Promise<void> {
   const bootConfigResult = await BootConfigResult.initAsync();
 
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
 
   try {

@@ -3,6 +3,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
 import { loadTimezoneData } from './TimezoneDataFile';
+import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 
 let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
@@ -138,15 +139,28 @@ function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   const dotnetJsResourceName = Object
     .keys(resourceLoader.bootConfig.resources.runtime)
     .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
+  const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
   const scriptElem = document.createElement('script');
   scriptElem.src = `_framework/wasm/${dotnetJsResourceName}`;
   scriptElem.defer = true;
 
   // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
   if (resourceLoader.bootConfig.cacheBootResources) {
-    const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
-    scriptElem.integrity = contentHash;
+    scriptElem.integrity = dotnetJsContentHash;
     scriptElem.crossOrigin = 'anonymous';
+  }
+
+  // Allow overriding the URI from which the dotnet.*.js file is loaded
+  if (resourceLoader.startOptions.loadBootResource) {
+    const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
+    const customSrc = resourceLoader.startOptions.loadBootResource(
+      resourceType, dotnetJsResourceName, scriptElem.src, dotnetJsContentHash);
+    if (typeof(customSrc) === 'string') {
+      scriptElem.src = customSrc;
+    } else if (customSrc) {
+      // Since we must load this via a <script> tag, it's only valid to supply a URI (and not a Request, say)
+      throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
+    }
   }
 
   document.body.appendChild(scriptElem);
@@ -186,12 +200,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
-  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`);
-  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/_bin/${filename}`);
+  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`, 'assembly');
+  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/_bin/${filename}`, 'pdb');
   const wasmBeingLoaded = resourceLoader.loadResource(
     /* name */ dotnetWasmResourceName,
     /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
+    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
+    /* type */ 'dotnetwasm');
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
   let timeZoneResource: LoadingResource | undefined;
@@ -199,7 +214,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     timeZoneResource = resourceLoader.loadResource(
       dotnetTimeZoneResourceName,
       `_framework/wasm/${dotnetTimeZoneResourceName}`,
-      resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName]);
+      resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
+      'timezonedata');
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -243,7 +259,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
             .filter(culture => satelliteResources.hasOwnProperty(culture))
-            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`))
+            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`, 'assembly'))
             .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
             .map(async resource => (await resource.response).arrayBuffer()));
 

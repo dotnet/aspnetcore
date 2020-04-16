@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace HostedInAspNet.Server
 {
-    public class RequestLog
+    public class BootResourceRequestLog
     {
         private List<string> _requestPaths = new List<string>();
 
