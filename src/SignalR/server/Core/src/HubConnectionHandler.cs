@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userIdProvider">The user ID provider used to get the user ID from a hub connection.</param>
         /// <param name="serviceScopeFactory">The service scope factory.</param>
-        /// <param name="hubFilter"></param>
         /// <remarks>This class is typically created via dependency injection.</remarks>
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
@@ -53,8 +52,7 @@ namespace Microsoft.AspNetCore.SignalR
                                     IOptions<HubOptions<THub>> hubOptions,
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
-                                    IServiceScopeFactory serviceScopeFactory,
-                                    IHubFilter hubFilter
+                                    IServiceScopeFactory serviceScopeFactory
         )
         {
             _protocolResolver = protocolResolver;
@@ -81,8 +79,7 @@ namespace Microsoft.AspNetCore.SignalR
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
                 _enableDetailedErrors,
-                new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
-                hubFilter);
+                new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
         }
 
         /// <inheritdoc />

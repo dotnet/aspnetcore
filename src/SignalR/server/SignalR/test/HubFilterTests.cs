@@ -10,60 +10,143 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class HubFilterTests : VerifiableLoggedTest
     {
-        // Add single filter by type
-        // Add single filter by instance
         // Add multiple filters and check order
         // Add multiple filters type + instance
         // Add filter by type and AddSingleton of that type
         // Per Hub filters
 
-        public class F : IHubFilter
+        public class VerifyMethodFilter : IHubFilter
         {
-            public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            private readonly TcsService _service;
+            public VerifyMethodFilter(TcsService tcsService)
             {
-                return next(context);
+                _service = tcsService;
             }
 
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public async Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
             {
-                throw new NotImplementedException();
+                _service.StartedMethod.TrySetResult(null);
+                await next(context);
+                _service.EndMethod.TrySetResult(null);
             }
 
-            public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
-                return next(context);
+                _service.StartedMethod.TrySetResult(null);
+                var result = await next(invocationContext);
+                _service.EndMethod.TrySetResult(null);
+
+                return result;
+            }
+
+            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            {
+                _service.StartedMethod.TrySetResult(null);
+                await next(context);
+                _service.EndMethod.TrySetResult(null);
             }
         }
 
         [Fact]
-        public async Task GlobalHubFilterIsCalled()
+        public async Task GlobalHubFilterByType_MethodsAreCalled()
         {
             using (StartVerifiableLog())
             {
+                var tcsService = new TcsService();
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
                     services.AddSignalR(options =>
                     {
-                        options.AddFilter<F>();
+                        options.AddFilter<VerifyMethodFilter>();
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                await AssertMethodsCalled(serviceProvider, tcsService);
+            }
+        }
+
+        [Fact]
+        public async Task GlobalHubFilterByInstance_MethodsAreCalled()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.AddFilter(new VerifyMethodFilter(tcsService));
                     });
                 }, LoggerFactory);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                await AssertMethodsCalled(serviceProvider, tcsService);
+            }
+        }
 
-                using (var client = new TestClient())
+        [Fact]
+        public async Task PerHubFilterByInstance_MethodsAreCalled()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                    {
+                        options.AddFilter(new VerifyMethodFilter(tcsService));
+                    });
+                }, LoggerFactory);
 
-                    await client.Connected.OrTimeout();
+                await AssertMethodsCalled(serviceProvider, tcsService);
+            }
+        }
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+        [Fact]
+        public async Task PerHubFilterByType_MethodsAreCalled()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                    {
+                        options.AddFilter<VerifyMethodFilter>();
+                    });
 
-                    Assert.Null(message.Error);
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
 
-                    client.Dispose();
+                await AssertMethodsCalled(serviceProvider, tcsService);
+            }
+        }
 
-                    await connectionHandlerTask.OrTimeout();
-                }
+        private async Task AssertMethodsCalled(IServiceProvider serviceProvider, TcsService tcsService)
+        {
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await tcsService.StartedMethod.Task.OrTimeout();
+                await client.Connected.OrTimeout();
+                await tcsService.EndMethod.Task.OrTimeout();
+
+                tcsService.Reset();
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+                await tcsService.EndMethod.Task.OrTimeout();
+                tcsService.Reset();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.OrTimeout();
+
+                await tcsService.EndMethod.Task.OrTimeout();
             }
         }
     }

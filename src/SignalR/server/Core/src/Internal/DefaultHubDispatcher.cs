@@ -26,16 +26,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly IHubContext<THub> _hubContext;
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
-        private readonly IHubFilter _hubFilter;
 
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-            ILogger<DefaultHubDispatcher<THub>> logger, IHubFilter hubFilter)
+            ILogger<DefaultHubDispatcher<THub>> logger)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _hubContext = hubContext;
             _enableDetailedErrors = enableDetailedErrors;
             _logger = logger;
-            _hubFilter = hubFilter;
             DiscoverHubMethods();
         }
 
@@ -52,6 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
+
                     var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
                     if (hubFilters != null)
                     {
@@ -92,8 +91,22 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 try
                 {
                     InitializeHub(hub, connection);
-                    await _hubFilter.OnDisconnectedAsync(connection.HubCallerContext, (context) => hub.OnDisconnectedAsync(exception));
-                    //await hub.OnDisconnectedAsync(exception);
+
+                    var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
+                    if (hubFilters != null)
+                    {
+                        Func<HubCallerContext, Task> app = (context) => hub.OnDisconnectedAsync(exception);
+                        foreach (var filter in hubFilters)
+                        {
+                            var a = app;
+                            app = (context) => filter.OnDisconnectedAsync(context, a);
+                        }
+                        await app(connection.HubCallerContext);
+                    }
+                    else
+                    {
+                        await hub.OnDisconnectedAsync(exception);
+                    }
                 }
                 finally
                 {
@@ -315,7 +328,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
-                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
+                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
                         if (result == null)
                         {
@@ -341,7 +354,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             object result;
                             try
                             {
-                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection);
+                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
@@ -464,28 +477,56 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection)
+        private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
-            return await _hubFilter.InvokeMethodAsync(new HubInvocationContext(connection.HubCallerContext, hub, methodExecutor.MethodInfo.Name, arguments),
-                async (HubInvocationContext invocationContext) =>
+            var hubFilters = ResolveHubFilters(connection, serviceProvider);
+            if (hubFilters != null)
             {
-                if (methodExecutor.IsMethodAsync)
+                Func<HubInvocationContext, ValueTask<object>> app = async (invocationContext) =>
                 {
-                    if (methodExecutor.MethodReturnType == typeof(Task))
+                    if (methodExecutor.IsMethodAsync)
                     {
-                        await (Task)methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
-                        return null;
+                        if (methodExecutor.MethodReturnType == typeof(Task))
+                        {
+                            await (Task)methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
+                            return null;
+                        }
+                        else
+                        {
+                            return await methodExecutor.ExecuteAsync(hub, invocationContext.HubMethodArguments.ToArray());
+                        }
                     }
                     else
                     {
-                        return await methodExecutor.ExecuteAsync(hub, invocationContext.HubMethodArguments.ToArray());
+                        return methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
                     }
+                };
+
+                var c = new HubInvocationContext(connection.HubCallerContext, hub, methodExecutor.MethodInfo.Name, arguments);
+                foreach (var filter in hubFilters)
+                {
+                    var a = app;
+                    app = (context) => filter.InvokeMethodAsync(context, a);
+                }
+                return await app(c);
+            }
+
+            if (methodExecutor.IsMethodAsync)
+            {
+                if (methodExecutor.MethodReturnType == typeof(Task))
+                {
+                    await (Task)methodExecutor.Execute(hub, arguments);
+                    return null;
                 }
                 else
                 {
-                    return methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
+                    return await methodExecutor.ExecuteAsync(hub, arguments);
                 }
-            });
+            }
+            else
+            {
+                return methodExecutor.Execute(hub, arguments);
+            }
         }
 
         private async Task SendInvocationError(string invocationId,
@@ -607,11 +648,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var count = connection.HubFilters.Count;
             var filters = new List<IHubFilter>(count);
+            // Resolve in reverse order
             for (var i = 1; i <= count; i++)
             {
                 filters.Add(connection.HubFilters[count - i] switch
                 {
-                    Type type => (IHubFilter)ActivatorUtilities.CreateInstance(serviceProvider, type),
+                    // What is this monstrosity
+                    Type type => ((Func<IServiceProvider, Type, IHubFilter>)((IServiceProvider provider, Type t) =>
+                    {
+                        var filter = (IHubFilter)provider.GetService(t);
+                        if (filter == null)
+                        {
+                            filter = (IHubFilter)ActivatorUtilities.CreateInstance(provider, t);
+                        }
+                        return filter;
+                    }))(serviceProvider, type),
                     IHubFilter instance => instance,
                     _ => throw new Exception("unexpected")
                 });
