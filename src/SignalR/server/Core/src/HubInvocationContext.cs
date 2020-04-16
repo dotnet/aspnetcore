@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -14,12 +16,16 @@ namespace Microsoft.AspNetCore.SignalR
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
         /// </summary>
         /// <param name="context">Context for the active Hub connection and caller.</param>
+        /// <param name="serviceProvider"></param>
         /// <param name="hub">The instance of the Hub.</param>
+        /// <param name="methodInfo"></param>
         /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
-        public HubInvocationContext(HubCallerContext context, Hub hub, string hubMethodName, object[] hubMethodArguments): this(context, hubMethodName, hubMethodArguments)
+        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo methodInfo, string hubMethodName, object[] hubMethodArguments): this(context, hubMethodName, hubMethodArguments)
         {
             Hub = hub;
+            ServiceProvider = serviceProvider;
+            MethodInfo = methodInfo;
         }
 
         /// <summary>
@@ -54,5 +60,9 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets the arguments provided by the client.
         /// </summary>
         public IReadOnlyList<object> HubMethodArguments { get; }
+
+        public IServiceProvider ServiceProvider { get; }
+
+        public MethodInfo MethodInfo { get; }
     }
 }

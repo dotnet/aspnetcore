@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 hub = hubActivator.Create();
 
-                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments, hub))
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor, hubMethodInvocationMessage.Arguments, hub))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -484,48 +484,39 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 Func<HubInvocationContext, ValueTask<object>> app = async (invocationContext) =>
                 {
-                    if (methodExecutor.IsMethodAsync)
-                    {
-                        if (methodExecutor.MethodReturnType == typeof(Task))
-                        {
-                            await (Task)methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
-                            return null;
-                        }
-                        else
-                        {
-                            return await methodExecutor.ExecuteAsync(hub, invocationContext.HubMethodArguments.ToArray());
-                        }
-                    }
-                    else
-                    {
-                        return methodExecutor.Execute(hub, invocationContext.HubMethodArguments.ToArray());
-                    }
+                    return await ExecuteMethod(methodExecutor, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray());
                 };
 
-                var c = new HubInvocationContext(connection.HubCallerContext, hub, methodExecutor.MethodInfo.Name, arguments);
+                var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, methodExecutor.MethodInfo.Name, arguments);
                 foreach (var filter in hubFilters)
                 {
                     var a = app;
                     app = (context) => filter.InvokeMethodAsync(context, a);
                 }
-                return await app(c);
+                return await app(invocationContext);
             }
 
-            if (methodExecutor.IsMethodAsync)
+            // If no Hub filters are registered
+            return await ExecuteMethod(methodExecutor, hub, arguments);
+
+            static async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
             {
-                if (methodExecutor.MethodReturnType == typeof(Task))
+                if (methodExecutor.IsMethodAsync)
                 {
-                    await (Task)methodExecutor.Execute(hub, arguments);
-                    return null;
+                    if (methodExecutor.MethodReturnType == typeof(Task))
+                    {
+                        await (Task)methodExecutor.Execute(hub, arguments);
+                        return null;
+                    }
+                    else
+                    {
+                        return await methodExecutor.ExecuteAsync(hub, arguments);
+                    }
                 }
                 else
                 {
-                    return await methodExecutor.ExecuteAsync(hub, arguments);
+                    return methodExecutor.Execute(hub, arguments);
                 }
-            }
-            else
-            {
-                return methodExecutor.Execute(hub, arguments);
             }
         }
 
@@ -547,15 +538,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments, Hub hub)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object[] hubMethodArguments, Hub hub)
         {
             // If there are no policies we don't need to run auth
-            if (policies.Count == 0)
+            if (descriptor.Policies.Count == 0)
             {
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hub, hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, null, descriptor.MethodExecutor.MethodInfo.Name, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
