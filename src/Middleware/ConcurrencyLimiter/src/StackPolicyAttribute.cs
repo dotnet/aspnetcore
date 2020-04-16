@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     /// <summary>
     /// Specifies that the class or method that this attribute applied to requires limit concurrency request with LIFO stack as queueing strategy.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class StackPolicyAttribute : Attribute, IQueuePolicy
     {
         private readonly StackPolicy _stackPolicy;

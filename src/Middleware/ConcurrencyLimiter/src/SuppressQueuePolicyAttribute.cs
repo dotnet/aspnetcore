@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     /// <summary>
     /// Specifies that the class or method that this attribute applied to does not limit concurrency request.
     /// </summary>
-    public class SuppressQueuePolicyAttribute : ISuppressQueuePolicyMetadata
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    public class SuppressQueuePolicyAttribute : Attribute, ISuppressQueuePolicyMetadata
     {
     }
 }
