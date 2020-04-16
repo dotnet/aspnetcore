@@ -17,7 +17,7 @@ export DOTNET_ROOT="$DIR/.dotnet$RANDOM"
 export PATH="$DOTNET_ROOT:$PATH:$DIR/node/bin"
 
 # Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
-export DOTNET_MULTILEVEL_LOOKUP=0
+export DOTNET_MULTILEVEL_LOOKUP=0 
 
 # Avoid contaminating userprofiles
 # Add $random to path to ensure tests don't expect home to be in a particular path
@@ -72,10 +72,10 @@ fi
 sync
 
 exit_code=0
-echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
-$DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9..."
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9
+echo "Restore: dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
+dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
+echo "Running tests: dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9..."
+dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 exit $exit_code
