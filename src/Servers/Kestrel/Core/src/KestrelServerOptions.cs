@@ -225,9 +225,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Bind to given IP endpoint.
+        /// Bind to the given IP endpoint.
         /// </summary>
         public void Listen(IPEndPoint endPoint)
+        {
+            Listen((EndPoint)endPoint);
+        }
+
+        /// <summary>
+        /// Bind to the given endpoint.
+        /// </summary>
+        /// <param name="endPoint"></param>
+        public void Listen(EndPoint endPoint)
         {
             Listen(endPoint, _ => { });
         }
@@ -237,6 +246,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The callback configures endpoint-specific settings.
         /// </summary>
         public void Listen(IPEndPoint endPoint, Action<ListenOptions> configure)
+        {
+            Listen((EndPoint)endPoint, configure);
+        }
+
+        /// <summary>
+        /// Bind to given IP address and port.
+        /// The callback configures endpoint-specific settings.
+        /// </summary>
+        public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
         {
             if (endPoint == null)
             {

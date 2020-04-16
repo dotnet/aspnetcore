@@ -139,6 +139,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader Configure(Microsoft.Extensions.Configuration.IConfiguration config) { throw null; }
         public void ConfigureEndpointDefaults(System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configureOptions) { }
         public void ConfigureHttpsDefaults(System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions> configureOptions) { }
+        public void Listen(System.Net.EndPoint endPoint) { }
+        public void Listen(System.Net.EndPoint endPoint, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configure) { }
         public void Listen(System.Net.IPAddress address, int port) { }
         public void Listen(System.Net.IPAddress address, int port, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configure) { }
         public void Listen(System.Net.IPEndPoint endPoint) { }
@@ -156,6 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         internal ListenOptions() { }
         public System.IServiceProvider ApplicationServices { get { throw null; } }
+        public System.Net.EndPoint EndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public ulong FileHandle { get { throw null; } }
         public System.Net.IPEndPoint IPEndPoint { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions KestrelServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
