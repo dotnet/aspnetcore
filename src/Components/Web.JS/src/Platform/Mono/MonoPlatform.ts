@@ -10,6 +10,24 @@ const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
+// Memory access helpers
+// The implementations are exactly equivalent to what the global getValue(addr, type) function does,
+// except without having to parse the 'type' parameter, and with less risk of mistakes at the call site
+function getValueI16(ptr: number) { return Module.HEAP16[ptr >> 1]; }
+function getValueI32(ptr: number) { return Module.HEAP32[ptr >> 2]; }
+function getValueFloat(ptr: number) { return Module.HEAPF32[ptr >> 2]; }
+function getValueU64(ptr: number) {
+  // There is no Module.HEAPU64, and Module.getValue(..., 'i64') doesn't work because the implementation
+  // treats 'i64' as being the same as 'i32'. Also we must take care to read both halves as unsigned.
+  const heapU32Index = ptr >> 2;
+  const highPart = Module.HEAPU32[heapU32Index + 1];
+  if (highPart > maxSafeNumberHighPart) {
+    throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
+  }
+
+  return (highPart * uint64HighOrderShift) + Module.HEAPU32[heapU32Index];
+}
+
 export const monoPlatform: Platform = {
   start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
@@ -44,12 +62,12 @@ export const monoPlatform: Platform = {
 
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
     const dataPtr = getArrayDataPointer(array);
-    const length = Module.getValue(dataPtr, 'i32');
+    const length = getValueI32(dataPtr);
     return new Uint8Array(Module.HEAPU8.buffer, dataPtr + 4, length);
   },
 
   getArrayLength: function getArrayLength(array: System_Array<any>): number {
-    return Module.getValue(getArrayDataPointer(array), 'i32');
+    return getValueI32(getArrayDataPointer(array));
   },
 
   getArrayEntryPtr: function getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr {
@@ -64,36 +82,27 @@ export const monoPlatform: Platform = {
   },
 
   readInt16Field: function readHeapInt16(baseAddress: Pointer, fieldOffset?: number): number {
-    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i16');
+    return getValueI16((baseAddress as any as number) + (fieldOffset || 0));
   },
 
   readInt32Field: function readHeapInt32(baseAddress: Pointer, fieldOffset?: number): number {
-    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
+    return getValueI32((baseAddress as any as number) + (fieldOffset || 0));
   },
 
   readUint64Field: function readHeapUint64(baseAddress: Pointer, fieldOffset?: number): number {
-    // Module.getValue(..., 'i64') doesn't work because the implementation treats 'i64' as
-    // being the same as 'i32'. Also we must take care to read both halves as unsigned.
-    const address = (baseAddress as any as number) + (fieldOffset || 0);
-    const heapU32Index = address >> 2;
-    const highPart = Module.HEAPU32[heapU32Index + 1];
-    if (highPart > maxSafeNumberHighPart) {
-      throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
-    }
-
-    return (highPart * uint64HighOrderShift) + Module.HEAPU32[heapU32Index];
+    return getValueU64((baseAddress as any as number) + (fieldOffset || 0));
   },
 
   readFloatField: function readHeapFloat(baseAddress: Pointer, fieldOffset?: number): number {
-    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'float');
+    return getValueFloat((baseAddress as any as number) + (fieldOffset || 0));
   },
 
   readObjectField: function readHeapObject<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T {
-    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as T;
+    return getValueI32((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 
   readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null {
-    const fieldValue = Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
+    const fieldValue = getValueI32((baseAddress as any as number) + (fieldOffset || 0));
     if (fieldValue === 0) {
       return null;
     }
@@ -194,7 +203,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-  module.instantiateWasm = (imports, successCallback): WebAssembly.Exports => {
+  module.instantiateWasm = (imports, successCallback): Emscripten.WebAssemblyExports => {
     (async () => {
       let compiledInstance: WebAssembly.Instance;
       try {
@@ -211,9 +220,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
-    mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
-    mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
-
+    mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
+    mono_string_get_utf8 = cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     MONO.loaded_files = [];
 
     if (timeZoneResource) {
@@ -265,7 +273,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
-    const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
+    const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     load_runtime(appBinDirName, hasDebuggingEnabled() ? 1 : 0);
     MONO.mono_wasm_runtime_ready ();
     attachInteropInvoker();
@@ -276,7 +284,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   async function addResourceAsAssembly(dependency: LoadingResource, loadAsName: string) {
     const runDependencyId = `blazor:${dependency.name}`;
-    Module.addRunDependency(runDependencyId);
+    addRunDependency(runDependencyId);
 
     try {
       // Wait for the data to be loaded and verified
@@ -294,7 +302,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         return;
     }
 
-    Module.removeRunDependency(runDependencyId);
+    removeRunDependency(runDependencyId);
   }
 }
 
@@ -355,13 +363,13 @@ function attachInteropInvoker(): void {
 
 async function loadTimezone(timeZoneResource: LoadingResource) : Promise<void> {
   const runDependencyId = `blazor:timezonedata`;
-  Module.addRunDependency(runDependencyId);
+  addRunDependency(runDependencyId);
 
   const request = await timeZoneResource.response;
   const arrayBuffer = await request.arrayBuffer();
   loadTimezoneData(arrayBuffer)
 
-  Module.removeRunDependency(runDependencyId);
+  removeRunDependency(runDependencyId);
 }
 
 async function compileWasmModule(wasmResource: LoadingResource, imports: any): Promise<WebAssembly.Instance> {
