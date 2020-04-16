@@ -276,6 +276,55 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.Contains("ja/standalone.resources.dll", satelliteResources["ja"].Keys);
         }
 
+
+        [Fact]
+        public async Task Build_WithI8NOption_CopiesI8NAssembliesWithoutLinkerEnabled()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <BlazorWebAssemblyI18NAssemblies>other</BlazorWebAssemblyI18NAssemblies>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.Other.dll");
+            // When running without linker, we copy all I18N assemblies. Look for one additional
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.West.dll");
+        }
+
+        [Fact]
+        public async Task Build_WithI8NOption_CopiesI8NAssembliesWithLinkerEnabled()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
+    <BlazorWebAssemblyI18NAssemblies>other</BlazorWebAssemblyI18NAssemblies>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.Other.dll");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.West.dll");
+        }
+
         private static GenerateBlazorBootJson.BootJsonData ReadBootJsonData(MSBuildResult result, string path)
         {
             return JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(
