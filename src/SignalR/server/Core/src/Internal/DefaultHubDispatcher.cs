@@ -653,19 +653,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 filters.Add(connection.HubFilters[count - i] switch
                 {
-                    // What is this monstrosity
-                    Type type => ((Func<IServiceProvider, Type, IHubFilter>)((IServiceProvider provider, Type t) =>
-                    {
-                        var filter = (IHubFilter)provider.GetService(t);
-                        if (filter == null)
-                        {
-                            filter = (IHubFilter)ActivatorUtilities.CreateInstance(provider, t);
-                        }
-                        return filter;
-                    }))(serviceProvider, type),
+                    Type type => GetHubFilter(serviceProvider, type),
                     IHubFilter instance => instance,
                     _ => throw new Exception("unexpected")
                 });
+            }
+
+            static IHubFilter GetHubFilter(IServiceProvider provider, Type t)
+            {
+                var filter = (IHubFilter)provider.GetService(t);
+                if (filter == null)
+                {
+                    return (IHubFilter)ActivatorUtilities.CreateInstance(provider, t);
+                }
+                return filter;
             }
 
             return filters;
