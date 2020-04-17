@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
@@ -14,12 +15,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     internal class WebAssemblyConsoleLoggerProvider : ILoggerProvider
     {
         private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
-        private readonly IJSInProcessRuntime _jsRuntime;
+        private readonly WebAssemblyJSRuntime _jsRuntime;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyConsoleLoggerProvider"/>.
         /// </summary>
-        public WebAssemblyConsoleLoggerProvider(IJSInProcessRuntime jsRuntime)
+        public WebAssemblyConsoleLoggerProvider(WebAssemblyJSRuntime jsRuntime)
         {
             _loggers = new ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>>();
             _jsRuntime = jsRuntime;

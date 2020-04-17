@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         private static readonly StringBuilder _logBuilder = new StringBuilder();
 
         private readonly string _name;
-        private readonly IJSInProcessRuntime _jsRuntime;
+        private readonly WebAssemblyJSRuntime _jsRuntime;
 
         static WebAssemblyConsoleLogger()
         {
@@ -27,11 +28,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         }
 
         public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
-            : this(string.Empty, (IJSInProcessRuntime)jsRuntime) // Cast for DI
+            : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI
         {
         }
 
-        public WebAssemblyConsoleLogger(string name, IJSInProcessRuntime jsRuntime)
+        public WebAssemblyConsoleLogger(string name, WebAssemblyJSRuntime jsRuntime)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
@@ -98,12 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                             _jsRuntime.InvokeVoid("console.error", formattedMessage);
                             break;
                         case LogLevel.Critical:
-                            // Writing to Console.Error is even more severe than calling console.error,
-                            // because it also causes the error UI (gold bar) to appear. We use Console.Error
-                            // as the signal for triggering that because it's what the underlying dotnet.wasm
-                            // runtime will do if it encounters a truly severe error outside the Blazor
-                            // code paths.
-                            Console.Error.WriteLine(formattedMessage);
+                            _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
                             break;
                         default: // LogLevel.None or invalid enum values
                             Console.WriteLine(formattedMessage);
