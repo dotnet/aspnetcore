@@ -7,6 +7,7 @@
   "typings": "./dist/esm/index.d.ts",
   "umd": "./dist/browser/signalr.js",
   "umd_name": "signalR",
+  "unpkg": "./dist/browser/signalr.js",
   "directories": {
     "test": "spec"
   },
