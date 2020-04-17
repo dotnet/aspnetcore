@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
         internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 
-        internal ListenOptions(IPEndPoint endPoint)
+        internal ListenOptions(EndPoint endPoint)
         {
             EndPoint = endPoint;
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
-        internal EndPoint EndPoint { get; set; }
+        public EndPoint EndPoint { get; internal set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
