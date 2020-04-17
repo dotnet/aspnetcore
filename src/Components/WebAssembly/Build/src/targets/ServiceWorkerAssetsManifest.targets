@@ -178,7 +178,7 @@
 
   <Target Name="_OmitServiceWorkerContent"
     Condition="'$(ServiceWorkerAssetsManifest)' != ''"
-    BeforeTargets="AssignTargetPaths;ResolveCurrentProjectStaticWebAssets">
+    BeforeTargets="AssignTargetPaths;ResolveCurrentProjectStaticWebAssetsInputs">
 
     <ItemGroup>
       <!-- Don't emit the service worker source files to the output -->
