@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
   </PropertyGroup>
 
   <ItemGroup>
