@@ -152,7 +152,14 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
-                await _dispatcher.OnConnectedAsync(connection);
+                if (!await _dispatcher.OnConnectedAsync(connection))
+                {
+                    // TODO: log
+
+                    // The client shouldn't try to reconnect if OnConnected threw or wasn't called
+                    await SendCloseAsync(connection, exception: null, allowReconnect: false);
+                    return;
+                }
             }
             catch (Exception ex)
             {

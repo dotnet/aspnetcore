@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -659,6 +660,114 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal(1, counter.OnConnectedAsyncCount);
                     Assert.Equal(1, counter.InvokeMethodAsyncCount);
                     Assert.Equal(1, counter.OnDisconnectedAsyncCount);
+                }
+            }
+        }
+
+        public class NoExceptionFilter : IHubFilter
+        {
+            public async Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            {
+                try
+                {
+                    await next(context);
+                }
+                catch { }
+            }
+
+            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            {
+                try
+                {
+                    await next(context);
+                }
+                catch { }
+            }
+
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            {
+                try
+                {
+                    return await next(invocationContext);
+                }
+                catch { }
+
+                return null;
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionDisconnectedIfOnConnectedAsyncThrowsAndFilterDoesNot()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.AddFilter<NoExceptionFilter>();
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedThrowsHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+
+                    Assert.False(closeMessage.AllowReconnect);
+                    Assert.Null(closeMessage.Error);
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        public class SkipNextFilter : IHubFilter
+        {
+            public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            {
+                return Task.CompletedTask;
+            }
+
+            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            {
+                await next(context);
+            }
+
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            {
+                return await next(invocationContext);
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionDisconnectedIfOnConnectedAsyncNotCalledByFilter()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.AddFilter<SkipNextFilter>();
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+
+                    Assert.False(closeMessage.AllowReconnect);
+                    Assert.Null(closeMessage.Error);
+
+                    await connectionHandlerTask.OrTimeout();
                 }
             }
         }

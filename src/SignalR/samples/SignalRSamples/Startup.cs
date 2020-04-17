@@ -42,11 +42,11 @@ namespace SignalRSamples
                 _h.HttpContext = invocationContext.Context.GetHttpContext();
                 _logger.LogInformation("Starting invoke");
                 var res = await next(invocationContext);
-                if (invocationContext.HubMethodName == nameof(Chat.Echo))
+                if (invocationContext.HubMethod.Name == nameof(Chat.Echo))
                 {
                     return "test";
                 }
-                else if (invocationContext.HubMethodName == nameof(Streaming.AsyncEnumerableCounter))
+                else if (invocationContext.HubMethod.Name == nameof(Streaming.AsyncEnumerableCounter))
                 {
                     return Add((IAsyncEnumerable<int>)res);
 

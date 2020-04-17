@@ -18,14 +18,16 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="context">Context for the active Hub connection and caller.</param>
         /// <param name="serviceProvider"></param>
         /// <param name="hub">The instance of the Hub.</param>
-        /// <param name="methodInfo"></param>
-        /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
+        /// <param name="hubMethod"></param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
-        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo methodInfo, string hubMethodName, object[] hubMethodArguments): this(context, hubMethodName, hubMethodArguments)
+        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo hubMethod, object[] hubMethodArguments)
+#pragma warning disable CS0618 // Type or member is obsolete
+            : this(context, hubMethod.Name, hubMethodArguments)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             Hub = hub;
             ServiceProvider = serviceProvider;
-            MethodInfo = methodInfo;
+            HubMethod = hubMethod;
         }
 
         /// <summary>
@@ -34,9 +36,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="context">Context for the active Hub connection and caller.</param>
         /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is to use the other constructor.")]
         public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             HubMethodName = hubMethodName;
+#pragma warning restore CS0618 // Type or member is obsolete
             HubMethodArguments = hubMethodArguments;
             Context = context;
         }
@@ -54,6 +59,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the name of the Hub method being invoked.
         /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is to use HubMethod.Name.")]
         public string HubMethodName { get; }
 
         /// <summary>
@@ -63,6 +69,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         public IServiceProvider ServiceProvider { get; }
 
-        public MethodInfo MethodInfo { get; }
+        public MethodInfo HubMethod { get; }
     }
 }

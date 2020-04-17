@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             DiscoverHubMethods();
         }
 
-        public override async Task OnConnectedAsync(HubConnectionContext connection)
+        public override async Task<bool> OnConnectedAsync(HubConnectionContext connection)
         {
             IServiceScope scope = null;
 
@@ -54,13 +54,30 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
                     if (hubFilters != null)
                     {
-                        Func<HubCallerContext, Task> app = (context) => hub.OnConnectedAsync();
+                        bool isConnected = false;
+                        Func<HubCallerContext, Task> app = async (context) =>
+                        {
+                            // Need to check if this was called, if it wasn't one of the filters is refusing the connection
+                            isConnected = true;
+                            try
+                            {
+                                await hub.OnConnectedAsync();
+                            }
+                            catch
+                            {
+                                // If OnConnectedAsync threw we want to close the connection, we can't trust Hub filters to not swallow the exception
+                                // so we need to check if there was one here
+                                isConnected = false;
+                                throw;
+                            }
+                        };
                         foreach (var filter in hubFilters)
                         {
                             var a = app;
                             app = (context) => filter.OnConnectedAsync(context, a);
                         }
                         await app(connection.HubCallerContext);
+                        return isConnected;
                     }
                     else
                     {
@@ -76,6 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 await scope.DisposeAsync();
             }
+            return true;
         }
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception exception)
@@ -477,7 +495,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+        private Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
             var hubFilters = ResolveHubFilters(connection, serviceProvider);
             if (hubFilters != null)
@@ -487,17 +505,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return await ExecuteMethod(methodExecutor, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray());
                 };
 
-                var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, methodExecutor.MethodInfo.Name, arguments);
+                var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, arguments);
                 foreach (var filter in hubFilters)
                 {
                     var a = app;
                     app = (context) => filter.InvokeMethodAsync(context, a);
                 }
-                return await app(invocationContext);
+                return app(invocationContext).AsTask();
             }
 
             // If no Hub filters are registered
-            return await ExecuteMethod(methodExecutor, hub, arguments);
+            return ExecuteMethod(methodExecutor, hub, arguments);
 
             static async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
             {
@@ -546,7 +564,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, null, descriptor.MethodExecutor.MethodInfo.Name, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
