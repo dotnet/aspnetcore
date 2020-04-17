@@ -141,7 +141,8 @@ namespace RunTests
                         $"tool install dotnet-ef --global --version {Options.EfVersion}",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false); // EF tool is sometimes already installed so we can ignore this failure
 
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
