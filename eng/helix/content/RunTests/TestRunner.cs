@@ -120,22 +120,28 @@ namespace RunTests
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables);
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables);
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine);
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget list source",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"tool install dotnet-ef --global --version {Options.EfVersion}",
-                        environmentVariables: EnvironmentVariables);
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine);
 
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
@@ -219,7 +225,7 @@ namespace RunTests
                         commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false);
 
                     if (result.ExitCode != 0)

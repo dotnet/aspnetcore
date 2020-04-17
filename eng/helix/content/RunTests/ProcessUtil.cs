@@ -98,7 +98,7 @@ namespace RunTests
                 Console.WriteLine($"'{process.StartInfo.FileName} {process.StartInfo.Arguments}' completed with exit code '{process.ExitCode}'");
                 if (throwOnError && process.ExitCode != 0)
                 {
-                    processLifetimeTask.TrySetException(new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}"));
+                    processLifetimeTask.TrySetException(new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode} output: {outputBuilder.ToString()}"));
                 }
                 else
                 {
