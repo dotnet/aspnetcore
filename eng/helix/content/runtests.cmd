@@ -28,5 +28,6 @@ dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime 
 if errorlevel 1 (
     set exit_code=1
 )
+dotnet tool install dotnet-ef --global --version 5.0.0-preview.4.20216.3
 echo "Finished running tests: exit_code=%exit_code%"
 exit /b %exit_code%
