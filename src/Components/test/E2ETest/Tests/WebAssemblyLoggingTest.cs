@@ -85,11 +85,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("log-none")).Click();
             Browser.FindElement(By.Id("log-trace")).Click();
             Browser.FindElement(By.Id("log-debug")).Click();
-            AssertLastLogMessage(LogLevel.Info, "Test log message");
+            Browser.FindElement(By.Id("log-information")).Click();
+            // The Warning minimum log-level is only set on the PrependMessage
+            // logger so the last info log will be processed by the default
+            // logger but not the PrependMessage one.
+            AssertLastLogMessage(LogLevel.Info, "info: BasicTestApp.ErrorComponent[0]");
 
             // These severity levels are displayed
-            Browser.FindElement(By.Id("log-information")).Click();
-            AssertLastLogMessage(LogLevel.Info, "[Custom logger] This is a Information message with count=4");
             Browser.FindElement(By.Id("log-warning")).Click();
             AssertLastLogMessage(LogLevel.Warning, "[Custom logger] This is a Warning message with count=5");
             Browser.FindElement(By.Id("log-error")).Click();
