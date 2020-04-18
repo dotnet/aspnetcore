@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
@@ -69,7 +70,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-            return await GetAndRefreshAsync(key, getData: true, token: token);
+            return await GetAndRefreshAsync(key, getData: true, token: token).ConfigureAwait(false);
         }
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
@@ -124,7 +125,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-            await ConnectAsync(token);
+            await ConnectAsync(token).ConfigureAwait(false);
 
             var creationTime = DateTimeOffset.UtcNow;
 
@@ -137,7 +138,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
                         value
-                });
+                }).ConfigureAwait(false);
         }
 
         public void Refresh(string key)
@@ -159,7 +160,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-            await GetAndRefreshAsync(key, getData: false, token: token);
+            await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
         private void Connect()
@@ -200,18 +201,18 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return;
             }
 
-            await _connectionLock.WaitAsync(token);
+            await _connectionLock.WaitAsync(token).ConfigureAwait(false);
             try
             {
                 if (_cache == null)
                 {
                     if (_options.ConfigurationOptions != null)
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions);
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);                  
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);                  
                     }
                     
                     _cache = _connection.GetDatabase();
@@ -268,25 +269,25 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-            await ConnectAsync(token);
+            await ConnectAsync(token).ConfigureAwait(false);
 
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
             if (getData)
             {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
             }
             else
             {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
             }
 
             // TODO: Error handling
             if (results.Length >= 2)
             {
                 MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-                await RefreshAsync(key, absExpr, sldExpr, token);
+                await RefreshAsync(key, absExpr, sldExpr, token).ConfigureAwait(false);
             }
 
             if (results.Length >= 3 && results[2].HasValue)
@@ -317,9 +318,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            await ConnectAsync(token);
+            await ConnectAsync(token).ConfigureAwait(false);
 
-            await _cache.KeyDeleteAsync(_instance + key);
+            await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
             // TODO: Error handling
         }
 
@@ -386,7 +387,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                await _cache.KeyExpireAsync(_instance + key, expr);
+                await _cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
                 // TODO: Error handling
             }
         }
