@@ -133,8 +133,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             using (response)
             using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                var options = new PipeOptions(pauseWriterThreshold: 0, resumeWriterThreshold: 0);
-                var reader = PipeReaderFactory.CreateFromStream(options, stream, cancellationToken);
+                var reader = PipeReader.Create(stream);
 
                 try
                 {
