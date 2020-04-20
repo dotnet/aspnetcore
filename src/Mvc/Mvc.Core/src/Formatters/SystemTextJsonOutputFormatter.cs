@@ -40,7 +40,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (jsonSerializerOptions.Encoder is null)
             {
                 // If the user hasn't explicitly configured the encoder, use the less strict encoder that does not encode all non-ASCII characters.
-                jsonSerializerOptions = jsonSerializerOptions.Copy(JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
+                jsonSerializerOptions = new JsonSerializerOptions(jsonSerializerOptions)
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                };
             }
 
             return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
