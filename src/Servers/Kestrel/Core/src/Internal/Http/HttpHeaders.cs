@@ -277,6 +277,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static unsafe ConnectionOptions ParseConnection(StringValues connection)
         {
+            ulong lowerCaseUlong = 0x0020_0020_0020_0020;
+            ulong keepChars = 0x0070_0065_0065_006b;
+            ulong alivChars = 0x0076_0069_006c_0061;
+
             var connectionOptions = ConnectionOptions.None;
 
             var connectionCount = connection.Count;
@@ -303,27 +307,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         var tokenLength = tokenEnd - ch;
 
-                        if (tokenLength >= 9 && (*ch | 0x20) == 'k')
+                        if (tokenLength >= 9 && (*(ulong*)ch | lowerCaseUlong) == keepChars)
                         {
-                            if ((*++ch | 0x20) == 'e' &&
-                                (*++ch | 0x20) == 'e' &&
-                                (*++ch | 0x20) == 'p' &&
-                                *++ch == '-' &&
-                                (*++ch | 0x20) == 'a' &&
-                                (*++ch | 0x20) == 'l' &&
-                                (*++ch | 0x20) == 'i' &&
-                                (*++ch | 0x20) == 'v' &&
-                                (*++ch | 0x20) == 'e')
+                            ch += sizeof(ulong) / sizeof(char);
+                            if (*ch == '-')
                             {
                                 ch++;
-                                while (ch < tokenEnd && *ch == ' ')
-                                {
-                                    ch++;
-                                }
 
-                                if (ch == tokenEnd)
+                                if ((*(ulong*)ch | lowerCaseUlong) == alivChars)
                                 {
-                                    connectionOptions |= ConnectionOptions.KeepAlive;
+                                    ch += sizeof(ulong) / sizeof(char);
+                                    if ((*ch | 0x20) == 'e')
+                                    {
+                                        ch++;
+                                        while (ch < tokenEnd && *ch == ' ')
+                                        {
+                                            ch++;
+                                        }
+
+                                        if (ch == tokenEnd)
+                                        {
+                                            connectionOptions |= ConnectionOptions.KeepAlive;
+                                        }
+                                    }
                                 }
                             }
                         }
