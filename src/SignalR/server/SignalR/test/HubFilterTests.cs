@@ -727,19 +727,45 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class SkipNextFilter : IHubFilter
         {
+            private readonly bool _skipOnConnected;
+            private readonly bool _skipInvoke;
+            private readonly bool _skipOnDisconnected;
+
+            public SkipNextFilter(bool skipOnConnected = false, bool skipInvoke = false, bool skipOnDisconnected = false)
+            {
+                _skipOnConnected = skipOnConnected;
+                _skipInvoke = skipInvoke;
+                _skipOnDisconnected = skipOnDisconnected;
+            }
+
             public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
             {
-                return Task.CompletedTask;
+                if (_skipOnConnected)
+                {
+                    return Task.CompletedTask;
+                }
+
+                return next(context);
             }
 
-            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
             {
-                await next(context);
+                if (_skipOnDisconnected)
+                {
+                    return Task.CompletedTask;
+                }
+
+                return next(context);
             }
 
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
-                return await next(invocationContext);
+                if (_skipInvoke)
+                {
+                    return new ValueTask<object>(Task.FromResult<object>(null));
+                }
+
+                return next(invocationContext);
             }
         }
 
@@ -752,7 +778,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     services.AddSignalR(options =>
                     {
-                        options.AddFilter<SkipNextFilter>();
+                        options.AddFilter(new SkipNextFilter(skipOnConnected: true));
                     });
                 }, LoggerFactory);
 
@@ -766,6 +792,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.False(closeMessage.AllowReconnect);
                     Assert.Null(closeMessage.Error);
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Invoke()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.AddFilter(new SkipNextFilter(skipInvoke: true));
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+
+                    Assert.Equal("Method not called", message.Error);
+
+                    client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();
                 }

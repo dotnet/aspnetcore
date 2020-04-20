@@ -31,12 +31,6 @@ namespace SignalRSamples
 
         public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
-            var isReadonly = invocationContext.Context.Items["readonly"];
-            if (isReadonly != null && (bool)isReadonly == true)
-            {
-                throw new HubException("Client is in readonly mode and trying to invoke methods");
-            }
-
             try
             {
                 _h.HttpContext = invocationContext.Context.GetHttpContext();
@@ -70,23 +64,15 @@ namespace SignalRSamples
             }
         }
 
-        private int _connectionCount;
-
         public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
             _h.HttpContext = context.GetHttpContext();
-            var incremented = Interlocked.Increment(ref _connectionCount);
-            if (incremented > 2)
-            {
-                context.Items["readonly"] = true;
-            }
             return next(context);
         }
 
         public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
         {
             _h.HttpContext = context.GetHttpContext();
-            Interlocked.Decrement(ref _connectionCount);
             return next(context);
         }
     }

@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
-                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                        var (methodInvoke, result) = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
                         if (result == null)
                         {
@@ -372,7 +372,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             object result;
                             try
                             {
-                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                                bool methodInvoked;
+                                (methodInvoked, result) = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                                if (!methodInvoked)
+                                {
+                                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                        ErrorMessageHelper.BuildErrorMessage("Method not called", exception: null, _enableDetailedErrors));
+                                    return;
+                                }
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
@@ -495,27 +502,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+        private static async Task<(bool, object)> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
             var hubFilters = ResolveHubFilters(connection, serviceProvider);
             if (hubFilters != null)
             {
+                var invokedMethod = false;
                 Func<HubInvocationContext, ValueTask<object>> app = async (invocationContext) =>
                 {
+                    invokedMethod = true;
                     return await ExecuteMethod(methodExecutor, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray());
                 };
 
                 var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, arguments);
                 foreach (var filter in hubFilters)
                 {
-                    var a = app;
-                    app = (context) => filter.InvokeMethodAsync(context, a);
+                    var nextFilter = app;
+                    app = (context) => filter.InvokeMethodAsync(context, nextFilter);
                 }
-                return app(invocationContext).AsTask();
+                var result = await app(invocationContext);
+                if (invokedMethod)
+                { }
+                return (invokedMethod, result);
             }
 
             // If no Hub filters are registered
-            return ExecuteMethod(methodExecutor, hub, arguments);
+            return (true, await ExecuteMethod(methodExecutor, hub, arguments));
 
             static async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
             {
@@ -648,7 +660,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return descriptor.ParameterTypes;
         }
 
-        private List<IHubFilter> ResolveHubFilters(HubConnectionContext connection, IServiceProvider serviceProvider)
+        private static List<IHubFilter> ResolveHubFilters(HubConnectionContext connection, IServiceProvider serviceProvider)
         {
             if (connection.HubFilters == null)
             {
