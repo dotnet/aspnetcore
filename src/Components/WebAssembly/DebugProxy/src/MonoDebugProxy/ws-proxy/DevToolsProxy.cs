@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using System.Net.WebSockets;
@@ -118,7 +119,10 @@ namespace WebAssembly.Net.Debugging {
 		void Send (WebSocket to, JObject o, CancellationToken token)
 		{
 			var sender = browser == to ? "Send-browser" : "Send-ide";
-			Log ("protocol", $"{sender}: {o}");
+
+			var method = o ["method"]?.ToString ();
+			//if (method != "Debugger.scriptParsed" && method != "Runtime.consoleAPICalled")
+				Log ("protocol", $"{sender}: " + JsonConvert.SerializeObject (o));
 			var bytes = Encoding.UTF8.GetBytes (o.ToString ());
 
 			var queue = GetQueueForSocket (to);
@@ -165,8 +169,11 @@ namespace WebAssembly.Net.Debugging {
 
 		void ProcessBrowserMessage (string msg, CancellationToken token)
 		{
-			Log ("protocol", $"browser: {msg}");
 			var res = JObject.Parse (msg);
+
+			var method = res ["method"]?.ToString ();
+			//if (method != "Debugger.scriptParsed" && method != "Runtime.consoleAPICalled")
+				Log ("protocol", $"browser: {msg}");
 
 			if (res ["id"] == null)
 				pending_ops.Add (OnEvent (new SessionId (res ["sessionId"]?.Value<string> ()), res ["method"].Value<string> (), res ["params"] as JObject, token));

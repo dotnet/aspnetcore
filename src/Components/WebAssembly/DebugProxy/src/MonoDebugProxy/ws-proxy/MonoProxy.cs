@@ -99,6 +99,8 @@ namespace WebAssembly.Net.Debugging {
 			return res.Value? ["result"]? ["value"]?.Value<bool> () ?? false;
 		}
 
+		static int bpIdGenerator;
+
 		protected override async Task<bool> AcceptCommand (MessageId id, string method, JObject args, CancellationToken token)
 		{
 			if (!contexts.TryGetValue (id, out var context))
@@ -174,7 +176,8 @@ namespace WebAssembly.Net.Debugging {
 				}
 
 			case "Debugger.removeBreakpoint": {
-					return await RemoveBreakpoint (id, args, token);
+					await RemoveBreakpoint (id, args, token);
+					break;
 				}
 
 			case "Debugger.resume": {
@@ -247,6 +250,68 @@ namespace WebAssembly.Net.Debugging {
 					}
 					break;
 				}
+
+				// Protocol extensions
+			case "Dotnet-test.setBreakpointByMethod": {
+				Console.WriteLine ("set-breakpoint-by-method: " + id + " " + args);
+
+				var store = await RuntimeReady (id, token);
+				string aname = args ["assemblyName"]?.Value<string> ();
+				string typeName = args ["typeName"]?.Value<string> ();
+				string methodName = args ["methodName"]?.Value<string> ();
+				if (aname == null || typeName == null || methodName == null) {
+					SendResponse (id, Result.Err ("Invalid protocol message '" + args + "'."), token);
+					return true;
+				}
+
+				// GetAssemblyByName seems to work on file names
+				var assembly = store.GetAssemblyByName (aname);
+				if (assembly == null)
+					assembly = store.GetAssemblyByName (aname + ".exe");
+				if (assembly == null)
+					assembly = store.GetAssemblyByName (aname + ".dll");
+				if (assembly == null) {
+					SendResponse (id, Result.Err ("Assembly '" + aname + "' not found."), token);
+					return true;
+				}
+
+				var type = assembly.GetTypeByName (typeName);
+				if (type == null) {
+					SendResponse (id, Result.Err ($"Type '{typeName}' not found."), token);
+					return true;
+				}
+
+				var methodInfo = type.Methods.FirstOrDefault (m => m.Name == methodName);
+				if (methodInfo == null) {
+					SendResponse (id, Result.Err ($"Method '{typeName}:{methodName}' not found."), token);
+					return true;
+				}
+
+				bpIdGenerator ++;
+				string bpid = "by-method-" + bpIdGenerator.ToString ();
+				var request = new BreakpointRequest (bpid, methodInfo);
+				context.BreakpointRequests[bpid] = request;
+
+				var loc = methodInfo.StartLocation;
+				var bp = await SetMonoBreakpoint (id, bpid, loc, token);
+				if (bp.State != BreakpointState.Active) {
+					// FIXME:
+					throw new NotImplementedException ();
+				}
+
+				var resolvedLocation = new {
+					breakpointId = bpid,
+					location = loc.AsLocation ()
+				};
+
+				SendEvent (id, "Debugger.breakpointResolved", JObject.FromObject (resolvedLocation), token);
+
+				SendResponse (id, Result.OkFromObject (new {
+						result = new { breakpointId = bpid, locations = new object [] { loc.AsLocation () }}
+					}), token);
+
+				return true;
+			}
 			}
 
 			return false;
@@ -318,7 +383,7 @@ namespace WebAssembly.Net.Debugging {
 					foreach (var mono_frame in the_mono_frames) {
 						++frame_id;
 						var il_pos = mono_frame ["il_pos"].Value<int> ();
-						var method_token = mono_frame ["method_token"].Value<int> ();
+						var method_token = mono_frame ["method_token"].Value<uint> ();
 						var assembly_name = mono_frame ["assembly_name"].Value<string> ();
 
 						var store = await LoadStore (sessionId, token);
@@ -672,9 +737,9 @@ namespace WebAssembly.Net.Debugging {
 			}
 		}
 
-		async Task<Breakpoint> SetMonoBreakpoint (SessionId sessionId, BreakpointRequest req, SourceLocation location, CancellationToken token)
+		async Task<Breakpoint> SetMonoBreakpoint (SessionId sessionId, string reqId, SourceLocation location, CancellationToken token)
 		{
-			var bp = new Breakpoint (req.Id, location, BreakpointState.Pending);
+			var bp = new Breakpoint (reqId, location, BreakpointState.Pending);
 			var asm_name = bp.Location.CliLocation.Method.Assembly.Name;
 			var method_token = bp.Location.CliLocation.Method.Token;
 			var il_offset = bp.Location.CliLocation.Offset;
@@ -742,12 +807,12 @@ namespace WebAssembly.Net.Debugging {
 			return store;
 		}
 
-		async Task<bool> RemoveBreakpoint(MessageId msg_id, JObject args, CancellationToken token) {
+		async Task RemoveBreakpoint(MessageId msg_id, JObject args, CancellationToken token) {
 			var bpid = args? ["breakpointId"]?.Value<string> ();
 
 			var context = GetContext (msg_id);
 			if (!context.BreakpointRequests.TryGetValue (bpid, out var breakpointRequest))
-				return false;
+				return;
 
 			foreach (var bp in breakpointRequest.Locations) {
 				var res = await SendMonoCommand (msg_id, MonoCommands.RemoveBreakpoint (bp.RemoteId), token);
@@ -759,7 +824,6 @@ namespace WebAssembly.Net.Debugging {
 				}
 			}
 			breakpointRequest.Locations.Clear ();
-			return false;
 		}
 
 		async Task SetBreakpoint (SessionId sessionId, DebugStore store, BreakpointRequest req, CancellationToken token)
@@ -774,8 +838,14 @@ namespace WebAssembly.Net.Debugging {
 			logger.LogDebug ("BP request for '{req}' runtime ready {context.RuntimeReady}", req, GetContext (sessionId).IsRuntimeReady);
 
 			var breakpoints = new List<Breakpoint> ();
+
+			// if column is specified the frontend wants the exact matches
+			// and will clear the bp if it isn't close enough
+			if (req.Column != 0)
+				locations = locations.Where (l => l.Column == req.Column).ToList ();
+
 			foreach (var loc in locations) {
-				var bp = await SetMonoBreakpoint (sessionId, req, loc, token);
+				var bp = await SetMonoBreakpoint (sessionId, req.Id, loc, token);
 
 				// If we didn't successfully enable the breakpoint
 				// don't add it to the list of locations for this id
@@ -820,31 +890,18 @@ namespace WebAssembly.Net.Debugging {
 				return false;
 
 			var src_file = (await LoadStore (msg_id, token)).GetFileById (id);
-			var res = new StringWriter ();
 
 			try {
 				var uri = new Uri (src_file.Url);
 				string source = $"// Unable to find document {src_file.SourceUri}";
 
-				if (uri.IsFile && File.Exists(uri.LocalPath)) {
-					using (var f = new StreamReader (File.Open (uri.LocalPath, FileMode.Open))) {
-						await res.WriteAsync (await f.ReadToEndAsync ());
-					}
+				using (var data = await src_file.GetSourceAsync (checkHash: false, token: token)) {
+						if (data.Length == 0)
+							return false;
 
-					source = res.ToString ();
-				} else if (src_file.SourceUri.IsFile && File.Exists(src_file.SourceUri.LocalPath)) {
-					using (var f = new StreamReader (File.Open (src_file.SourceUri.LocalPath, FileMode.Open))) {
-						await res.WriteAsync (await f.ReadToEndAsync ());
-					}
-
-					source = res.ToString ();
-				} else if(src_file.SourceLinkUri != null) {
-					var doc = await new WebClient ().DownloadStringTaskAsync (src_file.SourceLinkUri);
-					await res.WriteAsync (doc);
-
-					source = res.ToString ();
+						using (var reader = new StreamReader (data))
+							source = await reader.ReadToEndAsync ();
 				}
-
 				SendResponse (msg_id, Result.OkFromObject (new { scriptSource = source }), token);
 			} catch (Exception e) {
 				var o = new {

@@ -89,6 +89,9 @@ namespace WebAssembly.Net.Debugging {
 		public static Result Err (JObject err)
 			=> new Result (null, err);
 
+		public static Result Err (string msg)
+			=> new Result (null, JObject.FromObject (new { message = msg }));
+
 		public static Result Exception (Exception e)
 			=> new Result (null, JObject.FromObject (new { message = e.Message }));
 
@@ -151,7 +154,7 @@ namespace WebAssembly.Net.Debugging {
 		public static MonoCommands GetScopeVariables (int scopeId, params int[] vars)
 			=> new MonoCommands ($"MONO.mono_wasm_get_variables({scopeId}, [ {string.Join (",", vars)} ])");
 
-		public static MonoCommands SetBreakpoint (string assemblyName, int methodToken, int ilOffset)
+		public static MonoCommands SetBreakpoint (string assemblyName, uint methodToken, int ilOffset)
 			=> new MonoCommands ($"MONO.mono_wasm_set_breakpoint (\"{assemblyName}\", {methodToken}, {ilOffset})");
 
 		public static MonoCommands RemoveBreakpoint (int breakpointId)
@@ -251,6 +254,5 @@ namespace WebAssembly.Net.Debugging {
 		}
 
 		public int NextValueTypeId () => Interlocked.Increment (ref nextValueTypeId);
-
 	}
 }
