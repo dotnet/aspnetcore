@@ -44,7 +44,7 @@ namespace RunTests
                 EnvironmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
                 var nugetRestore = Path.Combine(helixDir, "nugetRestore");
                 EnvironmentVariables.Add("NUGET_RESTORE", nugetRestore);
-                var dotnetEFFullPath = Path.Combine(nugetRestore, $"{helixDir}/dotnet-ef.exe");
+                var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
