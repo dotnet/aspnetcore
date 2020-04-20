@@ -55,9 +55,17 @@ namespace Microsoft.Build.Tasks
         {
             if (!SupportsAlgorithm(Algorithm))
             {
-                Log.LogError("UnrecognizedHashAlgorithm", Algorithm);
+                Log.LogError("Unrecognized HashAlgorithm {0}", Algorithm);
                 return false;
             }
+
+            System.Threading.Tasks.Parallel.ForEach(Files, file =>
+            {
+                if (!File.Exists(file.ItemSpec))
+                {
+                    Log.LogError("File not found '{0}", file.ItemSpec);
+                }
+            });
 
             if (Log.HasLoggedErrors)
             {
