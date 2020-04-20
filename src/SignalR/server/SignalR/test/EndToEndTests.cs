@@ -329,15 +329,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
-                    logger.LogInformation("Sending {length} byte message", bytes.Length);
-                    await connection.Transport.Output.WriteAsync(bytes).OrTimeout();
-                    logger.LogInformation("Sent message");
 
-                    logger.LogInformation("Receiving message");
-                    // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).OrTimeout(TimeSpan.FromMinutes(2));
-                    Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
-                    logger.LogInformation("Completed receive");
+                    async Task SendMessage()
+                    {
+                        logger.LogInformation("Sending {length} byte message", bytes.Length);
+                        await connection.Transport.Output.WriteAsync(bytes).OrTimeout();
+                        logger.LogInformation("Sent message");
+                    }
+
+                    async Task ReceiveMessage()
+                    {
+                        logger.LogInformation("Receiving message");
+                        // Big timeout here because it can take a while to receive all the bytes
+                        var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).OrTimeout(TimeSpan.FromMinutes(2));
+                        Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
+                        logger.LogInformation("Completed receive");
+                    }
+
+                    // Send the receive concurrently so that back pressure is released
+                    // for server -> client sends
+                    var sendingTask = SendMessage();
+                    var receivingTask = ReceiveMessage();
+
+                    await sendingTask;
+                    await receivingTask;
                 }
                 catch (Exception ex)
                 {
