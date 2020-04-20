@@ -19,11 +19,20 @@ namespace WebAssembly.Net.Debugging {
 			this.sessionId = sessionId;
 		}
 
+		// hashset treats 0 as unset
 		public override int GetHashCode ()
-			=> sessionId?.GetHashCode () ?? 0;
+			=> sessionId?.GetHashCode () ?? -1;
 
 		public override bool Equals (object obj)
 			=> (obj is SessionId) ? ((SessionId) obj).sessionId == sessionId : false;
+
+		public static bool operator == (SessionId a, SessionId b)
+			=> a.sessionId == b.sessionId;
+
+		public static bool operator != (SessionId a, SessionId b)
+			=> a.sessionId != b.sessionId;
+
+		public static SessionId Null { get; } = new SessionId ();
 
 		public override string ToString ()
 			=> $"session-{sessionId}";
