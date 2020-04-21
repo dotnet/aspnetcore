@@ -14,9 +14,12 @@ using Microsoft.CodeAnalysis;
 namespace WebAssembly.Net.Debugging {
 
 	internal class MonoProxy : DevToolsProxy {
+		HashSet<SessionId> sessions = new HashSet<SessionId> ();
 		Dictionary<SessionId, ExecutionContext> contexts = new Dictionary<SessionId, ExecutionContext> ();
 
-		public MonoProxy (ILoggerFactory loggerFactory) : base(loggerFactory) { }
+		public MonoProxy (ILoggerFactory loggerFactory, bool hideWebDriver = true) : base(loggerFactory) { }
+
+		readonly bool hideWebDriver;
 
 		internal ExecutionContext GetContext (SessionId sessionId)
 		{
@@ -76,7 +79,7 @@ namespace WebAssembly.Net.Debugging {
 					break;
 				}
 
-			case "Debugger.scriptParsed":{
+			case "Debugger.scriptParsed": {
 					var url = args? ["url"]?.Value<string> () ?? "";
 
 					switch (url) {
@@ -89,7 +92,15 @@ namespace WebAssembly.Net.Debugging {
 					Log ("verbose", $"proxying Debugger.scriptParsed ({sessionId.sessionId}) {url} {args}");
 					break;
 				}
+
+			case "Target.attachedToTarget": {
+					if (args["targetInfo"]["type"]?.ToString() == "page")
+						await DeleteWebDriver (new SessionId (args["sessionId"]?.ToString ()), token);
+					break;
+				}
+
 			}
+
 			return false;
 		}
 
@@ -103,10 +114,21 @@ namespace WebAssembly.Net.Debugging {
 
 		protected override async Task<bool> AcceptCommand (MessageId id, string method, JObject args, CancellationToken token)
 		{
+			// Inspector doesn't use the Target domain or sessions
+			// so we try to init immediately
+			if (hideWebDriver && id == SessionId.Null)
+				await DeleteWebDriver (id, token);
+
 			if (!contexts.TryGetValue (id, out var context))
 				return false;
 
 			switch (method) {
+			case "Target.attachToTarget": {
+					var resp = await SendCommand (id, method, args, token);
+					await DeleteWebDriver (new SessionId (resp.Value ["sessionId"]?.ToString ()), token);
+					break;
+				}
+
 			case "Debugger.enable": {
 					var resp = await SendCommand (id, method, args, token);
 
@@ -913,6 +935,20 @@ namespace WebAssembly.Net.Debugging {
 				SendResponse (msg_id, Result.OkFromObject (o), token);
 			}
 			return true;
+		}
+
+		async Task DeleteWebDriver (SessionId sessionId, CancellationToken token)
+		{
+			// see https://github.com/mono/mono/issues/19549 for background
+			if (hideWebDriver && sessions.Add (sessionId)) {
+				var res = await SendCommand (sessionId,
+					"Page.addScriptToEvaluateOnNewDocument",
+					JObject.FromObject (new { source = "delete navigator.constructor.prototype.webdriver"}),
+					token);
+
+				if (sessionId != SessionId.Null && !res.IsOk)
+					sessions.Remove (sessionId);
+			}
 		}
 	}
 }
