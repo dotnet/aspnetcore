@@ -139,15 +139,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SendTimeoutResponse();
         }
 
-        public void ParseRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequest(ref SequenceReader<byte> reader)
         {
-            consumed = buffer.Start;
-            examined = buffer.End;
-
             switch (_requestProcessingStatus)
             {
                 case RequestProcessingStatus.RequestPending:
-                    if (buffer.IsEmpty)
+                    if (reader.End)
                     {
                         break;
                     }
@@ -157,75 +154,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
                 case RequestProcessingStatus.ParsingRequestLine:
-                    if (TakeStartLine(buffer, out consumed, out examined))
+                    if (TakeStartLine(ref reader))
                     {
-                        TrimAndParseHeaders(buffer, ref consumed, out examined);
-                        return;
+                        _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+                        goto case RequestProcessingStatus.ParsingHeaders;
                     }
                     else
                     {
                         break;
                     }
                 case RequestProcessingStatus.ParsingHeaders:
-                    if (TakeMessageHeaders(buffer, trailers: false, out consumed, out examined))
+                    if (TakeMessageHeaders(ref reader, trailers: false))
                     {
                         _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                        // Consumed preamble
+                        return true;
                     }
                     break;
             }
 
-            void TrimAndParseHeaders(in ReadOnlySequence<byte> buffer, ref SequencePosition consumed, out SequencePosition examined)
-            {
-                var trimmedBuffer = buffer.Slice(consumed, buffer.End);
-                _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-
-                if (TakeMessageHeaders(trimmedBuffer, trailers: false, out consumed, out examined))
-                {
-                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
-                }
-            }
+            // Haven't completed consuming preamble
+            return false;
         }
 
-        public bool TakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(ref SequenceReader<byte> reader)
         {
             // Make sure the buffer is limited
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
+            if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
             {
                 // Input oversize, cap amount checked
-                return TrimAndTakeStartLine(buffer, out consumed, out examined);
+                return TrimAndTakeStartLine(ref reader);
             }
 
-            return _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
+            return _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
 
-            bool TrimAndTakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+            bool TrimAndTakeStartLine(ref SequenceReader<byte> reader)
             {
-                var trimmedBuffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
+                var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
+                var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
 
-                if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), trimmedBuffer, out consumed, out examined))
+                if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader))
                 {
                     // We read the maximum allowed but didn't complete the start line.
                     KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
                 }
 
+                reader.Advance(trimmedReader.Consumed);
                 return true;
             }
         }
 
-        public bool TakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
         {
             // Make sure the buffer is limited
-            if (buffer.Length > _remainingRequestHeadersBytesAllowed)
+            if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
             {
                 // Input oversize, cap amount checked
-                return TrimAndTakeMessageHeaders(buffer, trailers, out consumed, out examined);
+                return TrimAndTakeMessageHeaders(ref reader, trailers);
             }
 
-            var reader = new SequenceReader<byte>(buffer);
-            var result = false;
             try
             {
-                result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
-
+                var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
                 if (result)
                 {
                     TimeoutControl.CancelTimeout();
@@ -235,30 +225,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                consumed = reader.Position;
                 _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
-
-                if (result)
-                {
-                    examined = consumed;
-                }
-                else
-                {
-                    examined = buffer.End;
-                }
             }
 
-            bool TrimAndTakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+            bool TrimAndTakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
             {
-                var trimmedBuffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
-
-                var reader = new SequenceReader<byte>(trimmedBuffer);
-                var result = false;
+                var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
+                var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
                 try
                 {
-                    result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
-
-                    if (!result)
+                    if (!_parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader))
                     {
                         // We read the maximum allowed but didn't complete the headers.
                         KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
@@ -266,21 +242,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     TimeoutControl.CancelTimeout();
 
-                    return result;
+                    reader.Advance(trimmedReader.Consumed);
+
+                    return true;
                 }
                 finally
                 {
-                    consumed = reader.Position;
                     _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
-
-                    if (result)
-                    {
-                        examined = consumed;
-                    }
-                    else
-                    {
-                        examined = trimmedBuffer.End;
-                    }
                 }
             }
         }
@@ -681,12 +649,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {
-            var examined = result.Buffer.End;
-            var consumed = result.Buffer.End;
-
+            var reader = new SequenceReader<byte>(result.Buffer);
+            var isConsumed = false;
             try
             {
-                ParseRequest(result.Buffer, out consumed, out examined);
+                isConsumed = ParseRequest(ref reader);
             }
             catch (InvalidOperationException)
             {
@@ -698,7 +665,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                Input.AdvanceTo(consumed, examined);
+                Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
             }
 
             if (result.IsCompleted)

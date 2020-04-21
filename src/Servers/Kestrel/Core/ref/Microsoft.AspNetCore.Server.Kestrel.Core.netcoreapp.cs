@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpParser() { }
         public HttpParser(bool showErrorDetails) { }
         public bool ParseHeaders(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
-        public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public bool ParseRequestLine(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
     }
     public enum HttpScheme
     {

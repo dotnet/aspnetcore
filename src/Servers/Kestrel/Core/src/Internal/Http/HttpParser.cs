@@ -35,39 +35,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte BytePercentage = (byte)'%';
         private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
 
-        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
         {
-            consumed = buffer.Start;
-            examined = buffer.End;
-
-            // Prepare the first span
-            var requestLine = buffer.FirstSpan;
-            var lineIndex = requestLine.IndexOf(ByteLF);
-            if (lineIndex >= 0)
+            if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
             {
-                consumed = buffer.GetPosition(lineIndex + 1, consumed);
-                requestLine = requestLine.Slice(0, lineIndex + 1);
-            }
-            else if (buffer.IsSingleSegment)
-            {
-                // No request line end
-                return false;
-            }
-            else if (TryGetNewLine(buffer, out var found))
-            {
-                requestLine = buffer.Slice(consumed, found).ToSpan();
-                consumed = found;
-            }
-            else
-            {
-                // No request line end
-                return false;
+                ParseRequestLine(handler, requestLine);
+                return true;
             }
 
-            ParseRequestLine(handler, requestLine);
-
-            examined = consumed;
-            return true;
+            return false;
         }
 
         private void ParseRequestLine(TRequestHandler handler, ReadOnlySpan<byte> requestLine)
@@ -155,10 +131,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RejectUnknownVersion(offset, requestLine);
             }
 
-            // Version + CR is 8 bytes and we expect LF in the 9th byte
+            // Version + CR is 8 bytes; adding 9 should take us to .Length
             offset += 9;
-
-            if ((uint)offset >= (uint)requestLine.Length || requestLine[offset] != ByteLF)
+            // LF should have been dropped prior to method call, so offset should now be length
+            if ((uint)offset != (uint)requestLine.Length)
             {
                 RejectRequestLine(requestLine);
             }
@@ -452,21 +428,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool TryGetNewLine(in ReadOnlySequence<byte> buffer, out SequencePosition found)
-        {
-            var byteLfPosition = buffer.PositionOf(ByteLF);
-            if (byteLfPosition != null)
-            {
-                // Move 1 byte past the \n
-                found = buffer.GetPosition(1, byteLfPosition.Value);
-                return true;
-            }
-
-            found = default;
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private int GetUnknownMethodLength(ReadOnlySpan<byte> span)
         {
             var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(span);
@@ -505,10 +466,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         [StackTraceHidden]
         private void RejectUnknownVersion(int offset, ReadOnlySpan<byte> requestLine)
-            // If missing delimiter or CR before LF, reject and log entire line
-            => throw ((requestLine[offset] == ByteCR || requestLine[^2] != ByteCR) ?
+            // If CR before LF, reject and log entire line
+            => throw (((uint)offset >= (uint)requestLine.Length || requestLine[offset] == ByteCR || requestLine[^1] != ByteCR) ?
             GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine) :
-            GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, requestLine[offset..^2]));
+            GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, requestLine[offset..^1]));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, ReadOnlySpan<byte> headerLine)

@@ -310,10 +310,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // _consumedBytes aren't tracked for trailer headers, since headers have separate limits.
             if (_mode == Mode.TrailerHeaders)
             {
-                if (_context.TakeMessageHeaders(readableBuffer, trailers: true, out consumed, out examined))
+                var reader = new SequenceReader<byte>(readableBuffer);
+                if (_context.TakeMessageHeaders(ref reader, trailers: true))
                 {
+                    examined = reader.Position;
                     _mode = Mode.Complete;
                 }
+                else
+                {
+                    examined = readableBuffer.End;
+                }
+
+                consumed = reader.Position;
             }
 
             return _mode == Mode.Complete;

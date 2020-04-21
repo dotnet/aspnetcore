@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return true;
         }
 
-        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
         {
             Span<byte> startLine = _startLine;
 
@@ -40,9 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 new HttpVersionAndMethod(HttpMethod.Get, 3) { Version = HttpVersion.Http11 },
                 new TargetOffsetPathLength(3, startLine.Length - 3, false),
                 startLine);
-
-            consumed = buffer.Start;
-            examined = buffer.End;
 
             return true;
         }

@@ -63,14 +63,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
-            _buffer = _buffer.Slice(consumed, _buffer.End);
-
-            var reader = new SequenceReader<byte>(_buffer);
             if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
