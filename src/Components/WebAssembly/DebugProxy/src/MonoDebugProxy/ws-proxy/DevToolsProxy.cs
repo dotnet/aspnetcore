@@ -246,7 +246,7 @@ namespace WebAssembly.Net.Debugging {
 		{
 			JObject o = result.ToJObject (id);
 			if (result.IsErr)
-				logger.LogError ("sending error response {result}", result);
+				logger.LogError ($"sending error response for id: {id} -> {result}");
 
 			Send (this.ide, o, token);
 		}

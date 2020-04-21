@@ -17,7 +17,7 @@ namespace WebAssembly.Net.Debugging {
 		HashSet<SessionId> sessions = new HashSet<SessionId> ();
 		Dictionary<SessionId, ExecutionContext> contexts = new Dictionary<SessionId, ExecutionContext> ();
 
-		public MonoProxy (ILoggerFactory loggerFactory, bool hideWebDriver = true) : base(loggerFactory) { }
+		public MonoProxy (ILoggerFactory loggerFactory, bool hideWebDriver = true) : base(loggerFactory) { this.hideWebDriver = hideWebDriver; }
 
 		readonly bool hideWebDriver;
 
@@ -166,7 +166,7 @@ namespace WebAssembly.Net.Debugging {
 					//FIXME support variant where restrictToFunction=true and end is omitted
 					var end = SourceLocation.Parse (args? ["end"] as JObject);
 					if (start != null && end != null && await GetPossibleBreakpoints (id, start, end, token))
-							return true;
+						return true;
 
 					SendResponse (id, resp, token);
 					return true;
@@ -220,57 +220,35 @@ namespace WebAssembly.Net.Debugging {
 				}
 
 			case "Debugger.evaluateOnCallFrame": {
-					var objId = args? ["callFrameId"]?.Value<string> ();
-					if (objId.StartsWith ("dotnet:", StringComparison.Ordinal)) {
-						var parts = objId.Split (new char [] { ':' });
-						if (parts.Length < 3)
-							return true;
-						switch (parts [1]) {
-						case "scope": {
-								await GetEvaluateOnCallFrame (id, int.Parse (parts [2]), args? ["expression"]?.Value<string> (), token);
-								break;
-							}
-						}
-						return true;
+					if (!DotnetObjectId.TryParse (args? ["callFrameId"], out var objectId))
+						return false;
+
+					switch (objectId.Scheme) {
+					case "scope":
+						return await OnEvaluateOnCallFrame (id,
+								int.Parse (objectId.Value),
+								args? ["expression"]?.Value<string> (), token);
+					default:
+						return false;
 					}
-					return false;
 				}
 
 			case "Runtime.getProperties": {
-					var objId = args? ["objectId"]?.Value<string> ();
-					if (objId.StartsWith ("dotnet:", StringComparison.Ordinal)) {
-						var parts = objId.Split (new char [] { ':' });
-						if (parts.Length < 3)
-							return true;
-						switch (parts[1]) {
-						case "scope": {
-							await GetScopeProperties (id, int.Parse (parts[2]), token);
-							break;
-							}
-						case "object": {
-							await GetDetails (id, MonoCommands.GetObjectProperties (int.Parse (parts[2]), expandValueTypes: false), token);
-							break;
-							}
-						case "array": {
-							await GetArrayDetails (id, objId, parts, token);
-							break;
-							}
-						case "valuetype": {
-							await GetDetailsForValueType (id, objId,
-									get_props_cmd_fn: () => {
-										if (parts.Length < 4)
-											return null;
+					if (!DotnetObjectId.TryParse (args? ["objectId"], out var objectId))
+						break;
 
-										var containerObjId = int.Parse (parts[2]);
-										return MonoCommands.GetObjectProperties (containerObjId, expandValueTypes: true);
-									}, token);
-							break;
-							}
-						}
+					var result = await RuntimeGetProperties (id, objectId, args, token);
+					SendResponse (id, result, token);
+					return true;
+				}
 
-						return true;
-					}
-					break;
+			case "Runtime.releaseObject": {
+					if (!(DotnetObjectId.TryParse (args ["objectId"], out var objectId) && objectId.Scheme == "cfo_res"))
+						break;
+
+					await SendMonoCommand (id, new MonoCommands ($"MONO.mono_wasm_release_object('{objectId}')"), token);
+					SendResponse (id, Result.OkFromObject (new{}), token);
+					return true;
 				}
 
 				// Protocol extensions
@@ -334,33 +312,62 @@ namespace WebAssembly.Net.Debugging {
 
 				return true;
 			}
+			case "Runtime.callFunctionOn": {
+					if (!DotnetObjectId.TryParse (args ["objectId"], out var objectId))
+						return false;
+
+					var silent = args ["silent"]?.Value<bool> () ?? false;
+					if (objectId.Scheme == "scope") {
+						var fail = silent ? Result.OkFromObject (new { result = new { } }) : Result.Exception (new ArgumentException ($"Runtime.callFunctionOn not supported with scope ({objectId})."));
+
+						SendResponse (id, fail, token);
+						return true;
+					}
+
+					var returnByValue = args ["returnByValue"]?.Value<bool> () ?? false;
+					var cmd = new MonoCommands ($"MONO.mono_wasm_call_function_on ({args.ToString ()}, {(returnByValue ? "true" : "false")})");
+
+					var res = await SendMonoCommand (id, cmd, token);
+					if (!returnByValue &&
+						DotnetObjectId.TryParse (res.Value?["result"]?["value"]?["objectId"], out var resultObjectId) &&
+						resultObjectId.Scheme == "cfo_res")
+						res = Result.OkFromObject (new { result = res.Value ["result"]["value"] });
+
+					if (res.IsErr && silent)
+						res = Result.OkFromObject (new { result = new { } });
+
+					SendResponse (id, res, token);
+					return true;
+				}
 			}
 
 			return false;
 		}
 
-		async Task GetArrayDetails (MessageId id, string objId, string[] objIdParts, CancellationToken token)
+		async Task<Result> RuntimeGetProperties (MessageId id, DotnetObjectId objectId, JToken args, CancellationToken token)
 		{
-			switch (objIdParts.Length)
-			{
-				case 3: {
-					await GetDetails (id, MonoCommands.GetArrayValues (int.Parse (objIdParts [2])), token);
-					break;
-					}
-				case 4: {
-					// This form of the id is being used only for valuetypes right now
-					await GetDetailsForValueType(id, objId,
-							get_props_cmd_fn: () => {
-								var arrayObjectId = int.Parse (objIdParts [2]);
-								var idx = int.Parse (objIdParts [3]);
-								return MonoCommands.GetArrayValueExpanded (arrayObjectId, idx);
-							}, token);
-					break;
-					}
-				default:
-					SendResponse (id, Result.Exception (new ArgumentException ($"Unknown objectId format for array: {objId}")), token);
-					break;
+			if (objectId.Scheme == "scope")
+				return await GetScopeProperties (id, int.Parse (objectId.Value), token);
+
+			var res = await SendMonoCommand (id, new MonoCommands ($"MONO.mono_wasm_get_details ('{objectId}', {args})"), token);
+			if (res.IsErr)
+				return res;
+
+			if (objectId.Scheme == "cfo_res") {
+				// Runtime.callFunctionOn result object
+				var value_json_str = res.Value ["result"]?["value"]?["__value_as_json_string__"]?.Value<string> ();
+				if (value_json_str != null) {
+					res = Result.OkFromObject (new {
+							result = JArray.Parse (value_json_str.Replace (@"\""", "\""))
+					});
+				} else {
+					res = Result.OkFromObject (new { result = new {} });
+				}
+			} else {
+				res = Result.Ok (JObject.FromObject (new { result = res.Value ["result"] ["value"] }));
 			}
+
+			return res;
 		}
 
 		//static int frame_id=0;
@@ -530,37 +537,6 @@ namespace WebAssembly.Net.Debugging {
 			return true;
 		}
 
-		async Task GetDetails(MessageId msg_id, MonoCommands cmd, CancellationToken token, bool send_response = true)
-		{
-			var res = await SendMonoCommand(msg_id, cmd, token);
-
-			//if we fail we just buble that to the IDE (and let it panic over it)
-			if (res.IsErr) {
-				SendResponse(msg_id, res, token);
-				return;
-			}
-
-			try {
-				var var_list = res.Value?["result"]?["value"]?.Values<JObject>().ToArray() ?? Array.Empty<JObject>();
-				if (var_list.Length > 0)
-					ExtractAndCacheValueTypes (GetContext (msg_id), var_list);
-
-				if (!send_response)
-					return;
-
-				var response = JObject.FromObject(new
-				{
-					result = var_list
-				});
-
-				SendResponse(msg_id, Result.Ok(response), token);
-			} catch (Exception e) when (send_response) {
-				Log ("verbose", $"failed to parse {res.Value} - {e.Message}");
-				SendResponse(msg_id, Result.Exception(e), token);
-			}
-
-		}
-
 		internal bool TryFindVariableValueInCache(ExecutionContext ctx, string expression, bool only_search_on_this, out JToken obj)
 		{
 			if (ctx.LocalsCache.TryGetValue (expression, out obj)) {
@@ -577,9 +553,9 @@ namespace WebAssembly.Net.Debugging {
 			var context = GetContext (msg_id);
 			if (context.CallStack == null)
 				return null;
-			
+
 			if (TryFindVariableValueInCache(context, expression, only_search_on_this, out JToken obj))
-				return obj;				
+				return obj;
 
 			var scope = context.CallStack.FirstOrDefault (s => s.Id == scope_id);
 			var vars = scope.Method.GetLiveVarsAt (scope.Location.CliLocation.Offset);
@@ -588,7 +564,7 @@ namespace WebAssembly.Net.Debugging {
 			var res = await SendMonoCommand (msg_id, MonoCommands.GetScopeVariables (scope.Id, var_ids), token);
 			var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 			thisValue = values.FirstOrDefault (v => v ["name"].Value<string> () == "this");
-			
+
 			if (!only_search_on_this) {
 				if (thisValue != null && expression == "this") {
 					return thisValue;
@@ -604,9 +580,10 @@ namespace WebAssembly.Net.Debugging {
 
 			//search in scope
 			if (thisValue != null) {
-				var objectId = thisValue ["value"] ["objectId"].Value<string> ();
-				var parts = objectId.Split (new char [] { ':' });
-				res = await SendMonoCommand (msg_id, MonoCommands.GetObjectProperties (int.Parse (parts [2]), expandValueTypes: false), token);
+				if (!DotnetObjectId.TryParse (thisValue ["value"] ["objectId"], out var objectId))
+					return null;
+
+				res = await SendMonoCommand (msg_id, MonoCommands.GetObjectProperties (objectId, expandValueTypes: false), token);
 				values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 				var foundValue = values.FirstOrDefault (v => v ["name"].Value<string> () == expression);
 				if (foundValue != null) {
@@ -618,12 +595,12 @@ namespace WebAssembly.Net.Debugging {
 			return null;
 		}
 
-		async Task GetEvaluateOnCallFrame (MessageId msg_id, int scope_id, string expression, CancellationToken token)
+		async Task<bool> OnEvaluateOnCallFrame (MessageId msg_id, int scope_id, string expression, CancellationToken token)
 		{
 			try {
 				var context = GetContext (msg_id);
 				if (context.CallStack == null)
-					return;
+					return false;
 
 				var varValue = await TryGetVariableValue (msg_id, scope_id, expression, false, token);
 
@@ -632,7 +609,7 @@ namespace WebAssembly.Net.Debugging {
 					SendResponse (msg_id, Result.OkFromObject (new {
 						result = varValue ["value"]
 					}), token);
-					return;
+					return true;
 				}
 
 				string retValue = await EvaluateExpression.CompileAndRunTheExpression (this, msg_id, scope_id, expression, token);
@@ -641,43 +618,34 @@ namespace WebAssembly.Net.Debugging {
 						value = retValue
 					}
 				}), token);
+				return true;
 			} catch (Exception e) {
-				logger.LogTrace (e.Message, expression);
-				SendResponse (msg_id, Result.OkFromObject (new {}), token);
+				logger.LogDebug (e, $"Error in EvaluateOnCallFrame for expression '{expression}.");
 			}
+			return false;
 		}
 
-		async Task GetScopeProperties (MessageId msg_id, int scope_id, CancellationToken token)
+		async Task<Result> GetScopeProperties (MessageId msg_id, int scope_id, CancellationToken token)
 		{
-
 			try {
 				var ctx = GetContext (msg_id);
 				var scope = ctx.CallStack.FirstOrDefault (s => s.Id == scope_id);
-				if (scope == null) {
-					SendResponse (msg_id,
-							Result.Err (JObject.FromObject (new { message = $"Could not find scope with id #{scope_id}" })),
-							token);
-					return;
-				}
+				if (scope == null)
+					return Result.Err (JObject.FromObject (new { message = $"Could not find scope with id #{scope_id}" }));
+
 				var vars = scope.Method.GetLiveVarsAt (scope.Location.CliLocation.Offset);
 
 				var var_ids = vars.Select (v => v.Index).ToArray ();
 				var res = await SendMonoCommand (msg_id, MonoCommands.GetScopeVariables (scope.Id, var_ids), token);
 
 				//if we fail we just buble that to the IDE (and let it panic over it)
-				if (res.IsErr) {
-					SendResponse (msg_id, res, token);
-					return;
-				}
+				if (res.IsErr)
+					return res;
 
 				var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 
-				if(values == null) {
-					SendResponse (msg_id, Result.OkFromObject (new {result = Array.Empty<object> ()}), token);
-					return;
-				}
-
-				ExtractAndCacheValueTypes (ctx, values);
+				if(values == null)
+					return Result.OkFromObject (new { result = Array.Empty<object> () });
 
 				var var_list = new List<object> ();
 				int i = 0;
@@ -690,72 +658,10 @@ namespace WebAssembly.Net.Debugging {
 					var_list.Add (values [i]);
 				}
 
-				SendResponse (msg_id, Result.OkFromObject (new { result = var_list }), token);
+				return Result.OkFromObject (new { result = var_list });
 			} catch (Exception exception) {
 				Log ("verbose", $"Error resolving scope properties {exception.Message}");
-				SendResponse (msg_id, Result.Exception (exception), token);
-			}
-		}
-
-		IEnumerable<JObject> ExtractAndCacheValueTypes (ExecutionContext ctx, IEnumerable<JObject> var_list)
-		{
-			foreach (var jo in var_list) {
-				var value = jo["value"]?.Value<JObject> ();
-				if (value ["type"]?.Value<string> () != "object")
-					continue;
-
-				if (!(value ["isValueType"]?.Value<bool> () ?? false) || // not a valuetype
-					!(value ["expanded"]?.Value<bool> () ?? false))  // not expanded
-					continue;
-
-				// Expanded ValueType
-				var members = value ["members"]?.Values<JObject>().ToArray() ?? Array.Empty<JObject>();
-				var objectId = value ["objectId"]?.Value<string> () ?? $"dotnet:valuetype:{ctx.NextValueTypeId ()}";
-
-				value ["objectId"] = objectId;
-
-				ExtractAndCacheValueTypes (ctx, members);
-
-				ctx.ValueTypesCache [objectId] = JArray.FromObject (members);
-				value.Remove ("members");
-			}
-
-			return var_list;
-		}
-
-		async Task<bool> GetDetailsForValueType (MessageId msg_id, string object_id, Func<MonoCommands> get_props_cmd_fn, CancellationToken token)
-		{
-			var ctx = GetContext (msg_id);
-
-			if (!ctx.ValueTypesCache.ContainsKey (object_id)) {
-				var cmd = get_props_cmd_fn ();
-				if (cmd == null) {
-					SendResponse (msg_id, Result.Exception (new ArgumentException (
-									"Could not find a cached value for {object_id}, and cant' expand it.")),
-									token);
-
-					return false;
-				} else {
-					await GetDetails (msg_id, cmd, token, send_response: false);
-				}
-			}
-
-			if (ctx.ValueTypesCache.TryGetValue (object_id, out var var_list)) {
-				var response = JObject.FromObject(new
-				{
-					result = var_list
-				});
-
-				SendResponse(msg_id, Result.Ok(response), token);
-				return true;
-			} else {
-				var response = JObject.FromObject(new
-				{
-					result = $"Unable to get details for {object_id}"
-				});
-
-				SendResponse(msg_id, Result.Err(response), token);
-				return false;
+				return Result.Exception (exception);
 			}
 		}
 
