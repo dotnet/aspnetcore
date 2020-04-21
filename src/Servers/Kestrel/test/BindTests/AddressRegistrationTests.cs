@@ -828,8 +828,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var host = hostBuilder.Build())
             {
                 await host.StartAsync();
-                Assert.Single(capturedOptions.ListenOptions);
-                Assert.Equal(expected, capturedOptions.ListenOptions[0].Protocols);
+                Assert.Single(capturedOptions.OptionsInUse);
+                Assert.Equal(expected, capturedOptions.OptionsInUse[0].Protocols);
                 await host.StopAsync();
             }
         }

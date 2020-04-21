@@ -23,13 +23,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         protected readonly long _id;
         protected readonly ServiceContext _serviceContext;
+        protected readonly TransportConnectionManager _transportConnectionManager;
 
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
+                                 TransportConnectionManager transportConnectionManager,
                                  IKestrelTrace logger)
         {
             _id = id;
             _serviceContext = serviceContext;
+            _transportConnectionManager = transportConnectionManager;
             Logger = logger;
 
             ConnectionClosedRequested = _connectionClosingCts.Token;

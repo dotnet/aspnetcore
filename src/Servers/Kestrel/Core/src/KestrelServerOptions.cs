@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
-        /// <summary>
-        /// Configures the endpoints that Kestrel should listen to.
-        /// </summary>
-        /// <remarks>
-        /// If this list is empty, the server.urls setting (e.g. UseUrls) is used.
-        /// </remarks>
-        internal List<ListenOptions> ListenOptions { get; } = new List<ListenOptions>();
+        // The following two lists configure the endpoints that Kestrel should listen toIf both lists is empty, the server.urls setting (e.g. UseUrls) is used.
+        internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
+        internal List<ListenOptions> ConfigurationBackedListenOptions { get; set; } = new List<ListenOptions>();
+        internal IEnumerable<ListenOptions> ListenOptions => CodeBackedListenOptions.Concat(ConfigurationBackedListenOptions);
+
+        // For testing and debugging.
+        internal List<ListenOptions> OptionsInUse { get; } = new List<ListenOptions>();
 
         /// <summary>
         /// Gets or sets whether the <c>Server</c> header should be included in each response.
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(endPoint);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new LocalhostListenOptions(port);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new AnyIPListenOptions(port);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(socketPath);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(handle);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
     }
 }

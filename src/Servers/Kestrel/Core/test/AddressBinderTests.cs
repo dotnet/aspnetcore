@@ -119,11 +119,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             addresses.Addresses.Add("http://localhost:5000");
             var options = new KestrelServerOptions();
 
+            var addressBindContext = new AddressBindContext
+            {
+                ServerAddressesFeature = addresses,
+                ServerOptions = options,
+                Logger = NullLogger.Instance,
+                CreateBinding = endpoint => throw new AddressInUseException("already in use"),
+            };
+
             await Assert.ThrowsAsync<IOException>(() =>
-                AddressBinder.BindAsync(addresses,
-                    options,
-                    NullLogger.Instance,
-                    endpoint => throw new AddressInUseException("already in use")));
+                AddressBinder.BindAsync(options.ListenOptions, addressBindContext));
         }
 
         [Theory]
@@ -140,10 +145,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var ipV6Attempt = false;
             var ipV4Attempt = false;
 
-            await AddressBinder.BindAsync(addresses,
-                options,
-                logger,
-                endpoint =>
+            var addressBindContext = new AddressBindContext
+            {
+                ServerAddressesFeature = addresses,
+                ServerOptions = options,
+                Logger = logger,
+                CreateBinding = endpoint =>
                 {
                     if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)
                     {
@@ -157,7 +164,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     }
 
                     return Task.CompletedTask;
-                });
+                },
+            };
+
+            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
 
             Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
             Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
@@ -188,11 +198,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             var endpoints = new List<ListenOptions>();
-            await AddressBinder.BindAsync(addresses, options, logger, listenOptions =>
+
+            var addressBindContext = new AddressBindContext
             {
-                endpoints.Add(listenOptions);
-                return Task.CompletedTask;
-            });
+                ServerAddressesFeature = addresses,
+                ServerOptions = options,
+                Logger = logger,
+                CreateBinding = listenOptions =>
+                {
+                    endpoints.Add(listenOptions);
+                    return Task.CompletedTask;
+                },
+            };
+
+            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
 
             Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
             Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);

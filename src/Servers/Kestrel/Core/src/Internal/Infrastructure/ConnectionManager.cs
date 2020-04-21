@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </summary>
         public ResourceCounter UpgradedConnectionCount { get; }
 
-        public void AddConnection(long id, KestrelConnection connection)
+        public void AddConnection(long id, ConnectionReference connectionReference)
         {
-            if (!_connectionReferences.TryAdd(id, new ConnectionReference(connection)))
+            if (!_connectionReferences.TryAdd(id, connectionReference))
             {
                 throw new ArgumentException(nameof(id));
             }
@@ -67,35 +67,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // It's safe to modify the ConcurrentDictionary in the foreach.
                     // The connection reference has become unrooted because the application never completed.
                     _trace.ApplicationNeverCompleted(reference.ConnectionId);
+                    reference.StopTrasnsportTracking();
                 }
 
                 // If both conditions are false, the connection was removed during the heartbeat.
             }
         }
 
-        public async Task<bool> CloseAllConnectionsAsync(CancellationToken token)
+        public Task<bool> CloseAllConnectionsAsync(CancellationToken token)
+        {
+            return CloseAllConnectionsAsync(_connectionReferences, token);
+        }
+
+        public Task<bool> AbortAllConnectionsAsync()
+        {
+            return AbortAllConnectionsAsync(_connectionReferences);
+        }
+
+        internal static async Task<bool> CloseAllConnectionsAsync(ConcurrentDictionary<long, ConnectionReference> connectionReferences, CancellationToken token)
         {
             var closeTasks = new List<Task>();
 
-            Walk(connection =>
+            foreach (var kvp in connectionReferences)
             {
-                connection.RequestClose();
-                closeTasks.Add(connection.ExecutionTask);
-            });
+                if (kvp.Value.TryGetConnection(out var connection))
+                {
+                    connection.RequestClose();
+                    closeTasks.Add(connection.ExecutionTask);
+                }
+            }
 
             var allClosedTask = Task.WhenAll(closeTasks.ToArray());
             return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
         }
 
-        public async Task<bool> AbortAllConnectionsAsync()
+        internal static async Task<bool> AbortAllConnectionsAsync(ConcurrentDictionary<long, ConnectionReference> connectionReferences)
         {
             var abortTasks = new List<Task>();
 
-            Walk(connection =>
+            foreach (var kvp in connectionReferences)
             {
-                connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
-                abortTasks.Add(connection.ExecutionTask);
-            });
+                if (kvp.Value.TryGetConnection(out var connection))
+                {
+                    connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
+                    abortTasks.Add(connection.ExecutionTask);
+                }
+            }
 
             var allAbortedTask = Task.WhenAll(abortTasks.ToArray());
             return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;

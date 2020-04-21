@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 .Load();
 
             Assert.Single(serverOptions.ListenOptions);
-            Assert.Equal(5001, serverOptions.ListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5001, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
 
             Assert.True(found);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             serverOptions.ConfigurationLoader.Load();
 
             Assert.Single(serverOptions.ListenOptions);
-            Assert.Equal(5001, serverOptions.ListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
             Assert.True(run);
         }
@@ -82,13 +82,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             builder.Load();
 
             Assert.Single(serverOptions.ListenOptions);
-            Assert.Equal(5001, serverOptions.ListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
             Assert.NotNull(serverOptions.ConfigurationLoader);
 
             builder.Load();
 
             Assert.Single(serverOptions.ListenOptions);
-            Assert.Equal(5001, serverOptions.ListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
             Assert.NotNull(serverOptions.ConfigurationLoader);
         }
 
@@ -117,9 +117,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigurationLoader.Load();
 
-            Assert.Equal(2, serverOptions.ListenOptions.Count);
-            Assert.Equal(5002, serverOptions.ListenOptions[0].IPEndPoint.Port);
-            Assert.Equal(5003, serverOptions.ListenOptions[1].IPEndPoint.Port);
+            Assert.Equal(2, serverOptions.ListenOptions.Count());
+            Assert.Equal(5002, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5003, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
             Assert.False(run1);
             Assert.True(run2);
@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
             Assert.True(ran2);
 
-            Assert.True(serverOptions.ListenOptions[0].IsTls);
-            Assert.False(serverOptions.ListenOptions[1].IsTls);
+            Assert.True(serverOptions.ConfigurationBackedListenOptions[0].IsTls);
+            Assert.False(serverOptions.CodeBackedListenOptions[0].IsTls);
         }
 
         [Fact]
@@ -208,8 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
 
             // You only get Https once per endpoint.
-            Assert.True(serverOptions.ListenOptions[0].IsTls);
-            Assert.True(serverOptions.ListenOptions[1].IsTls);
+            Assert.True(serverOptions.ConfigurationBackedListenOptions[0].IsTls);
+            Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
         }
 
         [Fact]
@@ -475,6 +475,112 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.False(options.Latin1RequestHeaders);
             options.Configure(config).Load();
             Assert.True(options.Latin1RequestHeaders);
+        }
+
+       [Fact]
+        public void Reload_IdentifiesEndpointsToStartAndStop()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+            }).Build();
+
+            serverOptions.Configure(config).Load();
+
+            Assert.Equal(2, serverOptions.ConfigurationBackedListenOptions.Count);
+            Assert.Equal(5000, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
+            Assert.Equal(5001, serverOptions.ConfigurationBackedListenOptions[1].IPEndPoint.Port);
+
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
+                new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
+            }).Build();
+
+            var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
+
+            Assert.Single(endpointsToStop);
+            Assert.Equal(5001, endpointsToStop[0].IPEndPoint.Port);
+
+            Assert.Equal(2, endpointsToStart.Count);
+            Assert.Equal(5002, endpointsToStart[0].IPEndPoint.Port);
+            Assert.Equal(5003, endpointsToStart[1].IPEndPoint.Port);
+
+            Assert.Equal(3, serverOptions.ConfigurationBackedListenOptions.Count);
+            Assert.Equal(5000, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
+            Assert.Same(endpointsToStart[0], serverOptions.ConfigurationBackedListenOptions[1]);
+            Assert.Same(endpointsToStart[1], serverOptions.ConfigurationBackedListenOptions[2]);
+        }
+
+        [Fact]
+        public void Reload_IdentifiesEndpointsWithChangedDefaults()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
+            }).Build();
+
+            serverOptions.Configure(config).Load();
+
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:DefaultProtocol:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:NonDefaultProtocol:Protocols", "Http1AndHttp2"),
+                new KeyValuePair<string, string>("EndpointDefaults:Protocols", "Http1"),
+            }).Build();
+
+            var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
+
+            Assert.Single(endpointsToStop);
+            Assert.Single(endpointsToStart);
+
+            Assert.Equal(5000, endpointsToStop[0].IPEndPoint.Port);
+            Assert.Equal(HttpProtocols.Http1AndHttp2, endpointsToStop[0].Protocols);
+            Assert.Equal(5000, endpointsToStart[0].IPEndPoint.Port);
+            Assert.Equal(HttpProtocols.Http1, endpointsToStart[0].Protocols);
+        }
+
+        [Fact]
+        public void Reload_RerunsNamedEndpointConfigurationOnChange()
+        {
+            var foundChangedCount = 0;
+            var foundUnchangedCount = 0;
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
+            }).Build();
+
+            serverOptions.Configure(config)
+                .Endpoint("Changed", endpointOptions => foundChangedCount++)
+                .Endpoint("Unchanged", endpointOptions => foundUnchangedCount++)
+                .Endpoint("NotFound", endpointOptions => throw new NotImplementedException())
+                .Load();
+
+            Assert.Equal(1, foundChangedCount);
+            Assert.Equal(1, foundUnchangedCount);
+
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:Changed:Url", "http://*:5002"),
+                new KeyValuePair<string, string>("Endpoints:Unchanged:Url", "http://*:5000"),
+            }).Build();
+
+            serverOptions.ConfigurationLoader.Reload();
+
+            Assert.Equal(2, foundChangedCount);
+            Assert.Equal(1, foundUnchangedCount);
         }
 
         private static string GetCertificatePath()

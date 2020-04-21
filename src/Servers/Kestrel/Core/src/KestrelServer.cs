@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -17,25 +16,30 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
-        private readonly List<(IMultiplexedConnectionListener, Task)> _multiplexedTransports = new List<(IMultiplexedConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly List<IConnectionListenerFactory> _transportFactories;
         private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
+        private readonly TransportManager _transportManager;
 
+        private readonly SemaphoreSlim _bindSemaphore = new SemaphoreSlim(initialCount: 1);
         private bool _hasStarted;
         private int _stopping;
+        private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        private IDisposable _configChangedRegistration;
 
         public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
             : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
         {
         }
+
         public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ILoggerFactory loggerFactory)
             : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
         {
@@ -68,6 +72,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);
+
+            _transportManager = new TransportManager(transportFactories?.LastOrDefault(), multiplexedFactories?.LastOrDefault(), ServiceContext);
 
             HttpCharacters.Initialize();
         }
@@ -120,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IKestrelTrace Trace => ServiceContext.Log;
 
-        private ConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
+        private AddressBindContext AddressBindContext { get; set; }
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -150,20 +156,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     {
                         if (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0)
                         {
-                            throw new InvalidOperationException("Cannot start HTTP/3 server if no MultiplexedTransportFactories are registered.");
+                            throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
 
                         options.UseHttp3Server(ServiceContext, application, options.Protocols);
-                        var multiplxedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
+                        var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
-                        var multiplexedConnectionDispatcher = new MultiplexedConnectionDispatcher(ServiceContext, multiplxedConnectionDelegate);
-                        var multiplexedFactory = _multiplexedTransportFactories.Last();
-                        var multiplexedTransport = await multiplexedFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
-
-                        var acceptLoopTask = multiplexedConnectionDispatcher.StartAcceptingConnections(multiplexedTransport);
-                        _multiplexedTransports.Add((multiplexedTransport, acceptLoopTask));
-
-                        options.EndPoint = multiplexedTransport.EndPoint;
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options.EndpointConfig).ConfigureAwait(false);
                     }
 
                     // Add the HTTP middleware as the terminal connection middleware
@@ -181,18 +180,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
                         }
 
-                        var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                        var factory = _transportFactories.Last();
-                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
-
-                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
-
-                        _transports.Add((transport, acceptLoopTask));
-                        options.EndPoint = transport.EndPoint;
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig).ConfigureAwait(false);
                     }
                 }
 
-                await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
+                AddressBindContext = new AddressBindContext
+                {
+                    ServerAddressesFeature = _serverAddresses,
+                    ServerOptions = Options,
+                    Logger = Trace,
+                    CreateBinding = OnBind,
+                };
+
+                await BindAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -211,56 +211,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 return;
             }
 
+            _stopCts.Cancel();
+
+            // Don't use cancellationToken when acquiring the semaphore. Dispose calls this with a pre-canceled token.
+            await _bindSemaphore.WaitAsync().ConfigureAwait(false);
+
             try
             {
-                var connectionTransportCount = _transports.Count;
-                var totalTransportCount = _transports.Count + _multiplexedTransports.Count;
-                var tasks = new Task[totalTransportCount];
-
-                for (int i = 0; i < connectionTransportCount; i++)
-                {
-                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
-                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
-                }
-
-                for (int i = connectionTransportCount; i < totalTransportCount; i++)
-                {
-                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
-                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
-                }
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    Trace.NotAllConnectionsClosedGracefully();
-
-                    if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
-                    {
-                        Trace.NotAllConnectionsAborted();
-                    }
-                }
-
-                for (int i = 0; i < connectionTransportCount; i++)
-                {
-                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
-                    tasks[i] = listener.DisposeAsync().AsTask();
-                }
-
-                for (int i = connectionTransportCount; i < totalTransportCount; i++)
-                {
-                    (IMultiplexedConnectionListener listener, Task acceptLoop) = _multiplexedTransports[i - connectionTransportCount];
-                    tasks[i] = listener.DisposeAsync().AsTask();
-                }
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                ServiceContext.Heartbeat?.Dispose();
+                await _transportManager.StopAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _stoppedTcs.TrySetException(ex);
                 throw;
+            }
+            finally
+            {
+                ServiceContext.Heartbeat?.Dispose();
+                _configChangedRegistration?.Dispose();
+                _stopCts.Dispose();
+                _bindSemaphore.Release();
             }
 
             _stoppedTcs.TrySetResult(null);
@@ -269,15 +239,107 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // Ungraceful shutdown
         public void Dispose()
         {
-            var cancelledTokenSource = new CancellationTokenSource();
-            cancelledTokenSource.Cancel();
-            StopAsync(cancelledTokenSource.Token).GetAwaiter().GetResult();
+            StopAsync(new CancellationToken(canceled: true)).GetAwaiter().GetResult();
+        }
+
+        private async Task BindAsync(CancellationToken cancellationToken)
+        {
+            await _bindSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (_stopping == 1)
+                {
+                    throw new InvalidOperationException("Kestrel has already been stopped.");
+                }
+
+                IChangeToken reloadToken = null;
+
+                if (Options.ConfigurationLoader?.ReloadOnChange == true && (!_serverAddresses.PreferHostingUrls || _serverAddresses.Addresses.Count == 0))
+                {
+                    reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
+                }
+
+                Options.ConfigurationLoader?.Load();
+
+                await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext).ConfigureAwait(false);
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(async state => await ((KestrelServer)state).RebindAsync(), this);
+            }
+            finally
+            {
+                _bindSemaphore.Release();
+            }
+        }
+
+        private async Task RebindAsync()
+        {
+            await _bindSemaphore.WaitAsync();
+
+            IChangeToken reloadToken = null;
+
+            try
+            {
+                if (_stopping == 1)
+                {
+                    return;
+                }
+
+                reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
+                var (endpointsToStop, endpointsToStart) = Options.ConfigurationLoader.Reload();
+
+                if (endpointsToStop.Count > 0)
+                {
+                    var urlsToStop = endpointsToStop.Select(lo => lo.EndpointConfig.Url ?? "<unknown>");
+                    Trace.LogInformation("Config changed. Stopping the following endpoints: {endpoints}", string.Join(", ", urlsToStop));
+
+                    // 5 is the default value for WebHost's "shutdownTimeoutSeconds", so use that.
+                    using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_stopCts.Token, timeoutCts.Token);
+
+                    // TODO: It would be nice to start binding to new endpoints immediately and reconfigured endpoints as soon
+                    // as the unbinding finished for the given endpoint rather than wait for all transports to unbind first.
+                    var configsToStop = endpointsToStop.Select(lo => lo.EndpointConfig).ToList();
+                    await _transportManager.StopEndpointsAsync(configsToStop, combinedCts.Token).ConfigureAwait(false);
+
+                    foreach (var listenOption in endpointsToStop)
+                    {
+                        Options.OptionsInUse.Remove(listenOption);
+                        _serverAddresses.Addresses.Remove(listenOption.GetDisplayName());
+                    }
+                }
+
+                if (endpointsToStart.Count > 0)
+                {
+                    var urlsToStart = endpointsToStart.Select(lo => lo.EndpointConfig.Url ?? "<unknown>");
+                    Trace.LogInformation("Config changed. Starting the following endpoints: {endpoints}", string.Join(", ", urlsToStart));
+
+                    foreach (var listenOption in endpointsToStart)
+                    {
+                        try
+                        {
+                            // TODO: This should probably be canceled by the _stopCts too, but we don't currently support bind cancellation even in StartAsync().
+                            await listenOption.BindAsync(AddressBindContext).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.LogCritical(0, ex, "Unable to bind to '{url}' on config reload.", listenOption.EndpointConfig.Url ?? "<unknown>");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.LogCritical(0, ex, "Unable to reload configuration.");
+            }
+            finally
+            {
+                _configChangedRegistration = reloadToken?.RegisterChangeCallback(async state => await ((KestrelServer)state).RebindAsync(), this);
+                _bindSemaphore.Release();
+            }
         }
 
         private void ValidateOptions()
         {
-            Options.ConfigurationLoader?.Load();
-
             if (Options.Limits.MaxRequestBufferSize.HasValue &&
                 Options.Limits.MaxRequestBufferSize < Options.Limits.MaxRequestLineSize)
             {

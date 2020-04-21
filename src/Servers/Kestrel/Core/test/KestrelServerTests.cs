@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 StartDummyApplication(server);
 
-                Assert.True(server.Options.ListenOptions.Any());
-                Assert.True(server.Options.ListenOptions[0].IsTls);
+                Assert.True(server.Options.OptionsInUse.Any());
+                Assert.True(server.Options.OptionsInUse[0].IsTls);
             }
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var options = new KestrelServerOptions
             {
-                ListenOptions =
+                CodeBackedListenOptions =
                 {
                     new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                 }
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var options = new KestrelServerOptions
             {
-                ListenOptions =
+                CodeBackedListenOptions =
                 {
                     new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                 }
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var options = new KestrelServerOptions
             {
-                ListenOptions =
+                CodeBackedListenOptions =
                 {
                     new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                 }
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServerOptions =
                 {
-                    ListenOptions =
+                    CodeBackedListenOptions =
                     {
                         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     }

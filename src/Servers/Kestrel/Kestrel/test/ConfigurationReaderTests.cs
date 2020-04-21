@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -97,8 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1", ""),
             }).Build();
-            var reader = new ConfigurationReader(config);
-            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
+            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
         }
 
         [Fact]
@@ -108,8 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", ""),
             }).Build();
-            var reader = new ConfigurationReader(config);
-            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
+            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
         }
 
         [Fact]

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,16 +28,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            ConfigurationReader = new ConfigurationReader(Configuration);
         }
 
         public KestrelServerOptions Options { get; }
-        public IConfiguration Configuration { get; }
-        internal ConfigurationReader ConfigurationReader { get; }
+        public IConfiguration Configuration { get; internal set; }
+
+        /// <summary>
+        /// If <see langword="true"/>, Kestrel will reload endpoints defined in the "Endpoints" section of the <see cref="Configuration"/>, if they are changed.
+        /// Kestrel will bind and unbind to endpoints as necessary.
+        /// </summary>
+        /// <remarks>Code-defined endpoints defined it code will not be reloaded even if the default certificate or protocol used by endpoint changed.</remarks>
+        public bool ReloadOnChange { get; } = true;
+
+        private ConfigurationReader ConfigurationReader { get; set; }
+
         private IDictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
             = new Dictionary<string, Action<EndpointConfiguration>>(0, StringComparer.OrdinalIgnoreCase);
+
         // Actions that will be delayed until Load so that they aren't applied if the configuration loader is replaced.
         private IList<Action> EndpointsToAdd { get; } = new List<Action>();
+
+        private CertificateConfig DefaultCertificateConfig { get; set; }
 
         /// <summary>
         /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
@@ -222,18 +232,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             _loaded = true;
 
+            Reload();
+
+            foreach (var action in EndpointsToAdd)
+            {
+                action();
+            }
+        }
+
+        // Adds endpoints from config to KestrelServerOptions.ConfigurationBackedListenOptions and configures some other options.
+        // Any endpoints that were removed from the last time endpoints were loaded are returned.
+        internal (List<ListenOptions>, List<ListenOptions>) Reload()
+        {
+            ConfigurationReader = new ConfigurationReader(Configuration);
+
             Options.Latin1RequestHeaders = ConfigurationReader.Latin1RequestHeaders;
 
+            DefaultCertificateConfig = null;
             LoadDefaultCert(ConfigurationReader);
+
+            var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
+            var endpointsToStart = new List<ListenOptions>();
+
+            Options.ConfigurationBackedListenOptions.Clear();
 
             foreach (var endpoint in ConfigurationReader.Endpoints)
             {
                 var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
+
                 Options.ApplyEndpointDefaults(listenOptions);
 
                 if (endpoint.Protocols.HasValue)
                 {
                     listenOptions.Protocols = endpoint.Protocols.Value;
+                }
+                else
+                {
+                    // Ensure endpoint is reloaded if it used the default protocol and the protocol changed.
+                    // listenOptions.Progocols should already be set to this by ApplyEndpointDefaults.
+                    endpoint.Protocols = ConfigurationReader.EndpointDefaults.Protocols;
                 }
 
                 // Compare to UseHttps(httpsOptions => { })
@@ -247,8 +284,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
                         ?? httpsOptions.ServerCertificate;
 
-                    // Fallback
-                    Options.ApplyDefaultCert(httpsOptions);
+                    if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+                    {
+                        // Fallback
+                        Options.ApplyDefaultCert(httpsOptions);
+
+                        // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
+                        endpoint.Certificate = DefaultCertificateConfig;
+                    }
+                }
+
+                // Now that defaults have been loaded, we can compare to the currently bound endpoints to see if the config changed.
+                // There's no reason to rerun an EndpointConfigurations callback if nothing changed.
+                var matchingBoundEndpoints = endpointsToStop.Where(o => o.EndpointConfig == endpoint).ToList();
+
+                if (matchingBoundEndpoints.Any())
+                {
+                    endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
+                    Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
+                    continue;
                 }
 
                 if (EndpointConfigurations.TryGetValue(endpoint.Name, out var configureEndpoint))
@@ -268,13 +322,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     listenOptions.UseHttps(httpsOptions);
                 }
 
-                Options.ListenOptions.Add(listenOptions);
+                listenOptions.EndpointConfig = endpoint;
+
+                endpointsToStart.Add(listenOptions);
+                Options.ConfigurationBackedListenOptions.Add(listenOptions);
             }
 
-            foreach (var action in EndpointsToAdd)
-            {
-                action();
-            }
+            return (endpointsToStop, endpointsToStart);
         }
 
         private void LoadDefaultCert(ConfigurationReader configReader)
@@ -284,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var defaultCert = LoadCertificate(defaultCertConfig, "Default");
                 if (defaultCert != null)
                 {
+                    DefaultCertificateConfig = defaultCertConfig;
                     Options.DefaultCertificate = defaultCert;
                 }
             }
@@ -311,7 +366,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     File.Exists(certificatePath))
                 {
                     var certificate = new X509Certificate2(certificatePath, certificateConfig.Password);
-                    return IsDevelopmentCertificate(certificate) ? certificate : null;
+
+                    if (IsDevelopmentCertificate(certificate))
+                    {
+                        DefaultCertificateConfig = certificateConfig;
+                        return certificate;
+                    }
+
+                    return null;
                 }
                 else if (!File.Exists(certificatePath))
                 {
@@ -326,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return null;
         }
 
-        private bool IsDevelopmentCertificate(X509Certificate2 certificate)
+        private static bool IsDevelopmentCertificate(X509Certificate2 certificate)
         {
             if (!string.Equals(certificate.Subject, "CN=localhost", StringComparison.Ordinal))
             {
