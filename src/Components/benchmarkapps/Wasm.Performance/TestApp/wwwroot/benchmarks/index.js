@@ -11,7 +11,6 @@ new HtmlUI('E2E Performance', '#display');
 if (location.href.indexOf('#automated') !== -1) {
   (async function() {
     const query = new URLSearchParams(window.location.search);
-    const group = query.get('group');
     const resultsUrl = query.get('resultsUrl');
 
     console.log('Calculating download size...');
@@ -19,7 +18,7 @@ if (location.href.indexOf('#automated') !== -1) {
     console.log('Download size: ', downloadSize);
 
     const scenarioResults = [];
-    groups.filter(g => !group || g.name === group).forEach(g => g.runAll());
+    groups.forEach(g => g.runAll());
 
     onBenchmarkEvent(async (status, args) => {
       switch (status) {

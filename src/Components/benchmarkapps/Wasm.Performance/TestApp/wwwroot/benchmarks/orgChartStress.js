@@ -1,26 +1,15 @@
 import { group, benchmark, setup, teardown } from './lib/minibench/minibench.js';
-import { BlazorApp } from './util/BlazorApp.js';
+import { BlazorStressApp } from './util/BlazorStressApp.js';
 import { measureOrgChart, measureOrgChartEdit } from './orgChartBenchmark.js';
 
 group('Nested components', () => {
   let app;
 
-  setup(async () => {
-    app = new BlazorApp();
-    await app.start();
+  setup(() => {
+    app = new BlazorStressApp().app;
     app.navigateTo('orgChart');
   });
 
-  teardown(() => {
-    app.dispose();
-  });
-
-  benchmark('Render small nested component', () => measureOrgChart(app, 1, 4), {
-    descriptor: {
-      name: 'blazorwasm/orgchart-1-4-org',
-      description: 'Time to render a complex component with small nesting (ms)'
-    }
-  });
   benchmark('Render large nested component', () => measureOrgChart(app, 3, 3), {
     descriptor: {
       name: 'blazorwasm/orgchart-3-3-org',

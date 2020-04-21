@@ -1,18 +1,13 @@
-import { group, benchmark, setup, teardown } from './lib/minibench/minibench.js';
-import { BlazorApp } from './util/BlazorApp.js';
+import { group, setup, benchmark } from './lib/minibench/minibench.js';
+import { BlazorStressApp } from './util/BlazorStressApp.js';
 import { measureRenderList } from './renderListBenchmark.js';
 
 group('Rendering list', () => {
   let app;
 
-  setup(async () => {
-    app = new BlazorApp();
-    await app.start();
+  setup(() => {
+    app = new BlazorStressApp().app;
     app.navigateTo('renderList');
-  });
-
-  teardown(() => {
-    app.dispose();
   });
 
   benchmark('Render 10 items', () => measureRenderList(app, 10), {
@@ -28,9 +23,9 @@ group('Rendering list', () => {
     }
   });
   benchmark('Render 1000 items', () => measureRenderList(app, 1000), {
-    descriptor: {
-      name: 'blazorwasm/render-1000-items',
-      description: 'Time to render 1000 item list (ms)'
-    }
+   descriptor: {
+     name: 'blazorwasm/render-1000-items',
+     description: 'Time to render 1000 item list (ms)'
+   }
   });
 });
