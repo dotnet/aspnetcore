@@ -35,8 +35,9 @@ parameters:
   NETCoreExperimentalChannelId: 562
   NetEngServicesIntChannelId: 678
   NetEngServicesProdChannelId: 679
-  Net5Preview2ChannelId: 738
   Net5Preview3ChannelId: 739
+  Net5Preview4ChannelId: 856
+  Net5Preview5ChannelId: 857
   NetCoreSDK313xxChannelId: 759
   NetCoreSDK313xxInternalChannelId: 760
   
@@ -65,7 +66,7 @@ stages:
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
           arguments: -PromoteToChannels "$(InitialChannels)[$(PromoteToMaestroChannelId)]"
-            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview2ChannelId}},${{parameters.Net5Preview3ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}}
+            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}}${{parameters.Net5Preview3ChannelId}},${{parameters.Net5Preview4ChannelId}},${{parameters.Net5Preview5ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}}
 
   - job:
     displayName: NuGet Validation
@@ -213,10 +214,10 @@ stages:
     dependsOn: ${{ parameters.publishDependsOn }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview2_Publish'
-    channelName: '.NET 5 Preview 2'
-    akaMSChannelName: 'net5/preview2'
-    channelId: ${{ parameters.Net5Preview2ChannelId }}
+    stageName: 'Net5_Preview3_Publish'
+    channelName: '.NET 5 Preview 3'
+    akaMSChannelName: 'net5/preview3'
+    channelId: ${{ parameters.Net5Preview3ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -227,10 +228,24 @@ stages:
     dependsOn: ${{ parameters.publishDependsOn }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview3_Publish'
-    channelName: '.NET 5 Preview 3'
-    akaMSChannelName: 'net5/preview3'
-    channelId: ${{ parameters.Net5Preview3ChannelId }}
+    stageName: 'Net5_Preview4_Publish'
+    channelName: '.NET 5 Preview 4'
+    akaMSChannelName: 'net5/preview4'
+    channelId: ${{ parameters.Net5Preview4ChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+
+- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'Net5_Preview5_Publish'
+    channelName: '.NET 5 Preview 5'
+    akaMSChannelName: 'net5/preview5'
+    channelId: ${{ parameters.Net5Preview5ChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
@@ -380,3 +395,4 @@ stages:
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
+
