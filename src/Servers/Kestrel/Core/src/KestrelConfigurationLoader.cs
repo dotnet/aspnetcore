@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public IConfiguration Configuration { get; internal set; }
 
         /// <summary>
-        /// If <see langword="true"/>, Kestrel will reload endpoints defined in the "Endpoints" section of the <see cref="Configuration"/>, if they are changed.
+        /// Gets or sets a boolean indicating if endpoints should be reconfigured when the configuration section changes.
         /// Kestrel will bind and unbind to endpoints as necessary.
         /// </summary>
-        /// <remarks>Code-defined endpoints defined it code will not be reloaded even if the default certificate or protocol used by endpoint changed.</remarks>
+        /// <remarks>If set the <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes. This will only reload endpoints defined in the "Endpoints" section of your Kestrel configuration. Endpoints defined in code will not be reloaded.</remarks>
         public bool ReloadOnChange { get; } = true;
 
         private ConfigurationReader ConfigurationReader { get; set; }
