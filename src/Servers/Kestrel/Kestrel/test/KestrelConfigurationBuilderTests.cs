@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(options.Latin1RequestHeaders);
         }
 
-       [Fact]
+        [Fact]
         public void Reload_IdentifiesEndpointsToStartAndStop()
         {
             var serverOptions = CreateServerOptions();
