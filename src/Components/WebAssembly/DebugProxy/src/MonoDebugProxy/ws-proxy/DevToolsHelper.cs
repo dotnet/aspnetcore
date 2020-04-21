@@ -61,6 +61,42 @@ namespace WebAssembly.Net.Debugging {
 			=> (obj is MessageId) ? ((MessageId) obj).sessionId == sessionId && ((MessageId) obj).id == id : false;
 	}
 
+	internal class DotnetObjectId {
+		public string Scheme { get; }
+		public string Value { get; }
+
+		public static bool TryParse (JToken jToken, out DotnetObjectId objectId)
+			=> TryParse (jToken?.Value<string>(), out objectId);
+
+		public static bool TryParse (string id, out DotnetObjectId objectId)
+		{
+			objectId = null;
+			if (id == null)
+				return false;
+
+			if (!id.StartsWith ("dotnet:"))
+				return false;
+
+			var parts = id.Split (":", 3);
+
+			if (parts.Length < 3)
+				return false;
+
+			objectId = new DotnetObjectId (parts[1], parts[2]);
+
+			return true;
+		}
+
+		public DotnetObjectId (string scheme, string value)
+		{
+			Scheme = scheme;
+			Value = value;
+		}
+
+		public override string ToString ()
+			=> $"dotnet:{Scheme}:{Value}";
+	}
+
 	internal struct Result {
 		public JObject Value { get; private set; }
 		public JObject Error { get; private set; }
@@ -151,8 +187,8 @@ namespace WebAssembly.Net.Debugging {
 		public static MonoCommands ClearAllBreakpoints ()
 			=> new MonoCommands ("MONO.mono_wasm_clear_all_breakpoints()");
 
-		public static MonoCommands GetObjectProperties (int objectId, bool expandValueTypes)
-			=> new MonoCommands ($"MONO.mono_wasm_get_object_properties({objectId}, { (expandValueTypes ? "true" : "false") })");
+		public static MonoCommands GetObjectProperties (DotnetObjectId objectId, bool expandValueTypes)
+			=> new MonoCommands ($"MONO.mono_wasm_get_object_properties({int.Parse (objectId.Value)}, { (expandValueTypes ? "true" : "false") })");
 
 		public static MonoCommands GetArrayValues (int objectId)
 			=> new MonoCommands ($"MONO.mono_wasm_get_array_values({objectId})");
@@ -241,8 +277,6 @@ namespace WebAssembly.Net.Debugging {
 		internal DebugStore store;
 		public TaskCompletionSource<DebugStore> Source { get; } = new TaskCompletionSource<DebugStore> ();
 
-		int nextValueTypeId = 0;
-		public Dictionary<string, JToken> ValueTypesCache = new Dictionary<string, JToken> ();
 		public Dictionary<string, JToken> LocalsCache = new Dictionary<string, JToken> ();
 
 		public DebugStore Store {
@@ -257,11 +291,8 @@ namespace WebAssembly.Net.Debugging {
 		public void ClearState ()
 		{
 			CallStack = null;
-			ValueTypesCache.Clear ();
 			LocalsCache.Clear ();
-			nextValueTypeId = 0;
 		}
 
-		public int NextValueTypeId () => Interlocked.Increment (ref nextValueTypeId);
 	}
 }
