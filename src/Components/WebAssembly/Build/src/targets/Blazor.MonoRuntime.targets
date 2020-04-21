@@ -1,4 +1,6 @@
 <Project>
+  <UsingTask TaskName="BlazorGetFileHash" AssemblyFile="$(_BlazorTasksPath)" />
+
   <PropertyGroup>
     <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == '' AND '$(Configuration)' != 'Debug'">true</BlazorWebAssemblyEnableLinking>
     <BlazorWebAssemblyEnableLinking Condition="'$(BlazorWebAssemblyEnableLinking)' == ''">false</BlazorWebAssemblyEnableLinking>
@@ -153,9 +155,9 @@
       <_ExistingBlazorOutputWithTargetPath Include="@(_BlazorOutputWithTargetPath)" Condition="Exists('%(FullPath)')" />
     </ItemGroup>
 
-    <GetFileHash Files="@(_ExistingBlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+    <BlazorGetFileHash Files="@(_ExistingBlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
-    </GetFileHash>
+    </BlazorGetFileHash>
 
     <ItemGroup>
       <_BlazorOutputWithIntegrity Include="@(_BlazorOutputWithHash)">
