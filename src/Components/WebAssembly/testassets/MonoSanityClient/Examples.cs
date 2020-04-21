@@ -58,6 +58,6 @@ namespace MonoSanityClient
         public static string GetRuntimeInformation()
             => $"OSDescription: '{RuntimeInformation.OSDescription}';"
             + $" OSArchitecture: '{RuntimeInformation.OSArchitecture}';"
-            + $" IsOSPlatform(WEBASSEMBLY): '{RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"))}'";
+            + $" IsOSPlatform(BROWSER): '{RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"))}'";
     }
 }

@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.FindElement(By.CssSelector("#getRuntimeInformation button")).Click();
             Assert.Equal(
-                "OSDescription: 'web'; OSArchitecture: 'X86'; IsOSPlatform(WEBASSEMBLY): 'True'",
+                "OSDescription: 'web'; OSArchitecture: 'X86'; IsOSPlatform(BROWSER): 'True'",
                 GetValue(Browser, "getRuntimeInformationResult"));
         }
 
