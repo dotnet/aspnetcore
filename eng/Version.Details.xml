@@ -317,9 +317,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
-      <Sha>c4164928b270ee2369808ab347d33423ef765216</Sha>
+    <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
     <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
