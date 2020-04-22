@@ -26,7 +26,6 @@ namespace InteropTests
         }
 
         [Theory]
-        [QuarantinedTest]
         [MemberData(nameof(TestCaseData))]
         public async Task InteropTestCase(string name)
         {
