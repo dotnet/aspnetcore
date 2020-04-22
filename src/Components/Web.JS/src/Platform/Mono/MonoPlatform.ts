@@ -297,6 +297,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
+    // -1 enables debugging with logging disabled. 0 disables debugging entirely.
     load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
     MONO.mono_wasm_runtime_ready ();
     attachInteropInvoker();
