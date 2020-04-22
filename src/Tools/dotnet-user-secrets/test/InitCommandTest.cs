@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         private CommandContext MakeCommandContext() => new CommandContext(null, new TestReporter(_output), _console);
 
         [Fact]
+        [QuarantinedTest]
         public void AddsSecretIdToProject()
         {
             var projectDir = _fixture.CreateProject(null);
