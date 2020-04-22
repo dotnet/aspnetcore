@@ -10,7 +10,7 @@ using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMe
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    internal class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
+    public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
