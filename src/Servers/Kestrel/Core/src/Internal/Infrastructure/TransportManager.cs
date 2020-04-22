@@ -67,10 +67,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _transports.Add(new ActiveTransport(connectionListener, acceptLoopTask, transportConnectionManager, endpointConfig));
         }
 
-        public async Task StopEndpointsAsync(List<EndpointConfig> endpointsToStop, CancellationToken cancellationToken)
+        public Task StopEndpointsAsync(List<EndpointConfig> endpointsToStop, CancellationToken cancellationToken)
         {
             var transportsToStop = _transports.Where(t => t.EndpointConfig != null && endpointsToStop.Contains(t.EndpointConfig)).ToList();
+            return StopTransportsAsync(transportsToStop, cancellationToken);
+        }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return StopTransportsAsync(new List<ActiveTransport>(_transports), cancellationToken);
+        }
+
+        private async Task StopTransportsAsync(List<ActiveTransport> transportsToStop, CancellationToken cancellationToken)
+        {
             var tasks = new Task[transportsToStop.Count];
 
             for (int i = 0; i < transportsToStop.Count; i++)
@@ -113,37 +122,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            var tasks = new Task[_transports.Count];
-
-            for (int i = 0; i < _transports.Count; i++)
-            {
-                tasks[i] = _transports[i].UnbindAsync(cancellationToken);
-            }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-            {
-                Trace.NotAllConnectionsClosedGracefully();
-
-                if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
-                {
-                    Trace.NotAllConnectionsAborted();
-                }
-            }
-
-            for (int i = 0; i < _transports.Count; i++)
-            {
-                tasks[i] = _transports[i].DisposeAsync().AsTask();
-            }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            _transports.Clear();
-        }
-
         private class ActiveTransport : IAsyncDisposable
         {
             public ActiveTransport(IConnectionListenerBase transport, Task acceptLoopTask, TransportConnectionManager transportConnectionManager, EndpointConfig? endpointConfig = null)
@@ -163,7 +141,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             public async Task UnbindAsync(CancellationToken cancellationToken)
             {
                 await ConnectionListener.UnbindAsync(cancellationToken).ConfigureAwait(false);
-                // TODO: Stop awaiting this if cancellationToken fires
                 await AcceptLoopTask.ConfigureAwait(false);
             }
 

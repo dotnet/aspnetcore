@@ -74,62 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public Task<bool> CloseAllConnectionsAsync(CancellationToken token)
-        {
-            return CloseAllConnectionsAsync(_connectionReferences, token);
-        }
-
-        public Task<bool> AbortAllConnectionsAsync()
-        {
-            return AbortAllConnectionsAsync(_connectionReferences);
-        }
-
-        internal static async Task<bool> CloseAllConnectionsAsync(ConcurrentDictionary<long, ConnectionReference> connectionReferences, CancellationToken token)
-        {
-            var closeTasks = new List<Task>();
-
-            foreach (var kvp in connectionReferences)
-            {
-                if (kvp.Value.TryGetConnection(out var connection))
-                {
-                    connection.RequestClose();
-                    closeTasks.Add(connection.ExecutionTask);
-                }
-            }
-
-            var allClosedTask = Task.WhenAll(closeTasks.ToArray());
-            return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
-        }
-
-        internal static async Task<bool> AbortAllConnectionsAsync(ConcurrentDictionary<long, ConnectionReference> connectionReferences)
-        {
-            var abortTasks = new List<Task>();
-
-            foreach (var kvp in connectionReferences)
-            {
-                if (kvp.Value.TryGetConnection(out var connection))
-                {
-                    connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
-                    abortTasks.Add(connection.ExecutionTask);
-                }
-            }
-
-            var allAbortedTask = Task.WhenAll(abortTasks.ToArray());
-            return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
-        }
-
         private static ResourceCounter GetCounter(long? number)
             => number.HasValue
                 ? ResourceCounter.Quota(number.Value)

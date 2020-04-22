@@ -5,8 +5,10 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -52,14 +54,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public Task<bool> CloseAllConnectionsAsync(CancellationToken token)
+        public async Task<bool> CloseAllConnectionsAsync(CancellationToken token)
         {
-            return ConnectionManager.CloseAllConnectionsAsync(_connectionReferences, token);
+            var closeTasks = new List<Task>();
+
+            foreach (var kvp in _connectionReferences)
+            {
+                if (kvp.Value.TryGetConnection(out var connection))
+                {
+                    connection.RequestClose();
+                    closeTasks.Add(connection.ExecutionTask);
+                }
+            }
+
+            var allClosedTask = Task.WhenAll(closeTasks.ToArray());
+            return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
         }
 
-        public Task<bool> AbortAllConnectionsAsync()
+        public async Task<bool> AbortAllConnectionsAsync()
         {
-            return ConnectionManager.AbortAllConnectionsAsync(_connectionReferences);
+            var abortTasks = new List<Task>();
+
+            foreach (var kvp in _connectionReferences)
+            {
+                if (kvp.Value.TryGetConnection(out var connection))
+                {
+                    connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
+                    abortTasks.Add(connection.ExecutionTask);
+                }
+            }
+
+            var allAbortedTask = Task.WhenAll(abortTasks.ToArray());
+            return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            token.Register(() => tcs.SetResult(null!));
+            return tcs.Task;
         }
     }
 }

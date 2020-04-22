@@ -198,7 +198,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.BindAsync();
             listenOptions.EndPoint = transport.EndPoint;
 
-            var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, c => listenOptions.Build()(c), new TransportConnectionManager(serviceContext.ConnectionManager));
+            var transportConnectionManager = new TransportConnectionManager(serviceContext.ConnectionManager);
+            var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, c => listenOptions.Build()(c), transportConnectionManager);
             var acceptTask = dispatcher.StartAcceptingConnections(new GenericConnectionListener(transport));
 
             using (var client = new HttpClient())
@@ -221,9 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             await acceptTask;
 
-            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default))
+            if (!await transportConnectionManager.CloseAllConnectionsAsync(default))
             {
-                await serviceContext.ConnectionManager.AbortAllConnectionsAsync();
+                await transportConnectionManager.AbortAllConnectionsAsync();
             }
         }
 

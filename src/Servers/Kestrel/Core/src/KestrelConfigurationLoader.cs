@@ -244,17 +244,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // Any endpoints that were removed from the last time endpoints were loaded are returned.
         internal (List<ListenOptions>, List<ListenOptions>) Reload()
         {
-            ConfigurationReader = new ConfigurationReader(Configuration);
-
-            Options.Latin1RequestHeaders = ConfigurationReader.Latin1RequestHeaders;
-
-            DefaultCertificateConfig = null;
-            LoadDefaultCert(ConfigurationReader);
-
             var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
             var endpointsToStart = new List<ListenOptions>();
 
             Options.ConfigurationBackedListenOptions.Clear();
+            DefaultCertificateConfig = null;
+
+            ConfigurationReader = new ConfigurationReader(Configuration);
+
+            Options.Latin1RequestHeaders = ConfigurationReader.Latin1RequestHeaders;
+
+            LoadDefaultCert(ConfigurationReader);
 
             foreach (var endpoint in ConfigurationReader.Endpoints)
             {

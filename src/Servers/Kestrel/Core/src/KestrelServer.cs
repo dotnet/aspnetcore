@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServer : IServer
     {
         private readonly IServerAddressesFeature _serverAddresses;
-        private readonly List<IConnectionListenerFactory> _transportFactories;
-        private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
         private readonly TransportManager _transportManager;
+        private readonly IConnectionListenerFactory _transportFactory;
+        private readonly IMultiplexedConnectionListenerFactory _multiplexedTransportFactory;
 
         private readonly SemaphoreSlim _bindSemaphore = new SemaphoreSlim(initialCount: 1);
         private bool _hasStarted;
@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(transportFactories));
             }
 
-            _transportFactories = transportFactories.ToList();
-            _multiplexedTransportFactories = multiplexedFactories?.ToList();
+            _transportFactory = transportFactories?.LastOrDefault();
+            _multiplexedTransportFactory = multiplexedFactories?.LastOrDefault();
 
-            if (_transportFactories.Count == 0 && (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0))
+            if (_transportFactory == null && _multiplexedTransportFactory == null)
             {
                 throw new InvalidOperationException(CoreStrings.TransportNotFound);
             }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);
 
-            _transportManager = new TransportManager(transportFactories?.LastOrDefault(), multiplexedFactories?.LastOrDefault(), ServiceContext);
+            _transportManager = new TransportManager(_transportFactory, _multiplexedTransportFactory,  ServiceContext);
 
             HttpCharacters.Initialize();
         }
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     // sockets for it to successfully listen. It also seems racy.
                     if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
-                        if (_multiplexedTransportFactories == null || _multiplexedTransportFactories.Count == 0)
+                        if (_multiplexedTransportFactory is null)
                         {
                             throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
@@ -171,6 +171,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
                                                                     // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
                     {
+                        if (_transportFactory is null)
+                        {
+                            throw new InvalidOperationException($"Cannot start HTTP/1.x or HTTP/2 server if no {nameof(IConnectionListenerFactory)} is registered.");
+                        }
+
                         options.UseHttpServer(ServiceContext, application, options.Protocols);
                         var connectionDelegate = options.Build();
 
