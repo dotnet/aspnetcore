@@ -17,17 +17,64 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// <summary>
     /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    public class ApiAuthorizationDbContext<TUser> : IdentityDbContext<TUser>, IPersistedGrantDbContext where TUser : IdentityUser
+    /// <typeparam name="TUser">The type of the user objects.</typeparam>
+    public class ApiAuthorizationDbContext<TUser> : ApiAuthorizationDbContext<TUser, string>
+        where TUser : IdentityUser
     {
-        private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
-
         /// <summary>
         /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
         /// </summary>
         /// <param name="options">The <see cref="DbContextOptions"/>.</param>
         /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
         public ApiAuthorizationDbContext(
+            DbContextOptions<ApiAuthorizationDbContext<TUser>> options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : base(options, operationalStoreOptions)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        protected ApiAuthorizationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : base(options, operationalStoreOptions)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
+    /// </summary>
+    /// <typeparam name="TUser">The type of the user objects.</typeparam>
+    /// <typeparam name="TKey">The type of the key for the user object.</typeparam>
+    public class ApiAuthorizationDbContext<TUser, TKey> : IdentityDbContext<TUser, TKey>, IPersistedGrantDbContext
+        where TUser : IdentityUser<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser,TKey}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        public ApiAuthorizationDbContext(
+            DbContextOptions<ApiAuthorizationDbContext<TUser, TKey>> options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : this((DbContextOptions)options, operationalStoreOptions)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser,TKey}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        protected ApiAuthorizationDbContext(
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions)
             : base(options)
