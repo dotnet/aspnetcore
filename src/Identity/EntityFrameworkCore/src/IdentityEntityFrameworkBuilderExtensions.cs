@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -30,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType)
         {
-            var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<>));
+            var identityUserType = FindGenericInterfaceType(userType, typeof(IIdentityUser<>));
             if (identityUserType == null)
             {
                 throw new InvalidOperationException(Resources.NotIdentityUser);
@@ -108,6 +109,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 type = type.BaseType;
             }
             return null;
+        }
+
+        private static TypeInfo FindGenericInterfaceType(Type currentType, Type genericInterfaceType)
+        {
+            return currentType
+                .GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceType)
+                ?.GetTypeInfo();
         }
     }
 }

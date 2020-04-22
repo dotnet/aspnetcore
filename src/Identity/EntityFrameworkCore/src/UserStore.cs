@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
     public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext, string>
-        where TUser : IdentityUser<string>, new()
+        where TUser : class, IIdentityUser<string>, new()
     {
         /// <summary>
         /// Constructs a new instance of <see cref="UserStore{TUser}"/>.
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRole">The type representing a role.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
-        where TUser : IdentityUser<string>
+        where TUser : class, IIdentityUser<string>
         where TRole : IdentityRole<string>
         where TContext : DbContext
     {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>, IdentityRoleClaim<TKey>>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>,
         IProtectedUserStore<TUser>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>

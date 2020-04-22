@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Creates a new instance of a persistence store for the specified user type.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    public class UserOnlyStore<TUser> : UserOnlyStore<TUser, DbContext, string> where TUser : IdentityUser<string>, new()
+    public class UserOnlyStore<TUser> : UserOnlyStore<TUser, DbContext, string>
+        where TUser : class, IIdentityUser<string>, new()
     {
         /// <summary>
         /// Constructs a new instance of <see cref="UserOnlyStore{TUser}"/>.
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUser">The type representing a user.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     public class UserOnlyStore<TUser, TContext> : UserOnlyStore<TUser, TContext, string>
-        where TUser : IdentityUser<string>
+        where TUser : class, IIdentityUser<string>
         where TContext : DbContext
     {
         /// <summary>
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>,
         IProtectedUserStore<TUser>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()

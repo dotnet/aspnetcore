@@ -16,7 +16,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecificationTestBase<TUser, TKey>, IClassFixture<ScratchDatabaseFixture>
-        where TUser : IdentityUser<TKey>, new()
+        where TUser : class, IIdentityUser<TKey>, new()
         where TKey : IEquatable<TKey>
     {
         private readonly ScratchDatabaseFixture _fixture;

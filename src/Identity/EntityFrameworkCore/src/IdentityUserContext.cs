@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUser">The type of user objects.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
     public class IdentityUserContext<TUser, TKey> : IdentityUserContext<TUser, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TKey : IEquatable<TKey>
     {
         /// <summary>
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
     /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
     public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken> : DbContext
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>
         where TUserLogin : IdentityUserLogin<TKey>
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 b.ToTable("AspNetUserLogins");
             });
 
-            builder.Entity<TUserToken>(b => 
+            builder.Entity<TUserToken>(b =>
             {
                 b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
 

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRole">The type of role objects.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
     public class IdentityDbContext<TUser, TRole, TKey> : IdentityDbContext<TUser, TRole, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityRoleClaim<TKey>, IdentityUserToken<TKey>>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
     /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
     public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>

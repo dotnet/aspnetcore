@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Identity
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>
-        where TUser : IdentityUser<TKey>
+        where TUser : class, IIdentityUser<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()
         where TUserLogin : IdentityUserLogin<TKey>, new()
@@ -1087,8 +1087,8 @@ namespace Microsoft.AspNetCore.Identity
     public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
         IUserRoleStore<TUser>
-        where TUser : IdentityUser<TKey>
-        where TRole : IdentityRole<TKey> 
+        where TUser : class, IIdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()
         where TUserRole : IdentityUserRole<TKey>, new()
