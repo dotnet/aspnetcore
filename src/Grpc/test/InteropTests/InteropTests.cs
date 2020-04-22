@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using InteropTests.Helpers;
 using Microsoft.AspNetCore.Testing;
@@ -27,6 +26,7 @@ namespace InteropTests
         }
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(TestCaseData))]
         public async Task InteropTestCase(string name)
         {

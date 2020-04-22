@@ -20,6 +20,7 @@ namespace InteropTests.Helpers
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
         private readonly StringBuilder _consoleOut = new StringBuilder();
+        private object _consoleLock = new object();
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: .*:(?<port>\d*)$");
 
         public string ServerPort { get; private set; }
@@ -58,7 +59,10 @@ namespace InteropTests.Helpers
             var data = e.Data;
             if (data != null)
             {
-                _consoleOut.AppendLine(data);
+                lock (_consoleLock)
+                {
+                    _consoleOut.AppendLine(data);
+                }
                 var m = NowListeningRegex.Match(data);
                 if (m.Success)
                 {
@@ -74,18 +78,26 @@ namespace InteropTests.Helpers
 
         public void Dispose()
         {
+            _process.OutputDataReceived -= Process_OutputDataReceived;
+
+            string consoleOut;
+            lock (_consoleLock)
+            {
+                consoleOut = _consoleOut.ToString();
+            }
+
             var attributes = Assembly.GetExecutingAssembly()
                 .GetCustomAttributes<AssemblyMetadataAttribute>();
             var serverLogPath = attributes.SingleOrDefault(a => a.Key == "ServerLogPath")?.Value;
             if (!string.IsNullOrEmpty(serverLogPath))
             {
-                File.WriteAllText(serverLogPath, _consoleOut.ToString());
+                File.WriteAllText(serverLogPath, consoleOut);
             }
             else
             {
                 var logDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "logs");
                 Directory.CreateDirectory(logDir);
-                File.WriteAllText(Path.Combine(logDir, "InteropServer.log"), _consoleOut.ToString());
+                File.WriteAllText(Path.Combine(logDir, "InteropServer.log"), consoleOut);
             }
             _processEx.Dispose();
         }
