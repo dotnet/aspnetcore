@@ -44,6 +44,26 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <summary>
     /// Base class for the Entity Framework database context used for identity.
     /// </summary>
+    /// <typeparam name="TUser">The type of the user objects.</typeparam>
+    /// <typeparam name="TKey">The type of the key for the user object.</typeparam>
+    public class IdentityDbContext<TUser, TKey> : IdentityDbContext<TUser, IdentityRole<TKey>, TKey> where TUser : IdentityUser<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityDbContext"/>.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        public IdentityDbContext(DbContextOptions options) : base(options) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
+        /// </summary>
+        protected IdentityDbContext() { }
+    }
+
+    /// <summary>
+    /// Base class for the Entity Framework database context used for identity.
+    /// </summary>
     /// <typeparam name="TUser">The type of user objects.</typeparam>
     /// <typeparam name="TRole">The type of role objects.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
