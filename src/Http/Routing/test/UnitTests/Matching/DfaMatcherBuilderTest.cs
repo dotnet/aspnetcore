@@ -923,6 +923,48 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Null(a.PolicyEdges);
         }
 
+        // Verifies that we sort the endpoints before calling into policies.
+        //
+        // The builder uses a different sort order when building the tree, vs when building the policy nodes. Policy
+        // nodes should see an "absolute" order.
+        [Fact]
+        public void BuildDfaTree_WithPolicies_SortedAccordingToScore()
+        {
+            // Arrange
+            //
+            // These cases where chosen where the absolute order incontrolled explicitly by setting .Order, but
+            // the precedence of segments is different, so these will be sorted into different orders when building
+            // the tree.
+            var policies = new MatcherPolicy[]
+            {
+                new TestMetadata1MatcherPolicy(),
+                new TestMetadata2MatcherPolicy(),
+            };
+
+            var builder = CreateDfaMatcherBuilder(policies);
+
+            ((TestMetadata1MatcherPolicy)policies[0]).OnGetEdges = VerifyOrder;
+            ((TestMetadata2MatcherPolicy)policies[1]).OnGetEdges = VerifyOrder;
+
+            var endpoint1 = CreateEndpoint("/a/{**b}", order: -1, metadata: new object[] { new TestMetadata1(0), new TestMetadata2(true), });
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("/a/{b}/{**c}", order: 0, metadata: new object[] { new TestMetadata1(1), new TestMetadata2(true), });
+            builder.AddEndpoint(endpoint2);
+
+            var endpoint3 = CreateEndpoint("/a/b/{c}", order: 1, metadata: new object[] { new TestMetadata1(1), new TestMetadata2(false), });
+            builder.AddEndpoint(endpoint3);
+
+            // Act & Assert
+            _ = builder.BuildDfaTree();
+
+            void VerifyOrder(IReadOnlyList<Endpoint> endpoints)
+            {
+                // The list should already be in sorted order, every time build is called.
+                Assert.Equal(endpoints, endpoints.OrderBy(e => e, builder.Comparer));
+            }
+        }
+
         [Fact]
         public void BuildDfaTree_RequiredValues()
         {
@@ -1501,6 +1543,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
 
+            public Action<IReadOnlyList<Endpoint>> OnGetEdges { get; set; }
+
             public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata1>() != null);
@@ -1513,6 +1557,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
             {
+                OnGetEdges?.Invoke(endpoints);
                 return endpoints
                     .GroupBy(e => e.Metadata.GetMetadata<TestMetadata1>().State)
                     .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))
@@ -1540,6 +1585,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata2>.Default;
 
+            public Action<IReadOnlyList<Endpoint>> OnGetEdges { get; set; }
+
+
             public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata2>() != null);
@@ -1552,6 +1600,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
             {
+                OnGetEdges?.Invoke(endpoints);
                 return endpoints
                     .GroupBy(e => e.Metadata.GetMetadata<TestMetadata2>().State)
                     .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))

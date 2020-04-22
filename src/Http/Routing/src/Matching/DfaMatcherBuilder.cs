@@ -53,6 +53,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _constraints = new List<KeyValuePair<string, IRouteConstraint>>();
         }
 
+        // Used in tests
+        internal EndpointComparer Comparer => _comparer;
+
         public override void AddEndpoint(RouteEndpoint endpoint)
         {
             _endpoints.Add(endpoint);
