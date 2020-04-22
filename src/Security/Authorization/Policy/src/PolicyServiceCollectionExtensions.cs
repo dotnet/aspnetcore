@@ -26,7 +26,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<AuthorizationPolicyMarkerService>();
-            services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
+            services.TryAddTransient<IPolicyEvaluator, PolicyEvaluator>();
+            services.TryAddTransient<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
             return services;
         }
         
