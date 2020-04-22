@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
