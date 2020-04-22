@@ -60,6 +60,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            // When publishing without linker, we expect to have collation information present in mscorlib.dll
+            Assert.AssemblyContainsResource(result, Path.Combine(blazorPublishDirectory, "_framework", "_bin", "mscorlib.dll"), "collation.cjkCHS.bin");
         }
 
         [Fact]
@@ -99,6 +102,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
             Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
+
+            // When publishing with linker, we expect to have collation information present in mscorlib.dll
+            Assert.AssemblyContainsResource(result, Path.Combine(blazorPublishDirectory, "_framework", "_bin", "mscorlib.dll"), "collation.cjkCHS.bin");
+        }
+
+        [Fact]
+        public async Task Publish_LinkerEnabledAndBlazorWebAssemblyPreserveCollationDataSet_CollationInformationIsPreserved()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+            project.AddProjectFileContent(
+@"<PropertyGroup>
+    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+</PropertyGroup>");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+
+            // When publishing with BlazorWebAssemblyPreserveCollationData=false, collation information should be stripped out.
+            Assert.AssemblyDoesNotContainResource(result, Path.Combine(blazorPublishDirectory, "_framework", "_bin", "mscorlib.dll"), "collation.cjkCHS.bin");
         }
 
         [Fact]

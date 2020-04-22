@@ -9,6 +9,7 @@
     <_BlazorRuntimeBinOutputPath>$(_BaseBlazorRuntimeOutputPath)_bin\</_BlazorRuntimeBinOutputPath>
     <_BlazorRuntimeWasmOutputPath>$(_BaseBlazorRuntimeOutputPath)wasm\</_BlazorRuntimeWasmOutputPath>
     <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>
+    <_BlazorCollationLinkerDescriptor>$(MSBuildThisFileDirectory)CollationLinkerDescriptor.xml</_BlazorCollationLinkerDescriptor>
     <_BlazorBootJsonName>blazor.boot.json</_BlazorBootJsonName>
   </PropertyGroup>
 

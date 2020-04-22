@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             using (var file = File.OpenRead(assemblyPath))
             {
-                var peReader = new PEReader(file);
+                using var peReader = new PEReader(file);
                 var metadataReader = peReader.GetMetadataReader();
                 return metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {
@@ -542,6 +542,44 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                     return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
                 }).ToArray();
             }
+        }
+
+        public static void AssemblyContainsResource(MSBuildResult result, string assemblyPath, string resourceName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
+            var resources = GetAssemblyResourceNames(assemblyPath);
+            Assert.Contains(resourceName, resources);
+        }
+
+        public static void AssemblyDoesNotContainResource(MSBuildResult result, string assemblyPath, string resourceName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
+            var resources = GetAssemblyResourceNames(assemblyPath);
+            Assert.DoesNotContain(resourceName, resources);
+        }
+
+        private static IEnumerable<string> GetAssemblyResourceNames(string assemblyPath)
+        {
+            using var file = File.OpenRead(assemblyPath);
+            using var peReader = new PEReader(file);
+            var metadataReader = peReader.GetMetadataReader();
+            return metadataReader.ManifestResources.Where(r => !r.IsNil).Select(r =>
+            {
+                var resource = metadataReader.GetManifestResource(r);
+                return metadataReader.GetString(resource.Name);
+            }).ToArray();
         }
 
         public static void AssemblyHasAttribute(MSBuildResult result, string assemblyPath, string fullTypeName)

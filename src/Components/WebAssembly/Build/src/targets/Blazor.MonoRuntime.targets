@@ -218,6 +218,10 @@
       <_BlazorLinkerRoot Include="@(_BlazorRuntimeCopyLocalItems)" Condition="'%(_BlazorRuntimeCopyLocalItems.IsLinkable)' != 'true'" />
     </ItemGroup>
 
+    <!-- When specifically requested, include the linker substitutions file that strips out collation information.-->
+    <PropertyGroup Condition="'$(BlazorWebAssemblyPreserveCollationData)' == 'false'">
+      <AdditionalMonoLinkerOptions>$(AdditionalMonoLinkerOptions) --substitutions "$(_BlazorCollationLinkerDescriptor)"</AdditionalMonoLinkerOptions>
+    </PropertyGroup>
   </Target>
 
   <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(_BlazorTasksPath)" />
