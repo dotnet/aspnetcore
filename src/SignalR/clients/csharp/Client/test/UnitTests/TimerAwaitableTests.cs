@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class TimerAwaitableTests
     {
         [Fact]
+        [QuarantinedTest]
         public void FinalizerRunsIfTimerAwaitableReferencesObject()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
