@@ -162,6 +162,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         options.UseHttp3Server(ServiceContext, application, options.Protocols);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
+                        // Add the connection limit middleware
+                        multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
+
                         options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options.EndpointConfig).ConfigureAwait(false);
                     }
 
@@ -180,10 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         var connectionDelegate = options.Build();
 
                         // Add the connection limit middleware
-                        if (Options.Limits.MaxConcurrentConnections.HasValue)
-                        {
-                            connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
-                        }
+                        connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
                         options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig).ConfigureAwait(false);
                     }
@@ -358,6 +358,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new InvalidOperationException(
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
             }
+        }
+
+        private static ConnectionDelegate EnforceConnectionLimit(ConnectionDelegate innerDelegate, long? connectionLimit, IKestrelTrace trace)
+        {
+            if (!connectionLimit.HasValue)
+            {
+                return innerDelegate;
+            }
+
+            return new ConnectionLimitMiddleware<ConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace).OnConnectionAsync;
+        }
+
+        private static MultiplexedConnectionDelegate EnforceConnectionLimit(MultiplexedConnectionDelegate innerDelegate, long? connectionLimit, IKestrelTrace trace)
+        {
+            if (!connectionLimit.HasValue)
+            {
+                return innerDelegate;
+            }
+
+            return new ConnectionLimitMiddleware<MultiplexedConnectionContext>(c => innerDelegate(c), connectionLimit.Value, trace).OnConnectionAsync;
         }
     }
 }
