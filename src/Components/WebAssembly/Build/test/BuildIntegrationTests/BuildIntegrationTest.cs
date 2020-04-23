@@ -325,6 +325,30 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "I18N.West.dll");
         }
 
+        [Fact]
+        public async Task Build_WithCustomOutputPath_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+
+            project.AddDirectoryBuildContent(
+@"<PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)build\bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)build\obj\</BaseIntermediateOutputPath>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/restore");
+            Assert.BuildPassed(result);
+
+            var compressedFilesPath = Path.Combine(
+                project.DirectoryPath,
+                "build",
+                project.IntermediateOutputDirectory,
+                "compressed");
+
+            Assert.True(Directory.Exists(compressedFilesPath));
+        }
+
         private static GenerateBlazorBootJson.BootJsonData ReadBootJsonData(MSBuildResult result, string path)
         {
             return JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(

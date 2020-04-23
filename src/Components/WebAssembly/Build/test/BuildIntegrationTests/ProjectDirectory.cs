@@ -172,6 +172,20 @@ $@"<Project>
             File.WriteAllText(ProjectFilePath, updated);
         }
 
+        internal void AddDirectoryBuildContent(string content)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var filepath = Path.Combine(DirectoryPath, "Directory.Build.props");
+
+            var existing = File.ReadAllText(filepath);
+            var updated = existing.Replace("<!-- Test Placeholder -->", content);
+            File.WriteAllText(filepath, updated);
+        }
+
         public void Dispose()
         {
             if (PreserveWorkingDirectory)
