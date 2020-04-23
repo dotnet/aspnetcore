@@ -22,7 +22,4 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- No code in this project to compile. -->
-  <Target Name="Compile" />
-
 </Project>
