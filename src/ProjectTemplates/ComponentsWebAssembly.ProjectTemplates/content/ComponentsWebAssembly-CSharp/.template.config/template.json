@@ -148,7 +148,9 @@
             "Client/Shared/LoginDisplay.IndividualLocalAuth.razor": "Client/Shared/LoginDisplay.razor"
           },
           "exclude": [
-            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor"
+            "Client/Shared/LoginDisplay.IndividualMsalAuth.razor",
+            "Client/wwwroot/appsettings.json",
+            "Client/wwwroot/appsettings.Development.json"
           ]
         },
         {
