@@ -57,6 +57,18 @@ try {
     ExitWithExitCode 1
   }
 
+  if( $msbuildEngine -eq "vs") {
+    # Ensure desktop MSBuild is available for sdk tasks.
+    if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "vs" )) {
+      $GlobalJson.tools | Add-Member -Name "vs" -Value (ConvertFrom-Json "{ `"version`": `"16.4`" }") -MemberType NoteProperty
+    }
+    if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "xcopy-msbuild" )) {
+      $GlobalJson.tools | Add-Member -Name "xcopy-msbuild" -Value "16.4.0-alpha" -MemberType NoteProperty
+    }
+
+    InitializeXCopyMSBuild $GlobalJson.tools."xcopy-msbuild" -install $true
+  }
+
   $taskProject = GetSdkTaskProject $task
   if (!(Test-Path $taskProject)) {
     Write-PipelineTelemetryError -Category 'Build' -Message "Unknown task: $task" -ForegroundColor Red
