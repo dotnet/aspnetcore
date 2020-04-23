@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
@@ -15,6 +15,7 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
     <Reference Include="xunit.analyzers" PrivateAssets="All" />
