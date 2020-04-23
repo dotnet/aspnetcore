@@ -6,7 +6,6 @@
     <RestoreSources>
       $(DotNetAdditionalRestoreSources);
       $(DotNetRestoreSources);
-      $(DotNet22ServicingFeed);
     </RestoreSources>
 
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
