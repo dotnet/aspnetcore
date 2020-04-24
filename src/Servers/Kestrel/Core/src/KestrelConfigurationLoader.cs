@@ -24,21 +24,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel
     {
         private bool _loaded = false;
 
-        internal KestrelConfigurationLoader(KestrelServerOptions options, IConfiguration configuration)
+        internal KestrelConfigurationLoader(KestrelServerOptions options, IConfiguration configuration, bool reloadOnChange)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ReloadOnChange = reloadOnChange;
         }
 
         public KestrelServerOptions Options { get; }
         public IConfiguration Configuration { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating if endpoints should be reconfigured when the configuration section changes.
-        /// Kestrel will bind and unbind to endpoints as necessary.
+        /// If <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes.
+        /// This will only reload endpoints defined in the "Endpoints" section of your Kestrel configuration. Endpoints defined in code will not be reloaded.
         /// </summary>
-        /// <remarks>If set the <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes. This will only reload endpoints defined in the "Endpoints" section of your Kestrel configuration. Endpoints defined in code will not be reloaded.</remarks>
-        public bool ReloadOnChange { get; } = true;
+        internal bool ReloadOnChange { get; }
 
         private ConfigurationReader ConfigurationReader { get; set; }
 
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 else
                 {
                     // Ensure endpoint is reloaded if it used the default protocol and the protocol changed.
-                    // listenOptions.Progocols should already be set to this by ApplyEndpointDefaults.
+                    // listenOptions.Protocols should already be set to this by ApplyEndpointDefaults.
                     endpoint.Protocols = ConfigurationReader.EndpointDefaults.Protocols;
                 }
 
@@ -345,16 +345,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             else
             {
                 var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-                var certificate = FindDeveloperCertificateFile(configReader, logger);
+                var (certificate, certificateConfig) = FindDeveloperCertificateFile(configReader, logger);
                 if (certificate != null)
                 {
                     logger.LocatedDevelopmentCertificate(certificate);
+                    DefaultCertificateConfig = certificateConfig;
                     Options.DefaultCertificate = certificate;
                 }
             }
         }
 
-        private X509Certificate2 FindDeveloperCertificateFile(ConfigurationReader configReader, ILogger<KestrelServer> logger)
+        private (X509Certificate2, CertificateConfig) FindDeveloperCertificateFile(ConfigurationReader configReader, ILogger<KestrelServer> logger)
         {
             string certificatePath = null;
             try
@@ -369,13 +370,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                     if (IsDevelopmentCertificate(certificate))
                     {
-                        DefaultCertificateConfig = certificateConfig;
-                        return certificate;
+                        return (certificate, certificateConfig);
                     }
-
-                    return null;
                 }
-                else if (!File.Exists(certificatePath))
+                else if (!string.IsNullOrEmpty(certificatePath))
                 {
                     logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
                 }
@@ -385,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 logger.FailedToLoadDevelopmentCertificate(certificatePath);
             }
 
-            return null;
+            return (null, null);
         }
 
         private static bool IsDevelopmentCertificate(X509Certificate2 certificate)

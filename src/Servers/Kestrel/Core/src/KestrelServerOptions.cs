@@ -202,20 +202,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel.
         /// </summary>
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for configuring endpoints.</returns>
         public KestrelConfigurationLoader Configure()
         {
-            var loader = new KestrelConfigurationLoader(this, new ConfigurationBuilder().Build());
+            var loader = new KestrelConfigurationLoader(this, new ConfigurationBuilder().Build(), reloadOnChange: false);
             ConfigurationLoader = loader;
             return loader;
         }
 
         /// <summary>
-        /// Creates a configuration loader for setting up Kestrel that takes an IConfiguration as input.
+        /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
         /// This configuration must be scoped to the configuration section for Kestrel.
+        /// Kestrel will dynamically update endpoint bindings when configuration changes.
+        /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
+        /// Call <see cref="Configure(IConfiguration, bool)"/> to disable dynamic endpoint binding updates.
         /// </summary>
+        /// <param name="config">The configuration section for Kestrel.</param>
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
         public KestrelConfigurationLoader Configure(IConfiguration config)
         {
-            var loader = new KestrelConfigurationLoader(this, config);
+            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange: true);
+            ConfigurationLoader = loader;
+            return loader;
+        }
+
+        /// <summary>
+        /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
+        /// This configuration must be scoped to the configuration section for Kestrel.
+        /// </summary>
+        /// <param name="config">The configuration section for Kestrel.</param>
+        /// <param name="reloadOnChange">
+        /// If <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes.
+        /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
+        /// </param>
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+        public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
+        {
+            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);
             ConfigurationLoader = loader;
             return loader;
         }

@@ -294,10 +294,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
                 var (endpointsToStop, endpointsToStart) = Options.ConfigurationLoader.Reload();
 
+                Trace.LogDebug("Config reload token fired. Checking for changes...");
+
                 if (endpointsToStop.Count > 0)
                 {
                     var urlsToStop = endpointsToStop.Select(lo => lo.EndpointConfig.Url ?? "<unknown>");
-                    Trace.LogInformation("Config changed. Stopping the following endpoints: {endpoints}", string.Join(", ", urlsToStop));
+                    Trace.LogInformation("Config changed. Stopping the following endpoints: '{endpoints}'", string.Join("', '", urlsToStop));
 
                     // 5 is the default value for WebHost's "shutdownTimeoutSeconds", so use that.
                     using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -318,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 if (endpointsToStart.Count > 0)
                 {
                     var urlsToStart = endpointsToStart.Select(lo => lo.EndpointConfig.Url ?? "<unknown>");
-                    Trace.LogInformation("Config changed. Starting the following endpoints: {endpoints}", string.Join(", ", urlsToStart));
+                    Trace.LogInformation("Config changed. Starting the following endpoints: '{endpoints}'", string.Join("', '", urlsToStart));
 
                     foreach (var listenOption in endpointsToStart)
                     {

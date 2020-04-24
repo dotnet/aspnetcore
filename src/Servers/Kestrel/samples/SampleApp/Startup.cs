@@ -134,8 +134,9 @@ namespace SampleApp
                         .LocalhostEndpoint(basePort + 7)
                         .Load();
 
+                    // reloadOnChange: true is the default
                     options
-                        .Configure(context.Configuration.GetSection("Kestrel"))
+                        .Configure(context.Configuration.GetSection("Kestrel"), reloadOnChange: true)
                         .Endpoint("NamedEndpoint", opt =>
                         {
 
