@@ -63,7 +63,7 @@ try {
           }
     }
     catch {
-      Write-Host $_.ScriptStackTrace
+      Write-Host $_
       Write-PipelineTelemetryError -Force -Category 'Sdl' -Message $_
       ExitWithExitCode 1
     }
@@ -74,7 +74,7 @@ try {
   Measure-Command { ExtractArtifacts }
 }
 catch {
-  Write-Host $_.ScriptStackTrace
+  Write-Host $_
   Write-PipelineTelemetryError -Force -Category 'Sdl' -Message $_
   ExitWithExitCode 1
 }
