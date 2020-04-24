@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task WrapsAddressInUseExceptionAsIOException()
         {
             var addresses = new ServerAddressesFeature();
-            addresses.Addresses.Add("http://localhost:5000");
+            addresses.InternalCollection.Add("http://localhost:5000");
             var options = new KestrelServerOptions();
 
             var addressBindContext = new AddressBindContext
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var logger = new MockLogger();
             var addresses = new ServerAddressesFeature();
-            addresses.Addresses.Add(address);
+            addresses.InternalCollection.Add(address);
             var options = new KestrelServerOptions();
 
             var ipV6Attempt = false;

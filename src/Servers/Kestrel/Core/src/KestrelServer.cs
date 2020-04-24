@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly IServerAddressesFeature _serverAddresses;
+        private readonly ServerAddressesFeature _serverAddresses;
         private readonly TransportManager _transportManager;
         private readonly IConnectionListenerFactory _transportFactory;
         private readonly IMultiplexedConnectionListenerFactory _multiplexedTransportFactory;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
-            Features.Set(_serverAddresses);
+            Features.Set<IServerAddressesFeature>(_serverAddresses);
 
             _transportManager = new TransportManager(_transportFactory, _multiplexedTransportFactory,  ServiceContext);
 
@@ -260,7 +260,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 IChangeToken reloadToken = null;
 
-                if (Options.ConfigurationLoader?.ReloadOnChange == true && (!_serverAddresses.PreferHostingUrls || _serverAddresses.Addresses.Count == 0))
+                _serverAddresses.InternalCollection.PreventPublicMutation();
+
+                if (Options.ConfigurationLoader?.ReloadOnChange == true && (!_serverAddresses.PreferHostingUrls || _serverAddresses.InternalCollection.Count == 0))
                 {
                     reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
                 }
@@ -309,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     foreach (var listenOption in endpointsToStop)
                     {
                         Options.OptionsInUse.Remove(listenOption);
-                        _serverAddresses.Addresses.Remove(listenOption.GetDisplayName());
+                        _serverAddresses.InternalCollection.Remove(listenOption.GetDisplayName());
                     }
                 }
 

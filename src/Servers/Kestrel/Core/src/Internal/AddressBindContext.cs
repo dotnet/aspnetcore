@@ -4,15 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBindContext
     {
-        public IServerAddressesFeature ServerAddressesFeature { get; set; }
-        public ICollection<string> Addresses => ServerAddressesFeature.Addresses;
+        public ServerAddressesFeature ServerAddressesFeature { get; set; }
+        public ICollection<string> Addresses => ServerAddressesFeature.InternalCollection;
 
         public KestrelServerOptions ServerOptions { get; set; }
         public ILogger Logger { get; set; }
