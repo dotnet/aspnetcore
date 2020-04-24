@@ -124,23 +124,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // }
     internal class EndpointConfig
     {
+        private IConfigurationSection _configSection;
+        private ConfigSectionClone _configSectionClone;
+
         public string Name { get; set; }
         public string Url { get; set; }
         public HttpProtocols? Protocols { get; set; }
-
-        // REVIEW: ConfigSection doesn't seem comparable. If someone changes a custom key and consumes it in
-        // their Action<EndpointConfiguration>, we won't rebind.
-        public IConfigurationSection ConfigSection { get; set; }
         public CertificateConfig Certificate { get; set; }
+
+        // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
+        // We cannot rely entirely on comparing config sections for equality, because KestrelConfigurationLoader.Reload() sets
+        // EndpointConfig properties to their default values. If a default value changes, the properties would no longer be equal,
+        // but the config sections could still be equal.
+        public IConfigurationSection ConfigSection
+        {
+            get => _configSection;
+            set
+            {
+                _configSection = value;
+                // The IConfigrationSection will mutate, so we need to take a snapshot to compare against later and check for changes.
+                _configSectionClone = new ConfigSectionClone(value);
+            }
+        }
 
         public override bool Equals(object obj) =>
             obj is EndpointConfig other &&
             Name == other.Name &&
             Url == other.Url &&
             (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
-            Certificate == other.Certificate;
+            Certificate == other.Certificate &&
+            _configSectionClone == other._configSectionClone;
 
-        public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate);
+        public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate, _configSectionClone);
 
         public static bool operator ==(EndpointConfig lhs, EndpointConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
         public static bool operator !=(EndpointConfig lhs, EndpointConfig rhs) => !(lhs == rhs);
