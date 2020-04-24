@@ -126,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/pull/20718#issuecomment-618758634")]
         public void Server_RegisterUnavailablePrefix_ThrowsActionableHttpSysException()
         {
             var options = new HttpSysOptions();
