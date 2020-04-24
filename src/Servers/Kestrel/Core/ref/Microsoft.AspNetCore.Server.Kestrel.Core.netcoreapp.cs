@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public HttpParser() { }
         public HttpParser(bool showErrorDetails) { }
         public bool ParseHeaders(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
-        public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public bool ParseRequestLine(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
     }
     public enum HttpScheme
     {
@@ -235,13 +235,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Http = 0,
         Https = 1,
     }
-    public enum HttpVersion
+    public enum HttpVersion : sbyte
     {
-        Unknown = -1,
-        Http10 = 0,
-        Http11 = 1,
-        Http2 = 2,
-        Http3 = 3,
+        Unknown = (sbyte)-1,
+        Http10 = (sbyte)0,
+        Http11 = (sbyte)1,
+        Http2 = (sbyte)2,
+        Http3 = (sbyte)3,
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public partial struct HttpVersionAndMethod
+    {
+        private int _dummyPrimitive;
+        public HttpVersionAndMethod(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, int methodEnd) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod Method { get { throw null; } }
+        public int MethodEnd { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion Version { get { throw null; } set { } }
     }
     public partial interface IHttpHeadersHandler
     {
@@ -252,7 +261,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public partial interface IHttpRequestLineHandler
     {
-        void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
+        void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod versionAndMethod, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength targetPath, System.Span<byte> startLine);
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct TargetOffsetPathLength
+    {
+        private readonly int _dummyPrimitive;
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public TargetOffsetPathLength(int offset, int length, bool isEncoded) { throw null; }
+        public bool IsEncoded { [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]get { throw null; } }
+        public int Length { [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]get { throw null; } }
+        public int Offset { [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Https

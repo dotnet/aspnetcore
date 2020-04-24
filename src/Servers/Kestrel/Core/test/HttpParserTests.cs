@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            Assert.True(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            Assert.True(ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(requestHandler.Method, expectedMethod);
             Assert.Equal(requestHandler.Version, expectedVersion);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            Assert.False(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            Assert.False(ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
         }
 
         [Theory]
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
-            Assert.False(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            Assert.False(ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(buffer.Start, consumed);
             Assert.True(buffer.Slice(examined).IsEmpty);
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -117,9 +117,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D\x0A"), exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D"), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal("Invalid request line: ''", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
             Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Encoding.ASCII.GetBytes("/"));
 
             var requestHandler = new RequestHandler();
-            var result = parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
+            var result = ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined);
 
             Assert.False(result);
             Assert.Equal(buffer.Start, consumed);
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var badHttpRequestException = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
             {
-                parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
+                ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined);
             });
 
             Assert.Equal(badHttpRequestException.StatusCode, StatusCodes.Status400BadRequest);
@@ -478,6 +478,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var result = parser.ParseHeaders(requestHandler, ref reader);
 
             Assert.True(result);
+        }
+
+
+        private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        {
+            var reader = new SequenceReader<byte>(readableBuffer);
+            if (parser.ParseRequestLine(requestHandler, ref reader))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+            else
+            {
+                consumed = reader.Position;
+                examined = readableBuffer.End;
+                return false;
+            }
         }
 
         private void VerifyHeader(
@@ -563,6 +581,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 RawPath = path.GetAsciiStringNonNullCharacters();
                 Query = query.GetAsciiStringNonNullCharacters();
                 PathEncoded = pathEncoded;
+            }
+
+            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+            {
+                var method = versionAndMethod.Method;
+                var version = versionAndMethod.Version;
+                var customMethod = startLine[..versionAndMethod.MethodEnd];
+                var targetStart = targetPath.Offset;
+                var target = startLine[targetStart..];
+                var path = target[..targetPath.Length];
+                var query = target[targetPath.Length..];
+
+                Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
+                Version = HttpUtilities.VersionToString(version);
+                RawTarget = target.GetAsciiStringNonNullCharacters();
+                RawPath = path.GetAsciiStringNonNullCharacters();
+                Query = query.GetAsciiStringNonNullCharacters();
+                PathEncoded = targetPath.IsEncoded;
             }
 
             public void OnStaticIndexedHeader(int index)
