@@ -430,11 +430,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
         /// <returns>True when memory starts with known http or https schema</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        public static bool GetKnownHttpScheme(Span<byte> span, out HttpScheme knownScheme)
         {
-            if (span.Length >= sizeof(ulong))
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(span, out var scheme))
             {
-                var scheme = BinaryPrimitives.ReadUInt64LittleEndian(span);
                 if ((scheme & _mask7Chars) == _httpSchemeLong)
                 {
                     knownScheme = HttpScheme.Http;
