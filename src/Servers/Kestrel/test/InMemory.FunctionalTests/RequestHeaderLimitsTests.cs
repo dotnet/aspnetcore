@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(5, 0)]
         [InlineData(5, 1)]
         [InlineData(5, 1337)]
+        [QuarantinedTest]
         public async Task ServerAcceptsRequestWithHeaderTotalSizeWithinLimit(int headerCount, int extraLimit)
         {
             var headers = MakeHeaders(headerCount);
