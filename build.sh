@@ -65,7 +65,7 @@ Options:
     --no-build-repo-tasks             Suppress building RepoTasks.
 
     --all                             Build all project types.
-    --[no-]build-native               Build native projects (C, C++).
+    --[no-]build-native               Build native projects (C, C++). Ignored in most cases i.e. with `dotnet msbuild`.
     --[no-]build-managed              Build managed projects (C#, F#, VB).
     --[no-]build-nodejs               Build NodeJS projects (TypeScript, JS).
     --[no-]build-java                 Build Java projects.
@@ -74,7 +74,7 @@ Options:
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    
+
     --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
     --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
 
@@ -223,9 +223,11 @@ done
 
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
-elif [ ! -z "$build_projects" ]; then
+fi
+
+if [ ! -z "$build_projects" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:ProjectToBuild=$build_projects"
-elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ] && [ -z "$build_installers" ]; then
+elif [ "$build_all" != true ] && [ -z "$build_managed$build_nodejs$build_java$build_native$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' and its dependent subset of projects. Run ``build.sh --help`` for more details."
@@ -287,7 +289,7 @@ msbuild_args[${#msbuild_args[*]}]="-verbosity:$verbosity"
 
 # Set up additional runtime args
 toolset_build_args=()
-if [ ! -z "$dotnet_runtime_source_feed" ] || [ ! -z "$dotnet_runtime_source_feed_key" ]; then
+if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
     runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$dotnet_runtime_source_feed"
     runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$dotnet_runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg

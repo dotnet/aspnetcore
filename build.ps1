@@ -185,7 +185,8 @@ if ($DumpProcesses -or $CI) {
 if ($All) {
     $MSBuildArguments += '/p:BuildAllProjects=true'
 }
-elseif ($Projects) {
+
+if ($Projects) {
     if (![System.IO.Path]::IsPathRooted($Projects))
     {
         $Projects = Join-Path (Get-Location) $Projects
@@ -193,7 +194,7 @@ elseif ($Projects) {
     $MSBuildArguments += "/p:ProjectToBuild=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
-elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
     Write-Warning "No default group of projects was specified, so building the 'managed' and its dependent subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -203,7 +204,7 @@ elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -a
 }
 
 if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
-    if ((-not $BuildNodeJS) -and (-not $NoBuildNodeJS)) {
+    if (-not ($BuildNodeJS -or $NoBuildNodeJS)) {
         $node = Get-Command node -ErrorAction Ignore -CommandType Application
 
         if ($node) {
