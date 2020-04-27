@@ -13,9 +13,9 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>cdc7d4bdb60bf7b5b29d88d63b3561ea63ac7c58</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="3.2.0-rc1.20224.1">
+    <Dependency Name="System.Net.Http.Json" Version="3.2.0">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>4b30bea794790b157c787f5ee382dc6defe1dcec</Sha>
+      <Sha>66409e392d64ed96e5d3a5fda712d9baf51196ed</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
