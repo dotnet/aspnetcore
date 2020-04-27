@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public string Subject { get; }
 
-        public CertificateManager() : this(LocalhostHttpsDistinguishedName, 1)
+        public CertificateManager() : this(LocalhostHttpsDistinguishedName, 2)
         {
         }
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var sanBuilder = new SubjectAlternativeNameBuilder();
             sanBuilder.AddDnsName(LocalhostHttpsDnsName);
 
-            var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
+            var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.DigitalSignature, critical: true);
             var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(
                 new OidCollection() {
                     new Oid(
