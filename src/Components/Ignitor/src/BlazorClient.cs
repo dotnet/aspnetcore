@@ -333,7 +333,7 @@ namespace Ignitor
             return null;
         }
 
-        public async Task<bool> ConnectAsync(Uri uri, Action<HubConnectionBuilder, Uri>? configure = null, bool connectAutomatically = true)
+        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true, Action<HubConnectionBuilder, Uri>? configure = null)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
