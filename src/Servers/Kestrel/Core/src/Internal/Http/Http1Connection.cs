@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private string _parsedRawTarget = null;
         private Uri _parsedAbsoluteRequestTarget;
 
-        private int _remainingRequestHeadersBytesAllowed;
+        private long _remainingRequestHeadersBytesAllowed;
 
         public Http1Connection(HttpConnectionContext context)
         {
@@ -213,6 +213,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return TrimAndTakeMessageHeaders(ref reader, trailers);
             }
 
+            var alreadyConsumed = reader.Consumed;
+
             try
             {
                 var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
@@ -225,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+                _remainingRequestHeadersBytesAllowed -= reader.Consumed - alreadyConsumed;
             }
 
             bool TrimAndTakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
@@ -248,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 finally
                 {
-                    _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+                    _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
                 }
             }
         }
