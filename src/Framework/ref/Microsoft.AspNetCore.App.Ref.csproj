@@ -172,7 +172,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
 
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(AspNetCoreReferenceAssemblyPath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
