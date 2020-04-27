@@ -134,8 +134,8 @@
     <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
-    <value>User name '{0}' is already taken.</value>
-    <comment>Error for duplicate user names</comment>
+    <value>Username '{0}' is already taken.</value>
+    <comment>Error for duplicate usernames</comment>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
     <value>Email '{0}' is invalid.</value>
@@ -162,8 +162,8 @@
     <comment>Error when a token is not recognized</comment>
   </data>
   <data name="InvalidUserName" xml:space="preserve">
-    <value>User name '{0}' is invalid, can only contain letters or digits.</value>
-    <comment>User names can only contain letters or digits</comment>
+    <value>Username '{0}' is invalid, can only contain letters or digits.</value>
+    <comment>Usernames can only contain letters or digits</comment>
   </data>
   <data name="LoginAlreadyAssociated" xml:space="preserve">
     <value>A user with this login already exists.</value>
