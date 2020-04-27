@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Create a queue with the given name if it does not already exist, otherwise attach to the existing queue.
         /// Most configuration options do not apply when attaching to an existing queue.
         /// </summary>
-        CreateOrAttach
+        CreateOrAttach,
+        /// <summary>
+        /// Create a queue with the given name if it does not already exist, otherwise attach to the existing queue.
+        /// Most configuration options do not apply when attaching to an existing queue.
+        /// </summary>
+        Delegate
     }
 }

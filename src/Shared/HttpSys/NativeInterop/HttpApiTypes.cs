@@ -70,6 +70,18 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HeaderWait,
             MinSendRate,
         }
+        internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID
+        {
+            DelegateRequestReservedProperty
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
+        {
+            internal HTTP_DELEGATE_REQUEST_PROPERTY_ID ProperyId;
+            internal ulong PropertyInfoLength;
+            internal IntPtr PropertyInfo;
+        }
 
         internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
         {
@@ -651,6 +663,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             OpenExisting = 1,
             // The handle to the request queue created using this flag cannot be used to perform I/O operations. This flag can be set only when the request queue handle is created.
             Controller = 2,
+            Delegation = 8
         }
 
         internal static class HTTP_RESPONSE_HEADER_ID

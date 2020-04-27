@@ -16,14 +16,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
         private readonly RequestQueueMode _mode;
-        private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
         private bool _disposed;
 
         internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
         {
             _mode = mode;
-            _urlGroup = urlGroup;
+            UrlGroup = urlGroup;
             _logger = logger;
 
             var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
@@ -31,6 +30,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_mode == RequestQueueMode.Attach)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+                Created = false;
+            }
+
+            if (_mode == RequestQueueMode.Delegate)
+            {
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting | HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
                 Created = false;
             }
 
@@ -54,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         out requestQueueHandle);
             }
 
-            if (flags == HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            if ((flags & HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting)!=0 && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
             {
                 throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
             }
@@ -95,6 +100,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal SafeHandle Handle { get; }
         internal ThreadPoolBoundHandle BoundHandle { get; }
 
+        internal UrlGroup UrlGroup { get; set; }
+
         internal unsafe void AttachToUrlGroup()
         {
             Debug.Assert(Created);
@@ -108,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize);
         }
 
@@ -128,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize, throwOnError: false);
         }
 

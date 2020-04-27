@@ -36,6 +36,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Id = urlGroupId;
         }
 
+        internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url)
+        {
+            ulong urlGroupId = 0;
+            var statusCode = HttpApi.HttpFindUrlGroupId(
+                url.FullPrefix, requestQueue.Handle, &urlGroupId);
+
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            {
+                throw new HttpSysException((int)statusCode);
+            }
+
+            Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
+            Id = urlGroupId;
+        }
+
         internal ulong Id { get; private set; }
 
         internal unsafe void SetMaxConnections(long maxConnections)
