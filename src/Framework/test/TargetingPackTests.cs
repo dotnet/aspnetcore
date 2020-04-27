@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,10 +25,35 @@ namespace Microsoft.AspNetCore
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
+            _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
                 ? Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"))
                 : Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Microsoft.AspNetCore.App.Ref");
             _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
+        }
+
+        [Fact]
+        public void AssembliesHavePatchVersion0()
+        {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
+            IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                var assemblyName = AssemblyName.GetAssemblyName(path);
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var assemblyDefinition = reader.GetAssemblyDefinition();
+
+                Assert.True(
+                    assemblyDefinition.Version.Revision == 0 && assemblyDefinition.Version.Revision == 0,
+                    $"{path} should have a 0.0 revision number and build number version, e.g. major.minor.0.0");
+            });
         }
 
         [Fact]
