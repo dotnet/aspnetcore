@@ -129,13 +129,13 @@
     <!-- Packages from dotnet/blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>5.0.0-preview.5.20227.2</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.5.20227.2</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>5.0.0-preview.5.20227.4</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.5.20227.4</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from dotnet/aspnetcore-tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.5.20227.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.5.20227.1</MicrosoftAspNetCoreRazorLanguagePackageVersion>
