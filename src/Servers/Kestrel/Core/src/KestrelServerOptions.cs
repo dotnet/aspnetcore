@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
-        // The following two lists configure the endpoints that Kestrel should listen toIf both lists is empty, the server.urls setting (e.g. UseUrls) is used.
+        // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
         internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
         internal IEnumerable<ListenOptions> ListenOptions => CodeBackedListenOptions.Concat(ConfigurationBackedListenOptions);
