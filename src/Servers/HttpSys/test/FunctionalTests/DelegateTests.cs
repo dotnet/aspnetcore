@@ -28,14 +28,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            var requestQueue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, NullLogger.Instance);
-            requestQueue.UrlGroup = new UrlGroup(requestQueue, UrlPrefix.Create(receiverAddress));
-
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var request = httpContext.Request;
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                transferFeature.TransferRequest(requestQueue);
+                transferFeature.TransferRequest(queueName, receiverAddress);
                 return Task.FromResult(0);
             },
             options =>
