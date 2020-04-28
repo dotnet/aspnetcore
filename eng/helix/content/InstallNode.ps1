@@ -5,21 +5,17 @@
      This script installs NodeJs from http://nodejs.org/dist on a machine. 
  .PARAMETER Version
      The version of NodeJS to install.
- .PARAMETER InstallDir
-     The directory to install NodeJS to.
  .LINK 
      https://nodejs.org/en/
  #> 
 param(
     [Parameter(Mandatory = $true)]
-    $Version,
-    
-    [Parameter(Mandatory = $true)]
-    $InstallDir
+    $Version
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
+$InstallDir = '.' # Use workload directory always
 
 Set-StrictMode -Version 1
 
@@ -59,9 +55,8 @@ else {
 
 Write-Host "Expanded NodeJs"
 New-Item -Path "$InstallDir" -ItemType "directory" -Force
-Write-Host "Copying $tempDir\$nodeFile\node.exe to $InstallDir"
-Copy-Item "$tempDir\$nodeFile\node.exe" "$InstallDir\node.exe"
-
+Write-Host "Copying $tempDir\$nodeFile\* to $InstallDir"
+Copy-Item "$tempDir\$nodeFile\*" "$InstallDir" -Recurse
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"
@@ -69,4 +64,10 @@ if (Test-Path "$InstallDir\node.exe")
 else
 {
     Write-Host "Node.exe not copied to $InstallDir"
+}
+if (Test-Path "package-lock.json")
+{
+    $Env:Path += ";" + $Env:HELIX_CORRELATION_PAYLOAD + "\jdk\bin"
+    Write-Host "Found package-lock.json, running $InstallDir\npm install"
+    Invoke-Expression "$InstallDir\npm.cmd install"
 }

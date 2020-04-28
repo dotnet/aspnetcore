@@ -7,20 +7,16 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
-    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-
     <!-- Run on platforms where we support Selenium -->
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <BaseOutputPath />
-
-    <OutputPath />
-
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
+    <TestDependsOnNode>true</TestDependsOnNode>
+    <TestDependsOnJava>true</TestDependsOnJava>
+    <TestDependsOnChrome>true</TestDependsOnChrome>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,6 +39,16 @@
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="package.json" />
+    <HelixContent Include="package-lock.json" />
+    <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
+    <HelixContent Include="..\testassets\**\*" />
+    <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
+    <!-- This is currently windows only -->
+    <HelixProjectPlatform Remove="Linux;OSX" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

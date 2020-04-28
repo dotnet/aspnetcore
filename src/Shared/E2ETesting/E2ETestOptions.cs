@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.E2ETesting
                 var instance = new E2ETestOptions();
                 Configuration.Bind(instance);
                 Instance = instance;
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"))) 
+                {
+                    instance.ScreenShotsPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "..");
+                }
             }
             catch
             {

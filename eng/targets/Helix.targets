@@ -13,12 +13,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
     <!-- Grab all shipping packages. -->
     <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnChrome)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixPreCommand Include="call RunPowershell.cmd InstallChrome.ps1 || exit /b 1" />
   </ItemGroup>
 
   <ItemGroup>
