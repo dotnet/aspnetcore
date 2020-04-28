@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -377,68 +379,135 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return connectionOptions;
         }
 
-        public static unsafe TransferCoding GetFinalTransferCoding(StringValues transferEncoding)
+        private static char ToLowerCase(char value) => (char)(value | (char)0x0020);
+
+        public static TransferCoding GetFinalTransferCoding(StringValues transferEncoding)
         {
+            const ulong chunkedStart = 0x006b_006e_0075_0068; // 4 chars "hunk"
+            const uint chunkedEnd = 0x0064_0065; // 2 chars "ed"
+
             var transferEncodingOptions = TransferCoding.None;
 
             var transferEncodingCount = transferEncoding.Count;
             for (var i = 0; i < transferEncodingCount; i++)
             {
-                var value = transferEncoding[i];
-                fixed (char* ptr = value)
+                var values = transferEncoding[i].AsSpan();
+
+                while (values.Length > 0)
                 {
-                    var ch = ptr;
-                    var tokenEnd = ch;
-                    var end = ch + value.Length;
-
-                    while (ch < end)
+                    int offset;
+                    char c = '\0';
+                    // Skip any spaces and empty values.
+                    for (offset = 0; offset < values.Length; offset++)
                     {
-                        while (tokenEnd < end && *tokenEnd != ',')
+                        c = values[offset];
+                        if (c != ' ' && c != ',')
                         {
-                            tokenEnd++;
+                            break;
                         }
+                    }
 
-                        while (ch < tokenEnd && *ch == ' ')
+                    // Skip last read char.
+                    offset++;
+                    if ((uint)offset > (uint)values.Length)
+                    {
+                        // Consumed entire string, move to next.
+                        break;
+                    }
+
+                    // Remove leading spaces or empty values.
+                    values = values.Slice(offset);
+                    offset = 0;
+
+                    var byteValue = MemoryMarshal.AsBytes(values);
+
+                    if (ToLowerCase(c) == 'c' &&
+                        TryReadLowerCaseUInt64(byteValue, out var result64) && result64 == chunkedStart)
+                    {
+                        offset += sizeof(ulong) / 2;
+                        byteValue = byteValue.Slice(sizeof(ulong));
+
+                        if (TryReadLowerCaseUInt32(byteValue, out var result32) && result32 == chunkedEnd)
                         {
-                            ch++;
+                            offset += sizeof(uint) / 2;
+                            transferEncodingOptions = TransferCoding.Chunked;
                         }
+                    }
 
-                        var tokenLength = tokenEnd - ch;
+                    if ((uint)offset >= (uint)values.Length)
+                    {
+                        // Consumed entire string, move to next string.
+                        break;
+                    }
+                    else
+                    {
+                        values = values.Slice(offset);
+                    }
 
-                        if (tokenLength >= 7 && (*ch | 0x20) == 'c')
+                    for (offset = 0; offset < values.Length; offset++)
+                    {
+                        c = values[offset];
+                        if (c == ',')
                         {
-                            if ((*++ch | 0x20) == 'h' &&
-                                (*++ch | 0x20) == 'u' &&
-                                (*++ch | 0x20) == 'n' &&
-                                (*++ch | 0x20) == 'k' &&
-                                (*++ch | 0x20) == 'e' &&
-                                (*++ch | 0x20) == 'd')
-                            {
-                                ch++;
-                                while (ch < tokenEnd && *ch == ' ')
-                                {
-                                    ch++;
-                                }
-
-                                if (ch == tokenEnd)
-                                {
-                                    transferEncodingOptions = TransferCoding.Chunked;
-                                }
-                            }
+                            break;
                         }
-
-                        if (tokenLength > 0 && ch != tokenEnd)
+                        else if (c != ' ')
                         {
+                            // Value contains extra chars; Chunked is not the matched one.
                             transferEncodingOptions = TransferCoding.Other;
                         }
+                    }
 
-                        tokenEnd++;
-                        ch = tokenEnd;
+                    if ((uint)offset >= (uint)values.Length)
+                    {
+                        // Consumed entire string, move to next string.
+                        break;
+                    }
+                    else if (c == ',')
+                    {
+                        // Consumed value, move to next value.
+                        offset++;
+                        if ((uint)offset >= (uint)values.Length)
+                        {
+                            // Consumed entire string, move to next string.
+                            break;
+                        }
+                        else
+                        {
+                            values = values.Slice(offset);
+                            continue;
+                        }
                     }
                 }
             }
 
             return transferEncodingOptions;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool TryReadLowerCaseUInt64(ReadOnlySpan<byte> byteValue, out ulong value)
+        {
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(byteValue, out var result))
+            {
+                value = result | 0x0020_0020_0020_0020;
+                return true;
+            }
+
+            value = 0;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool TryReadLowerCaseUInt32(ReadOnlySpan<byte> byteValue, out uint value)
+        {
+            if (BinaryPrimitives.TryReadUInt32LittleEndian(byteValue, out var result))
+            {
+                value = result | 0x0020_0020;
+                return true;
+            }
+
+            value = 0;
+            return false;
         }
 
         private static void ThrowInvalidContentLengthException(long value)
