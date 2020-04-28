@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -14,24 +15,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
     public class DelegateTests
     {
         [Fact]
-        public void AttachToQueueForDelegation()
+        public async Task DelegateRequestTest()
         {
             var queueName = Guid.NewGuid().ToString();
-            using var server = Utilities.CreateHttpServer(out var baseAddress, httpContext =>
+            var expectedResponseString = "Hello from delegatee";
+            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
             {
-                return Task.FromResult(0);
+                await httpContext.Response.WriteAsync(expectedResponseString);
             },
             options =>
             {
                 options.RequestQueueName = queueName;
-            }) as MessagePump;
+            });
 
-            // Assert.DoesNotThrow
-            var requestQueue = new RequestQueue(null, queueName, RequestQueueMode.Delegate, NullLogger.Instance);
+            var requestQueue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, NullLogger.Instance);
+            requestQueue.UrlGroup = new UrlGroup(requestQueue, UrlPrefix.Create(receiverAddress));
 
-            // Assert.DoesNotThrow
-            var urlGroup = new UrlGroup(requestQueue, UrlPrefix.Create(baseAddress));
-            requestQueue.UrlGroup = urlGroup;
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
+            {
+                var request = httpContext.Request;
+                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
+                transferFeature.TransferRequest(requestQueue);
+                return Task.FromResult(0);
+            },
+            options =>
+            {
+                options.RequestQueueMode = RequestQueueMode.Delegator;
+            });
+
+
+            var responseString = await SendRequestAsync(delegatorAddress);
+            Assert.Equal(expectedResponseString, responseString);
         }
 
         private async Task<string> SendRequestAsync(string uri)

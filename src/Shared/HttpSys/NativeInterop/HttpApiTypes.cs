@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpServerListenEndpointProperty,
             HttpServerChannelBindProperty,
             HttpServerProtectionLevelProperty,
+            // Internal
+            HttpServerDelegationProperty = 16
         }
 
         // Currently only one request info type is supported but the enum is for future extensibility.

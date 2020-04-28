@@ -61,6 +61,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
+            PathBase = string.Empty;
+            Path = originalPath;
+
+            IsTransferable = (RequestContext.Server.Options.RequestQueueMode == RequestQueueMode.Delegator);
+
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
             {
@@ -70,34 +75,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (requestContext.Server.RequestQueue.Created)
             {
                 var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
-                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                // prefix may be null is the requested has been transfered to our queue
+                if (!(prefix is null))
                 {
-                    // They matched exactly except for the trailing slash.
-                    PathBase = originalPath;
-                    Path = string.Empty;
-                }
-                else
-                {
-                    // url: /base/path, prefix: /base/, base: /base, path: /path
-                    // url: /, prefix: /, base: , path: /
-                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
-                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                    if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                    {
+                        // They matched exactly except for the trailing slash.
+                        PathBase = originalPath;
+                        Path = string.Empty;
+                    }
+                    else
+                    {
+                        // url: /base/path, prefix: /base/, base: /base, path: /path
+                        // url: /, prefix: /, base: , path: /
+                        PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                        Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                    }
                 }
             }
-            else
+            else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
             {
-                // When attaching to an existing queue, the UrlContext hint may not match our configuration. Search manualy.
-                if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
-                {
-                    PathBase = pathBase;
-                    Path = path;
-                }
-                else
-                {
-                    PathBase = string.Empty;
-                    Path = originalPath;
-                }
+                PathBase = pathBase;
+                Path = path;
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
@@ -349,6 +348,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return _clientCert;
             }
         }
+
+        public bool IsTransferable { get; internal set; }
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

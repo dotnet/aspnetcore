@@ -322,5 +322,29 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Response.ContentLength = 0;
             Dispose();
         }
+
+        internal unsafe void Transfer(RequestQueue queue)
+        {
+            if (Response.HasStarted)
+            {
+                throw new InvalidOperationException("This request cannot be upgraded, the response has already started.");
+            }
+            var source = Server.RequestQueue;
+
+            // Is this idempotent?
+            // TODO: Do not re-apply the property if it's already set
+            source.UrlGroup.SetDelegationProperty(queue);
+
+            var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+                                                           queue.Handle,
+                                                           Request.RequestId,
+                                                           queue.UrlGroup.Id,
+                                                           0,
+                                                           null);
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            {
+                throw new HttpSysException((int)statusCode);
+            }
+        }
     }
 }

@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly int QosInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
+        private static readonly int RequestPropertyInfoSize =
+            Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
         private ServerSession _serverSession;
         private ILogger _logger;
@@ -64,6 +66,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             qosSettings.QosSetting = new IntPtr(&connectionLimit);
 
             SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQosProperty, new IntPtr(&qosSettings), (uint)QosInfoSize);
+        }
+
+        internal unsafe void SetDelegationProperty(RequestQueue queue)
+        {
+            var propertyInfo = new HttpApiTypes.HTTP_BINDING_INFO();
+            propertyInfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            propertyInfo.RequestQueueHandle = queue.Handle.DangerousGetHandle();
+
+            SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize);
         }
 
         internal void SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)

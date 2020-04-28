@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Created = false;
             }
 
-            if (_mode == RequestQueueMode.Delegate)
+            if (_mode == RequestQueueMode.Receiver)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting | HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
                 Created = false;

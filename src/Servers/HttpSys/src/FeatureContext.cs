@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpBodyControlFeature,
         IHttpSysRequestInfoFeature,
         IHttpResponseTrailersFeature,
-        IHttpResetFeature
+        IHttpResetFeature,
+        IHttpSysRequestTransferFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -591,6 +592,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set => _responseTrailers = value;
         }
 
+        public bool IsTransferable => Request.IsTransferable;
+
         internal async Task OnResponseStart()
         {
             if (_responseStarted)
@@ -710,6 +713,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 await actionPair.Item1(actionPair.Item2);
             }
+        }
+
+        public void TransferRequest(RequestQueue queue)
+        {
+            _requestContext.Transfer(queue);
         }
     }
 }
