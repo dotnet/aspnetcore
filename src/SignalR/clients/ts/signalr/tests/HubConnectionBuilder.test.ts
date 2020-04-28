@@ -73,11 +73,10 @@ class CapturingConsole {
 registerUnhandledRejectionHandler();
 
 describe("HubConnectionBuilder", () => {
-
     for (const val of [undefined, null, ""]) {
         it(`withUrl throws if url is ${String(val)}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
+            expect(() => builder.withUrl(val!)).toThrow(/The 'url' argument (is required|should not be empty)./);
         });
     }
 
