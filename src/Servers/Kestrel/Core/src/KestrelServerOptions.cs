@@ -203,12 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Creates a configuration loader for setting up Kestrel.
         /// </summary>
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for configuring endpoints.</returns>
-        public KestrelConfigurationLoader Configure()
-        {
-            var loader = new KestrelConfigurationLoader(this, new ConfigurationBuilder().Build(), reloadOnChange: false);
-            ConfigurationLoader = loader;
-            return loader;
-        }
+        public KestrelConfigurationLoader Configure() => Configure(new ConfigurationBuilder().Build());
 
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
@@ -219,12 +214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         /// <param name="config">The configuration section for Kestrel.</param>
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
-        public KestrelConfigurationLoader Configure(IConfiguration config)
-        {
-            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange: true);
-            ConfigurationLoader = loader;
-            return loader;
-        }
+        public KestrelConfigurationLoader Configure(IConfiguration config) => Configure(config, true);
 
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
