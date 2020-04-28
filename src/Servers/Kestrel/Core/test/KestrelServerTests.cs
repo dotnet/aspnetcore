@@ -14,9 +14,11 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -452,6 +454,150 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
                              testContext.DateHeaderValueManager.GetDateHeaderValues().String);
+            }
+        }
+
+        [Fact]
+        public async Task ReloadsOnConfigurationChangeByDefault()
+        {
+            var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+            }).Build();
+
+            Action changeCallback = null;
+
+            var mockChangeToken = new Mock<IChangeToken>();
+            mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
+            {
+                changeCallback = () => callback(state);
+                return Mock.Of<IDisposable>();
+            });
+
+            var mockConfig = new Mock<IConfiguration>();
+            mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(name => currentConfig.GetSection(name));
+            mockConfig.Setup(c => c.GetChildren()).Returns(() => currentConfig.GetChildren());
+            mockConfig.Setup(c => c.GetReloadToken()).Returns(() => mockChangeToken.Object);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+
+            var options = new KestrelServerOptions
+            {
+                ApplicationServices = serviceCollection.BuildServiceProvider(),
+            };
+
+            options.Configure(mockConfig.Object);
+
+            var mockTransports = new List<Mock<IConnectionListener>>();
+            var mockTransportFactory = new Mock<IConnectionListenerFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
+                {
+                    var mockTransport = new Mock<IConnectionListener>();
+                    mockTransport
+                        .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<ConnectionContext>(result: null));
+                    mockTransport
+                        .Setup(transport => transport.EndPoint).Returns(e);
+
+                    mockTransports.Add(mockTransport);
+
+                    return new ValueTask<IConnectionListener>(mockTransport.Object);
+                });
+
+            // Don't use "using". Dispose() could hang if test fails.
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+
+            await server.StartAsync(new DummyApplication(), CancellationToken.None).DefaultTimeout();
+
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5002), It.IsAny<CancellationToken>()), Times.Never);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5003), It.IsAny<CancellationToken>()), Times.Never);
+
+            Assert.Equal(2, mockTransports.Count);
+
+            foreach (var mockTransport in mockTransports)
+            {
+                mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Never);
+            }
+
+            currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
+                new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
+            }).Build();
+
+            changeCallback();
+
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5002), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5003), It.IsAny<CancellationToken>()), Times.Once);
+
+            Assert.Equal(4, mockTransports.Count);
+
+            foreach (var mockTransport in mockTransports)
+            {
+                if (((IPEndPoint)mockTransport.Object.EndPoint).Port == 5001)
+                {
+                    mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
+                }
+                else
+                {
+                    mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Never);
+                }
+            }
+
+            currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
+                new KeyValuePair<string, string>("Endpoints:C:Url", "https://*:5003"),
+            }).Build();
+
+            changeCallback();
+
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5002), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5003), It.IsAny<CancellationToken>()), Times.Exactly(2));
+
+            Assert.Equal(5, mockTransports.Count);
+
+            var firstPort5003TransportChecked = false;
+
+            foreach (var mockTransport in mockTransports)
+            {
+                var port = ((IPEndPoint)mockTransport.Object.EndPoint).Port;
+                if (port == 5001)
+                {
+                    mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
+                }
+                else if (port == 5003 && !firstPort5003TransportChecked)
+                {
+                    mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
+                    firstPort5003TransportChecked = true;
+                }
+                else
+                {
+                    mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Never);
+                }
+            }
+
+            await server.StopAsync(CancellationToken.None).DefaultTimeout();
+
+            foreach (var mockTransport in mockTransports)
+            {
+                mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
             }
         }
 
