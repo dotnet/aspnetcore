@@ -33,11 +33,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public ITestOutputHelper Output { get; private set; }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/17233")]
+        [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Build_GeneratesStaticWebAssetsManifest_Success_CreatesManifest()
         {
-            var result = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("Build");
 
             var expectedManifest = GetExpectedManifest();
 
@@ -64,7 +65,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var result = await DotnetMSBuild("Publish", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("Publish");
 
             Assert.BuildPassed(result);
 
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, PublishOutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
-        [ConditionalFact(Skip = "Flaky test: https://github.com/dotnet/aspnetcore/issues/18543")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("AppWithPackageAndP2PReferenceAndRID", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder_PublishSingleFile()
@@ -109,11 +111,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, publishOutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
-        [Fact(Skip = "flaky test: https://github.com/dotnet/aspnetcore/issues/18707")]
+        [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_WithBuildReferencesDisabled_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var build = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var build = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(build);
 
@@ -130,11 +133,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
         }
 
-        [Fact(Skip = "Flaky test: https://github.com/dotnet/aspnetcore/issues/18561")]
+        [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_NoBuild_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var build = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var build = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(build);
 
@@ -155,7 +159,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
-            var result = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -171,7 +176,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
         {
-            var result = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -188,12 +194,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/17233")]
+        [Fact]
         [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Rebuild_Success_RecreatesManifestAndCache()
         {
             // Arrange
-            var result = await DotnetMSBuild("Build", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("Build");
 
             var expectedManifest = GetExpectedManifest();
 
@@ -239,7 +246,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task GenerateStaticWebAssetsManifest_IncrementalBuild_ReusesManifest()
         {
-            var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest", "/restore");
+            await RestoreWithRetry();
+            var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest");
 
             Assert.BuildPassed(result);
 
@@ -276,7 +284,38 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public Task InitializeAsync()
         {
-            return PackageTestProjects.PackAsync(Output);
+            try
+            {
+                return PackageTestProjects.PackAsync(Output);
+            }
+            catch (Exception ex)
+            {
+                // We observed pack would "complete" in the past but MSBuild would get stuck.
+                // The generated package looked right, but it caused flakyness on our build infrastructure.
+                // We will try and continue running (even if the process didn't complete) and see if we can
+                // complete the test successfully.
+                Output.WriteLine($"Pack failed or did not complete: '{ex}'.");
+                return Task.CompletedTask;
+            }
+        }
+
+        private async Task RestoreWithRetry()
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                try
+                {
+                    var result = await DotnetMSBuild("Restore");
+                    if (result.ExitCode == 0)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    // Keep retrying if it fails.
+                }
+            }
         }
 
         public Task DisposeAsync()
