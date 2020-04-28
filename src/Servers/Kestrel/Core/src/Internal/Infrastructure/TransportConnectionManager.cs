@@ -95,8 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return Task.CompletedTask;
             }
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            token.Register(() => tcs.SetResult(null!));
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            token.Register(() => tcs.SetResult(null));
             return tcs.Task;
         }
     }
