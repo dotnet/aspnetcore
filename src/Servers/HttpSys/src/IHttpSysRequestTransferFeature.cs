@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
-    internal interface IHttpSysRequestTransferFeature
+    public interface IHttpSysRequestTransferFeature
     {
         /// <summary>
         /// Indicates if the server can transfer this request to another HttpSys request queue.
@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// before invoking.
         /// </summary>
         /// <returns></returns>
-        void TransferRequest(RequestQueue queue);
+        //void TransferRequest(RequestQueue queue);
+        void TransferRequest(string queueName, string uri);
     }
 }

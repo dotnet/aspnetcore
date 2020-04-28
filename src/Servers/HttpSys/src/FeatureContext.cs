@@ -714,8 +714,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await actionPair.Item1(actionPair.Item2);
             }
         }
+        public void TransferRequest(string queueName, string uri)
+        {
+            var requestQueue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, _requestContext.Logger);
+            requestQueue.UrlGroup = new UrlGroup(requestQueue, UrlPrefix.Create(uri));
+            TransferRequest(requestQueue);
+        }
 
-        public void TransferRequest(RequestQueue queue)
+        private void TransferRequest(RequestQueue queue)
         {
             _requestContext.Transfer(queue);
         }
