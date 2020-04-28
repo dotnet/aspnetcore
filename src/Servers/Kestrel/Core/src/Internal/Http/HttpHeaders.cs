@@ -401,12 +401,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     for (offset = 0; offset < values.Length; offset++)
                     {
                         c = values[offset];
-                        if (c == ' ' || c == ',')
+                        if (c != ' ' && c != ',')
                         {
-                            continue;
+                            break;
                         }
-
-                        break;
                     }
 
                     // Skip last read char.
@@ -449,19 +447,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     for (offset = 0; offset < values.Length; offset++)
                     {
                         c = values[offset];
-                        if (c == ' ')
-                        {
-                            continue;
-                        }
                         if (c == ',')
                         {
                             break;
                         }
-                        else
+                        else if (c != ' ')
                         {
                             // Value contains extra chars; Chunked is not the matched one.
                             transferEncodingOptions = TransferCoding.Other;
-                            continue;
                         }
                     }
 
