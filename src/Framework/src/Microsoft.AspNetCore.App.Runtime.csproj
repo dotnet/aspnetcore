@@ -126,7 +126,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Reference Include="microsoft.netcore.app.runtime.$(RuntimeIdentifier)" ExcludeAssets="All" PrivateAssets="All" />
 
-    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+    <ProjectReference Condition=" '$(BuildIisNativeProjects)' == 'true' "
+        Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
       <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->
@@ -214,7 +215,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' == 'false' ">
+          Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) ">
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
@@ -496,7 +497,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="IncludeVersionFile"
-          DependsOnTargets="GenerateSharedFxVersionsFiles" 
+          DependsOnTargets="GenerateSharedFxVersionsFiles"
           BeforeTargets="_GetPackageFiles">
 
     <ItemGroup>

@@ -127,9 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, exception.Message);
@@ -145,13 +143,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_TooManyHeaders, exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
+        }
+
+        [Fact]
+        public async Task TakeMessageHeadersDoesNotCountAlreadyConsumedBytesTowardsSizeLimit()
+        {
+            const string startLine = "GET / HTTP/1.1\r\n";
+
+            // This doesn't actually need to be larger than the start line to cause the regression,
+            // but doing so gives us a nice HeadersExceedMaxTotalSize error rather than an invalid slice
+            // when we do see the regression.
+            const string headerLine = "Header: makethislargerthanthestartline\r\n";
+
+            _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = headerLine.Length;
+            _http1Connection.Reset();
+
+            // Don't send header initially because the regression is only caught if TakeMessageHeaders
+            // is called multiple times. The first call overcounted the header bytes consumed, and the
+            // subsequent calls overslice the buffer due to the overcounting.
+            await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{startLine}"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            SequencePosition TakeStartLineAndMessageHeaders()
+            {
+                var reader = new SequenceReader<byte>(readableBuffer);
+                Assert.True(_http1Connection.TakeStartLine(ref reader));
+                Assert.False(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+                return reader.Position;
+            }
+
+            _transport.Input.AdvanceTo(TakeStartLineAndMessageHeaders());
+
+            Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+
+            await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
+            readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            SequencePosition TakeMessageHeaders()
+            {
+                var reader = new SequenceReader<byte>(readableBuffer);
+                Assert.True(_http1Connection.TakeMessageHeaders(ref reader, trailers: false));
+                return reader.Position;
+            }
+
+            _transport.Input.AdvanceTo(TakeMessageHeaders());
+
+            Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+            Assert.Equal("makethislargerthanthestartline", _http1Connection.RequestHeaders["Header"]);
         }
 
         [Fact]
@@ -442,9 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() => TakeStartLine(readableBuffer, out _consumed, out _examined));
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() => TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_RequestLineTooLong, exception.Message);
@@ -458,9 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
             TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
@@ -474,9 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
             TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
@@ -492,9 +529,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
             TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
@@ -510,9 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
              TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
@@ -528,9 +561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
+            var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
             TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
@@ -548,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-            TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(405, exception.StatusCode);
@@ -792,10 +823,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"GET /%00 HTTP/1.1\r\n"));
                 var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                var exception = Assert.Throws<BadHttpRequestException>(() =>
-#pragma warning restore CS0618 // Type or member is obsolete
-                TakeStartLine(readableBuffer, out _consumed, out _examined));
+                var exception = Assert.ThrowsAny<Http.BadHttpRequestException>(() =>
+                    TakeStartLine(readableBuffer, out _consumed, out _examined));
                 _transport.Input.AdvanceTo(_consumed, _examined);
 
                 Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(string.Empty), exception.Message);
@@ -954,9 +983,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.HttpVersion = "HTTP/1.0";
             _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
-#pragma warning disable CS0618 // Type or member is obsolete
-            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
-#pragma warning restore CS0618 // Type or member is obsolete
+            var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
 
@@ -965,9 +992,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.HttpVersion = "HTTP/1.1";
             _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
-#pragma warning disable CS0618 // Type or member is obsolete
-            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
-#pragma warning restore CS0618 // Type or member is obsolete
+            var ex = Assert.ThrowsAny<Http.BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
 

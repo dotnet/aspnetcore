@@ -333,11 +333,12 @@ namespace Ignitor
             return null;
         }
 
-        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true)
+        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true, Action<HubConnectionBuilder, Uri>? configure = null)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
-            builder.WithUrl(GetHubUrl(uri));
+            var hubUrl = GetHubUrl(uri);
+            builder.WithUrl(hubUrl);
             builder.ConfigureLogging(l =>
             {
                 l.SetMinimumLevel(LogLevel.Trace);
@@ -346,6 +347,8 @@ namespace Ignitor
                     l.AddProvider(LoggerProvider);
                 }
             });
+
+            configure?.Invoke(builder, hubUrl);
 
             _hubConnection = builder.Build();
 
