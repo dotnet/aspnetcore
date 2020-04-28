@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _service.EndMethod.TrySetResult(null);
             }
 
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 var result = await next(invocationContext);
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await next(context);
             }
 
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
             {
                 await _syncPoint[1].WaitToContinue();
                 var result = await next(invocationContext);
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context);
             }
 
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
             {
                 _counter.InvokeMethodAsyncCount++;
                 return next(invocationContext);
@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch { }
             }
 
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
             {
                 try
                 {
@@ -692,7 +692,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
                 catch { }
 
-                return null;
+                return HubResult.WithResult(null);
             }
         }
 
@@ -758,11 +758,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context);
             }
 
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
             {
                 if (_skipInvoke)
                 {
-                    return new ValueTask<object>(Task.FromResult<object>(null));
+                    return new ValueTask<HubResult>(HubResult.NotInvoked());
                 }
 
                 return next(invocationContext);
@@ -799,7 +799,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task Invoke()
+        public async Task InvokeFailsIfFilterSkipsCallingHubMethod()
         {
             using (StartVerifiableLog())
             {

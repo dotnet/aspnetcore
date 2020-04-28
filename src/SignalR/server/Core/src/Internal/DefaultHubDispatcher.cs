@@ -51,8 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     InitializeHub(hub, connection);
 
-                    var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
-                    if (hubFilters != null)
+                    if (connection.HubFilters.Count != 0)
                     {
                         bool isConnected = false;
                         Func<HubCallerContext, Task> app = async (context) =>
@@ -71,10 +70,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 throw;
                             }
                         };
-                        foreach (var filter in hubFilters)
+                        var count = connection.HubFilters.Count;
+                        for (var i = 1; i <= count; i++)
                         {
+                            var resolvedFilter = GetHubFilter(connection.HubFilters[count - i], scope.ServiceProvider);
                             var a = app;
-                            app = (context) => filter.OnConnectedAsync(context, a);
+                            app = (context) => resolvedFilter.OnConnectedAsync(context, a);
                         }
                         await app(connection.HubCallerContext);
                         return isConnected;
@@ -110,14 +111,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     InitializeHub(hub, connection);
 
-                    var hubFilters = ResolveHubFilters(connection, scope.ServiceProvider);
-                    if (hubFilters != null)
+                    if (connection.HubFilters.Count != 0)
                     {
                         Func<HubCallerContext, Task> app = (context) => hub.OnDisconnectedAsync(exception);
-                        foreach (var filter in hubFilters)
+                        var count = connection.HubFilters.Count;
+                        for (var i = 1; i <= count; i++)
                         {
+                            var resolvedFilter = GetHubFilter(connection.HubFilters[count - i], scope.ServiceProvider);
                             var a = app;
-                            app = (context) => filter.OnDisconnectedAsync(context, a);
+                            app = (context) => resolvedFilter.OnDisconnectedAsync(context, a);
                         }
                         await app(connection.HubCallerContext);
                     }
@@ -346,9 +348,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
-                        var (methodInvoke, result) = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
-                        if (result == null)
+                        if (!result.MethodInvoked)
+                        {
+                            // TODO
+                        }
+
+                        if (result.Result == null)
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
                             await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -358,7 +365,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                         cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                         connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
-                        var enumerable = descriptor.FromReturnedStream(result, cts.Token);
+                        var enumerable = descriptor.FromReturnedStream(result.Result, cts.Token);
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
@@ -372,14 +379,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             object result;
                             try
                             {
-                                bool methodInvoked;
-                                (methodInvoked, result) = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
-                                if (!methodInvoked)
+                                var hubResult = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                                if (!hubResult.MethodInvoked)
                                 {
                                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                         ErrorMessageHelper.BuildErrorMessage("Method not called", exception: null, _enableDetailedErrors));
                                     return;
                                 }
+                                result = hubResult.Result;
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
@@ -502,32 +509,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static async Task<(bool, object)> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+        private static async Task<HubResult> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
-            var hubFilters = ResolveHubFilters(connection, serviceProvider);
-            if (hubFilters != null)
+            if (connection.HubFilters.Count != 0)
             {
-                var invokedMethod = false;
-                Func<HubInvocationContext, ValueTask<object>> app = async (invocationContext) =>
+                Func<HubInvocationContext, ValueTask<HubResult>> app = async (invocationContext) =>
                 {
-                    invokedMethod = true;
-                    return await ExecuteMethod(methodExecutor, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray());
+                    return HubResult.WithResult(await ExecuteMethod(methodExecutor, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray()));
                 };
 
                 var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, arguments);
-                foreach (var filter in hubFilters)
+                var count = connection.HubFilters.Count;
+                for (var i = 1; i <= count; i++)
                 {
+                    var resolvedFilter = GetHubFilter(connection.HubFilters[count - i], serviceProvider);
                     var nextFilter = app;
-                    app = (context) => filter.InvokeMethodAsync(context, nextFilter);
+                    app = (context) => resolvedFilter.InvokeMethodAsync(context, nextFilter);
                 }
-                var result = await app(invocationContext);
-                if (invokedMethod)
-                { }
-                return (invokedMethod, result);
+                return await app(invocationContext);
             }
 
             // If no Hub filters are registered
-            return (true, await ExecuteMethod(methodExecutor, hub, arguments));
+            return HubResult.WithResult(await ExecuteMethod(methodExecutor, hub, arguments));
 
             static async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
             {
@@ -660,25 +663,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return descriptor.ParameterTypes;
         }
 
-        private static List<IHubFilter> ResolveHubFilters(HubConnectionContext connection, IServiceProvider serviceProvider)
+        private static IHubFilter GetHubFilter(object filter, IServiceProvider serviceProvider)
         {
-            if (connection.HubFilters == null)
+            return filter switch
             {
-                return null;
-            }
-
-            var count = connection.HubFilters.Count;
-            var filters = new List<IHubFilter>(count);
-            // Resolve in reverse order
-            for (var i = 1; i <= count; i++)
-            {
-                filters.Add(connection.HubFilters[count - i] switch
-                {
-                    Type type => GetHubFilter(serviceProvider, type),
-                    IHubFilter instance => instance,
-                    _ => throw new Exception("unexpected")
-                });
-            }
+                Type type => GetHubFilter(serviceProvider, type),
+                IHubFilter instance => instance,
+                _ => throw new Exception("unexpected")
+            };
 
             static IHubFilter GetHubFilter(IServiceProvider provider, Type t)
             {
@@ -689,8 +681,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
                 return filter;
             }
-
-            return filters;
         }
     }
 }
