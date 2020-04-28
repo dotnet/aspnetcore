@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             const ulong lowerCaseKeep = 0x0000_0020_0020_0020; // Don't lowercase hyphen
             const ulong keepAliveStart = 0x002d_0070_0065_0065; // 4 chars "eep-"
             const ulong keepAliveMiddle = 0x0076_0069_006c_0061; // 4 chars "aliv"
-            const ushort keppAliveEnd = 0x0065; // 1 char "e"
+            const ushort keepAliveEnd = 0x0065; // 1 char "e"
             // Upgrade
             const ulong upgradeStart = 0x0061_0072_0067_0070; // 4 chars "pgra"
             const uint upgradeEnd = 0x0065_0064; // 2 chars "de"
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 offset += sizeof(ulong) / 2;
                                 byteValue = byteValue.Slice(sizeof(ulong));
 
-                                if (ReadLowerCaseUInt16(byteValue) == keppAliveEnd)
+                                if (ReadLowerCaseUInt16(byteValue) == keepAliveEnd)
                                 {
                                     offset += sizeof(ushort) / 2;
                                     potentialConnectionOptions = ConnectionOptions.KeepAlive;
