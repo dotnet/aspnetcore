@@ -302,12 +302,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     for (offset = 0; offset < value.Length; offset++)
                     {
                         c = value[offset];
-                        if (c == ' ' || c == ',')
+                        if (c != ' ' && c != ',')
                         {
-                            continue;
+                            break;
                         }
-
-                        break;
                     }
 
                     // Skip last read char.
@@ -384,19 +382,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     for (offset = 0; offset < value.Length; offset++)
                     {
                         c = value[offset];
-                        if (c == ' ')
-                        {
-                            continue;
-                        }
                         if (c == ',')
                         {
                             break;
                         }
-                        else
+                        else if (c != ' ')
                         {
                             // Value contains extra chars; this is not the matched one.
                             potentialConnectionOptions = ConnectionOptions.None;
-                            continue;
                         }
                     }
 
