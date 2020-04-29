@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ReloadsOnConfigurationChangeByDefault()
+        public async Task ReloadsOnConfigurationChangeWhenOptedIn()
         {
             var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ApplicationServices = serviceCollection.BuildServiceProvider(),
             };
 
-            options.Configure(mockConfig.Object);
+            options.Configure(mockConfig.Object, reloadOnChange: true);
 
             var mockTransports = new List<Mock<IConnectionListener>>();
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
@@ -609,6 +609,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 mockTransport.Verify(t => t.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
             }
+        }
+
+        [Fact]
+        public async Task DoesNotReloadOnConfigurationChangeByDefault()
+        {
+            var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+                new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+            }).Build();
+
+            var mockConfig = new Mock<IConfiguration>();
+            mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(name => currentConfig.GetSection(name));
+            mockConfig.Setup(c => c.GetChildren()).Returns(() => currentConfig.GetChildren());
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+
+            var options = new KestrelServerOptions
+            {
+                ApplicationServices = serviceCollection.BuildServiceProvider(),
+            };
+
+            options.Configure(mockConfig.Object);
+
+            var mockTransports = new List<Mock<IConnectionListener>>();
+            var mockTransportFactory = new Mock<IConnectionListenerFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
+                {
+                    var mockTransport = new Mock<IConnectionListener>();
+                    mockTransport
+                        .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<ConnectionContext>(result: null));
+                    mockTransport
+                        .Setup(transport => transport.EndPoint)
+                        .Returns(e);
+
+                    mockTransports.Add(mockTransport);
+
+                    return new ValueTask<IConnectionListener>(mockTransport.Object);
+                });
+
+            // Don't use "using". Dispose() could hang if test fails.
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+
+            await server.StartAsync(new DummyApplication(), CancellationToken.None).DefaultTimeout();
+
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
+            mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
+
+            mockConfig.Verify(c => c.GetReloadToken(), Times.Never);
+
+            await server.StopAsync(CancellationToken.None).DefaultTimeout();
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)

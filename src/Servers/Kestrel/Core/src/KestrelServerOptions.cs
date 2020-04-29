@@ -208,13 +208,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
         /// This configuration must be scoped to the configuration section for Kestrel.
-        /// Kestrel will dynamically update endpoint bindings when configuration changes.
-        /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
-        /// Call <see cref="Configure(IConfiguration, bool)"/> to disable dynamic endpoint binding updates.
+        /// Call <see cref="Configure(IConfiguration, bool)"/> to enable dynamic endpoint binding updates.
         /// </summary>
         /// <param name="config">The configuration section for Kestrel.</param>
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
-        public KestrelConfigurationLoader Configure(IConfiguration config) => Configure(config, true);
+        public KestrelConfigurationLoader Configure(IConfiguration config) => Configure(config, reloadOnChange: false);
 
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
