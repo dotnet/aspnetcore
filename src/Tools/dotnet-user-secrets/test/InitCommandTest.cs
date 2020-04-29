@@ -32,7 +32,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         private CommandContext MakeCommandContext() => new CommandContext(null, new TestReporter(_output), _console);
 
         [Fact]
-        [QuarantinedTest]
         public void AddsSecretIdToProject()
         {
             var projectDir = _fixture.CreateProject(null);
@@ -59,7 +58,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void AddsEscapedSpecificSecretIdToProject()
         {
             const string SecretId = @"<lots of XML invalid values>&";
@@ -74,7 +72,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void DoesNotGenerateIdForProjectWithSecretId()
         {
             const string SecretId = "AlreadyExists";
