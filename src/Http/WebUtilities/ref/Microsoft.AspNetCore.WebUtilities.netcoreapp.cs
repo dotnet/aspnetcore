@@ -77,6 +77,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task DrainBufferAsync(System.IO.Pipelines.PipeWriter destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DrainBufferAsync(System.IO.Stream destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override void Flush() { }
         public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
