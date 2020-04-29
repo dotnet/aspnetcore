@@ -466,12 +466,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
             }).Build();
 
-            Action changeCallback = null;
+            Func<Task> changeCallback = null;
+            TaskCompletionSource<object> changeCallbackRegisteredTcs = null;
 
             var mockChangeToken = new Mock<IChangeToken>();
             mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
             {
-                changeCallback = () => callback(state);
+                changeCallbackRegisteredTcs?.SetResult(null);
+
+                changeCallback = () =>
+                {
+                    changeCallbackRegisteredTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    callback(state);
+                    return changeCallbackRegisteredTcs.Task;
+                };
+
                 return Mock.Of<IDisposable>();
             });
 
@@ -505,7 +514,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<ConnectionContext>(result: null));
                     mockTransport
-                        .Setup(transport => transport.EndPoint).Returns(e);
+                        .Setup(transport => transport.EndPoint)
+                        .Returns(e);
 
                     mockTransports.Add(mockTransport);
 
@@ -536,7 +546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
             }).Build();
 
-            changeCallback();
+            await changeCallback().DefaultTimeout();
 
             mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
             mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
@@ -564,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("Endpoints:C:Url", "https://*:5003"),
             }).Build();
 
-            changeCallback();
+            await changeCallback().DefaultTimeout();
 
             mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
             mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
