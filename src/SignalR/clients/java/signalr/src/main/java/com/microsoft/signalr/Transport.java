@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 interface Transport {
     Completable start(String url);

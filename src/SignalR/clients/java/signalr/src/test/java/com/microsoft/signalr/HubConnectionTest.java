@@ -16,14 +16,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.SingleSubject;
 
 class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -1040,7 +1040,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(result.blockingAwait(1000, TimeUnit.MILLISECONDS));
         assertTrue(done.get());
     }
 
@@ -1060,7 +1060,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(result.blockingAwait(1000, TimeUnit.MILLISECONDS));
         assertTrue(done.get());
     }
 
@@ -1098,7 +1098,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
 
-        result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+        result.timeout(1000, TimeUnit.MILLISECONDS).blockingAwait();
 
         AtomicReference<String> errorMessage = new AtomicReference<>();
         result.doOnError(error -> {
@@ -2543,6 +2543,6 @@ class HubConnectionTest {
             assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         }
 
-        close.timeout(1, TimeUnit.SECONDS).blockingGet();
+        close.timeout(1, TimeUnit.SECONDS).blockingAwait();
     }
 }
