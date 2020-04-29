@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var userId = await UserManager.GetUserIdAsync(user);
             var userName = await UserManager.GetUserNameAsync(user);
-            var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme,
+            var id = new ClaimsIdentity("Identity.Application",
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
