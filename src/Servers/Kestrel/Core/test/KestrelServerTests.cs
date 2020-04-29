@@ -571,7 +571,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
                 new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5002"),
-                new KeyValuePair<string, string>("Endpoints:C:Url", "https://*:5003"),
+                new KeyValuePair<string, string>("Endpoints:C:Url", "http://*:5003"),
+                new KeyValuePair<string, string>("Endpoints:C:Protocols", "Http1"),
             }).Build();
 
             await changeCallback().DefaultTimeout();

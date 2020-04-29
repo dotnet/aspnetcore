@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 // There's no reason to rerun an EndpointConfigurations callback if nothing changed.
                 var matchingBoundEndpoints = endpointsToStop.Where(o => o.EndpointConfig == endpoint).ToList();
 
-                if (matchingBoundEndpoints.Any())
+                if (matchingBoundEndpoints.Count > 0)
                 {
                     endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
                     Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
