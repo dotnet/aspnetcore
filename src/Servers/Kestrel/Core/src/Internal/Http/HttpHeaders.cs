@@ -8,11 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -277,107 +275,164 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public static unsafe ConnectionOptions ParseConnection(StringValues connection)
+        public static ConnectionOptions ParseConnection(StringValues connection)
         {
+            // Keep-alive
+            const ulong lowerCaseKeep = 0x0000_0020_0020_0020; // Don't lowercase hyphen
+            const ulong keepAliveStart = 0x002d_0070_0065_0065; // 4 chars "eep-"
+            const ulong keepAliveMiddle = 0x0076_0069_006c_0061; // 4 chars "aliv"
+            const ushort keepAliveEnd = 0x0065; // 1 char "e"
+            // Upgrade
+            const ulong upgradeStart = 0x0061_0072_0067_0070; // 4 chars "pgra"
+            const uint upgradeEnd = 0x0065_0064; // 2 chars "de"
+            // Close
+            const ulong closeEnd = 0x0065_0073_006f_006c; // 4 chars "lose"
+
             var connectionOptions = ConnectionOptions.None;
 
             var connectionCount = connection.Count;
             for (var i = 0; i < connectionCount; i++)
             {
-                var value = connection[i];
-                fixed (char* ptr = value)
+                var value = connection[i].AsSpan();
+                while (value.Length > 0)
                 {
-                    var ch = ptr;
-                    var tokenEnd = ch;
-                    var end = ch + value.Length;
-
-                    while (ch < end)
+                    int offset;
+                    char c = '\0';
+                    // Skip any spaces and empty values.
+                    for (offset = 0; offset < value.Length; offset++)
                     {
-                        while (tokenEnd < end && *tokenEnd != ',')
+                        c = value[offset];
+                        if (c != ' ' && c != ',')
                         {
-                            tokenEnd++;
+                            break;
                         }
+                    }
 
-                        while (ch < tokenEnd && *ch == ' ')
+                    // Skip last read char.
+                    offset++;
+                    if ((uint)offset > (uint)value.Length)
+                    {
+                        // Consumed enitre string, move to next.
+                        break;
+                    }
+
+                    // Remove leading spaces or empty values.
+                    value = value.Slice(offset);
+                    c = ToLowerCase(c);
+
+                    var byteValue = MemoryMarshal.AsBytes(value);
+
+                    offset = 0;
+                    var potentialConnectionOptions = ConnectionOptions.None;
+
+                    if (c == 'k' && byteValue.Length >= (2 * sizeof(ulong) + sizeof(ushort)))
+                    {
+                        if ((BinaryPrimitives.ReadUInt64LittleEndian(byteValue) | lowerCaseKeep) == keepAliveStart)
                         {
-                            ch++;
-                        }
+                            offset += sizeof(ulong) / 2;
+                            byteValue = byteValue.Slice(sizeof(ulong));
 
-                        var tokenLength = tokenEnd - ch;
-
-                        if (tokenLength >= 9 && (*ch | 0x20) == 'k')
-                        {
-                            if ((*++ch | 0x20) == 'e' &&
-                                (*++ch | 0x20) == 'e' &&
-                                (*++ch | 0x20) == 'p' &&
-                                *++ch == '-' &&
-                                (*++ch | 0x20) == 'a' &&
-                                (*++ch | 0x20) == 'l' &&
-                                (*++ch | 0x20) == 'i' &&
-                                (*++ch | 0x20) == 'v' &&
-                                (*++ch | 0x20) == 'e')
+                            if (ReadLowerCaseUInt64(byteValue) == keepAliveMiddle)
                             {
-                                ch++;
-                                while (ch < tokenEnd && *ch == ' ')
-                                {
-                                    ch++;
-                                }
+                                offset += sizeof(ulong) / 2;
+                                byteValue = byteValue.Slice(sizeof(ulong));
 
-                                if (ch == tokenEnd)
+                                if (ReadLowerCaseUInt16(byteValue) == keepAliveEnd)
                                 {
-                                    connectionOptions |= ConnectionOptions.KeepAlive;
+                                    offset += sizeof(ushort) / 2;
+                                    potentialConnectionOptions = ConnectionOptions.KeepAlive;
                                 }
                             }
                         }
-                        else if (tokenLength >= 7 && (*ch | 0x20) == 'u')
+                    }
+                    else if (c == 'u' && byteValue.Length >= (sizeof(ulong) + sizeof(uint)))
+                    {
+                        if (ReadLowerCaseUInt64(byteValue) == upgradeStart)
                         {
-                            if ((*++ch | 0x20) == 'p' &&
-                                (*++ch | 0x20) == 'g' &&
-                                (*++ch | 0x20) == 'r' &&
-                                (*++ch | 0x20) == 'a' &&
-                                (*++ch | 0x20) == 'd' &&
-                                (*++ch | 0x20) == 'e')
-                            {
-                                ch++;
-                                while (ch < tokenEnd && *ch == ' ')
-                                {
-                                    ch++;
-                                }
+                            offset += sizeof(ulong) / 2;
+                            byteValue = byteValue.Slice(sizeof(ulong));
 
-                                if (ch == tokenEnd)
-                                {
-                                    connectionOptions |= ConnectionOptions.Upgrade;
-                                }
+                            if (ReadLowerCaseUInt32(byteValue) == upgradeEnd)
+                            {
+                                offset += sizeof(uint) / 2;
+                                potentialConnectionOptions = ConnectionOptions.Upgrade;
                             }
                         }
-                        else if (tokenLength >= 5 && (*ch | 0x20) == 'c')
+                    }
+                    else if (c == 'c' && byteValue.Length >= sizeof(ulong))
+                    {
+                        if (ReadLowerCaseUInt64(byteValue) == closeEnd)
                         {
-                            if ((*++ch | 0x20) == 'l' &&
-                                (*++ch | 0x20) == 'o' &&
-                                (*++ch | 0x20) == 's' &&
-                                (*++ch | 0x20) == 'e')
-                            {
-                                ch++;
-                                while (ch < tokenEnd && *ch == ' ')
-                                {
-                                    ch++;
-                                }
-
-                                if (ch == tokenEnd)
-                                {
-                                    connectionOptions |= ConnectionOptions.Close;
-                                }
-                            }
+                            offset += sizeof(ulong) / 2;
+                            potentialConnectionOptions = ConnectionOptions.Close;
                         }
+                    }
 
-                        tokenEnd++;
-                        ch = tokenEnd;
+                    if ((uint)offset >= (uint)value.Length)
+                    {
+                        // Consumed enitre string, move to next string.
+                        connectionOptions |= potentialConnectionOptions;
+                        break;
+                    }
+                    else
+                    {
+                        value = value.Slice(offset);
+                    }
+
+                    for (offset = 0; offset < value.Length; offset++)
+                    {
+                        c = value[offset];
+                        if (c == ',')
+                        {
+                            break;
+                        }
+                        else if (c != ' ')
+                        {
+                            // Value contains extra chars; this is not the matched one.
+                            potentialConnectionOptions = ConnectionOptions.None;
+                        }
+                    }
+
+                    if ((uint)offset >= (uint)value.Length)
+                    {
+                        // Consumed enitre string, move to next string.
+                        connectionOptions |= potentialConnectionOptions;
+                        break;
+                    }
+                    else if (c == ',')
+                    {
+                        // Consumed value corretly.
+                        connectionOptions |= potentialConnectionOptions;
+                        // Skip comma.
+                        offset++;
+                        if ((uint)offset >= (uint)value.Length)
+                        {
+                            // Consumed enitre string, move to next string.
+                            break;
+                        }
+                        else
+                        {
+                            // Move to next value.
+                            value = value.Slice(offset);
+                        }
                     }
                 }
             }
 
             return connectionOptions;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong ReadLowerCaseUInt64(ReadOnlySpan<byte> value)
+            => BinaryPrimitives.ReadUInt64LittleEndian(value) | 0x0020_0020_0020_0020;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint ReadLowerCaseUInt32(ReadOnlySpan<byte> value)
+            => BinaryPrimitives.ReadUInt32LittleEndian(value) | 0x0020_0020;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ushort ReadLowerCaseUInt16(ReadOnlySpan<byte> value)
+            => (ushort)(BinaryPrimitives.ReadUInt16LittleEndian(value) | 0x0020);
 
         private static char ToLowerCase(char value) => (char)(value | (char)0x0020);
 
