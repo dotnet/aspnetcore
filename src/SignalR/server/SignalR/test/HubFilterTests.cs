@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _service = tcsService;
             }
 
-            public async Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 await next(context);
@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
-                await next(context);
+                await next(context, exception);
                 _service.EndMethod.TrySetResult(null);
             }
         }
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _syncPoint = syncPoints;
             }
 
-            public async Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
             {
                 await _syncPoint[0].WaitToContinue();
                 await next(context);
@@ -324,10 +324,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
             {
                 await _syncPoint[2].WaitToContinue();
-                await next(context);
+                await next(context, exception);
             }
         }
 
@@ -551,16 +551,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _counter.OnDisconnectedAsyncCount = 0;
             }
 
-            public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
             {
                 _counter.OnConnectedAsyncCount++;
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
             {
                 _counter.OnDisconnectedAsyncCount++;
-                return next(context);
+                return next(context, exception);
             }
 
             public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class NoExceptionFilter : IHubFilter
         {
-            public async Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
             {
                 try
                 {
@@ -675,11 +675,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch { }
             }
 
-            public async Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
             {
                 try
                 {
-                    await next(context);
+                    await next(context, exception);
                 }
                 catch { }
             }
@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task ConnectionDisconnectedIfOnConnectedAsyncThrowsAndFilterDoesNot()
+        public async Task ConnectionContinuesIfOnConnectedAsyncThrowsAndFilterDoesNot()
         {
             using (StartVerifiableLog())
             {
@@ -705,6 +705,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     services.AddSignalR(options =>
                     {
+                        options.EnableDetailedErrors = true;
                         options.AddFilter<NoExceptionFilter>();
                     });
                 }, LoggerFactory);
@@ -715,10 +716,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+                    // Verify connection still connected, can't invoke a method if the connection is disconnected
+                    var message = await client.InvokeAsync("Method");
+                    Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
 
-                    Assert.False(closeMessage.AllowReconnect);
-                    Assert.Null(closeMessage.Error);
+                    client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();
                 }
@@ -738,7 +740,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _skipOnDisconnected = skipOnDisconnected;
             }
 
-            public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
             {
                 if (_skipOnConnected)
                 {
@@ -748,14 +750,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+            public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
             {
                 if (_skipOnDisconnected)
                 {
                     return Task.CompletedTask;
                 }
 
-                return next(context);
+                return next(context, exception);
             }
 
             public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
@@ -770,7 +772,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task ConnectionDisconnectedIfOnConnectedAsyncNotCalledByFilter()
+        public async Task ConnectionContinuesIfOnConnectedAsyncNotCalledByFilter()
         {
             using (StartVerifiableLog())
             {
@@ -778,6 +780,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     services.AddSignalR(options =>
                     {
+                        options.EnableDetailedErrors = true;
                         options.AddFilter(new SkipNextFilter(skipOnConnected: true));
                     });
                 }, LoggerFactory);
@@ -788,10 +791,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().OrTimeout());
+                    // Verify connection still connected, can't invoke a method if the connection is disconnected
+                    var message = await client.InvokeAsync("Method");
+                    Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
 
-                    Assert.False(closeMessage.AllowReconnect);
-                    Assert.Null(closeMessage.Error);
+                    client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();
                 }

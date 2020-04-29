@@ -64,16 +64,16 @@ namespace SignalRSamples
             }
         }
 
-        public Task OnConnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+        public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
         {
-            _h.HttpContext = context.GetHttpContext();
+            _h.HttpContext = context.Context.GetHttpContext();
             return next(context);
         }
 
-        public Task OnDisconnectedAsync(HubCallerContext context, Func<HubCallerContext, Task> next)
+        public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
         {
-            _h.HttpContext = context.GetHttpContext();
-            return next(context);
+            _h.HttpContext = context.Context.GetHttpContext();
+            return next(context, exception);
         }
     }
 

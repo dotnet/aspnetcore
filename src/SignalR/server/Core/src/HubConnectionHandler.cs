@@ -75,26 +75,6 @@ namespace Microsoft.AspNetCore.SignalR
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             }
 
-            _dispatcher = new DefaultHubDispatcher<THub>(
-                serviceScopeFactory,
-                new HubContext<THub>(lifetimeManager),
-                _enableDetailedErrors,
-                new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
-        }
-
-        /// <inheritdoc />
-        public override async Task OnConnectedAsync(ConnectionContext connection)
-        {
-            // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
-            // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup when they were explicitly set to null.
-
-            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
-            if (supportedProtocols == null || supportedProtocols.Count == 0)
-            {
-                throw new InvalidOperationException("There are no supported protocols");
-            }
-
-            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             List<object> hubFilters = null;
             if (_globalHubOptions.HubFilters != null)
             {
@@ -114,6 +94,28 @@ namespace Microsoft.AspNetCore.SignalR
                 }
             }
 
+            _dispatcher = new DefaultHubDispatcher<THub>(
+                serviceScopeFactory,
+                new HubContext<THub>(lifetimeManager),
+                _enableDetailedErrors,
+                new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
+                hubFilters);
+        }
+
+        /// <inheritdoc />
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+            // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
+            // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup when they were explicitly set to null.
+
+            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
+            if (supportedProtocols == null || supportedProtocols.Count == 0)
+            {
+                throw new InvalidOperationException("There are no supported protocols");
+            }
+
+            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
+
             var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval,
@@ -121,7 +123,6 @@ namespace Microsoft.AspNetCore.SignalR
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
                 SystemClock = SystemClock,
-                HubFilters = hubFilters,
             };
 
             Log.ConnectedStarting(_logger);
@@ -152,14 +153,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
-                if (!await _dispatcher.OnConnectedAsync(connection))
-                {
-                    // TODO: log
-
-                    // The client shouldn't try to reconnect if OnConnected threw or wasn't called
-                    await SendCloseAsync(connection, exception: null, allowReconnect: false);
-                    return;
-                }
+                await _dispatcher.OnConnectedAsync(connection);
             }
             catch (Exception ex)
             {

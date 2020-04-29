@@ -33,7 +33,5 @@ namespace Microsoft.AspNetCore.SignalR
         public long? MaximumReceiveMessageSize { get; set; }
 
         internal ISystemClock SystemClock { get; set; }
-
-        internal List<object> HubFilters { get; set; }
     }
 }
