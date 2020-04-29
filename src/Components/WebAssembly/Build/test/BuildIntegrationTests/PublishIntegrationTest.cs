@@ -419,7 +419,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
 
             // Verify static web assets from referenced projects are copied.
-            // Uncomment once https://github.com/aspnet/AspNetCore/issues/17426 is resolved.
             Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
             Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
 
@@ -431,6 +430,104 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        [Fact]
+        public async Task Publish_HostedApp_VisualStudio()
+        {
+            // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
+            project.TargetFramework = "netcoreapp3.1";
+            project.Configuration = "Release";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build", "/p:BuildInsideVisualStudio=true");
+
+            Assert.BuildPassed(result);
+
+            result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true");
+
+            var publishDirectory = project.PublishOutputDirectory;
+            // Make sure the main project exists
+            Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "wasm", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "standalone.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
+        // part of publishing in VS
+        [Fact]
+        public async Task Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
+        {
+            // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
+            project.TargetFramework = "netcoreapp3.1";
+            project.Configuration = "Release";
+            var standaloneProjectDirectory = Path.Combine(project.DirectoryPath, "..", "standalone");
+
+            // Setup the standalone app to have it's own satellite assemblies as well as transitively imported satellite assemblies.
+            var resxfileInProject = Path.Combine(standaloneProjectDirectory , "Resources.ja.resx.txt");
+            File.Move(resxfileInProject, Path.Combine(standaloneProjectDirectory, "Resource.ja.resx"));
+
+            var standaloneProjFile = Path.Combine(standaloneProjectDirectory, "standalone.csproj");
+            var existing = File.ReadAllText(standaloneProjFile);
+            var updatedContent = @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies</DefineConstants>
+</PropertyGroup>
+<ItemGroup>
+    <ProjectReference Include=""..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj"" />
+</ItemGroup>";
+            var updated = existing.Replace("<!-- Test Placeholder -->", updatedContent);
+            File.WriteAllText(standaloneProjFile, updated);
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build", "/p:BuildInsideVisualStudio=true /restore");
+
+            Assert.BuildPassed(result);
+
+            result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true");
+
+            var publishDirectory = project.PublishOutputDirectory;
+            // Make sure the main project exists
+            Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "ja", "standalone.resources.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "_bin", "fr", "Microsoft.CodeAnalysis.resources.dll");
+
+            var bootJson = Path.Combine(project.DirectoryPath, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            var bootJsonFile = JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var satelliteResources = bootJsonFile.resources.satelliteResources;
+
+            Assert.Contains("es-ES", satelliteResources.Keys);
+            Assert.Contains("es-ES/classlibrarywithsatelliteassemblies.resources.dll", satelliteResources["es-ES"].Keys);
+            Assert.Contains("fr", satelliteResources.Keys);
+            Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
+            Assert.Contains("ja", satelliteResources.Keys);
+            Assert.Contains("ja/standalone.resources.dll", satelliteResources["ja"].Keys);
         }
 
         private static void AddSiblingProjectFileContent(ProjectDirectory project, string content)
@@ -542,6 +639,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var jsonLength = jsContents.LastIndexOf("}") - jsonStart + 1;
             var json = jsContents.Substring(jsonStart, jsonLength);
             return JsonSerializer.Deserialize<GenerateServiceWorkerAssetsManifest.AssetsManifestFile>(json);
+        }
+
+        private static GenerateBlazorBootJson.BootJsonData ReadBootJsonData(MSBuildResult result, string path)
+        {
+            return JsonSerializer.Deserialize<GenerateBlazorBootJson.BootJsonData>(
+                File.ReadAllText(Path.Combine(result.Project.DirectoryPath, path)),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
     }
 }
