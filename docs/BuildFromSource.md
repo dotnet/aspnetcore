@@ -33,6 +33,7 @@ Building ASP.NET Core on Windows requires:
     ```
 
     However, the build should find any JDK 11 or newer installation on the machine.
+   * Set JAVA_HOME environment variable with the path of java installation directory (Gradle needs this for execution)
 * Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
 
 ### macOS/Linux
