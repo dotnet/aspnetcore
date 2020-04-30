@@ -6,6 +6,7 @@
     <PackageTags>wasm;javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
