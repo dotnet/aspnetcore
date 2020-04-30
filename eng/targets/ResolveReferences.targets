@@ -146,7 +146,7 @@
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
     </ItemGroup>
 
-    <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version;RTMVersion"
+    <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
         Condition=" '$(UseLatestPackageReferences)' == 'true' ">
       <Output TaskParameter="JoinResult" ItemName="_LatestPackageReferenceWithVersion" />
     </JoinItems>
@@ -170,11 +170,11 @@
     </ItemGroup>
 
     <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
-    <JoinItems Left="@(Reference)"
-        Right="@(LatestPackageReference->WithMetadataValue('PrivateAssets', 'All'))"
+    <JoinItems Left="@(Reference->WithMetadataValue('PrivateAssets', 'All'))"
+        Right="@(LatestPackageReference)"
         LeftMetadata="*"
-        RightMetadata="Version;RTMVersion">
-      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
+        RightMetadata="Version">
+      <Output TaskParameter="JoinResult" ItemName="_PrivatePackageReferenceWithVersion" />
     </JoinItems>
 
     <ItemGroup>
