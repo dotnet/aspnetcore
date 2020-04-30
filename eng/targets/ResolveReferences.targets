@@ -148,7 +148,7 @@
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version;RTMVersion"
         Condition=" '$(UseLatestPackageReferences)' == 'true' ">
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)"
+      <Output TaskParameter="JoinResult" ItemName="_LatestPackageReferenceWithVersion" />
     </JoinItems>
 
     <ItemGroup>
@@ -157,11 +157,10 @@
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
     </ItemGroup>
 
-      <!-- Resolve references from BaselinePackageReference for servicing builds. -->
-      <_BaselinePackageReferenceWithVersion Include="@(Reference)"
-      <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
-
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)"
+    <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
+    <JoinItems Left="@(Reference)" Right="@(BaselinePackageReference)" LeftMetadata="*" RightMetadata="Version"
+          Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
     </JoinItems>
 
     <ItemGroup>
@@ -175,8 +174,7 @@
         Right="@(LatestPackageReference->WithMetadataValue('PrivateAssets', 'All'))"
         LeftMetadata="*"
         RightMetadata="Version;RTMVersion">
-
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)"
+      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
     </JoinItems>
 
     <ItemGroup>
