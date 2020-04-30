@@ -528,6 +528,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
             Assert.Contains("ja", satelliteResources.Keys);
             Assert.Contains("ja/standalone.resources.dll", satelliteResources["ja"].Keys);
+
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         private static void AddSiblingProjectFileContent(ProjectDirectory project, string content)
