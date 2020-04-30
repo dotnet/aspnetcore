@@ -5,7 +5,7 @@
     BeforeTargets="_ResolveBlazorOutputs;_ResolveBlazorFilesToCompress">
 
     <PropertyGroup>
-      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$(_BlazorIntermediateOutputPath)$(ServiceWorkerAssetsManifest)</_ServiceWorkerAssetsManifestIntermediateOutputPath>
+      <_ServiceWorkerAssetsManifestIntermediateOutputPath>$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), $(_BlazorIntermediateOutputPath)))$(ServiceWorkerAssetsManifest)</_ServiceWorkerAssetsManifestIntermediateOutputPath>
       <_ServiceWorkerAssetsManifestFullPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(_ServiceWorkerAssetsManifestIntermediateOutputPath)'))</_ServiceWorkerAssetsManifestFullPath>
     </PropertyGroup>
 
@@ -19,7 +19,7 @@
         <SourceId>$(PackageId)</SourceId>
         <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <RelativePath>$([MSBuild]::MakeRelative($([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(_BlazorIntermediateOutputPath)')), $(_ServiceWorkerAssetsManifestFullPath)))</RelativePath>
+        <RelativePath>$(ServiceWorkerAssetsManifest)</RelativePath>
       </_ManifestStaticWebAsset>
 
       <StaticWebAsset Include="@(_ManifestStaticWebAsset)" />
