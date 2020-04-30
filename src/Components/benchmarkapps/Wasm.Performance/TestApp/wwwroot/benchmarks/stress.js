@@ -12,14 +12,17 @@ if (location.href.indexOf('#automated') !== -1) {
   (async function () {
     const query = new URLSearchParams(window.location.search);
     const resultsUrl = query.get('resultsUrl');
-    // Executes up to the specified number of iterations, defaulting to 5. If '-1' is specified, stress
-    // runs continuously until the browser is closed.
-    const iterations = query.get('iterations') || 5;
+
+    // timeout in ms. Defaults to 2 minutes.
+    const timeout = query.get('timeout') || 2 * 60 * 1000;
+    const scenarioResults = [];
 
     await new BlazorStressApp().start();
 
-    for (let i = 0; iterations === '-1' || i < parseInt(iterations); i++) {
-      const scenarioResults = [];
+    let shouldRun = true;
+    setTimeout(() => shouldRun = false, timeout);
+
+    while (shouldRun) {
       const promise = new Promise((resolve, reject) => {
         onBenchmarkEvent(async (status, args) => {
           switch (status) {
@@ -32,17 +35,21 @@ if (location.href.indexOf('#automated') !== -1) {
               scenarioResults.push(args);
               break;
             case BenchmarkEvent.runCompleted:
-              if (resultsUrl) {
-                await fetch(resultsUrl, {
-                  method: 'post',
-                  body: JSON.stringify({
-                    downloadSize: downloadSize,
-                    scenarioResults: scenarioResults
-                  })
-                });
+              {
+                const totalMemory = BlazorStressApp.instance.app.window.DotNet.invokeMethod('Wasm.Performance.TestApp', 'GetTotalMemory');
+
+                if (resultsUrl) {
+                  await fetch(resultsUrl, {
+                    method: 'post',
+                    body: JSON.stringify({
+                      totalMemory: totalMemory,
+                      scenarioResults: scenarioResults
+                    })
+                  });
+                }
+                resolve();
+                break;
               }
-              resolve();
-              break;
             default:
               reject(new Error(`Unknown status: ${status}`));
           }

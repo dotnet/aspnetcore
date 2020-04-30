@@ -28,7 +28,7 @@ namespace Wasm.Performance.Driver
         {
             // This cancellation token manages the timeout for the stress run.
             // By default the driver executes and reports a single Benchmark run. For stress runs,
-            // we'll pass in the duration to execute the runs in milliseconds. This will cause this driver
+            // we'll pass in the duration to execute the runs in seconds. This will cause this driver
             // to repeat executions for the duration specified.
             var stressRunCancellation = CancellationToken.None;
             var isStressRun = false;
@@ -36,7 +36,13 @@ namespace Wasm.Performance.Driver
             {
                 if (!int.TryParse(args[0], out var stressRunSeconds))
                 {
-                    Console.Error.WriteLine("Usage Driver <stress-run-duration>");
+                    Console.Error.WriteLine("Usage Driver <stress-run-duration-seconds>");
+                    return 1;
+                }
+
+                if (stressRunSeconds < 1)
+                {
+                    Console.Error.WriteLine("Stress run duration must be a positive integer.");
                     return 1;
                 }
 
@@ -57,27 +63,26 @@ namespace Wasm.Performance.Driver
             using var testApp = StartTestApp();
             using var benchmarkReceiver = StartBenchmarkResultReceiver();
             var testAppUrl = GetListeningUrl(testApp);
+            if (isStressRun)
+            {
+                testAppUrl += "/stress.html";
+            }
+
             var receiverUrl = GetListeningUrl(benchmarkReceiver);
             Console.WriteLine($"Test app listening at {testAppUrl}.");
 
             var firstRun = true;
+            var timeForEachRun = TimeSpan.FromMinutes(3);
+
+            var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
+            browser.Url = launchUrl;
+            browser.Navigate();
+
             do
             {
                 BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
-                var timeForEachRun = TimeSpan.FromMinutes(3);
                 using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
-                runCancellationToken.Token.Register(() => BenchmarkResultTask.TrySetException(new TimeoutException($"Timed out after {timeForEachRun}")));
-
-                if (firstRun)
-                {
-                    var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
-                    browser.Url = launchUrl;
-                    browser.Navigate();
-                }
-                else
-                {
-                    browser.FindElementById("runAll").Click();
-                }
+                using var registration = runCancellationToken.Token.Register(() => BenchmarkResultTask.TrySetException(new TimeoutException($"Timed out after {timeForEachRun}")));
 
                 var results = await BenchmarkResultTask.Task;
 
@@ -96,21 +101,45 @@ namespace Wasm.Performance.Driver
         {
             // Sample of the the format: https://github.com/aspnet/Benchmarks/blob/e55f9e0312a7dd019d1268c1a547d1863f0c7237/src/Benchmarks/Program.cs#L51-L67
             var output = new BenchmarkOutput();
-            output.Metadata.Add(new BenchmarkMetadata
-            {
-                Source = "BlazorWasm",
-                Name = "blazorwasm/download-size",
-                ShortDescription = "Download size (KB)",
-                LongDescription = "Download size (KB)",
-                Format = "n2",
-            });
 
-            output.Measurements.Add(new BenchmarkMeasurement
+
+            if (benchmarkResult.DownloadSize != null)
             {
-                Timestamp = DateTime.UtcNow,
-                Name = "blazorwasm/download-size",
-                Value = ((float)benchmarkResult.DownloadSize) / 1024,
-            });
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/download-size",
+                    ShortDescription = "Download size (KB)",
+                    LongDescription = "Download size (KB)",
+                    Format = "n2",
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/download-size",
+                    Value = ((float)benchmarkResult.DownloadSize) / 1024,
+                });
+            }
+
+            if (benchmarkResult.TotalMemory != null)
+            {
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/wasm-memory",
+                    ShortDescription = "Memory (KB)",
+                    LongDescription = "WASM reported memory (KB)",
+                    Format = "n2",
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/wasm-memory",
+                    Value = ((float)benchmarkResult.TotalMemory) / 1024,
+                });
+            }
 
             // Information about the build that this was produced from
             output.Metadata.Add(new BenchmarkMetadata

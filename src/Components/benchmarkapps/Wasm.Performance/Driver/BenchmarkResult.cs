@@ -8,6 +8,9 @@ namespace Wasm.Performance.Driver
         public List<BenchmarkScenarioResult> ScenarioResults { get; set; }
 
         /// <summary>Downloaded application size in bytes</summary>
-        public long DownloadSize { get; set; }
+        public long? DownloadSize { get; set; }
+
+        /// <summary>The WASM memory usage</summary>
+        public long? TotalMemory { get; set; }
     }
 }
