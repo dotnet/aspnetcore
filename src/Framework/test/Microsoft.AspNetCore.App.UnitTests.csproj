@@ -90,6 +90,28 @@
         <_Parameter2>@(_TargetingPackDependencies)</_Parameter2>
       </AssemblyAttribute>
 
+      <AspNetCoreTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Condition="'%(_TargetingPackDependencies.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <RuntimeTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Exclude="@(AspNetCoreTargetingPackDependencies)" />
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>AspNetCoreTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(AspNetCoreTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>RuntimeTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(RuntimeTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>ReferencePackSharedFxVersion</_Parameter1>
+        <_Parameter2>$(ReferencePackSharedFxVersion)</_Parameter2>
+      </AssemblyAttribute>
+
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>RepositoryCommit</_Parameter1>
         <_Parameter2>$(SourceRevisionId)</_Parameter2>
