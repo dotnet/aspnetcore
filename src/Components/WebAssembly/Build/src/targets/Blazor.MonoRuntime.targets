@@ -75,6 +75,9 @@
     <MakeDir Directories="$(_BlazorIntermediateOutputPath)" />
   </Target>
 
+  <UsingTask TaskName="BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorTasksPath)" />
+  <UsingTask TaskName="BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorTasksPath)" />
+
   <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
     <!--
       These are the items calculated as the closure of the runtime assemblies, either by calling the linker
@@ -140,6 +143,45 @@
         <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
 
+      <_BlazorWriteSatelliteAssembly Include="@(_BlazorOutputWithTargetPath->WithMetadataValue('BootManifestResourceType', 'satellite'))" />
+    </ItemGroup>
+
+    <!--
+      When building with BuildingProject=false, satellite assemblies do not get resolved (the ones for the current project and the one for
+      referenced project). BuildingProject=false is typically set for referenced projects when building inside VisualStudio.
+      To workaround this, we'll stash metadata during a regular build, and rehydrate from it when BuildingProject=false.
+    -->
+
+    <PropertyGroup>
+      <_BlazorSatelliteAssemblyStashFile>$(_BlazorIntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyStashFile>
+    </PropertyGroup>
+
+    <BlazorWriteSatelliteAssemblyFile
+      SatelliteAssembly="@(_BlazorWriteSatelliteAssembly)"
+      WriteFile="$(_BlazorSatelliteAssemblyStashFile)"
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' != '0'" />
+
+    <Delete
+      Files="$(_BlazorSatelliteAssemblyStashFile)"
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' == '0' and EXISTS('$(_BlazorSatelliteAssemblyStashFile)')" />
+
+    <BlazorReadSatelliteAssemblyFile
+        ReadFile="$(_BlazorSatelliteAssemblyStashFile)"
+        Condition="'$(BuildingProject)' != 'true' AND EXISTS('$(_BlazorSatelliteAssemblyStashFile)')">
+      <Output TaskParameter="SatelliteAssembly" ItemName="_BlazorReadSatelliteAssembly" />
+    </BlazorReadSatelliteAssemblyFile>
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorSatelliteAssemblyStashFile)" Condition="Exists('$(_BlazorSatelliteAssemblyStashFile)')" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(_BlazorReadSatelliteAssembly->Count())' != '0'">
+      <!-- We've imported a previously stashed file. Let's turn in to a _BlazorOutputWithTargetPath -->
+      <_BlazorOutputWithTargetPath Include="@(_BlazorReadSatelliteAssembly)">
+        <BootManifestResourceType>satellite</BootManifestResourceType>
+        <BootManifestResourceName>%(_BlazorReadSatelliteAssembly.DestinationSubDirectory)%(FileName)%(Extension)</BootManifestResourceName>
+        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(_BlazorReadSatelliteAssembly.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
     </ItemGroup>
 
     <!--
