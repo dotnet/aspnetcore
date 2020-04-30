@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial class IdentityConstants
     {
-        public static readonly string ApplicationScheme;
-        public static readonly string ExternalScheme;
-        public static readonly string TwoFactorRememberMeScheme;
-        public static readonly string TwoFactorUserIdScheme;
+        public const string ApplicationScheme = "Identity.Application";
+        public const string ExternalScheme = "Identity.External";
+        public const string TwoFactorRememberMeScheme = "Identity.TwoFactorRememberMe";
+        public const string TwoFactorUserIdScheme = "Identity.TwoFactorUserId";
         public IdentityConstants() { }
     }
     public static partial class IdentityCookieAuthenticationBuilderExtensions
