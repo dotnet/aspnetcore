@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             // Arrange
-            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
+            var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
             project.TargetFramework = "netcoreapp3.1";
             project.Configuration = "Release";
             var standaloneProjectDirectory = Path.Combine(project.DirectoryPath, "..", "standalone");
@@ -503,11 +503,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var updated = existing.Replace("<!-- Test Placeholder -->", updatedContent);
             File.WriteAllText(standaloneProjFile, updated);
 
-            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build", "/p:BuildInsideVisualStudio=true /restore");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build", $"/restore");
 
             Assert.BuildPassed(result);
 
-            result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true");
+            result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:BuildProjectReferences=false");
 
             var publishDirectory = project.PublishOutputDirectory;
             // Make sure the main project exists

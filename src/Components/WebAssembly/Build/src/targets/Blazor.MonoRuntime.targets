@@ -75,10 +75,6 @@
     <MakeDir Directories="$(_BlazorIntermediateOutputPath)" />
   </Target>
 
-  <Import
-    Project="$(_BlazorSatelliteAssemblyStashFile)"
-    Condition="Exists('$(_BlazorSatelliteAssemblyStashFile)')" />
-
   <UsingTask TaskName="BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorTasksPath)" />
   <UsingTask TaskName="BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorTasksPath)" />
 
@@ -157,17 +153,21 @@
     -->
 
     <PropertyGroup>
-      <_BlazorSatelliteAssemblyStashFile>$(IntermediateOutputPath)blazor\blazor.satelliteasm.props</_BlazorSatelliteAssemblyStashFile>
+      <_BlazorSatelliteAssemblyStashFile>$(_BlazorIntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyStashFile>
     </PropertyGroup>
 
     <BlazorWriteSatelliteAssemblyFile
       SatelliteAssembly="@(_BlazorWriteSatelliteAssembly)"
       WriteFile="$(_BlazorSatelliteAssemblyStashFile)"
-      Condition="'$(BuildInsideVisualStudio)' == 'true' AND '$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' != '0'" />
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' != '0'" />
+
+    <Delete
+      Files="$(_BlazorSatelliteAssemblyStashFile)"
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' == '0' and EXISTS('$(_BlazorSatelliteAssemblyStashFile)')" />
 
     <BlazorReadSatelliteAssemblyFile
         ReadFile="$(_BlazorSatelliteAssemblyStashFile)"
-        Condition="'$(BuildInsideVisualStudio)' == 'true' AND '$(BuildingProject)' != 'true' AND EXISTS('$(_BlazorSatelliteAssemblyStashFile)')">
+        Condition="'$(BuildingProject)' != 'true' AND EXISTS('$(_BlazorSatelliteAssemblyStashFile)')">
       <Output TaskParameter="SatelliteAssembly" ItemName="_BlazorReadSatelliteAssembly" />
     </BlazorReadSatelliteAssemblyFile>
 
