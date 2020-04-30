@@ -29,10 +29,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly Func<HubInvocationContext, ValueTask<HubResult>> _invokeMiddleware;
         private readonly Func<HubInvocationContext, Task> _onConnectedMiddleware;
         private readonly Func<HubInvocationContext, Exception, Task> _onDisconnectedMiddleware;
-        private readonly List<object> _hubFilters;
 
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-            ILogger<DefaultHubDispatcher<THub>> logger, List<object> hubFilters)
+            ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter> hubFilters)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _hubContext = hubContext;
@@ -40,7 +39,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _logger = logger;
             DiscoverHubMethods();
 
-            _hubFilters = hubFilters;
             var count = hubFilters?.Count ?? 0;
             if (count != 0)
             {
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 for (var i = 1; i <= count; i++)
                 {
-                    var resolvedFilter = GetHubFilter(hubFilters[count - i]);
+                    var resolvedFilter = hubFilters[count - i];
                     var nextFilter = _invokeMiddleware;
                     _invokeMiddleware = (context) => resolvedFilter.InvokeMethodAsync(context, nextFilter);
 
@@ -650,16 +648,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 throw new HubException("Method does not exist.");
             }
             return descriptor.ParameterTypes;
-        }
-
-        private static IHubFilter GetHubFilter(object filter)
-        {
-            return filter switch
-            {
-                Type type => new HubFilterFactory(type),
-                IHubFilter instance => instance,
-                _ => throw new Exception("unexpected")
-            };
         }
     }
 }

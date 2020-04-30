@@ -52,6 +52,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
 
-        internal List<object> HubFilters { get; set; } = null;
+        internal List<IHubFilter> HubFilters { get; set; } = null;
     }
 }

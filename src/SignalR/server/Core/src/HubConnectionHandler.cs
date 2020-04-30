@@ -75,10 +75,10 @@ namespace Microsoft.AspNetCore.SignalR
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             }
 
-            List<object> hubFilters = null;
+            List<IHubFilter> hubFilters = null;
             if (_globalHubOptions.HubFilters != null)
             {
-                hubFilters = new List<object>();
+                hubFilters = new List<IHubFilter>();
                 hubFilters.AddRange(_globalHubOptions.HubFilters);
                 if (_hubOptions.HubFilters != null)
                 {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (_hubOptions.HubFilters != null)
                 {
-                    hubFilters = new List<object>();
+                    hubFilters = new List<IHubFilter>();
                     hubFilters.AddRange(_hubOptions.HubFilters);
                 }
             }

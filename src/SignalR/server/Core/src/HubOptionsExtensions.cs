@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -11,20 +12,20 @@ namespace Microsoft.AspNetCore.SignalR
         {
             if (options.HubFilters == null)
             {
-                options.HubFilters = new List<object>();
+                options.HubFilters = new List<IHubFilter>();
             }
 
             options.HubFilters.Add(hubFilter);
         }
 
-        public static void AddFilter<IHubFilter>(this HubOptions options)
+        public static void AddFilter<T>(this HubOptions options) where T : IHubFilter
         {
             if (options.HubFilters == null)
             {
-                options.HubFilters = new List<object>();
+                options.HubFilters = new List<IHubFilter>();
             }
 
-            options.HubFilters.Add(typeof(IHubFilter));
+            options.HubFilters.Add(new HubFilterFactory(typeof(T)));
         }
     }
 }
