@@ -187,14 +187,8 @@ namespace WebAssembly.Net.Debugging {
 		public static MonoCommands ClearAllBreakpoints ()
 			=> new MonoCommands ("MONO.mono_wasm_clear_all_breakpoints()");
 
-		public static MonoCommands GetObjectProperties (DotnetObjectId objectId, bool expandValueTypes)
-			=> new MonoCommands ($"MONO.mono_wasm_get_object_properties({int.Parse (objectId.Value)}, { (expandValueTypes ? "true" : "false") })");
-
-		public static MonoCommands GetArrayValues (int objectId)
-			=> new MonoCommands ($"MONO.mono_wasm_get_array_values({objectId})");
-
-		public static MonoCommands GetArrayValueExpanded (int objectId, int idx)
-			=> new MonoCommands ($"MONO.mono_wasm_get_array_value_expanded({objectId}, {idx})");
+		public static MonoCommands GetDetails (DotnetObjectId objectId, JToken args = null)
+			=> new MonoCommands ($"MONO.mono_wasm_get_details ('{objectId}', {(args ?? "{}")})");
 
 		public static MonoCommands GetScopeVariables (int scopeId, params int[] vars)
 			=> new MonoCommands ($"MONO.mono_wasm_get_variables({scopeId}, [ {string.Join (",", vars)} ])");
@@ -204,6 +198,12 @@ namespace WebAssembly.Net.Debugging {
 
 		public static MonoCommands RemoveBreakpoint (int breakpointId)
 			=> new MonoCommands ($"MONO.mono_wasm_remove_breakpoint({breakpointId})");
+
+		public static MonoCommands ReleaseObject (DotnetObjectId objectId)
+			=> new MonoCommands ($"MONO.mono_wasm_release_object('{objectId}')");
+
+		public static MonoCommands CallFunctionOn (JToken args)
+			=> new MonoCommands ($"MONO.mono_wasm_call_function_on ({args.ToString ()})");
 	}
 
 	internal enum MonoErrorCodes {
