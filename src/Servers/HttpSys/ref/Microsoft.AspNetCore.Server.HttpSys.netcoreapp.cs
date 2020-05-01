@@ -83,8 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         Create = 0,
         Attach = 1,
         CreateOrAttach = 2,
-        Delegator = 3,
-        Receiver = 4,
+        Receiver = 3,
     }
     public sealed partial class TimeoutManager
     {
