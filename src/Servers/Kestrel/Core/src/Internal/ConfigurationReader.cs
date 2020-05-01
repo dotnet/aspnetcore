@@ -17,95 +17,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string UrlKey = "Url";
         private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
 
-        private IConfiguration _configuration;
-        private IDictionary<string, CertificateConfig> _certificates;
-        private IList<EndpointConfig> _endpoints;
-        private EndpointDefaults _endpointDefaults;
-        private bool? _latin1RequestHeaders;
+        private readonly IConfiguration _configuration;
 
         public ConfigurationReader(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            Certificates = ReadCertificates();
+            EndpointDefaults = ReadEndpointDefaults();
+            Endpoints = ReadEndpoints();
+            Latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
         }
 
-        public IDictionary<string, CertificateConfig> Certificates
+        public IDictionary<string, CertificateConfig> Certificates { get; }
+        public EndpointDefaults EndpointDefaults { get; }
+        public IEnumerable<EndpointConfig> Endpoints { get; }
+        public bool Latin1RequestHeaders  { get; }
+
+        private IDictionary<string, CertificateConfig> ReadCertificates()
         {
-            get
-            {
-                if (_certificates == null)
-                {
-                    ReadCertificates();
-                }
-
-                return _certificates;
-            }
-        }
-
-        public EndpointDefaults EndpointDefaults
-        {
-            get
-            {
-                if (_endpointDefaults == null)
-                {
-                    ReadEndpointDefaults();
-                }
-
-                return _endpointDefaults;
-            }
-        }
-
-        public IEnumerable<EndpointConfig> Endpoints
-        {
-            get
-            {
-                if (_endpoints == null)
-                {
-                    ReadEndpoints();
-                }
-
-                return _endpoints;
-            }
-        }
-
-        public bool Latin1RequestHeaders
-        {
-            get
-            {
-                if (_latin1RequestHeaders is null)
-                {
-                    _latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
-                }
-
-                return _latin1RequestHeaders.Value;
-            }
-        }
-
-        private void ReadCertificates()
-        {
-            _certificates = new Dictionary<string, CertificateConfig>(0);
+            var certificates = new Dictionary<string, CertificateConfig>(0);
 
             var certificatesConfig = _configuration.GetSection(CertificatesKey).GetChildren();
             foreach (var certificateConfig in certificatesConfig)
             {
-                _certificates.Add(certificateConfig.Key, new CertificateConfig(certificateConfig));
+                certificates.Add(certificateConfig.Key, new CertificateConfig(certificateConfig));
             }
+
+            return certificates;
         }
 
         // "EndpointDefaults": {
         //    "Protocols": "Http1AndHttp2",
         // }
-        private void ReadEndpointDefaults()
+        private EndpointDefaults ReadEndpointDefaults()
         {
             var configSection = _configuration.GetSection(EndpointDefaultsKey);
-            _endpointDefaults = new EndpointDefaults
+            return new EndpointDefaults
             {
                 Protocols = ParseProtocols(configSection[ProtocolsKey])
             };
         }
 
-        private void ReadEndpoints()
+        private IEnumerable<EndpointConfig> ReadEndpoints()
         {
-            _endpoints = new List<EndpointConfig>();
+            var endpoints = new List<EndpointConfig>();
 
             var endpointsConfig = _configuration.GetSection(EndpointsKey).GetChildren();
             foreach (var endpointConfig in endpointsConfig)
@@ -133,8 +88,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     ConfigSection = endpointConfig,
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
                 };
-                _endpoints.Add(endpoint);
+
+                endpoints.Add(endpoint);
             }
+
+            return endpoints;
         }
 
         private static HttpProtocols? ParseProtocols(string protocols)
@@ -154,7 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     internal class EndpointDefaults
     {
         public HttpProtocols? Protocols { get; set; }
-        public IConfigurationSection ConfigSection { get; set; }
     }
 
     // "EndpointName": {
@@ -167,11 +124,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // }
     internal class EndpointConfig
     {
+        private IConfigurationSection _configSection;
+        private ConfigSectionClone _configSectionClone;
+
         public string Name { get; set; }
         public string Url { get; set; }
         public HttpProtocols? Protocols { get; set; }
-        public IConfigurationSection ConfigSection { get; set; }
         public CertificateConfig Certificate { get; set; }
+
+        // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
+        // We cannot rely entirely on comparing config sections for equality, because KestrelConfigurationLoader.Reload() sets
+        // EndpointConfig properties to their default values. If a default value changes, the properties would no longer be equal,
+        // but the config sections could still be equal.
+        public IConfigurationSection ConfigSection
+        {
+            get => _configSection;
+            set
+            {
+                _configSection = value;
+                // The IConfigrationSection will mutate, so we need to take a snapshot to compare against later and check for changes.
+                _configSectionClone = new ConfigSectionClone(value);
+            }
+        }
+
+        public override bool Equals(object obj) =>
+            obj is EndpointConfig other &&
+            Name == other.Name &&
+            Url == other.Url &&
+            (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
+            Certificate == other.Certificate &&
+            _configSectionClone == other._configSectionClone;
+
+        public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate, _configSectionClone);
+
+        public static bool operator ==(EndpointConfig lhs, EndpointConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
+        public static bool operator !=(EndpointConfig lhs, EndpointConfig rhs) => !(lhs == rhs);
     }
 
     // "CertificateName": {
@@ -206,5 +193,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public string Location { get; set; }
 
         public bool? AllowInvalid { get; set; }
+
+        public override bool Equals(object obj) =>
+            obj is CertificateConfig other &&
+            Path == other.Path &&
+            Password == other.Password &&
+            Subject == other.Subject &&
+            Store == other.Store &&
+            Location == other.Location &&
+            (AllowInvalid ?? false) == (other.AllowInvalid ?? false);
+
+        public override int GetHashCode() => HashCode.Combine(Path, Password, Subject, Store, Location, AllowInvalid ?? false);
+
+        public static bool operator ==(CertificateConfig lhs, CertificateConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
+        public static bool operator !=(CertificateConfig lhs, CertificateConfig rhs) => !(lhs == rhs);
     }
 }
