@@ -716,6 +716,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
         public void TransferRequest(string queueName, string uri)
         {
+            _responseStarted = true;
             _requestContext.Transfer(queueName, uri);
         }
     }
