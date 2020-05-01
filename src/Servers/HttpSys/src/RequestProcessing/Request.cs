@@ -64,18 +64,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             PathBase = string.Empty;
             Path = originalPath;
 
-            IsTransferable = (RequestContext.Server.Options.RequestQueueMode == RequestQueueMode.Delegator);
-
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            else if (requestContext.Server.RequestQueue.Created)
+            else
             {
                 var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-                // prefix may be null is the requested has been transfered to our queue
+                // Prefix may be null if the requested has been transfered to our queue
                 if (!(prefix is null))
                 {
                     if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
@@ -92,11 +90,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
                     }
                 }
-            }
-            else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
-            {
-                PathBase = pathBase;
-                Path = path;
+                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                {
+                    PathBase = pathBase;
+                    Path = path;
+                }
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
@@ -349,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public bool IsTransferable { get; internal set; }
+        public bool IsTransferable => (HasRequestBodyStarted || RequestContext.Response.HasStarted);
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

@@ -72,16 +72,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HeaderWait,
             MinSendRate,
         }
-        internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID
+        internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID : uint
         {
-            DelegateRequestReservedProperty
+            DelegateRequestReservedProperty,
+            DelegateRequestDelegateUrlProperty
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
         {
             internal HTTP_DELEGATE_REQUEST_PROPERTY_ID ProperyId;
-            internal ulong PropertyInfoLength;
+            internal uint PropertyInfoLength;
             internal IntPtr PropertyInfo;
         }
 

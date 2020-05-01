@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Most configuration options do not apply when attaching to an existing queue.
         /// </summary>
         CreateOrAttach,
-        Delegator,
         /// <summary>
         /// Attach to an existing queue to delegate transfer requests to.
         /// </summary>

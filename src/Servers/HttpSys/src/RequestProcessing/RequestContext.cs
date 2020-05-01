@@ -2,8 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+<<<<<<< HEAD
+=======
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+>>>>>>> b1a205f179... Cleanup based on PR feedback
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.Threading;
@@ -17,11 +23,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal sealed class RequestContext : IDisposable, IThreadPoolWorkItem
     {
         private static readonly Action<object> AbortDelegate = Abort;
-
         private NativeRequestContext _memoryBlob;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
         private bool _disposed;
+        private static readonly Lazy<ConcurrentDictionary<(string, string), RequestQueue>> _requestQueueCache =
+            new Lazy<ConcurrentDictionary<(string, string), RequestQueue>>(() => new ConcurrentDictionary<(string, string), RequestQueue>());
 
         internal RequestContext(HttpSysListener server, NativeRequestContext memoryBlob)
         {
@@ -323,17 +330,46 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
         }
 
-        internal unsafe void Transfer(RequestQueue queue)
+        internal void Transfer(string queueName, string uri)
         {
             if (Response.HasStarted)
             {
-                throw new InvalidOperationException("This request cannot be upgraded, the response has already started.");
+                throw new InvalidOperationException("This request cannot be transfered, the response has already started.");
             }
+            _requestQueueCache.Value.TryGetValue((queueName, uri), out var queue);
+            if (queue is null)
+            {
+                queue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, Logger);
+                queue.UrlGroup = new UrlGroup(queue, UrlPrefix.Create(uri));
+                _requestQueueCache.Value.TryAdd((queueName, uri), queue);
+                Server.RequestQueue.UrlGroup.SetDelegationProperty(queue);
+            }
+            Transfer(queue);
+        }
+
+        internal unsafe void Transfer(RequestQueue queue)
+        {
+            Response.Transfer();
             var source = Server.RequestQueue;
 
-            // Is this idempotent?
-            // TODO: Do not re-apply the property if it's already set
-            source.UrlGroup.SetDelegationProperty(queue);
+            // Proposed new API to fix queue properties issue
+            // will require the url to be passed to DelegateRequestEx
+            //
+            //var url = "http://*:80/";
+            //var handle = GCHandle.Alloc(url, GCHandleType.Pinned);
+            //var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+            //{
+            //    ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+            //    PropertyInfo = handle.AddrOfPinnedObject(),
+            //    PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(url)
+            //};
+            //var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+            //                                               queue.Handle,
+            //                                               Request.RequestId,
+            //                                               queue.UrlGroup.Id,
+            //                                               1,
+            //                                               &property);
+            //handle.Free();
 
             var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
                                                            queue.Handle,

@@ -8,8 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;weblistener;httpsys</PackageTags>
-    <!--TODO: Remove temporary hack to force CI to build packages-->
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

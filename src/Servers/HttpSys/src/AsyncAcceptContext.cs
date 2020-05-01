@@ -120,15 +120,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             uint statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
             bool retry;
-            uint flags;
-            if (_server.Options.RequestQueueMode == RequestQueueMode.Delegator)
-            {
-                flags = (uint)HttpApiTypes.HTTP_FLAGS.NONE;
-            }
-            else
-            {
-                flags = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY;
-            }
             do
             {
                 retry = false;
@@ -136,7 +127,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
                     _nativeRequestContext.RequestId,
-                    flags,
+                    // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
+                    // if the request sends header+body in a single TCP packet 
+                    (uint)HttpApiTypes.HTTP_FLAGS.NONE,
                     _nativeRequestContext.NativeRequest,
                     _nativeRequestContext.Size,
                     &bytesTransferred,
