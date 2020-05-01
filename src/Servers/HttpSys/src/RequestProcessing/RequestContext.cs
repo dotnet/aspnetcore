@@ -5,11 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
-<<<<<<< HEAD
-=======
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
->>>>>>> b1a205f179... Cleanup based on PR feedback
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.Threading;
