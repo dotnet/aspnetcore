@@ -5,8 +5,8 @@ import { BlazorStressApp } from './util/BlazorStressApp.js';
 group('JSON handling', () => {
   let app;
 
-  setup(async () => {
-    app = new BlazorStressApp().app;
+  setup(() => {
+    app = BlazorStressApp.instance;
     app.navigateTo('json');
   });
 

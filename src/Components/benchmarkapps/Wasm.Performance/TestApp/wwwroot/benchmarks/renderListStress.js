@@ -6,7 +6,7 @@ group('Rendering list', () => {
   let app;
 
   setup(() => {
-    app = new BlazorStressApp().app;
+    app = BlazorStressApp.instance;
     app.navigateTo('renderList');
   });
 

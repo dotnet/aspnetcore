@@ -59,7 +59,7 @@ namespace Wasm.Performance.Driver
             // This write is required for the benchmarking infrastructure.
             Console.WriteLine("Application started.");
 
-            using var browser = await Selenium.CreateBrowser(default);
+            using var browser = await Selenium.CreateBrowser(default, captureBrowserMemory: isStressRun);
             using var testApp = StartTestApp();
             using var benchmarkReceiver = StartBenchmarkResultReceiver();
             var testAppUrl = GetListeningUrl(testApp);
@@ -122,7 +122,7 @@ namespace Wasm.Performance.Driver
                 });
             }
 
-            if (benchmarkResult.TotalMemory != null)
+            if (benchmarkResult.WasmMemory != null)
             {
                 output.Metadata.Add(new BenchmarkMetadata
                 {
@@ -137,7 +137,37 @@ namespace Wasm.Performance.Driver
                 {
                     Timestamp = DateTime.UtcNow,
                     Name = "blazorwasm/wasm-memory",
-                    Value = ((float)benchmarkResult.TotalMemory) / 1024,
+                    Value = ((float)benchmarkResult.WasmMemory) / 1024,
+                });
+
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/js-usedjsheapsize",
+                    ShortDescription = "UsedJSHeapSize",
+                    LongDescription = "JS used heap size"
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/js-usedjsheapsize",
+                    Value = benchmarkResult.UsedJSHeapSize,
+                });
+
+                output.Metadata.Add(new BenchmarkMetadata
+                {
+                    Source = "BlazorWasm",
+                    Name = "blazorwasm/js-totaljsheapsize",
+                    ShortDescription = "TotalJSHeapSize",
+                    LongDescription = "JS total heap size"
+                });
+
+                output.Measurements.Add(new BenchmarkMeasurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "blazorwasm/js-totaljsheapsize",
+                    Value = benchmarkResult.TotalJSHeapSize,
                 });
             }
 

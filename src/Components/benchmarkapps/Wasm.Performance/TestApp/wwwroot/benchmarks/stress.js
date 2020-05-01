@@ -17,7 +17,7 @@ if (location.href.indexOf('#automated') !== -1) {
     const timeout = query.get('timeout') || 2 * 60 * 1000;
     const scenarioResults = [];
 
-    await new BlazorStressApp().start();
+    await BlazorStressApp.createAsync();
 
     let shouldRun = true;
     setTimeout(() => shouldRun = false, timeout);
@@ -36,13 +36,17 @@ if (location.href.indexOf('#automated') !== -1) {
               break;
             case BenchmarkEvent.runCompleted:
               {
-                const totalMemory = BlazorStressApp.instance.app.window.DotNet.invokeMethod('Wasm.Performance.TestApp', 'GetTotalMemory');
+                const wasmMemory = BlazorStressApp.instance.window.DotNet.invokeMethod('Wasm.Performance.TestApp', 'GetTotalMemory');
+
+                const jsMemory = window.performance.memory;
 
                 if (resultsUrl) {
                   await fetch(resultsUrl, {
                     method: 'post',
                     body: JSON.stringify({
-                      totalMemory: totalMemory,
+                      wasmMemory: wasmMemory,
+                      usedJSHeapSize: jsMemory.usedJSHeapSize,
+                      totalJSHeapSize: jsMemory.totalJSHeapSize,
                       scenarioResults: scenarioResults
                     })
                   });

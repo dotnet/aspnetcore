@@ -1,17 +1,16 @@
 import { BlazorApp } from "./BlazorApp.js";
 
 export class BlazorStressApp {
-  static instance;
+  /** @returns {BlazorApp} */
+  static get instance() {
+    return BlazorStressApp._instance;
+  }
 
-  constructor() {
-    if (BlazorStressApp.instance) {
-      return BlazorStressApp.instance;
-    }
+  /** @returns {Promise<void>} */
+  static createAsync() {
+    const instance = new BlazorApp();
+    BlazorStressApp._instance = instance;
 
-    BlazorStressApp.instance = this;
-
-    const app = new BlazorApp();
-    this.app = app;
-    this.start = () => app.start();
+    return instance.start();
   }
 }

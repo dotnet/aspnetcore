@@ -6,7 +6,7 @@ group('Nested components', () => {
   let app;
 
   setup(() => {
-    app = new BlazorStressApp().app;
+    app = BlazorStressApp.instance;
     app.navigateTo('orgChart');
   });
 
