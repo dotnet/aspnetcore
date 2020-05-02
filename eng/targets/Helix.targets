@@ -19,11 +19,11 @@
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRuntime)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
@@ -44,13 +44,12 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
   <!-- Build the actual helix work items to send to helix queues -->
   <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
     <ItemGroup>
-      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
-      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+      <_HelixTargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_CreateHelixPayloadInner"
-             Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+             Properties="TargetFramework=%(_HelixTargetFrameworks.Identity);">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
@@ -68,8 +67,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
       <_Temp Include="@(HelixAvailableTargetQueue)" />
       <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
       <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open',''))" />
-    </ItemGroup>    
-    
+    </ItemGroup>
+
     <ItemGroup>
       <!-- Include default queues based on platform -->
       <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true'" />

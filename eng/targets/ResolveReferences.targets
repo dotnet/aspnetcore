@@ -134,6 +134,11 @@
    -->
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
+      <!-- Reset item groups in case this target is called multiple times. -->
+      <!-- _LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
+      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" / -->
+
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
@@ -181,20 +186,10 @@
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
-
-      <!-- Free up memory for unnecessary items -->
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
-      <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
 
     <Error Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND @(_ExplicitPackageReference->Count()) != 0"
            Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead to replace the reference to @(_ExplicitPackageReference, ', '). See docs/ReferenceResolution.md for more details." />
-
-    <ItemGroup>
-      <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
-    </ItemGroup>
 
     <Warning Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
              Code="BUILD001"
@@ -230,14 +225,12 @@
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
-      <_TargetFramework Remove="@(_TargetFramework)" />
-      <_TargetFramework Include="$(TargetFramework)" Condition="'$(TargetFramework)' != '' "/>
-      <_TargetFramework Include="$(TargetFrameworks)" Condition="'$(TargetFramework)' == '' "/>
+      <_ProvidedTargetFrameworks Include="$(TargetFramework);$(TargetFrameworks)" />
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_GetReferencesProvided"
-             Properties="TargetFramework=%(_TargetFramework.Identity)">
+             Properties="TargetFramework=%(_ProvidedTargetFrameworks.Identity)">
       <Output TaskParameter="TargetOutputs" ItemName="ProvidesReference" />
     </MSBuild>
   </Target>
@@ -266,17 +259,18 @@
     <_CustomCollectProjectReferenceDependsOn Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
   </PropertyGroup>
   <Target Name="_CustomCollectProjectReference" DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)" Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
-    <ItemGroup>
-      <_TargetFrameworks Include="$(TargetFrameworks)" />
+    <ItemGroup Condition=" '$(TargetFramework)' == '' ">
+      <_CustomTargetFrameworks Include="$(TargetFrameworks)" />
     </ItemGroup>
     <MSBuild Condition="'$(TargetFramework)' == ''"
              Targets="_CustomCollectProjectReference"
              BuildInParallel="true"
              Projects="$(MSBuildProjectFullPath)"
-             Properties="TargetFramework=%(_TargetFrameworks.Identity)"
+             Properties="TargetFramework=%(_CustomTargetFrameworks.Identity)"
              RebaseOutputs="True">
       <Output TaskParameter="TargetOutputs" ItemName="_MSBuildProjectReferenceExistent" />
     </MSBuild>
+
     <MSBuild Condition="'$(TargetFramework)' != ''"
              Targets="_CustomCollectProjectReference"
              BuildInParallel="true"

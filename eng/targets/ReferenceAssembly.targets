@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_AllTargetFrameworks Remove="@(_AllTargetFrameworks)" />
       <_AllTargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
       <_DeduplicatedTargetFramework Include="%(_AllTargetFrameworks.Identity)" />
     </ItemGroup>
