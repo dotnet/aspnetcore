@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     }
     public sealed partial class HealthReport
     {
+        public HealthReport(System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> entries, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, System.TimeSpan totalDuration) { }
         public HealthReport(System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> entries, System.TimeSpan totalDuration) { }
         public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> Entries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
