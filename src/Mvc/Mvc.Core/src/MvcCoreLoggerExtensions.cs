@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static readonly Action<ILogger, string, Exception> _localRedirectResultExecuting;
 
-        private static readonly Action<ILogger, string, Exception> _objectResultExecuting;
+        private static readonly Action<ILogger, ObjectResult, string, Exception> _objectResultExecuting;
         private static readonly Action<ILogger, IEnumerable<string>, Exception> _noFormatter;
         private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
         private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
@@ -315,10 +315,10 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(1, "NoFormatter"),
                 "No output formatter was found for content types '{ContentTypes}' to write the response.");
 
-            _objectResultExecuting = LoggerMessage.Define<string>(
+            _objectResultExecuting = LoggerMessage.Define<ObjectResult, string>(
                 LogLevel.Information,
                 new EventId(1, "ObjectResultExecuting"),
-                "Executing ObjectResult, writing value of type '{Type}'.");
+                "Executing {ObjectResultType}, writing value of type '{Type}'.");
 
             _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
                 LogLevel.Debug,
@@ -1017,12 +1017,12 @@ namespace Microsoft.AspNetCore.Mvc
             _localRedirectResultExecuting(logger, destination, null);
         }
 
-        public static void ObjectResultExecuting(this ILogger logger, object value)
+        public static void ObjectResultExecuting(this ILogger logger, ObjectResult result, object value)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var type = value == null ? "null" : value.GetType().FullName;
-                _objectResultExecuting(logger, type, null);
+                _objectResultExecuting(logger, result, type, null);
             }
         }
 
