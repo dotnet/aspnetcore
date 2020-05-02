@@ -74,14 +74,10 @@ namespace Microsoft.AspNetCore.DataProtection
             var sinksFromRegistry = (string)key.GetValue("KeyEscrowSinks");
             if (sinksFromRegistry != null)
             {
-                foreach (string sinkFromRegistry in sinksFromRegistry.Split(';'))
+                foreach (string sinkFromRegistry in sinksFromRegistry.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var candidate = sinkFromRegistry.Trim();
-                    if (!String.IsNullOrEmpty(candidate))
-                    {
-                        typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(candidate, throwOnError: true));
-                        sinks.Add(candidate);
-                    }
+                    typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(sinkFromRegistry, throwOnError: true));
+                    sinks.Add(sinkFromRegistry);
                 }
             }
 
