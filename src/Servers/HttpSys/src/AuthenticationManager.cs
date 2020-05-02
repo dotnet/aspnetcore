@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public bool AutomaticAuthentication { get; set; } = true;
 
         /// <summary> 
-        /// Sets the display name shown to users on login pages. The default is null. 
+        /// Sets the display name shown to users on login pages. The default is null.
         /// </summary> 
         public string AuthenticationDisplayName { get; set; }
 
