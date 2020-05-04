@@ -2,7 +2,7 @@ import { group, benchmark, setup, teardown } from './lib/minibench/minibench.js'
 import { BlazorApp } from './util/BlazorApp.js';
 import { receiveEvent } from './util/BenchmarkEvents.js';
 import { setInputValue } from './util/DOM.js';
-import { largeJsonToDeserialize, largeObjectToSerialize } from './jsonHandlingData.js';
+import { largeJsonToDeserialize, largeObjectToSerialize, benchmarkJson } from './jsonHandlingData.js';
 
 group('JSON handling', () => {
   let app;
@@ -71,17 +71,3 @@ group('JSON handling', () => {
     }
   });
 });
-
-async function benchmarkJson(app, buttonSelector, resultSelector, expectedResult) {
-  const appDocument = app.window.document;
-  appDocument.querySelector('#reset-all').click();
-
-  let nextRenderCompletion = receiveEvent('Finished JSON processing');
-  appDocument.querySelector(buttonSelector).click();
-  await nextRenderCompletion;
-
-  const resultElem = appDocument.querySelector(resultSelector);
-  if (resultElem.textContent != expectedResult.toString()) {
-    throw new Error(`Incorrect result: ${resultElem.textContent}`);
-  }
-}

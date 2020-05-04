@@ -54,7 +54,7 @@ namespace Wasm.Performance.Driver
             throw new Exception($"Unable to connect to selenium-server at {uri}");
         }
 
-        public static async Task<RemoteWebDriver> CreateBrowser(CancellationToken cancellationToken)
+        public static async Task<RemoteWebDriver> CreateBrowser(CancellationToken cancellationToken, bool captureBrowserMemory = false)
         {
             var uri = await WaitForServerAsync(SeleniumPort, cancellationToken);
 
@@ -63,6 +63,11 @@ namespace Wasm.Performance.Driver
             if (RunHeadlessBrowser)
             {
                 options.AddArgument("--headless");
+            }
+
+            if (captureBrowserMemory)
+            {
+                options.AddArgument("--enable-precise-memory-info");
             }
 
             options.SetLoggingPreference(LogType.Browser, LogLevel.All);
