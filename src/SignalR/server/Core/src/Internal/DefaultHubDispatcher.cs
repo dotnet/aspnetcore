@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly IHubContext<THub> _hubContext;
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
-        private readonly Func<HubInvocationContext, ValueTask<HubResult>> _invokeMiddleware;
+        private readonly Func<HubInvocationContext, ValueTask<object>> _invokeMiddleware;
         private readonly Func<HubInvocationContext, Task> _onConnectedMiddleware;
         private readonly Func<HubInvocationContext, Exception, Task> _onDisconnectedMiddleware;
 
@@ -42,13 +42,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var count = hubFilters?.Count ?? 0;
             if (count != 0)
             {
-                _invokeMiddleware = async (invocationContext) =>
+                _invokeMiddleware = (invocationContext) =>
                 {
                     if (invocationContext.ObjectMethodExecutor != null)
                     {
-                        return HubResult.WithResult(await ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments));
+                        return new ValueTask<object>(ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments));
                     }
-                    return HubResult.WithResult(await ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments));
+                    return new ValueTask<object>(ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments));
                 };
 
                 _onConnectedMiddleware = (context) => context.Hub.OnConnectedAsync();
@@ -352,12 +352,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
-                        if (!result.MethodInvoked)
-                        {
-                            // TODO
-                        }
-
-                        if (result.Result == null)
+                        if (result == null)
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
                             await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -367,7 +362,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                         cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                         connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
-                        var enumerable = descriptor.FromReturnedStream(result.Result, cts.Token);
+                        var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
@@ -380,14 +375,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             object result;
                             try
                             {
-                                var hubResult = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
-                                if (!hubResult.MethodInvoked)
-                                {
-                                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                        ErrorMessageHelper.BuildErrorMessage("Method not called", exception: null, _enableDetailedErrors));
-                                    return;
-                                }
-                                result = hubResult.Result;
+                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
                                 Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
@@ -510,16 +498,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task<HubResult> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+        private Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
             if (_invokeMiddleware != null)
             {
                 var invocationContext = new HubInvocationContext(methodExecutor, connection.HubCallerContext, serviceProvider, hub, arguments);
-                return await _invokeMiddleware(invocationContext);
+                return _invokeMiddleware(invocationContext).AsTask();
             }
 
             // If no Hub filters are registered
-            return HubResult.WithResult(await ExecuteMethod(methodExecutor, hub, arguments));
+            return ExecuteMethod(methodExecutor, hub, arguments);
         }
 
         private Task<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _service.EndMethod.TrySetResult(null);
             }
 
-            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 var result = await next(invocationContext);
@@ -316,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await next(context);
             }
 
-            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
                 await _syncPoint[1].WaitToContinue();
                 var result = await next(invocationContext);
@@ -563,7 +562,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context, exception);
             }
 
-            public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
                 _counter.InvokeMethodAsyncCount++;
                 return next(invocationContext);
@@ -684,7 +683,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch { }
             }
 
-            public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
                 try
                 {
@@ -692,7 +691,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
                 catch { }
 
-                return HubResult.WithResult(null);
+                return null;
             }
         }
 
@@ -760,11 +759,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context, exception);
             }
 
-            public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
             {
                 if (_skipInvoke)
                 {
-                    return new ValueTask<HubResult>(HubResult.NotInvoked());
+                    return new ValueTask<object>(null);
                 }
 
                 return next(invocationContext);
@@ -802,36 +801,36 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task InvokeFailsIfFilterSkipsCallingHubMethod()
-        {
-            using (StartVerifiableLog())
-            {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new SkipNextFilter(skipInvoke: true));
-                    });
-                }, LoggerFactory);
+        //[Fact]
+        //public async Task InvokeFailsIfFilterSkipsCallingHubMethod()
+        //{
+        //    using (StartVerifiableLog())
+        //    {
+        //        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+        //        {
+        //            services.AddSignalR(options =>
+        //            {
+        //                options.AddFilter(new SkipNextFilter(skipInvoke: true));
+        //            });
+        //        }, LoggerFactory);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+        //        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+        //        using (var client = new TestClient())
+        //        {
+        //            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.OrTimeout();
+        //            await client.Connected.OrTimeout();
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+        //            var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
 
-                    Assert.Equal("Method not called", message.Error);
+        //            Assert.Equal("Method not called", message.Error);
 
-                    client.Dispose();
+        //            client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
-                }
-            }
-        }
+        //            await connectionHandlerTask.OrTimeout();
+        //        }
+        //    }
+        //}
     }
 }

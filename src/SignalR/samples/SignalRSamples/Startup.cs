@@ -29,7 +29,7 @@ namespace SignalRSamples
             _h = h;
         }
 
-        public async ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             try
             {
@@ -38,11 +38,11 @@ namespace SignalRSamples
                 var res = await next(invocationContext);
                 if (invocationContext.HubMethod.Name == nameof(Chat.Echo))
                 {
-                    return HubResult.WithResult("test");
+                    return "test";
                 }
                 else if (invocationContext.HubMethod.Name == nameof(Streaming.AsyncEnumerableCounter))
                 {
-                    return HubResult.WithResult(Add((IAsyncEnumerable<int>)res.Result));
+                    return Add((IAsyncEnumerable<int>)res);
 
                     static async IAsyncEnumerable<int> Add(IAsyncEnumerable<int> enumerable)
                     {
@@ -79,7 +79,7 @@ namespace SignalRSamples
 
     public class InstanceFilter : IHubFilter
     {
-        public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             return next(invocationContext);
         }

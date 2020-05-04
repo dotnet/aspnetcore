@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _objectFactory = ActivatorUtilities.CreateFactory(typeof(T), Array.Empty<Type>());
         }
 
-        public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
+        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             return GetFilter(_objectFactory, invocationContext.ServiceProvider).InvokeMethodAsync(invocationContext, next);
         }

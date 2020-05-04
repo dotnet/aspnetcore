@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public interface IHubFilter
     {
-        ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next);
+        ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next);
 
         Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next) => next(context);
         Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next) => next(context, exception);
