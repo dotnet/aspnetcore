@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
     {GetLaunchChromeInstructions(targetApplicationUrl)}
 </p>
 <p>
-    <h4>If you are using Microsoft Edge (Chromium) for your development, follow these instructions:</h4>
+    <h4>If you are using Microsoft Edge (80+) for your development, follow these instructions:</h4>
     {GetLaunchEdgeInstructions(targetApplicationUrl)}
 </p>
 <strong>This should launch a new browser window with debugging enabled..</p>
