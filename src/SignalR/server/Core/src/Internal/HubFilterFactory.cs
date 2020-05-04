@@ -7,36 +7,36 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class HubFilterFactory : IHubFilter
+    internal class HubFilterFactory<T> : IHubFilter where T : IHubFilter
     {
-        private readonly Type _hubFilterType;
+        private readonly ObjectFactory _objectFactory;
 
-        public HubFilterFactory(Type hubFilterType)
+        public HubFilterFactory()
         {
-            _hubFilterType = hubFilterType;
+            _objectFactory = ActivatorUtilities.CreateFactory(typeof(T), Array.Empty<Type>());
         }
 
         public ValueTask<HubResult> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<HubResult>> next)
         {
-            return GetFilter(invocationContext.ServiceProvider, _hubFilterType).InvokeMethodAsync(invocationContext, next);
+            return GetFilter(_objectFactory, invocationContext.ServiceProvider).InvokeMethodAsync(invocationContext, next);
         }
 
         public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
         {
-            return GetFilter(context.ServiceProvider, _hubFilterType).OnConnectedAsync(context, next);
+            return GetFilter(_objectFactory, context.ServiceProvider).OnConnectedAsync(context, next);
         }
 
         public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
         {
-            return GetFilter(context.ServiceProvider, _hubFilterType).OnDisconnectedAsync(context, exception, next);
+            return GetFilter(_objectFactory, context.ServiceProvider).OnDisconnectedAsync(context, exception, next);
         }
 
-        private static IHubFilter GetFilter(IServiceProvider serviceProvider, Type filterType)
+        private static IHubFilter GetFilter(ObjectFactory objectFactory, IServiceProvider serviceProvider)
         {
-            var filter = (IHubFilter)serviceProvider.GetService(filterType);
+            var filter = (IHubFilter)serviceProvider.GetService<T>();
             if (filter == null)
             {
-                filter = (IHubFilter)ActivatorUtilities.CreateInstance(serviceProvider, filterType);
+                filter = (IHubFilter)objectFactory.Invoke(serviceProvider, null);
             }
 
             return filter;

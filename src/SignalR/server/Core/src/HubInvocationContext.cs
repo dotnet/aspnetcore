@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -12,6 +13,9 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubInvocationContext
     {
+        internal readonly object[] Arguments;
+        internal readonly ObjectMethodExecutor ObjectMethodExecutor;
+
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
         /// </summary>
@@ -42,8 +46,14 @@ namespace Microsoft.AspNetCore.SignalR
 #pragma warning disable CS0618 // Type or member is obsolete
             HubMethodName = hubMethodName;
 #pragma warning restore CS0618 // Type or member is obsolete
-            HubMethodArguments = hubMethodArguments;
+            Arguments = hubMethodArguments;
             Context = context;
+        }
+
+        internal HubInvocationContext(ObjectMethodExecutor objectMethodExecutor, HubCallerContext context, IServiceProvider serviceProvider, Hub hub, object[] hubMethodArguments)
+            : this(context, serviceProvider, hub, objectMethodExecutor.MethodInfo, hubMethodArguments)
+        {
+            ObjectMethodExecutor = objectMethodExecutor;
         }
 
         /// <summary>
@@ -65,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the arguments provided by the client.
         /// </summary>
-        public IReadOnlyList<object> HubMethodArguments { get; }
+        public IReadOnlyList<object> HubMethodArguments { get => Arguments; }
 
         public IServiceProvider ServiceProvider { get; }
 

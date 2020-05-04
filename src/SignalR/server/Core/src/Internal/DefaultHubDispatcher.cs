@@ -44,7 +44,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 _invokeMiddleware = async (invocationContext) =>
                 {
-                    return HubResult.WithResult(await ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.HubMethodArguments.ToArray()));
+                    if (invocationContext.ObjectMethodExecutor != null)
+                    {
+                        return HubResult.WithResult(await ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments));
+                    }
+                    return HubResult.WithResult(await ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments));
                 };
 
                 _onConnectedMiddleware = (context) => context.Hub.OnConnectedAsync();
@@ -510,18 +514,23 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (_invokeMiddleware != null)
             {
-                var invocationContext = new HubInvocationContext(connection.HubCallerContext, serviceProvider, hub, methodExecutor.MethodInfo, arguments);
+                var invocationContext = new HubInvocationContext(methodExecutor, connection.HubCallerContext, serviceProvider, hub, arguments);
                 return await _invokeMiddleware(invocationContext);
             }
 
             // If no Hub filters are registered
-            return HubResult.WithResult(await ExecuteMethod(methodExecutor.MethodInfo.Name, hub, arguments));
+            return HubResult.WithResult(await ExecuteMethod(methodExecutor, hub, arguments));
         }
 
-        private async Task<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)
+        private Task<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)
         {
             _methods.TryGetValue(hubMethodName, out var methodDescriptor);
             var methodExecutor = methodDescriptor.MethodExecutor;
+            return ExecuteMethod(methodExecutor, hub, arguments);
+        }
+
+        private async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
+        {
             if (methodExecutor.IsMethodAsync)
             {
                 if (methodExecutor.MethodReturnType == typeof(Task))

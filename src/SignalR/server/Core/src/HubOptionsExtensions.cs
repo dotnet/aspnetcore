@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR
                 options.HubFilters = new List<IHubFilter>();
             }
 
-            options.HubFilters.Add(new HubFilterFactory(typeof(T)));
+            options.HubFilters.Add(new HubFilterFactory<T>());
         }
     }
 }
