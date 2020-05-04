@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
             }
 
-            protected override ValueTask LoadSatelliteAssembliesForCurrentCultureAsync() => default;
+            public override ValueTask LoadCurrentCultureResourcesAsync() => default;
         }
     }
 }

@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -36,7 +33,7 @@ static " + returnType + @" Main(" + paramsDecl + @")
 }", out var didMainExecute);
 
             // Act
-            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { }, new TestSatelliteResourcesLoader());
+            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { });
 
             // Assert
             Assert.True(didMainExecute());
@@ -66,7 +63,7 @@ static async Task" + returnTypeGenericParam + @" Main(" + paramsDecl + @")
             // Act/Assert 1: Waits for task
             // The fact that we're not blocking here proves that we're not executing the
             // metadata-declared entrypoint, as that would block
-            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { }, new TestSatelliteResourcesLoader());
+            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { });
             Assert.False(didMainExecute());
 
             // Act/Assert 2: Continues
@@ -91,7 +88,7 @@ public static void Main()
             // to handle the exception. We can't assert about what it does here, because that
             // would involve capturing console output, which isn't safe in unit tests. Instead
             // we'll check this in E2E tests.
-            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { }, new TestSatelliteResourcesLoader());
+            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { });
             Assert.True(didMainExecute());
         }
 
@@ -110,7 +107,7 @@ public static async Task Main()
 }", out var didMainExecute);
 
             // Act/Assert 1: Waits for task
-            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { }, new TestSatelliteResourcesLoader());
+            EntrypointInvoker.InvokeEntrypoint(assembly.FullName, new string[] { });
             Assert.False(didMainExecute());
 
             // Act/Assert 2: Continues
@@ -151,16 +148,6 @@ namespace SomeApp
             didMainExecute = () => (bool)didMainExecuteProp.GetValue(null);
 
             return assembly;
-        }
-
-        private class TestSatelliteResourcesLoader : SatelliteResourcesLoader
-        {
-            internal TestSatelliteResourcesLoader()
-                : base(WebAssemblyJSRuntimeInvoker.Instance)
-            {
-            }
-
-            protected override ValueTask LoadSatelliteAssembliesForCurrentCultureAsync() => default;
         }
     }
 }
