@@ -97,13 +97,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // no realistic way this could happen.
                 var dynamicControllerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerMetadata>();
                 var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerRouteValueTransformerMetadata>();
+
+                DynamicRouteValueTransformer transformer = null;
                 if (dynamicControllerMetadata != null)
                 {
                     dynamicValues = dynamicControllerMetadata.Values;
                 }
                 else if (transformerMetadata != null)
                 {
-                    var transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    transformer.State = transformerMetadata.State;
+
                     dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
                 }
                 else
@@ -143,6 +147,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     foreach (var kvp in originalValues)
                     {
                         values.TryAdd(kvp.Key, kvp.Value);
+                    }
+                }
+
+                if (transformer != null)
+                {
+                    endpoints = await transformer.FilterAsync(httpContext, values, endpoints);
+                    if (endpoints.Count == 0)
+                    {
+                        candidates.ReplaceEndpoint(i, null, null);
+                        continue;
                     }
                 }
 
