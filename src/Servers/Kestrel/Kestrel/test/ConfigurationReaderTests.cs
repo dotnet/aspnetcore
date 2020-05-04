@@ -97,7 +97,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1", ""),
             }).Build();
-            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
+            var reader = new ConfigurationReader(config);
+            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
         }
 
         [Fact]
@@ -107,7 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", ""),
             }).Build();
-            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
+            var reader = new ConfigurationReader(config);
+            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
         }
 
         [Fact]
