@@ -42,6 +42,7 @@ Building ASP.NET Core on macOS or Linux requires:
 * If using macOS, you need macOS Sierra or newer.
 * If using Linux, you need a machine with all .NET Core Linux prerequisites: <https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites>
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
+* curl <https://curl.haxx.se> or Wget <https://www.gnu.org/software/wget>
 * Git <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:
