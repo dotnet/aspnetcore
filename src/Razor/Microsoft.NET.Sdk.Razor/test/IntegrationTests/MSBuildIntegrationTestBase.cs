@@ -15,9 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public abstract class MSBuildIntegrationTestBase
     {
-        internal static readonly string LocalNugetPackagesCacheTempPath =
-            Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()) + Path.DirectorySeparatorChar;
-
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
         private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
 
@@ -49,10 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             set { _project.Value = value; }
         }
 
-        // Whether to use a local cache or not to prevent polluting the global cache
-        // with test packages.
-        public bool UseLocalPackageCache { get; set; }
-
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
 
         protected string RazorComponentIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "RazorDeclaration");
@@ -75,14 +68,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
 
-            // Additional restore sources for packages used in testing
-            var additionalRestoreSources = string.Join(
-                ',',
-                typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Where(a => a.Key == "Testing.AdditionalRestoreSources")
-                    .Select(a => a.Value)
-                    .ToArray());
-
             var buildArgumentList = new List<string>
             {
                 // Disable node-reuse. We don't want msbuild processes to stick around
@@ -97,19 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 $"/p:MicrosoftNETCoreApp50PackageVersion={BuildVariables.MicrosoftNETCoreApp50PackageVersion}",
                 $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
-
-                // Additional restore sources for projects that require built packages
-                $"/p:RuntimeAdditionalRestoreSources={additionalRestoreSources}",
             };
-
-            if (UseLocalPackageCache)
-            {
-                if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
-                {
-                    // The local cache folder needs to exist so that nuget
-                    Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
-                }
-            }
 
             if (!suppressBuildServer)
             {
@@ -132,8 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Project,
                 buildArguments,
                 timeout,
-                msBuildProcessKind,
-                UseLocalPackageCache ? LocalNugetPackagesCacheTempPath : null);
+                msBuildProcessKind);
         }
 
         internal void AddProjectFileContent(string content)

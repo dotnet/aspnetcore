@@ -29,18 +29,8 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.ProjectToPack</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryDirectDependency</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.ProjectToPack</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryTransitiveDependency</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\TestPackageRestoreSource</_Parameter2>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PregeneratedPackages</_Parameter2>
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
@@ -125,6 +115,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
+
+    <MSBuild Projects="..\testapps\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <MSBuild Projects="..\testapps\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
 
     <!-- This target restores SimpleMvc11 and SimpleMvc11NetFx separately because otherwise the TFMs in SimpleMvc11.csproj and SimpleMvc11NetFx.csproj are not respected. -->
     <PropertyGroup>

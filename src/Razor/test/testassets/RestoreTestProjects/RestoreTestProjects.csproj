@@ -22,15 +22,7 @@
     <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
     <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
     <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
-    <ProjectReference Include="..\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" />
-    <ProjectReference Include="..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" />
-
-    <!--
-      We don't add AppWithPackageAndP2PReference, PackageLibraryDirectDependency or PackageLibraryTransitiveDependency here
-      as PackageLibraryDirectDependency and PackageLibraryTransitiveDependency are test packages that
-      need to be produced on the fly and AppWithPackageAndP2PReference depends on them so adding them here
-      will make restore fail.
-    -->
+    <ProjectReference Include="..\AppWithPackageAndP2PReference\AppWithPackageAndP2PReference.csproj" />
 
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>

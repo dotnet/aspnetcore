@@ -7,7 +7,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'=='' AND EXISTS('$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\')">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\</RuntimeAdditionalRestoreSources>
+    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'=='' AND EXISTS('$(MSBuildThisFileDirectory)..\PregeneratedPackages\')">$(MSBuildThisFileDirectory)..\PregeneratedPackages\</RuntimeAdditionalRestoreSources>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(RuntimeAdditionalRestoreSources)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 

@@ -16,28 +16,22 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class StaticWebAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>, IClassFixture<PackageTestProjectsFixture>, IAsyncLifetime
+    public class StaticWebAssetsIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
         public StaticWebAssetsIntegrationTest(
             BuildServerTestFixture buildServer,
-            PackageTestProjectsFixture packageTestProjects,
             ITestOutputHelper output)
             : base(buildServer)
         {
-            UseLocalPackageCache = true;
-            PackageTestProjects = packageTestProjects;
             Output = output;
         }
-
-        public PackageTestProjectsFixture PackageTestProjects { get; private set; }
 
         public ITestOutputHelper Output { get; private set; }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Build_GeneratesStaticWebAssetsManifest_Success_CreatesManifest()
         {
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("Build");
 
             var expectedManifest = GetExpectedManifest();
@@ -65,7 +59,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder()
         {
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("Publish");
 
             Assert.BuildPassed(result);
@@ -115,7 +108,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_WithBuildReferencesDisabled_CopiesStaticWebAssetsToDestinationFolder()
         {
-            await RestoreWithRetry();
             var build = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(build);
@@ -137,7 +129,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_NoBuild_CopiesStaticWebAssetsToDestinationFolder()
         {
-            await RestoreWithRetry();
             var build = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(build);
@@ -159,7 +150,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -173,10 +163,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
         {
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -195,11 +184,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Rebuild_Success_RecreatesManifestAndCache()
         {
             // Arrange
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("Build");
 
             var expectedManifest = GetExpectedManifest();
@@ -243,10 +231,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task GenerateStaticWebAssetsManifest_IncrementalBuild_ReusesManifest()
         {
-            await RestoreWithRetry();
             var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest");
 
             Assert.BuildPassed(result);
@@ -282,47 +269,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public Task InitializeAsync()
-        {
-            try
-            {
-                return PackageTestProjects.PackAsync(Output);
-            }
-            catch (Exception ex)
-            {
-                // We observed pack would "complete" in the past but MSBuild would get stuck.
-                // The generated package looked right, but it caused flakyness on our build infrastructure.
-                // We will try and continue running (even if the process didn't complete) and see if we can
-                // complete the test successfully.
-                Output.WriteLine($"Pack failed or did not complete: '{ex}'.");
-                return Task.CompletedTask;
-            }
-        }
-
-        private async Task RestoreWithRetry()
-        {
-            for (var i = 0; i < 3; i++)
-            {
-                try
-                {
-                    var result = await DotnetMSBuild("Restore");
-                    if (result.ExitCode == 0)
-                    {
-                        break;
-                    }
-                }
-                catch
-                {
-                    // Keep retrying if it fails.
-                }
-            }
-        }
-
-        public Task DisposeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
         private string GetExpectedManifest()
         {
             // We need to do this for Mac as apparently the temp folder in mac is prepended by /private by the os, even though the current user
@@ -330,7 +276,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // validate the behavior at runtime.
             var source = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"/private{Project.SolutionPath}" : Project.SolutionPath;
 
-            var restorePath = LocalNugetPackagesCacheTempPath;
+            var nugetPackages = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+            var restorePath = !string.IsNullOrEmpty(nugetPackages) ?
+                nugetPackages :
+                Path.Combine(
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Environment.GetEnvironmentVariable("USERPROFILE") : Environment.GetEnvironmentVariable("HOME"),
+                    ".nuget",
+                    "packages");
+
             var projects = new[]
             {
                 Path.Combine(restorePath, "packagelibrarytransitivedependency", "1.0.0", "build", "..", "staticwebassets") + Path.DirectorySeparatorChar,
@@ -345,73 +298,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
 </StaticWebAssets>";
-        }
-    }
-
-    public class PackageTestProjectsFixture
-    {
-        private const int MaxPackRetries = 3;
-        private const int MaxPackTimeoutInMinutes = 5;
-
-        private bool _packed;
-
-        internal async Task PackAsync(ITestOutputHelper output)
-        {
-            if (_packed)
-            {
-                return;
-            }
-
-            var projectsToPack = GetProjectsToPack();
-
-            foreach (var project in projectsToPack)
-            {
-                output.WriteLine(project);
-            }
-
-            foreach (var project in projectsToPack)
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = DotNetMuxer.MuxerPathOrDefault(),
-#if DEBUG
-                    Arguments = "msbuild /t:Restore;Pack /p:Configuration=Debug",
-#else
-                    Arguments = "msbuild /t:Restore;Pack /p:Configuration=Release",
-#endif
-                    WorkingDirectory = project,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                for (int i = 0; i < MaxPackRetries; i++)
-                {
-                    try
-                    {
-                        var result = await MSBuildProcessManager.RunProcessCoreAsync(
-                            psi,
-                            TimeSpan.FromMinutes(MaxPackTimeoutInMinutes));
-
-                        output.WriteLine(result.Output);
-                        Assert.Equal(0, result.ExitCode);
-                        break;
-                    }
-                    catch
-                    {
-                        await Task.Delay(1000);
-                    }
-                }
-            }
-
-            _packed = true;
-        }
-
-        public static string[] GetProjectsToPack()
-        {
-            return typeof(PackageTestProjectsFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Where(a => a.Key == "Testing.ProjectToPack")
-                .Select(a => a.Value)
-                .ToArray();
         }
     }
 }

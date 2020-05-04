@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'==''">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\</RuntimeAdditionalRestoreSources>
+    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'==''">$(MSBuildThisFileDirectory)..\PregeneratedPackages\</RuntimeAdditionalRestoreSources>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(RuntimeAdditionalRestoreSources)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
