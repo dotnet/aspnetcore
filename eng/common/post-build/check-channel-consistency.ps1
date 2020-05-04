@@ -17,7 +17,7 @@ try {
 
   foreach ($id in $PromoteToChannelsIds) {
     if (($id -ne 0) -and ($id -notin $AvailableChannelIds)) {
-      Write-PipelineTaskError -Type 'warning' -Message "Channel $id is not present in the post-build YAML configuration!"
+      Write-PipelineTaskError -Message "Channel $id is not present in the post-build YAML configuration! This is an error scenario. Please contact @dnceng."
     }
   }
 

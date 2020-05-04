@@ -255,8 +255,8 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     ./autogen.sh && ./configure --prefix=$__RootfsDir/host && make && make install
     rm -rf $__RootfsDir/tmp/pkg-${__FreeBSDPkg}
     # install packages we need.
-    $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf update
-    $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
+    INSTALL_AS_USER=$(whoami) $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf update
+    INSTALL_AS_USER=$(whoami) $__RootfsDir/host/sbin/pkg -r $__RootfsDir -C $__RootfsDir/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
 elif [[ -n $__CodeName ]]; then
     qemu-debootstrap --arch $__UbuntuArch $__CodeName $__RootfsDir $__UbuntuRepo
     cp $__CrossDir/$__BuildArch/sources.list.$__CodeName $__RootfsDir/etc/apt/sources.list
