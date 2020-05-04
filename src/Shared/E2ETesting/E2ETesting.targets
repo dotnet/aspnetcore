@@ -77,7 +77,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile" DependsOnTargets="_ResolveTestProjectReferences">
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
     <ItemGroup>
       <_ContentRootMetadata
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
@@ -98,7 +98,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddSeleniumSupportedMetadataAttribute" BeforeTargets="BeforeCompile">
+  <Target Name="_AddSeleniumSupportedMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
     <PropertyGroup>
       <_SeleniumE2ETestsSupportedAttributeValue>false</_SeleniumE2ETestsSupportedAttributeValue>
       <_SeleniumE2ETestsSupportedAttributeValue Condition="'$(SeleniumE2ETestsSupported)' == 'true'">true</_SeleniumE2ETestsSupportedAttributeValue>
@@ -118,7 +118,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddProcessTrackingMetadataAttribute" BeforeTargets="BeforeCompile">
+  <Target Name="_AddProcessTrackingMetadataAttribute" BeforeTargets="GetAssemblyAttributes">
     <MakeDir Directories="$(SeleniumProcessTrackingFolder)" />
     <ItemGroup>
       <AssemblyAttribute
