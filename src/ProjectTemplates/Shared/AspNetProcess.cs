@@ -46,21 +46,25 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true,
             ILogger logger = null)
         {
+            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
+            EnsureDevelopmentCertificates();
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
             {
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => certificate?.Thumbprint == _certificateThumbprint,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) =>
+                {
+                    output.WriteLine($"Server certificate thumbprint: '{certificate?.Thumbprint}'");
+                    return certificate?.Thumbprint == _certificateThumbprint;
+                },
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
-            EnsureDevelopmentCertificates();
-
+            output.WriteLine($"Generated certificate thumbprint: '{_certificateThumbprint}'");
             output.WriteLine("Running ASP.NET application...");
 
             var arguments = published ? $"exec {dllPath}" : "run";
@@ -134,13 +138,13 @@ namespace Templates.Test.Helpers
 
         public async Task ContainsLinks(Page page)
         {
-            var response = await RequestWithRetries(client =>
+            var response = await RetryHelper.RetryRequest(async () =>
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, page.Url));
-                return client.SendAsync(request);
-            }, _httpClient);
+                return await _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -179,28 +183,6 @@ namespace Templates.Test.Helpers
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
             }
-        }
-
-        private async Task<T> RequestWithRetries<T>(Func<HttpClient, Task<T>> requester, HttpClient client, int retries = 3, TimeSpan initialDelay = default)
-        {
-            var currentDelay = initialDelay == default ? TimeSpan.FromSeconds(30) : initialDelay;
-            for (int i = 0; i <= retries; i++)
-            {
-                try
-                {
-                    return await requester(client);
-                }
-                catch (Exception)
-                {
-                    if (i == retries)
-                    {
-                        throw;
-                    }
-                    await Task.Delay(currentDelay);
-                    currentDelay *= 2;
-                }
-            }
-            throw new InvalidOperationException("Max retries reached.");
         }
 
         private Uri ResolveListeningUrl(ITestOutputHelper output)
@@ -268,12 +250,12 @@ namespace Templates.Test.Helpers
 
         internal Task<HttpResponseMessage> SendRequest(string path)
         {
-            return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
+            return RetryHelper.RetryRequest(async () => await _httpClient.GetAsync(new Uri(ListeningUri, path)), logger: NullLogger.Instance);
         }
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client =>
+            var response = await RetryHelper.RetryRequest(async () =>
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
@@ -284,8 +266,8 @@ namespace Templates.Test.Helpers
                     request.Headers.Add("Accept", acceptContentType);
                 }
 
-                return client.SendAsync(request);
-            }, _httpClient);
+                return await _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
