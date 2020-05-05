@@ -9,7 +9,7 @@ This is a getting started guide for using HTTP/3 on Windows and Linux.
 
 ### Windows
 
-1. Latest [Windows Insider Builds](https://insider.windows.com/en-us/). This is required for schannel support for QUIC.
+1. Latest [Windows Insider Builds](https://insider.windows.com/en-us/), Insiders Fast build. This is required for Schannel support for QUIC.
 2. Enabling TLS 1.3. Add the following registry keys to enable TLS 1.3.
 
     ```text
