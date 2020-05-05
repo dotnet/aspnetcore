@@ -105,7 +105,7 @@ This is a getting started guide for using HTTP/3 on Windows and Linux.
                 Host.CreateDefaultBuilder(args)
                     .ConfigureWebHostDefaults(webBuilder =>
                     {
-                        var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
+                        var cert = CertificateLoader.LoadFromStoreCert("Http3App", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
                         webBuilder.UseStartup<Startup>().UseQuic(options =>
                         {
                             options.Certificate = cert;
