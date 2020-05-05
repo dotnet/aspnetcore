@@ -19,8 +19,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             UseTimerAwaitableAndUnref(tcs);
 
+            var timeout = tcs.Task.OrTimeout();
+
             // Make sure it *really* cleans up
-            for (int i = 0; i < 5 && !tcs.Task.IsCompleted; i++)
+            while (!timeout.IsCompleted)
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
