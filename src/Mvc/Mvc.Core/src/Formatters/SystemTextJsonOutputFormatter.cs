@@ -6,10 +6,8 @@ using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -73,7 +71,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var httpContext = context.HttpContext;
 
-            var writeStream = GetWriteStream(httpContext, selectedEncoding);
+            var (writeStream, usesTranscodingStream) = GetWriteStream(httpContext, selectedEncoding);
+
             try
             {
                 // context.ObjectType reflects the declared model type when specified.
@@ -82,35 +81,29 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
                 var objectType = context.Object?.GetType() ?? context.ObjectType ?? typeof(object);
                 await JsonSerializer.SerializeAsync(writeStream, context.Object, objectType, SerializerOptions);
-
-                // The transcoding streams use Encoders and Decoders that have internal buffers. We need to flush these
-                // when there is no more data to be written. Stream.FlushAsync isn't suitable since it's
-                // acceptable to Flush a Stream (multiple times) prior to completion.
-                if (writeStream is TranscodingWriteStream transcodingStream)
-                {
-                    await transcodingStream.FinalWriteAsync(CancellationToken.None);
-                }
                 await writeStream.FlushAsync();
             }
             finally
             {
-                if (writeStream is TranscodingWriteStream transcodingStream)
+                if (usesTranscodingStream)
                 {
-                    await transcodingStream.DisposeAsync();
+                    await writeStream.DisposeAsync();
                 }
             }
+
         }
 
-        private Stream GetWriteStream(HttpContext httpContext, Encoding selectedEncoding)
+        private (Stream writeStream, bool usesTranscodingStream) GetWriteStream(HttpContext httpContext, Encoding selectedEncoding)
         {
             if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
             {
                 // JsonSerializer does not write a BOM. Therefore we do not have to handle it
                 // in any special way.
-                return httpContext.Response.Body;
+                return (httpContext.Response.Body, false);
             }
 
-            return new TranscodingWriteStream(httpContext.Response.Body, selectedEncoding);
+            var writeStream = Encoding.CreateTranscodingStream(httpContext.Response.Body, selectedEncoding, Encoding.UTF8, leaveOpen: true);
+            return (writeStream, true);
         }
     }
 }
