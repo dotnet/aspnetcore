@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IDebugger _debugger;
         private readonly IKestrelTrace _trace;
         private readonly TimeSpan _interval;
-        private Timer _timer;
-        private int _executingOnHeartbeat;
+        private Thread _timerThread;
         private long _lastHeartbeatTicks;
+        private volatile bool _stopped;
 
         public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
@@ -27,58 +27,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _debugger = debugger;
             _trace = trace;
             _interval = Interval;
+            _timerThread = new Thread(state => ((Heartbeat)state).TimerLoop())
+            {
+                Name = "Kestrel Timer",
+                IsBackground = true
+            };
         }
 
         public void Start()
         {
             OnHeartbeat();
-            _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
+            _timerThread.Start(this);
         }
 
-        private static void OnHeartbeat(object state)
-        {
-            ((Heartbeat)state).OnHeartbeat();
-        }
-
-        // Called by the Timer (background) thread
         internal void OnHeartbeat()
         {
             var now = _systemClock.UtcNow;
 
-            if (Interlocked.Exchange(ref _executingOnHeartbeat, 1) == 0)
-            {
-                Volatile.Write(ref _lastHeartbeatTicks, now.Ticks);
+            Volatile.Write(ref _lastHeartbeatTicks, now.Ticks);
 
-                try
+            try
+            {
+                foreach (var callback in _callbacks)
                 {
-                    foreach (var callback in _callbacks)
-                    {
-                        callback.OnHeartbeat(now);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
-                }
-                finally
-                {
-                    Interlocked.Exchange(ref _executingOnHeartbeat, 0);
+                    callback.OnHeartbeat(now);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                if (!_debugger.IsAttached)
-                {
-                    var lastHeartbeatTicks = Volatile.Read(ref _lastHeartbeatTicks);
-                    
-                    _trace.HeartbeatSlow(TimeSpan.FromTicks(now.Ticks - lastHeartbeatTicks), _interval, now);
-                }
+                _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
+            }
+
+            Thread.Sleep(_interval);
+        }
+
+        private void TimerLoop()
+        {
+            while (!_stopped)
+            {
+                OnHeartbeat();
+
+                Thread.Sleep(_interval);
             }
         }
 
         public void Dispose()
         {
-            _timer?.Dispose();
+            _stopped = true;
+            // Don't block waiting for the thread to exit
         }
     }
 }
