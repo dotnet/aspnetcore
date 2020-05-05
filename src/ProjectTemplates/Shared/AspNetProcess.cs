@@ -33,6 +33,7 @@ namespace Templates.Test.Helpers
 
         private string _certificatePath;
         private string _certificatePassword = Guid.NewGuid().ToString();
+        private string _certificateThumbprint;
 
         internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
@@ -52,7 +53,7 @@ namespace Templates.Test.Helpers
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => certificate?.Thumbprint == _certificateThumbprint,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
@@ -70,8 +71,8 @@ namespace Templates.Test.Helpers
 
             var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
             {
-                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH"] = _certificatePath,
-                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PASSWORD"] = _certificatePassword
+                ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = _certificatePath,
+                ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _certificatePassword
             };
 
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
@@ -81,8 +82,8 @@ namespace Templates.Test.Helpers
             if (hasListeningUri)
             {
                 logger?.LogInformation("AspNetProcess - Getting listening uri");
-                ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
-                logger?.LogInformation($"AspNetProcess - Got {ListeningUri.ToString()}");
+                ListeningUri = ResolveListeningUrl(output);
+                logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
             }
         }
 
@@ -91,6 +92,7 @@ namespace Templates.Test.Helpers
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
             var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            _certificateThumbprint = certificate.Thumbprint;
             manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
 
@@ -203,7 +205,7 @@ namespace Templates.Test.Helpers
             throw new InvalidOperationException("Max retries reached.");
         }
 
-        private Uri GetListeningUri(ITestOutputHelper output)
+        private Uri ResolveListeningUrl(ITestOutputHelper output)
         {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
@@ -232,21 +234,27 @@ namespace Templates.Test.Helpers
 
         private string GetListeningMessage()
         {
+            var buffer = new List<string>();
             try
             {
-                return Process
-                    // This will timeout at most after 5 minutes.
-                    .OutputLinesAsEnumerable
-                    .Where(line => line != null)
-                    // This used to do StartsWith, but this is less strict and can prevent issues (very rare) where
-                    // console logging interleaves with other console output in a bad way. For example:
-                    // dbugNow listening on: http://127.0.0.1:12857
-                    .FirstOrDefault(line => line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal));
+                foreach (var line in Process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal))
+                        {
+                            return line;
+                        }
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
-                return null;
             }
+
+            throw new InvalidOperationException(@$"Couldn't find listening url:
+{string.Join(Environment.NewLine, buffer)}");
         }
 
         private bool IsSuccessStatusCode(HttpResponseMessage response)
@@ -267,7 +275,8 @@ namespace Templates.Test.Helpers
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client => {
+            var response = await RequestWithRetries(client =>
+            {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, requestUrl));
