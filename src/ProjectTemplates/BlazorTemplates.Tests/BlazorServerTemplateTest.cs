@@ -24,7 +24,7 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
-        [Fact]
+        [ConditionalFact(Skip = "This test ran for over an hour")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
