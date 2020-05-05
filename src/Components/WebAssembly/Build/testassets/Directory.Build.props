@@ -22,7 +22,7 @@
     <ItemGroup>
       <!-- Use the sample compiler \ SDK that the rest of our build uses-->
       <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="3.7.0-1.20254.1"
+        Version="3.6.0-4.final"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
     </ItemGroup>
