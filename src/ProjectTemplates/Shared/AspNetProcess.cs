@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
@@ -57,7 +58,7 @@ namespace Templates.Test.Helpers
                 ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) =>
                 {
                     output.WriteLine($"Server certificate thumbprint: '{certificate?.Thumbprint}'");
-                    return certificate?.Thumbprint == _certificateThumbprint;
+                    return (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _certificateThumbprint;
                 },
             })
             {
