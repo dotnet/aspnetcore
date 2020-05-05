@@ -136,13 +136,13 @@ namespace Templates.Test.Helpers
 
         public async Task ContainsLinks(Page page)
         {
-            var response = await RequestWithRetries(client =>
+            var response = await RetryHelper.RetryRequest(async () =>
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, page.Url));
-                return client.SendAsync(request);
-            }, _httpClient);
+                return await _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -175,7 +175,7 @@ namespace Templates.Test.Helpers
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
-                        return await RequestWithRetries(client => client.GetAsync(anchor.Href), _httpClient);
+                        return await _httpClient.GetAsync(anchor.Href);
                     }, logger: NullLogger.Instance);
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
@@ -268,14 +268,12 @@ namespace Templates.Test.Helpers
         public Task AssertNotFound(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.NotFound);
 
-        internal Task<HttpResponseMessage> SendRequest(string path)
-        {
-            return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
-        }
+        internal Task<HttpResponseMessage> SendRequest(string path) =>
+            RetryHelper.RetryRequest(() => _httpClient.GetAsync(new Uri(ListeningUri, path)), logger: NullLogger.Instance);
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client =>
+            var response = await RetryHelper.RetryRequest(() =>
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
@@ -286,8 +284,9 @@ namespace Templates.Test.Helpers
                     request.Headers.Add("Accept", acceptContentType);
                 }
 
-                return client.SendAsync(request);
-            }, _httpClient);
+                return _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
+
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
