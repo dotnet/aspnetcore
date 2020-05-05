@@ -19,19 +19,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly IConfiguration _configuration;
 
+        private IDictionary<string, CertificateConfig> _certificates;
+        private EndpointDefaults _endpointDefaults;
+        private IEnumerable<EndpointConfig> _endpoints;
+        private bool? _latin1RequestHeaders;
+
         public ConfigurationReader(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            Certificates = ReadCertificates();
-            EndpointDefaults = ReadEndpointDefaults();
-            Endpoints = ReadEndpoints();
-            Latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
         }
 
-        public IDictionary<string, CertificateConfig> Certificates { get; }
-        public EndpointDefaults EndpointDefaults { get; }
-        public IEnumerable<EndpointConfig> Endpoints { get; }
-        public bool Latin1RequestHeaders  { get; }
+        public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
+        public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
+        public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
+        public bool Latin1RequestHeaders => _latin1RequestHeaders ??= _configuration.GetValue<bool>(Latin1RequestHeadersKey);
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {

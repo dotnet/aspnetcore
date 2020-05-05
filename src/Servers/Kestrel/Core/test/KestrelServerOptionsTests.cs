@@ -49,5 +49,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
             Assert.Equal(HttpProtocols.Http2, options.CodeBackedListenOptions[3].Protocols);
         }
+
+        [Fact]
+        public void CanCallListenAfterConfigure()
+        {
+            var options = new KestrelServerOptions();
+            options.Configure();
+
+            // This is a regression test to verify the Listen* methods don't throw a NullReferenceException if called after Configure().
+            // https://github.com/dotnet/aspnetcore/issues/21423
+            options.ListenLocalhost(5000);
+        }
     }
 }

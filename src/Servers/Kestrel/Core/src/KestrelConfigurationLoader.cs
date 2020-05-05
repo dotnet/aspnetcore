@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             ReloadOnChange = reloadOnChange;
+
+            ConfigurationReader = new ConfigurationReader(configuration);
         }
 
         public KestrelServerOptions Options { get; }
