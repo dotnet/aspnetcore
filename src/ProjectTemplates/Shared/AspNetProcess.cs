@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
@@ -47,21 +48,20 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true,
             ILogger logger = null)
         {
+            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
+            EnsureDevelopmentCertificates();
+
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
             {
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => certificate?.Thumbprint == _certificateThumbprint,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _certificateThumbprint,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
             };
-
-            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
-
-            EnsureDevelopmentCertificates();
 
             output.WriteLine("Running ASP.NET application...");
 
