@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +14,7 @@ using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
@@ -28,6 +30,10 @@ namespace Templates.Test.Helpers
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
 
+        private string _certificatePath;
+        private string _certificatePassword = Guid.NewGuid().ToString();
+        private string _certificateThumbprint;
+
         internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
 
@@ -37,7 +43,8 @@ namespace Templates.Test.Helpers
             string dllPath,
             IDictionary<string, string> environmentVariables,
             bool published = true,
-            bool hasListeningUri = true)
+            bool hasListeningUri = true,
+            ILogger logger = null)
         {
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
@@ -45,23 +52,46 @@ namespace Templates.Test.Helpers
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (m, c, ch, p) => true,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => certificate?.Thumbprint == _certificateThumbprint,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            var now = DateTimeOffset.Now;
-            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
+            EnsureDevelopmentCertificates();
 
             output.WriteLine("Running ASP.NET application...");
 
             var arguments = published ? $"exec {dllPath}" : "run";
-            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
+
+            logger?.LogInformation($"AspNetProcess - process: {DotNetMuxer.MuxerPathOrDefault()} arguments: {arguments}");
+
+            var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
+            {
+                ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = _certificatePath,
+                ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _certificatePassword
+            };
+
+            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
+
+            logger?.LogInformation("AspNetProcess - process started");
+
             if (hasListeningUri)
             {
-                ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
+                logger?.LogInformation("AspNetProcess - Getting listening uri");
+                ListeningUri = ResolveListeningUrl(output);
+                logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
             }
+        }
+
+        internal void EnsureDevelopmentCertificates()
+        {
+            var now = DateTimeOffset.Now;
+            var manager = new CertificateManager();
+            var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), "CN=localhost");
+            _certificateThumbprint = certificate.Thumbprint;
+            manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
 
         public void VisitInBrowser(IWebDriver driver)
@@ -173,7 +203,7 @@ namespace Templates.Test.Helpers
             throw new InvalidOperationException("Max retries reached.");
         }
 
-        private Uri GetListeningUri(ITestOutputHelper output)
+        private Uri ResolveListeningUrl(ITestOutputHelper output)
         {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
@@ -202,21 +232,27 @@ namespace Templates.Test.Helpers
 
         private string GetListeningMessage()
         {
+            var buffer = new List<string>();
             try
             {
-                return Process
-                    // This will timeout at most after 5 minutes.
-                    .OutputLinesAsEnumerable
-                    .Where(line => line != null)
-                    // This used to do StartsWith, but this is less strict and can prevent issues (very rare) where
-                    // console logging interleaves with other console output in a bad way. For example:
-                    // dbugNow listening on: http://127.0.0.1:12857
-                    .FirstOrDefault(line => line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal));
+                foreach (var line in Process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal))
+                        {
+                            return line;
+                        }
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
-                return null;
             }
+
+            throw new InvalidOperationException(@$"Couldn't find listening url:
+{string.Join(Environment.NewLine, buffer)}");
         }
 
         private bool IsSuccessStatusCode(HttpResponseMessage response)
@@ -237,7 +273,8 @@ namespace Templates.Test.Helpers
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client => {
+            var response = await RequestWithRetries(client =>
+            {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, requestUrl));
