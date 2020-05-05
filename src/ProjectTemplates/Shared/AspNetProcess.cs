@@ -173,7 +173,7 @@ namespace Templates.Test.Helpers
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
-                        return await RequestWithRetries(client => client.GetAsync(anchor.Href), _httpClient);
+                        return await _httpClient.GetAsync(anchor.Href);
                     }, logger: NullLogger.Instance);
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
