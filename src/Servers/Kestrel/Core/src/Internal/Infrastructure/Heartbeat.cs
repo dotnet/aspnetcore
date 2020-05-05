@@ -58,7 +58,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 _trace.LogError(0, ex, $"{nameof(Heartbeat)}.{nameof(OnHeartbeat)}");
             }
 
-            Thread.Sleep(_interval);
         }
 
         private void TimerLoop()
