@@ -9,7 +9,7 @@
 
 # Set to true to output binary log from msbuild. Note that emitting binary log slows down the build.
 # Binary log must be enabled on CI.
-[bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci }
+[bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $false }
 
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
@@ -605,11 +605,6 @@ function MSBuild() {
 #
 function MSBuild-Core() {
   if ($ci) {
-    if (!$binaryLog) {
-      Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build.'
-      ExitWithExitCode 1
-    }
-
     if ($nodeReuse) {
       Write-PipelineTelemetryError -Category 'Build' -Message 'Node reuse must be disabled in CI build.'
       ExitWithExitCode 1

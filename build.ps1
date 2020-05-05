@@ -344,13 +344,6 @@ if ($ForceCoreMsbuild) {
     $msbuildEngine = 'dotnet'
 }
 
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-$tmpBinaryLog = $BinaryLog
-if ($CI) {
-    $BinaryLog = $true
-}
-
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
 Remove-Item variable:global:_BuildTool -ea Ignore
 Remove-Item variable:global:_DotNetInstallDir -ea Ignore
@@ -360,7 +353,7 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
 
-if ($tmpBinaryLog) {
+if ($BinaryLog) {
     $MSBuildArguments += "/bl:$LogDir/Build.binlog"
 }
 
