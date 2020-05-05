@@ -184,6 +184,7 @@ namespace WebAssembly.Net.Debugging {
 					}
 
 					var bpid = resp.Value["breakpointId"]?.ToString ();
+					var locations = resp.Value["locations"]?.Values<object>();
 					var request = BreakpointRequest.Parse (bpid, args);
 					context.BreakpointRequests[bpid] = request;
 					if (await IsRuntimeAlreadyReadyAlready (id, token)) {
@@ -193,7 +194,8 @@ namespace WebAssembly.Net.Debugging {
 						await SetBreakpoint (id, store, request, token);
 					}
 
-					SendResponse (id, Result.OkFromObject (request.AsSetBreakpointByUrlResponse()), token);
+					var result = Result.OkFromObject (request.AsSetBreakpointByUrlResponse (locations));
+					SendResponse (id, result, token);
 					return true;
 				}
 
@@ -765,17 +767,21 @@ namespace WebAssembly.Net.Debugging {
 				return;
 			}
 
-			var locations = store.FindBreakpointLocations (req).ToList ();
+			var comparer = new SourceLocation.LocationComparer ();
+			// if column is specified the frontend wants the exact matches
+			// and will clear the bp if it isn't close enoug
+			var locations = store.FindBreakpointLocations (req)
+				.Distinct (comparer)
+				.Where (l => l.Line == req.Line && (req.Column == 0 || l.Column == req.Column))
+				.OrderBy (l => l.Column)
+				.GroupBy (l => l.Id);
+
 			logger.LogDebug ("BP request for '{req}' runtime ready {context.RuntimeReady}", req, GetContext (sessionId).IsRuntimeReady);
 
 			var breakpoints = new List<Breakpoint> ();
 
-			// if column is specified the frontend wants the exact matches
-			// and will clear the bp if it isn't close enough
-			if (req.Column != 0)
-				locations = locations.Where (l => l.Column == req.Column).ToList ();
-
-			foreach (var loc in locations) {
+			foreach (var sourceId in locations) {
+				var loc = sourceId.First ();
 				var bp = await SetMonoBreakpoint (sessionId, req.Id, loc, token);
 
 				// If we didn't successfully enable the breakpoint
