@@ -70,45 +70,5 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Assert
             invoker.Verify(i => i.InvokeUnmarshalled<object, object, object, object[]>(ReadSatelliteAssemblies, null, null, null), Times.Never());
         }
-
-        [Fact]
-        public async Task LoadCurrentCultureResourcesAsync_AttemptsToReadAssemblies_IfCultureIsChangedBetweenInvocation()
-        {
-            // Arrange
-            using var cultureReplacer = new CultureReplacer("en-GB");
-            var invoker = new Mock<WebAssemblyJSRuntimeInvoker>();
-            invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, It.IsAny<string[]>(), null, null))
-                 .Returns(Task.FromResult<object>(0))
-                 .Verifiable();
-
-            var loader = new SatelliteResourcesLoader(invoker.Object);
-
-            // Act
-            await loader.LoadCurrentCultureResourcesAsync();
-            CultureInfo.CurrentCulture = new CultureInfo("fr-fr");
-            await loader.LoadCurrentCultureResourcesAsync();
-
-            invoker.Verify(i => i.InvokeUnmarshalled<object, object, object, Task<object>>(GetSatelliteAssemblies, It.IsAny<string[]>(), null, null),
-                Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task LoadCurrentCultureResourcesAsync_NoOps_WhenInvokedSecondTime_WithSameCulture()
-        {
-            // Arrange
-            using var cultureReplacer = new CultureReplacer("en-GB");
-            var invoker = new Mock<WebAssemblyJSRuntimeInvoker>();
-            invoker.Setup(i => i.InvokeUnmarshalled<string[], object, object, Task<object>>(GetSatelliteAssemblies, It.IsAny<string[]>(), null, null))
-                 .Returns(Task.FromResult<object>(0));;
-
-            var loader = new SatelliteResourcesLoader(invoker.Object);
-
-            // Act
-            await loader.LoadCurrentCultureResourcesAsync();
-            await loader.LoadCurrentCultureResourcesAsync();
-
-            invoker.Verify(i => i.InvokeUnmarshalled<object, object, object, Task<object>>(GetSatelliteAssemblies, It.IsAny<string[]>(), null, null),
-                Times.Once());
-        }
     }
 }

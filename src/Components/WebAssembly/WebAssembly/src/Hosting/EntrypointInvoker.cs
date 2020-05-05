@@ -15,19 +15,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         // In the future we may want Blazor.start to return something that exposes the possibly-async
         // entrypoint result to the JS caller. There's no requirement to do that today, and if we
         // do change this it will be non-breaking.
-        public static void InvokeEntrypoint(string assemblyName, string[] args)
-            => InvokeEntrypoint(assemblyName, args, SatelliteResourcesLoader.Init());
-
-        internal static async void InvokeEntrypoint(string assemblyName, string[] args, SatelliteResourcesLoader satelliteResourcesLoader)
+        public static async void InvokeEntrypoint(string assemblyName, string[] args)
         {
             try
             {
-                // Emscripten sets up the culture for the application based on the user's language preferences.
-                // Before we execute the app's entry point, load satellite assemblies for this culture.
-                // We'll allow users to configure their app culture as part of MainAsync. Loading satellite assemblies
-                // for the configured culture will happen as part of WebAssemblyHost.RunAsync.
-                await satelliteResourcesLoader.LoadCurrentCultureResourcesAsync();
-
                 var assembly = Assembly.Load(assemblyName);
                 var entrypoint = FindUnderlyingEntrypoint(assembly);
                 var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args ?? Array.Empty<string>() } : new object[] { };

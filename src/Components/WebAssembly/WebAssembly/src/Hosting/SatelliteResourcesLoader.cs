@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -16,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
         private readonly WebAssemblyJSRuntimeInvoker _invoker;
-        private CultureInfo _previousCulture;
 
         // For unit testing.
         internal SatelliteResourcesLoader(WebAssemblyJSRuntimeInvoker invoker)
@@ -24,28 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _invoker = invoker;
         }
 
-        public static SatelliteResourcesLoader Instance { get; private set; }
-
-        public static SatelliteResourcesLoader Init()
-        {
-            Debug.Assert(Instance is null, "Init should not be called multiple times.");
-
-            Instance = new SatelliteResourcesLoader(WebAssemblyJSRuntimeInvoker.Instance);
-            return Instance;
-        }
-
-        public ValueTask LoadCurrentCultureResourcesAsync()
-        {
-            if (_previousCulture != CultureInfo.CurrentCulture)
-            {
-                _previousCulture = CultureInfo.CurrentCulture;
-                return LoadSatelliteAssembliesForCurrentCultureAsync();
-            }
-
-            return default;
-        }
-
-        protected virtual async ValueTask LoadSatelliteAssembliesForCurrentCultureAsync()
+        public virtual async ValueTask LoadCurrentCultureResourcesAsync()
         {
             var culturesToLoad = GetCultures(CultureInfo.CurrentCulture);
 

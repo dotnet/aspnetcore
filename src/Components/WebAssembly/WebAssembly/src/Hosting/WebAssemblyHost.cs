@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
 
-        internal SatelliteResourcesLoader SatelliteResourcesLoader { get; set; } = SatelliteResourcesLoader.Instance;
+        internal SatelliteResourcesLoader SatelliteResourcesLoader { get; set; } = new SatelliteResourcesLoader(WebAssemblyJSRuntimeInvoker.Instance);
 
         /// <summary>
         /// Disposes the host asynchronously.
