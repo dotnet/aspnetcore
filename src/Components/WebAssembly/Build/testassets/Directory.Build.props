@@ -18,11 +18,11 @@
 
     <Import Project="$(RepoRoot)eng\Versions.props" Condition="'$(HELIX_WORKITEM_ROOT)' == ''" />
     <Import Project="$(MSBuildThisFileDirectory)Versions.props" Condition="Exists('$(MSBuildThisFileDirectory)Versions.props')" />
-  
+
     <ItemGroup>
       <!-- Use the sample compiler \ SDK that the rest of our build uses-->
       <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        Version="3.7.0-1.20254.1"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
     </ItemGroup>
