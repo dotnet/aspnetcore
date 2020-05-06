@@ -23,33 +23,32 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _application = application;
         }
 
-        public override async Task ProcessRequestAsync()
+        public override async Task<bool> ProcessRequestAsync()
         {
+            InitializeContext();
+
             var context = default(TContext);
             var success = true;
 
             try
             {
-                InitializeContext();
+                context = _application.CreateContext(this);
 
-                try
-                {
-                    context = _application.CreateContext(this);
-
-                    await _application.ProcessRequestAsync(context);
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    SetBadRequestState(ex);
-                    ReportApplicationError(ex);
-                    success = false;
-                }
-                catch (Exception ex)
-                {
-                    ReportApplicationError(ex);
-                    success = false;
-                }
-
+                await _application.ProcessRequestAsync(context);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                SetBadRequestState(ex);
+                ReportApplicationError(ex);
+                success = false;
+            }
+            catch (Exception ex)
+            {
+                ReportApplicationError(ex);
+                success = false;
+            }
+            finally
+            {
                 await CompleteResponseBodyAsync();
                 _streams.Stop();
 
@@ -59,18 +58,36 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     // Dispose
                 }
 
-                if (!_requestAborted)
+                if (_onCompleted != null)
                 {
-                    await ProduceEnd();
+                    await FireOnCompleted();
                 }
-                else if (!HasResponseStarted && _requestRejectedException == null)
-                {
-                    // If the request was aborted and no response was sent, there's no
-                    // meaningful status code to log.
-                    StatusCode = 0;
-                    success = false;
-                }
+            }
 
+            if (!_requestAborted)
+            {
+                await ProduceEnd();
+            }
+            else if (!HasResponseStarted && _requestRejectedException == null)
+            {
+                // If the request was aborted and no response was sent, there's no
+                // meaningful status code to log.
+                StatusCode = 0;
+                success = false;
+            }
+
+            try
+            {
+                _application.DisposeContext(context, _applicationException);
+            }
+            catch (Exception ex)
+            {
+                // TODO Log this
+                _applicationException = _applicationException ?? ex;
+                success = false;
+            }
+            finally
+            {
                 // Complete response writer and request reader pipe sides
                 _bodyOutput.Dispose();
                 _bodyInputPipe?.Reader.Complete();
@@ -89,36 +106,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     await _readBodyTask;
                 }
             }
-            catch (Exception ex)
-            {
-                success = false;
-                ReportApplicationError(ex);
-            }
-            finally
-            {
-                // We're done with anything that touches the request or response, unblock the client.
-                PostCompletion(ConvertRequestCompletionResults(success));
-
-                if (_onCompleted != null)
-                {
-                    await FireOnCompleted();
-                }
-
-                try
-                {
-                    _application.DisposeContext(context, _applicationException);
-                }
-                catch (Exception ex)
-                {
-                    ReportApplicationError(ex);
-                }
-            }
-        }
-
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-        {
-            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            return success;
         }
     }
 }
