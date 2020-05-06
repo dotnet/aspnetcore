@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
@@ -33,6 +34,7 @@ namespace Templates.Test.Helpers
 
         private string _certificatePath;
         private string _certificatePassword = Guid.NewGuid().ToString();
+        private string _certificateThumbprint;
 
         internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
@@ -46,21 +48,20 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true,
             ILogger logger = null)
         {
+            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
+            EnsureDevelopmentCertificates();
+
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
             {
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _certificateThumbprint,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
             };
-
-            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
-
-            EnsureDevelopmentCertificates();
 
             output.WriteLine("Running ASP.NET application...");
 
@@ -70,8 +71,8 @@ namespace Templates.Test.Helpers
 
             var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
             {
-                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PATH"] = _certificatePath,
-                ["ASPNETCORE_KESTREL__CERTIFICATES__DEFAULT__PASSWORD"] = _certificatePassword
+                ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = _certificatePath,
+                ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _certificatePassword
             };
 
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
@@ -81,8 +82,8 @@ namespace Templates.Test.Helpers
             if (hasListeningUri)
             {
                 logger?.LogInformation("AspNetProcess - Getting listening uri");
-                ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
-                logger?.LogInformation($"AspNetProcess - Got {ListeningUri.ToString()}");
+                ListeningUri = ResolveListeningUrl(output);
+                logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
             }
         }
 
@@ -91,6 +92,7 @@ namespace Templates.Test.Helpers
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
             var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            _certificateThumbprint = certificate.Thumbprint;
             manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
 
@@ -134,13 +136,13 @@ namespace Templates.Test.Helpers
 
         public async Task ContainsLinks(Page page)
         {
-            var response = await RequestWithRetries(client =>
+            var response = await RetryHelper.RetryRequest(async () =>
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, page.Url));
-                return client.SendAsync(request);
-            }, _httpClient);
+                return await _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -173,7 +175,7 @@ namespace Templates.Test.Helpers
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
-                        return await RequestWithRetries(client => client.GetAsync(anchor.Href), _httpClient);
+                        return await _httpClient.GetAsync(anchor.Href);
                     }, logger: NullLogger.Instance);
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
@@ -203,7 +205,7 @@ namespace Templates.Test.Helpers
             throw new InvalidOperationException("Max retries reached.");
         }
 
-        private Uri GetListeningUri(ITestOutputHelper output)
+        private Uri ResolveListeningUrl(ITestOutputHelper output)
         {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
@@ -232,21 +234,27 @@ namespace Templates.Test.Helpers
 
         private string GetListeningMessage()
         {
+            var buffer = new List<string>();
             try
             {
-                return Process
-                    // This will timeout at most after 5 minutes.
-                    .OutputLinesAsEnumerable
-                    .Where(line => line != null)
-                    // This used to do StartsWith, but this is less strict and can prevent issues (very rare) where
-                    // console logging interleaves with other console output in a bad way. For example:
-                    // dbugNow listening on: http://127.0.0.1:12857
-                    .FirstOrDefault(line => line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal));
+                foreach (var line in Process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal))
+                        {
+                            return line;
+                        }
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
-                return null;
             }
+
+            throw new InvalidOperationException(@$"Couldn't find listening url:
+{string.Join(Environment.NewLine, buffer)}");
         }
 
         private bool IsSuccessStatusCode(HttpResponseMessage response)
@@ -260,14 +268,13 @@ namespace Templates.Test.Helpers
         public Task AssertNotFound(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.NotFound);
 
-        internal Task<HttpResponseMessage> SendRequest(string path)
-        {
-            return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
-        }
+        internal Task<HttpResponseMessage> SendRequest(string path) =>
+            RetryHelper.RetryRequest(() => _httpClient.GetAsync(new Uri(ListeningUri, path)), logger: NullLogger.Instance);
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client => {
+            var response = await RetryHelper.RetryRequest(() =>
+            {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, requestUrl));
@@ -277,8 +284,9 @@ namespace Templates.Test.Helpers
                     request.Headers.Add("Accept", acceptContentType);
                 }
 
-                return client.SendAsync(request);
-            }, _httpClient);
+                return _httpClient.SendAsync(request);
+            }, logger: NullLogger.Instance);
+
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
