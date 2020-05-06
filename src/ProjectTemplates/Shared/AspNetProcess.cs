@@ -183,28 +183,6 @@ namespace Templates.Test.Helpers
             }
         }
 
-        private async Task<T> RequestWithRetries<T>(Func<HttpClient, Task<T>> requester, HttpClient client, int retries = 3, TimeSpan initialDelay = default)
-        {
-            var currentDelay = initialDelay == default ? TimeSpan.FromSeconds(30) : initialDelay;
-            for (int i = 0; i <= retries; i++)
-            {
-                try
-                {
-                    return await requester(client);
-                }
-                catch (Exception)
-                {
-                    if (i == retries)
-                    {
-                        throw;
-                    }
-                    await Task.Delay(currentDelay);
-                    currentDelay *= 2;
-                }
-            }
-            throw new InvalidOperationException("Max retries reached.");
-        }
-
         private Uri ResolveListeningUrl(ITestOutputHelper output)
         {
             // Wait until the app is accepting HTTP requests

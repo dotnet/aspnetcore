@@ -5,10 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +17,7 @@ namespace Microsoft.AspNetCore.Internal
 {
     internal class ProcessEx : IDisposable
     {
+        private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
         private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
 
         private readonly ITestOutputHelper _output;
@@ -28,11 +27,12 @@ namespace Microsoft.AspNetCore.Internal
         private readonly object _pipeCaptureLock = new object();
         private readonly object _testOutputLock = new object();
         private BlockingCollection<string> _stdoutLines;
-        private TaskCompletionSource<int> _exited;
-        private CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        private readonly TaskCompletionSource<int> _exited;
+        private readonly CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        private readonly CancellationTokenSource _processTimeoutCts;
         private bool _disposed = false;
 
-        public ProcessEx(ITestOutputHelper output, Process proc)
+        private ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {
             _output = output;
             _stdoutCapture = new StringBuilder();
@@ -48,7 +48,15 @@ namespace Microsoft.AspNetCore.Internal
             proc.BeginErrorReadLine();
 
             _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            _processTimeoutCts = new CancellationTokenSource(timeout);
+            _processTimeoutCts.Token.Register(() =>
+            {
+                _exited.TrySetException(new TimeoutException($"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}."));
+            });
         }
+
+        public Process Process => _process;
 
         public Task Exited => _exited.Task;
 
@@ -82,7 +90,7 @@ namespace Microsoft.AspNetCore.Internal
 
         public object Id => _process.Id;
 
-        public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
+        public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null, TimeSpan? timeout = default)
         {
             var startInfo = new ProcessStartInfo(command, args)
             {
@@ -111,18 +119,7 @@ namespace Microsoft.AspNetCore.Internal
             output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
 
-            return new ProcessEx(output, proc);
-        }
-
-        public static ProcessEx RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
-        {
-            var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? ("cmd", "/c")
-                : ("bash", "-c");
-
-            var result = Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"");
-            result.WaitForExit(assertSuccess: false);
-            return result;
+            return new ProcessEx(output, proc, timeout ?? DefaultProcessTimeout);
         }
 
         private void OnErrorData(object sender, DataReceivedEventArgs e)
@@ -218,6 +215,8 @@ namespace Microsoft.AspNetCore.Internal
 
         public void Dispose()
         {
+            _processTimeoutCts.Dispose();
+
             lock (_testOutputLock)
             {
                 _disposed = true;

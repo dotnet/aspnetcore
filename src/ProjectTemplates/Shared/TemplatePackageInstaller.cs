@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,7 +18,7 @@ namespace Templates.Test.Helpers
 {
     internal static class TemplatePackageInstaller
     {
-        private static SemaphoreSlim InstallerLock = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim InstallerLock = new SemaphoreSlim(1);
         private static bool _haveReinstalledTemplatePackages;
 
         private static readonly string[] _templatePackages = new[]
@@ -43,15 +44,15 @@ namespace Templates.Test.Helpers
             "Microsoft.AspNetCore.Blazor.Templates",
         };
 
-        public static string CustomHivePath { get; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) 
-                    ? typeof(TemplatePackageInstaller)
-                        .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                        .Single(s => s.Key == "CustomTemplateHivePath").Value
-                    : Path.Combine("Hives", ".templateEngine");
-                                        
+        public static string CustomHivePath { get; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+                     ? typeof(TemplatePackageInstaller)
+                         .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                         .Single(s => s.Key == "CustomTemplateHivePath").Value
+                     : Path.Combine("Hives", ".templateEngine");
+
         public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
         {
-            await InstallerLock.WaitAsync();
+            Assert.True(await InstallerLock.WaitAsync(TimeSpan.FromMinutes(1)), "Unable to grab installer lock");
             try
             {
                 if (!_haveReinstalledTemplatePackages)
@@ -73,10 +74,11 @@ namespace Templates.Test.Helpers
         public static async Task<ProcessEx> RunDotNetNew(ITestOutputHelper output, string arguments)
         {
             var proc = ProcessEx.Run(
-            output,
-            AppContext.BaseDirectory,
-            DotNetMuxer.MuxerPathOrDefault(),
-            $"new {arguments} --debug:custom-hive \"{CustomHivePath}\"");
+                output,
+                AppContext.BaseDirectory,
+                DotNetMuxer.MuxerPathOrDefault(),
+                $"new {arguments} --debug:custom-hive \"{CustomHivePath}\"");
+
             await proc.Exited;
 
             return proc;
