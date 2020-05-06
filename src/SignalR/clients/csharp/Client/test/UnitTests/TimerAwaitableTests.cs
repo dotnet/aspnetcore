@@ -14,22 +14,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         [Fact]
         [QuarantinedTest]
-        public void FinalizerRunsIfTimerAwaitableReferencesObject()
+        public async Task FinalizerRunsIfTimerAwaitableReferencesObject()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             UseTimerAwaitableAndUnref(tcs);
 
-            var timeout = tcs.Task.OrTimeout();
-
-            // Make sure it *really* cleans up
-            while (!timeout.IsCompleted)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
             // Make sure the finalizer runs
-            Assert.True(timeout.IsCompletedSuccessfully);
+            await tcs.Task.OrTimeout();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -49,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public ObjectWithTimerAwaitable(TaskCompletionSource<object> tcs)
         {
             _tcs = tcs;
-            _timer = new TimerAwaitable(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(1));
+            _timer = new TimerAwaitable(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(1));
             _timer.Start();
         }
 
