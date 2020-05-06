@@ -48,8 +48,8 @@
     <HelixContent Include="package.json" />
     <HelixContent Include="yarn.lock" />
     <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
-    <HelixContent Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\**\AzureAD.WebSite.deps.json" />
     <HelixContent Include="..\testassets\**\*" />
+    <HelixContent Include="..\..\Blazor\testassets\**\*" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
   </ItemGroup>
