@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             // Make sure the finalizer runs
-            Assert.True(tcs.Task.IsCompleted);
+            Assert.True(timeout.IsCompletedSuccessfully);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -45,12 +45,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         private readonly TimerAwaitable _timer;
         private readonly TaskCompletionSource<object> _tcs;
-        private int _count;
 
         public ObjectWithTimerAwaitable(TaskCompletionSource<object> tcs)
         {
             _tcs = tcs;
-            _timer = new TimerAwaitable(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            _timer = new TimerAwaitable(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(1));
             _timer.Start();
         }
 
@@ -60,7 +59,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 while (await _timer)
                 {
-                    _count++;
                 }
             }
         }
