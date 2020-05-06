@@ -49,7 +49,7 @@
     <HelixContent Include="yarn.lock" />
     <HelixContent Include="..\..\..\Shared\E2ETesting\selenium-config.json" />
     <HelixContent Include="..\testassets\**\*" />
-    <HelixContent Include="..\..\Blazor\testassets\**\*" />
+    <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
   </ItemGroup>
