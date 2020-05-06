@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
@@ -69,41 +67,54 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             Log.JsonResultExecuting(_logger, result.Value);
 
+            var value = result.Value;
+            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+            {
+                Log.BufferingAsyncEnumerable(_logger, value);
+                value = await reader(value);
+            }
+
+            var objectType = value?.GetType() ?? typeof(object);
+
             // Keep this code in sync with SystemTextJsonOutputFormatter
-            var (writeStream, usesTranscodingStream) = GetWriteStream(context.HttpContext, resolvedContentTypeEncoding);
-            try
+            var responseStream = response.Body;
+            if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
             {
-                var value = result.Value;
-                if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions);
+                await responseStream.FlushAsync();
+            }
+            else
+            {
+                // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by
+                // selectedEncoding
+                var transcodingStream = Encoding.CreateTranscodingStream(response.Body, resolvedContentTypeEncoding, Encoding.UTF8, leaveOpen: true);
+
+                ExceptionDispatchInfo exceptionDispatchInfo = null;
+                try
                 {
-                    Log.BufferingAsyncEnumerable(_logger, value);
-                    value = await reader(value);
+                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
+                    await transcodingStream.FlushAsync();
                 }
-
-                var type = value?.GetType() ?? typeof(object);
-                await JsonSerializer.SerializeAsync(writeStream, value, type, jsonSerializerOptions);
-                await writeStream.FlushAsync();
-            }
-            finally
-            {
-                if (usesTranscodingStream)
+                catch (Exception ex)
                 {
-                    await writeStream.DisposeAsync();
+                    // TranscodingStream may write to the inner stream as part of it's disposal.
+                    // We do not want this exception "ex" to be eclipsed by any exception encountered during the write. We will stash it and
+                    // explicitly rethrow it during the finally block.
+                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
+                }
+                finally
+                {
+                    try
+                    {
+                        await transcodingStream.DisposeAsync();
+                    }
+                    catch when (exceptionDispatchInfo != null)
+                    {
+                    }
+
+                    exceptionDispatchInfo?.Throw();
                 }
             }
-        }
-
-        private (Stream writeStream, bool usesTranscodingStream) GetWriteStream(HttpContext httpContext, Encoding selectedEncoding)
-        {
-            if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
-            {
-                // JsonSerializer does not write a BOM. Therefore we do not have to handle it
-                // in any special way.
-                return (httpContext.Response.Body, false);
-            }
-
-            var writeStream = Encoding.CreateTranscodingStream(httpContext.Response.Body, selectedEncoding, Encoding.UTF8, leaveOpen: true);
-            return (writeStream, true);
         }
 
         private JsonSerializerOptions GetSerializerOptions(JsonResult result)
