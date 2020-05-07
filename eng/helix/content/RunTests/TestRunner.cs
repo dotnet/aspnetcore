@@ -24,7 +24,7 @@ namespace RunTests
 
         public bool SetupEnvironment()
         {
-            try 
+            try
             {
                 // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
                 // We use a local NuGet.config file to avoid polluting global machine state and avoid relying on global machine state
@@ -32,7 +32,7 @@ namespace RunTests
                 {
                     File.Copy("default.NuGet.config", "NuGet.config");
                 }
-                
+
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("DOTNET_ROOT", Options.DotnetRoot);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
@@ -68,7 +68,7 @@ namespace RunTests
 
         public void DisplayContents(string path = "./")
         {
-            try 
+            try
             {
                 Console.WriteLine();
                 Console.WriteLine($"Displaying directory contents for {path}:");
@@ -88,10 +88,16 @@ namespace RunTests
             }
         }
 
-        public async Task<bool> InstallAspNetAppIfNeededAsync() 
+        public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
-            try 
+            try
             {
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                        $"tool install dotnet-dump --tool-path {Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools",
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine);
+
                 if (File.Exists(Options.AspNetRuntime))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
@@ -113,7 +119,7 @@ namespace RunTests
                             }
                         }
                     }
-                    
+
                     DisplayContents(appRuntimePath);
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
@@ -148,7 +154,7 @@ namespace RunTests
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                     EnvironmentVariables["PATH"] = Options.Path;
                 }
-                else 
+                else
                 {
                     Console.WriteLine($"No AspNetRuntime found: {Options.AspNetRuntime}, skipping...");
                 }
@@ -161,19 +167,19 @@ namespace RunTests
             }
         }
 
-        public bool InstallAspNetRefIfNeeded() 
+        public bool InstallAspNetRefIfNeeded()
         {
-            try 
+            try
             {
                 if (File.Exists(Options.AspNetRef))
                 {
                     var refPath = $"Microsoft.AspNetCore.App.Ref";
                     Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
                     ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
-                    
+
                     DisplayContents(refPath);
                 }
-                else 
+                else
                 {
                     Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
                 }
@@ -185,7 +191,7 @@ namespace RunTests
                 return false;
             }
         }
-        
+
         public async Task<bool> CheckTestDiscoveryAsync()
         {
             try
@@ -213,7 +219,7 @@ namespace RunTests
         public async Task<int> RunTestsAsync()
         {
             var exitCode = 0;
-            try 
+            try
             {
                 var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
                 if (Options.Quarantined)

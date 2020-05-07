@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace RunTests
     {
         static async Task Main(string[] args)
         {
-            try 
+            try
             {
                 var runner = new TestRunner(RunTestsOptions.Parse(args));
 
@@ -32,6 +33,37 @@ namespace RunTests
 
                 if (keepGoing)
                 {
+
+                    _ = Task.Run(async () =>
+                    {
+                        Console.WriteLine("Waiting 22 minutes");
+                        await Task.Delay(1320000);
+                        Console.WriteLine("Done waiting");
+                        try
+                        {
+                            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+                            Console.WriteLine($"Dump directory is {dumpDirectoryPath}");
+                            var process = Process.GetCurrentProcess();
+                            foreach (var dotnetProc in Process.GetProcessesByName("dotnet"))
+                            {
+                                Console.WriteLine($"Capturing dump of {dotnetProc.Id}");
+                                if (dotnetProc.Id == process.Id)
+                                    continue;
+
+                                var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{dotnetProc.ProcessName}-{dotnetProc.Id}.dmp");
+                                await ProcessUtil.RunAsync($"{Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools/dotnet-dump",
+                                    $"collect -p {dotnetProc.Id} -o \"{dumpFilePath}\"",
+                                    environmentVariables: runner.EnvironmentVariables,
+                                    outputDataReceived: Console.WriteLine,
+                                    errorDataReceived: Console.Error.WriteLine);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Exception getting dump(s) {ex}");
+                        }
+                    });
+
                     if (!await runner.CheckTestDiscoveryAsync())
                     {
                         Console.WriteLine("RunTest stopping due to test discovery failure.");

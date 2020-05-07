@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -49,6 +50,14 @@ namespace RunTests
             if (workingDirectory != null)
             {
                 process.StartInfo.WorkingDirectory = workingDirectory;
+            }
+
+            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+            if (dumpDirectoryPath != null)
+            {
+                process.StartInfo.EnvironmentVariables["COMPlus_DbgEnableMiniDump"] = "1";
+                process.StartInfo.EnvironmentVariables["COMPlus_DbgMiniDumpName"] = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.%d.dmp");
             }
 
             if (environmentVariables != null)
