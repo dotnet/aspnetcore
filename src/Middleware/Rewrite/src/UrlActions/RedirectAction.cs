@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
                 statusCode,
                 pattern,
                 queryStringAppend,
-                queryStringDelete: true,
+                queryStringDelete: !queryStringAppend,
                 escapeBackReferences: false)
         {
         }
