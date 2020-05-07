@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Internal
         private readonly CancellationTokenSource _processTimeoutCts;
         private bool _disposed = false;
 
-        private ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
+        public ProcessEx(ITestOutputHelper output, Process proc, TimeSpan timeout)
         {
             _output = output;
             _stdoutCapture = new StringBuilder();
