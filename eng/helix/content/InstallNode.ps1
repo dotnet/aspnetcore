@@ -72,6 +72,7 @@ else
 }
 if (Test-Path "package-lock.json")
 {
-    Write-Host "Found package-lock.json, running npm install"
-    Invoke-Expression "npm install"
+    Get-ChildItem -Path $InstallDir
+    Write-Host "Found package-lock.json, running $InstallDir\npm install"
+    Invoke-Expression "$InstallDir\npm.cmd install"
 }
