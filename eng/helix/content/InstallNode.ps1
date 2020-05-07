@@ -70,3 +70,8 @@ else
 {
     Write-Host "Node.exe not copied to $InstallDir"
 }
+if (Test-Path "package-lock.json")
+{
+    Write-Host "Found package-lock.json, running npm install"
+    Invoke-Expression "npm install"
+}
