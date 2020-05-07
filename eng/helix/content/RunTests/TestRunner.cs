@@ -96,7 +96,8 @@ namespace RunTests
                         $"tool install dotnet-dump --tool-path {Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false);
 
                 if (File.Exists(Options.AspNetRuntime))
                 {
