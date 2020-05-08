@@ -82,25 +82,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TextLine selected = null;
 
-            if (_currentLine != null)
-            {
-                if (_currentLine.Contains(absoluteIndex))
-                {
-                    // This index is on the last read line
-                    selected = _currentLine;
-                }
-                else if (absoluteIndex > _currentLine.Index && _currentLine.Index + 1 < _lines.Count)
-                {
-                    // This index is ahead of the last read line
-                    selected = ScanLines(absoluteIndex, _currentLine.Index);
-                }
-            }
-
-            // Have we found a line yet?
-            if (selected == null)
+            if (_currentLine == null)
             {
                 // Scan from line 0
-                selected = ScanLines(absoluteIndex, 0);
+                selected = ScanLines(absoluteIndex, 0, _lines.Count);
+            }
+            else if (absoluteIndex >= _currentLine.End)
+            {
+                if (_currentLine.Index + 1 < _lines.Count)
+                {
+                    // This index is after the last read line
+                    var nextLine = _lines[_currentLine.Index + 1];
+
+                    // Optimization to not search if it's the common case where the line after _currentLine is being requested.
+                    if (nextLine.Contains(absoluteIndex))
+                    {
+                        selected = nextLine;
+                    }
+                    else
+                    {
+                        selected = ScanLines(absoluteIndex, _currentLine.Index, _lines.Count);
+                    }
+                }
+            }
+            else if (absoluteIndex < _currentLine.Start)
+            {
+                if (_currentLine.Index > 0)
+                {
+                    // This index is before the last read line
+                    var prevLine = _lines[_currentLine.Index - 1];
+
+                    // Optimization to not search if it's the common case where the line before _currentLine is being requested.
+                    if (prevLine.Contains(absoluteIndex))
+                    {
+                        selected = prevLine;
+                    }
+                    else
+                    {
+                        selected = ScanLines(absoluteIndex, 0, _currentLine.Index);
+                    }
+                }
+            }
+            else
+            {
+                // This index is on the last read line
+                selected = _currentLine;
             }
 
             Debug.Assert(selected == null || selected.Contains(absoluteIndex));
@@ -108,18 +134,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return selected;
         }
 
-        private TextLine ScanLines(int absoluteIndex, int startPos)
+        private TextLine ScanLines(int absoluteIndex, int startLineIndex, int endLineIndex)
         {
-            for (int i = 0; i < _lines.Count; i++)
-            {
-                var idx = (i + startPos) % _lines.Count;
-                Debug.Assert(idx >= 0 && idx < _lines.Count);
+            // binary search for the line containing absoluteIndex
+            var lowIndex = startLineIndex;
+            var highIndex = _lines.Count;
 
-                if (_lines[idx].Contains(absoluteIndex))
+            while (lowIndex != highIndex)
+            {
+                var midIndex = (lowIndex + highIndex) / 2;
+                var midLine = _lines[midIndex];
+
+                if (absoluteIndex >= midLine.End)
                 {
-                    return _lines[idx];
+                    lowIndex = midIndex + 1;
+                }
+                else if (absoluteIndex < midLine.Start)
+                {
+                    highIndex = midIndex;
+                }
+                else
+                {
+                    return midLine;
                 }
             }
+
             return null;
         }
 
