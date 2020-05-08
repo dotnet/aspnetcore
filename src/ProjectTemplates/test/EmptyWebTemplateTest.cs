@@ -23,7 +23,7 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact(Skip = "This test ran for over an hour")]
+        [ConditionalFact]
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task EmptyWebTemplateCSharp()
         {
