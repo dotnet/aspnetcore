@@ -60,6 +60,15 @@ This can be accomplished by using the `HelixContent` property like so.
 </ItemGroup>
 ```
 
+By default, these files will be included in the root directory. To include these files in a different directory, you can use either the `Link` or `LinkBase` attributes to set the included path.
+
+```
+<ItemGroup>
+  <HelixContent Include="$(RepoRoot)src\KeepMe.js" Link="$(MSBuildThisFileDirectory)\myassets\KeepMe.js"/>
+  <HelixContent Include="$(RepoRoot)src\Project\**" LinkBase="$(MSBuildThisFileDirectory)\myassets"/>
+</ItemGroup>
+```
+
 ## How to skip tests on helix
 There are two main ways to opt out of helix
 - Skipping the entire test project via `<BuildHelixPayload>false</BuildHelixPayload>` in csproj (the default value for this is IsTestProject).
