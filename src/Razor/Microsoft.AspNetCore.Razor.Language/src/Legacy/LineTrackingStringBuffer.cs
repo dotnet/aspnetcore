@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // binary search for the line containing absoluteIndex
             var lowIndex = startLineIndex;
-            var highIndex = _lines.Count;
+            var highIndex = endLineIndex;
 
             while (lowIndex != highIndex)
             {
