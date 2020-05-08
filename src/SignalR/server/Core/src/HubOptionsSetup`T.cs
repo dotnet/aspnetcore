@@ -30,6 +30,15 @@ namespace Microsoft.AspNetCore.SignalR
             options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
 
             options.UserHasSetValues = true;
+
+            if (_hubOptions.HubFilters != null)
+            {
+                options.HubFilters = new List<IHubFilter>(_hubOptions.HubFilters.Count);
+                foreach (var filter in _hubOptions.HubFilters)
+                {
+                    options.HubFilters.Add(filter);
+                }
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     // Tests:
     // Not running OnConnected, Invoke, and OnDisconnected
+    // Global filters added to local filters, so you can remove global filters per hub if wanted
     //
 
     public class HubFilterTests : VerifiableLoggedTest
