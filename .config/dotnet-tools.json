@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-serve"
       ]
+    },
+    "dotnet-dump": {
+      "version": "3.1.122203",
+      "commands": [
+        "dotnet-dump"
+      ]
     }
   }
 }

@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RunTests
@@ -227,13 +228,16 @@ namespace RunTests
                 {
                     Console.WriteLine("Running quarantined tests.");
 
+                    var cts = new CancellationTokenSource(10000);
+
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {
@@ -244,13 +248,16 @@ namespace RunTests
                 {
                     Console.WriteLine("Running non-quarantined tests.");
 
+                    var cts = new CancellationTokenSource(20000);
+
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {

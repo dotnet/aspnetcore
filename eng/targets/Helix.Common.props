@@ -20,6 +20,7 @@
 
   <!-- ubuntu and win10 required for green PR queues  -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64'">
+  <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
   </ItemGroup>
 
   <!-- daily scheduled only queues -->

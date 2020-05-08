@@ -39,4 +39,4 @@ $env:BUILD_REPOSITORY_NAME="aspnetcore"
 $env:SYSTEM_TEAMPROJECT="aspnetcore"
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
-dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests /p:_UseHelixOpenQueues=true /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log
+dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true /p:IsHelixDaily=true /p:HelixTargetQueue=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests /p:_UseHelixOpenQueues=true /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log
