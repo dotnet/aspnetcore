@@ -1016,12 +1016,5 @@ namespace TestSite
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
-
-        public async Task SlowOnCompleted(HttpContext context)
-        {
-            // This shouldn't block the response or the server from shutting down.
-            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
-            await context.Response.WriteAsync("SlowOnCompleted");
-        }
     }
 }

@@ -264,8 +264,14 @@ namespace Ignitor
 
                 case RenderTreeFrameType.ElementReferenceCapture:
                     {
-                        // No action for reference captures.
-                        break;
+                        if (parent is ElementNode)
+                        {
+                            return 0; // A "capture" is a child in the diff, but has no node in the DOM
+                        }
+                        else
+                        {
+                            throw new Exception("Reference capture frames can only be children of element frames.");
+                        }
                     }
 
                 case RenderTreeFrameType.Markup:

@@ -24,6 +24,7 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  useBuildManifest: false
   mergeTestResults: false
   testRunTitle: $(AgentOsName)-$(BuildConfiguration)-xunit
   name: ''
@@ -218,3 +219,12 @@ jobs:
         ArtifactName: AssetManifests
       continueOnError: ${{ parameters.continueOnError }}
       condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+
+  - ${{ if eq(parameters.useBuildManifest, true) }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Build Manifest
+      inputs:
+        PathToPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/manifest.props'
+        PublishLocation: Container
+        ArtifactName: BuildManifests
+      continueOnError: ${{ parameters.continueOnError }}

@@ -36,7 +36,7 @@
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
 
-    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with /p:BuildNodeJs=false. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
+    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with -noBuildNodeJS or --no-build-nodejs. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
   </Target>
 
   <Target Name="Restore">

@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
+        internal static readonly HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
+
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
         internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
 
@@ -41,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         public EndPoint EndPoint { get; internal set; }
+
+        // For comparing bound endpoints to changed config during endpoint config reload.
+        internal EndpointConfig EndpointConfig { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
@@ -71,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The protocols enabled on this endpoint.
         /// </summary>
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
-        public HttpProtocols Protocols { get; set; } = HttpProtocols.Http1AndHttp2;
+        public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
 
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 
@@ -79,15 +84,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get
             {
-                if (IsHttp)
-                {
-                    return IsTls ? "https" : "http";
-                }
-                return "tcp";
+                return IsTls ? "https" : "http";
             }
         }
-
-        internal bool IsHttp { get; set; } = true;
 
         internal bool IsTls { get; set; }
 

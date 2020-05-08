@@ -19,6 +19,11 @@ export class Arg {
             throw new Error(`The '${name}' argument is required.`);
         }
     }
+    public static isNotEmpty(val: string, name: string): void {
+        if (!val || val.match(/^\s*$/)) {
+            throw new Error(`The '${name}' argument should not be empty.`);
+        }
+    }
 
     public static isIn(val: any, values: any, name: string): void {
         // TypeScript enums have keys for **both** the name and the value of each enum member on the type itself.

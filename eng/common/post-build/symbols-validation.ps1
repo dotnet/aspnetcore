@@ -1,7 +1,8 @@
 param(
   [Parameter(Mandatory=$true)][string] $InputPath,              # Full path to directory where NuGet packages to be checked are stored
   [Parameter(Mandatory=$true)][string] $ExtractPath,            # Full path to directory where the packages will be extracted during validation
-  [Parameter(Mandatory=$true)][string] $DotnetSymbolVersion     # Version of dotnet symbol to use
+  [Parameter(Mandatory=$true)][string] $DotnetSymbolVersion,    # Version of dotnet symbol to use
+  [Parameter(Mandatory=$false)][switch] $ContinueOnError        # If we should keep checking symbols after an error
 )
 
 function FirstMatchingSymbolDescriptionOrDefault {
@@ -125,6 +126,8 @@ function CheckSymbolsAvailable {
     Remove-Item $ExtractPath -Force  -Recurse -ErrorAction SilentlyContinue
   }
 
+  $TotalFailures = 0
+
   Get-ChildItem "$InputPath\*.nupkg" |
     ForEach-Object {
       $FileName = $_.Name
@@ -148,11 +151,22 @@ function CheckSymbolsAvailable {
 
       if ($Status -ne 0) {
         Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Missing symbols for $Status modules in the package $FileName"
-        ExitWithExitCode $exitCode
+
+        if ($ContinueOnError) {
+          $TotalFailures++
+        }
+        else {
+          ExitWithExitCode 1
+        }
       }
 
       Write-Host
     }
+
+  if ($TotalFailures -ne 0) {
+    Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Symbols missing for $TotalFailures packages"
+    ExitWithExitCode 1
+  }
 }
 
 function InstallDotnetSymbol {

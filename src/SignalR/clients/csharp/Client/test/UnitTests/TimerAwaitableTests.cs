@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -12,20 +13,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class TimerAwaitableTests
     {
         [Fact]
-        public void FinalizerRunsIfTimerAwaitableReferencesObject()
+        [QuarantinedTest]
+        public async Task FinalizerRunsIfTimerAwaitableReferencesObject()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             UseTimerAwaitableAndUnref(tcs);
 
-            // Make sure it *really* cleans up
-            for (int i = 0; i < 5 && !tcs.Task.IsCompleted; i++)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
             // Make sure the finalizer runs
-            Assert.True(tcs.Task.IsCompleted);
+            await tcs.Task.OrTimeout();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -41,12 +39,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         private readonly TimerAwaitable _timer;
         private readonly TaskCompletionSource<object> _tcs;
-        private int _count;
 
         public ObjectWithTimerAwaitable(TaskCompletionSource<object> tcs)
         {
             _tcs = tcs;
-            _timer = new TimerAwaitable(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            _timer = new TimerAwaitable(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(1));
             _timer.Start();
         }
 
@@ -56,7 +53,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 while (await _timer)
                 {
-                    _count++;
                 }
             }
         }

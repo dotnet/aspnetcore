@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         private CommandContext MakeCommandContext() => new CommandContext(null, new TestReporter(_output), _console);
 
         [Fact]
+        [QuarantinedTest]
         public void AddsSecretIdToProject()
         {
             var projectDir = _fixture.CreateProject(null);
@@ -44,6 +45,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void AddsSpecificSecretIdToProject()
         {
             const string SecretId = "TestSecretId";
@@ -116,6 +118,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void OverridesIdForProjectWithSecretId()
         {
             const string SecretId = "AlreadyExists";

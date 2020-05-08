@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public abstract Task ProcessRequestAsync();
+        public abstract Task<bool> ProcessRequestAsync();
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
@@ -601,9 +601,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private async Task HandleRequest()
         {
+            bool successfulRequest = false;
             try
             {
-                await ProcessRequestAsync();
+                successfulRequest = await ProcessRequestAsync();
             }
             catch (Exception ex)
             {
@@ -611,9 +612,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
+                // Post completion after completing the request to resume the state machine
+                PostCompletion(ConvertRequestCompletionResults(successfulRequest));
+
+
                 // Dispose the context
                 Dispose();
             }
+        }
+
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
+        {
+            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
     }
 }

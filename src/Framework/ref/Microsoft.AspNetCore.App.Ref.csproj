@@ -50,10 +50,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
-    <!-- Platform manifest and package override metatdata -->
-    <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
-    <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
-
     <!-- Runtime extensions transport paths -->
     <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
 
@@ -120,12 +116,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Output TaskParameter="JoinResult" ItemName="_ReferencedExtensionsRefAssemblies" />
     </JoinItems>
 
-    <!-- _DuplicatedExtensionsRefAssemblies represents ref assemblies that are present in Microsoft.Extensions.Internal.Transport package and also are built in this repo. -->
-    <!-- This should be temporary while we migrate sources since there should be no duplication when sources are deleted from extensions. -->
-    <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(_ResolvedProjectReferencePaths)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
-      <Output TaskParameter="JoinResult" ItemName="_DuplicatedExtensionsRefAssemblies" />
-    </JoinItems>
-
     <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(ExternalAspNetCoreAppReference)" LeftKey="Filename" RightKey="Identity" ItemSpecToUse="Left">
       <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefs" />
     </JoinItems>
@@ -135,15 +125,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </JoinItems>
 
     <ItemGroup>
-      <!-- Do not exclude the ref assemblies that we built in this repo if it's also included in Microsoft.Extensions.Internal.Transport -->
-      <_ReferencedExtensionsRefAssembliesToExclude Include="@(_ReferencedExtensionsRefAssemblies)" Exclude="@(_DuplicatedExtensionsRefAssemblies)" />
-
       <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
           Condition="'%(ReferencePathWithRefAssemblies.IsReferenceAssembly)' != 'false'"
           Exclude="
-            @(_ReferencedExtensionsRefAssembliesToExclude);
+            @(_ReferencedExtensionsRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Security.Cryptography.Pkcs'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Drawing.Common'));
@@ -172,7 +159,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
 
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(AspNetCoreReferenceAssemblyPath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>

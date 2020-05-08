@@ -44,7 +44,7 @@ namespace RunTests
                 EnvironmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
                 var nugetRestore = Path.Combine(helixDir, "nugetRestore");
                 EnvironmentVariables.Add("NUGET_RESTORE", nugetRestore);
-                var dotnetEFFullPath = Path.Combine(nugetRestore, $"dotnet-ef/{Options.EfVersion}/tools/netcoreapp3.1/any/dotnet-ef.exe");
+                var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
@@ -138,11 +138,10 @@ namespace RunTests
                         errorDataReceived: Console.Error.WriteLine);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        $"tool install dotnet-ef --global --version {Options.EfVersion}",
+                        $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false); // EF tool is sometimes already installed so we can ignore this failure
+                        errorDataReceived: Console.Error.WriteLine);
 
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";

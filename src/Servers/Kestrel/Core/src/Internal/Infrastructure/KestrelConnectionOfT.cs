@@ -14,10 +14,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
+                                 TransportConnectionManager transportConnectionManager,
                                  Func<T, Task> connectionDelegate,
                                  T connectionContext,
                                  IKestrelTrace logger)
-            : base(id, serviceContext, logger)
+            : base(id, serviceContext, transportConnectionManager, logger)
         {
             _connectionDelegate = connectionDelegate;
             _transportConnection = connectionContext;
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // is properly torn down.
                 await connectionContext.DisposeAsync();
 
-                _serviceContext.ConnectionManager.RemoveConnection(_id);
+                _transportConnectionManager.RemoveConnection(_id);
             }
         }
     }

@@ -4063,7 +4063,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 });
 
             await using (var server = new TestServer(handler, new TestServiceContext(loggerFactory),
-                options => options.ListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))),
+                options => options.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))),
                 services => services.AddSingleton(mockHttpContextFactory.Object)))
             {
                 using (var connection = server.CreateConnection())

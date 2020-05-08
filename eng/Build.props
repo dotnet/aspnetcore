@@ -1,14 +1,5 @@
 <Project>
-  <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
-    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
-    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
-    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
-  </PropertyGroup>
+  <Import Project="Common.props" />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
@@ -102,8 +93,8 @@
           <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
         </NativeProjects>
 
-        <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
-        <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
+        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;

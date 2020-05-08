@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -34,84 +35,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte BytePercentage = (byte)'%';
         private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
 
-        public unsafe bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
         {
-            consumed = buffer.Start;
-            examined = buffer.End;
-
-            // Prepare the first span
-            var span = buffer.FirstSpan;
-            var lineIndex = span.IndexOf(ByteLF);
-            if (lineIndex >= 0)
+            if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
             {
-                consumed = buffer.GetPosition(lineIndex + 1, consumed);
-                span = span.Slice(0, lineIndex + 1);
-            }
-            else if (buffer.IsSingleSegment)
-            {
-                // No request line end
-                return false;
-            }
-            else if (TryGetNewLine(buffer, out var found))
-            {
-                span = buffer.Slice(consumed, found).ToSpan();
-                consumed = found;
-            }
-            else
-            {
-                // No request line end
-                return false;
+                ParseRequestLine(handler, requestLine);
+                return true;
             }
 
-            // Fix and parse the span
-            fixed (byte* data = span)
-            {
-                ParseRequestLine(handler, data, span.Length);
-            }
-
-            examined = consumed;
-            return true;
+            return false;
         }
 
-        private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
+        private void ParseRequestLine(TRequestHandler handler, ReadOnlySpan<byte> requestLine)
         {
             // Get Method and set the offset
-            var method = HttpUtilities.GetKnownMethod(data, length, out var pathStartOffset);
-
-            Span<byte> customMethod = default;
+            var method = requestLine.GetKnownMethod(out var methodEnd);
             if (method == HttpMethod.Custom)
             {
-                customMethod = GetUnknownMethod(data, length, out pathStartOffset);
+                methodEnd = GetUnknownMethodLength(requestLine);
             }
 
-            // Use a new offset var as pathStartOffset needs to be on stack
+            var versionAndMethod = new HttpVersionAndMethod(method, methodEnd);
+
+            // Use a new offset var as methodEnd needs to be on stack
             // as its passed by reference above so can't be in register.
             // Skip space
-            var offset = pathStartOffset + 1;
-            if (offset >= length)
+            var offset = methodEnd + 1;
+            if ((uint)offset >= (uint)requestLine.Length)
             {
                 // Start of path not found
-                RejectRequestLine(data, length);
+                RejectRequestLine(requestLine);
             }
 
-            byte ch = data[offset];
+            var ch = requestLine[offset];
             if (ch == ByteSpace || ch == ByteQuestionMark || ch == BytePercentage)
             {
                 // Empty path is illegal, or path starting with percentage
-                RejectRequestLine(data, length);
+                RejectRequestLine(requestLine);
             }
 
             // Target = Path and Query
+            var targetStart = offset;
             var pathEncoded = false;
-            var pathStart = offset;
-
             // Skip first char (just checked)
             offset++;
 
             // Find end of path and if path is encoded
-            for (; offset < length; offset++)
+            for (; (uint)offset < (uint)requestLine.Length; offset++)
             {
-                ch = data[offset];
+                ch = requestLine[offset];
                 if (ch == ByteSpace || ch == ByteQuestionMark)
                 {
                     // End of path
@@ -123,16 +95,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
+            var path = new TargetOffsetPathLength(targetStart, length: offset - targetStart, pathEncoded);
 
             // Query string
-            var queryStart = offset;
             if (ch == ByteQuestionMark)
             {
                 // We have a query string
-                for (; offset < length; offset++)
+                for (; (uint)offset < (uint)requestLine.Length; offset++)
                 {
-                    ch = data[offset];
+                    ch = requestLine[offset];
                     if (ch == ByteSpace)
                     {
                         break;
@@ -140,41 +111,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // End of query string not found
-            if (offset == length)
-            {
-                RejectRequestLine(data, length);
-            }
-
-            var targetBuffer = new Span<byte>(data + pathStart, offset - pathStart);
-            var query = new Span<byte>(data + queryStart, offset - queryStart);
-
+            var queryEnd = offset;
             // Consume space
             offset++;
 
+            // If offset has overshot length, end of query string wasn't not found
+            if ((uint)offset > (uint)requestLine.Length)
+            {
+                RejectRequestLine(requestLine);
+            }
+
             // Version
-            var httpVersion = HttpUtilities.GetKnownVersion(data + offset, length - offset);
+            var remaining = requestLine.Slice(offset);
+            var httpVersion = remaining.GetKnownVersionAndConfirmCR();
+            versionAndMethod.Version = httpVersion;
             if (httpVersion == HttpVersion.Unknown)
             {
-                if (data[offset] == ByteCR || data[length - 2] != ByteCR)
-                {
-                    // If missing delimiter or CR before LF, reject and log entire line
-                    RejectRequestLine(data, length);
-                }
-                else
-                {
-                    // else inform HTTP version is unsupported.
-                    RejectUnknownVersion(data + offset, length - offset - 2);
-                }
+                // HTTP version is unsupported or incorrectly terminated.
+                RejectUnknownVersion(offset, requestLine);
             }
 
-            // After version's 8 bytes and CR, expect LF
-            if (data[offset + 8 + 1] != ByteLF)
+            // Version + CR is 8 bytes; adding 9 should take us to .Length
+            offset += 9;
+            // LF should have been dropped prior to method call, so offset should now be length
+            if ((uint)offset != (uint)requestLine.Length)
             {
-                RejectRequestLine(data, length);
+                RejectRequestLine(requestLine);
             }
 
-            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
+            // We need to reinterpret from ReadOnlySpan into Span to allow path mutation for
+            // in-place normalization and decoding to transform into a canonical path
+            var startLine = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(requestLine), queryEnd);
+            handler.OnStartLine(versionAndMethod, path, startLine);
         }
 
         public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
@@ -460,56 +428,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool TryGetNewLine(in ReadOnlySequence<byte> buffer, out SequencePosition found)
+        private int GetUnknownMethodLength(ReadOnlySpan<byte> span)
         {
-            var byteLfPosition = buffer.PositionOf(ByteLF);
-            if (byteLfPosition != null)
+            var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(span);
+
+            if (invalidIndex <= 0 || span[invalidIndex] != ByteSpace)
             {
-                // Move 1 byte past the \n
-                found = buffer.GetPosition(1, byteLfPosition.Value);
-                return true;
+                RejectRequestLine(span);
             }
 
-            found = default;
-            return false;
+            return invalidIndex;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe Span<byte> GetUnknownMethod(byte* data, int length, out int methodLength)
-        {
-            var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(data, length);
-
-            if (invalidIndex <= 0 || data[invalidIndex] != ByteSpace)
-            {
-                RejectRequestLine(data, length);
-            }
-
-            methodLength = invalidIndex;
-            return new Span<byte>(data, methodLength);
-        }
-
-        private unsafe bool IsTlsHandshake(byte* data, int length)
+        private bool IsTlsHandshake(ReadOnlySpan<byte> requestLine)
         {
             const byte SslRecordTypeHandshake = (byte)0x16;
 
             // Make sure we can check at least for the existence of a TLS handshake - we check the first byte
             // See https://serializethoughts.com/2014/07/27/dissecting-tls-client-hello-message/
 
-            return (length >= MinTlsRequestSize && data[0] == SslRecordTypeHandshake);
+            return (requestLine.Length >= MinTlsRequestSize && requestLine[0] == SslRecordTypeHandshake);
         }
 
         [StackTraceHidden]
-        private unsafe void RejectRequestLine(byte* requestLine, int length)
+        private void RejectRequestLine(ReadOnlySpan<byte> requestLine)
         {
-            // Check for incoming TLS handshake over HTTP
-            if (IsTlsHandshake(requestLine, length))
-            {
-                throw GetInvalidRequestException(RequestRejectionReason.TlsOverHttpError, requestLine, length);
-            }
-            else
-            {
-                throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
-            }
+            throw GetInvalidRequestException(
+                IsTlsHandshake(requestLine) ?
+                RequestRejectionReason.TlsOverHttpError :
+                RequestRejectionReason.InvalidRequestLine,
+                requestLine);
         }
 
         [StackTraceHidden]
@@ -517,12 +465,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestHeader, headerLine);
 
         [StackTraceHidden]
-        private unsafe void RejectUnknownVersion(byte* version, int length)
-            => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
-            => GetInvalidRequestException(reason, new ReadOnlySpan<byte>(detail, length));
+        private void RejectUnknownVersion(int offset, ReadOnlySpan<byte> requestLine)
+            // If CR before LF, reject and log entire line
+            => throw (((uint)offset >= (uint)requestLine.Length || requestLine[offset] == ByteCR || requestLine[^1] != ByteCR) ?
+            GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine) :
+            GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, requestLine[offset..^1]));
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, ReadOnlySpan<byte> headerLine)

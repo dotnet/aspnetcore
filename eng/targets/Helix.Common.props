@@ -8,14 +8,14 @@
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
     <HelixAvailablePlatform Include="Windows" />
-    
+
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
-    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />    
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 
   <!-- ubuntu and win10 required for green PR queues  -->
@@ -27,7 +27,6 @@
 
   <!-- daily scheduled only queues -->
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true'">
-    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="Linux" />

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
 using Xunit.Abstractions;
@@ -16,9 +15,6 @@ namespace Templates.Test.Helpers
 {
     public class ProjectFactoryFixture : IDisposable
     {
-        private readonly static SemaphoreSlim DotNetNewLock = new SemaphoreSlim(1);
-        private readonly static SemaphoreSlim NodeLock = new SemaphoreSlim(1);
-
         private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
 
         public IMessageSink DiagnosticsMessageSink { get; }
@@ -44,8 +40,6 @@ namespace Templates.Test.Helpers
                 {
                     var project = new Project
                     {
-                        DotNetNewLock = DotNetNewLock,
-                        NodeLock = NodeLock,
                         Output = outputHelper,
                         DiagnosticsMessageSink = DiagnosticsMessageSink,
                         ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
@@ -53,7 +47,7 @@ namespace Templates.Test.Helpers
                     project.ProjectName = $"AspNet.{key}.{project.ProjectGuid}";
 
                     var assemblyPath = GetType().Assembly;
-                    string basePath = GetTemplateFolderBasePath(assemblyPath);
+                    var basePath = GetTemplateFolderBasePath(assemblyPath);
                     project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
                     return project;
                 },
