@@ -157,8 +157,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
             var result = EnsureCertificateResult.Succeeded;
 
-            var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true).Concat(
-                ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true));
+            var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
+            var trustedCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
+            var certificates = currentUserCertificates.Concat(trustedCertificates);
 
             var filteredCertificates = certificates.Where(c => c.Subject == Subject);
             var excludedCertificates = certificates.Except(filteredCertificates);
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     // Skip this step if the command is not interactive,
                     // as we don't want to prompt on first run experience.
-                    foreach (var candidate in certificates)
+                    foreach (var candidate in currentUserCertificates)
                     {
                         var status = CheckCertificateState(candidate, true);
                         if (!status.Result)
