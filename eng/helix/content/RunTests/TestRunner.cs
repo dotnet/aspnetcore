@@ -237,6 +237,8 @@ namespace RunTests
             var exitCode = 0;
             try
             {
+                // Helix timeout is 30 minutes right now
+                var cts = new CancellationTokenSource(TimeSpan.FromMinutes(25));
                 var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
                 if (Options.Quarantined)
                 {
@@ -249,7 +251,7 @@ namespace RunTests
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(25)).Token);
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {
@@ -267,7 +269,7 @@ namespace RunTests
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(25)).Token);
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {
