@@ -204,13 +204,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
-                    KestrelEventSource.Log.TlsHandshakeStart(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 
                     await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                     await sslStream.DisposeAsync();
                     return;
@@ -218,6 +220,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 catch (IOException ex)
                 {
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     await sslStream.DisposeAsync();
                     return;
@@ -225,14 +229,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 catch (AuthenticationException ex)
                 {
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
 
                     await sslStream.DisposeAsync();
                     return;
-                }
-                finally
-                {
-                    KestrelEventSource.Log.TlsHandshakeStop(context.ConnectionId);
                 }
             }
 
@@ -246,6 +248,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
             feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
             feature.Protocol = sslStream.SslProtocol;
+
+            KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
             var originalTransport = context.Transport;
 

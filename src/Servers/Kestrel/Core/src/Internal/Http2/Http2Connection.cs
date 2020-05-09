@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw;
             }
 
-            KestrelEventSource.Log.RequestQueued(_currentHeadersStream);
+            KestrelEventSource.Log.RequestQueued(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }

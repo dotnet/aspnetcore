@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void Execute()
         {
-            KestrelEventSource.Log.RequestDequeued(this);
+            KestrelEventSource.Log.RequestDequeued(this, AspNetCore.Http.HttpProtocol.Http2);
             // REVIEW: Should we store this in a field for easy debugging?
             _ = ProcessRequestsAsync(_application);
         }

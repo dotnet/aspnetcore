@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Net.Security;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private PollingCounter _currentTlsHandshakesCounter;
         private PollingCounter _failedTlsHandshakesCounter;
         private PollingCounter _connectionQueueLengthCounter;
-        private PollingCounter _http2RequestQueueLengthCounter;
+        private PollingCounter _httpRequestQueueLengthCounter;
 
         private long _totalConnections;
         private long _currentConnections;
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _totalTlsHandshakes;
         private long _currentTlsHandshakes;
         private long _failedTlsHandshakes;
-        private long _http2RequestQueueLength;
+        private long _httpRequestQueueLength;
 
         private KestrelEventSource()
         {
@@ -190,21 +192,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             );
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(8, Level = EventLevel.Verbose)]
-        public void TlsHandshakeStart(string connectionId)
+        [NonEvent]
+        public void TlsHandshakeStart(BaseConnectionContext connectionContext, SslServerAuthenticationOptions sslOptions)
         {
             Interlocked.Increment(ref _currentTlsHandshakes);
             Interlocked.Increment(ref _totalTlsHandshakes);
-            WriteEvent(8, connectionId);
+            if (IsEnabled())
+            {
+                TlsHandshakeStart(connectionContext.ConnectionId, sslOptions.EnabledSslProtocols.ToString());
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(8, Level = EventLevel.Verbose)]
+        private void TlsHandshakeStart(string connectionId, string sslProtocols)
+        {
+            WriteEvent(8, connectionId, sslProtocols);
+        }
+
+        [NonEvent]
+        public void TlsHandshakeStop(BaseConnectionContext connectionContext, TlsConnectionFeature feature)
+        {
+            Interlocked.Decrement(ref _currentTlsHandshakes);
+            if (IsEnabled())
+            {
+                // TODO: Write this without a string allocation using WriteEventData
+                var applicationProtocol = feature == null ? null : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
+                TlsHandshakeStop(connectionContext.ConnectionId, feature?.Protocol.ToString(), applicationProtocol);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(9, Level = EventLevel.Verbose)]
-        public void TlsHandshakeStop(string connectionId)
+        private void TlsHandshakeStop(string connectionId, string applicationProtocol, string sslProtocols)
         {
-            Interlocked.Decrement(ref _currentTlsHandshakes);
-            WriteEvent(9, connectionId);
+            WriteEvent(9, connectionId, sslProtocols, applicationProtocol);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -216,39 +238,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void RequestQueued(HttpProtocol httpProtocol)
+        public void RequestQueued(HttpProtocol httpProtocol, string httpVersion)
         {
-            Interlocked.Increment(ref _http2RequestQueueLength);
+            Interlocked.Increment(ref _httpRequestQueueLength);
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestQueued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestQueued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(11, Level = EventLevel.Verbose)]
-        private void RequestQueued(string connectionId, string requestId)
+        private void RequestQueued(string connectionId, string requestId, string httpVersion)
         {
-            WriteEvent(11, connectionId, requestId);
+            WriteEvent(11, connectionId, requestId, httpVersion);
         }
 
         [NonEvent]
-        public void RequestDequeued(HttpProtocol httpProtocol)
+        public void RequestDequeued(HttpProtocol httpProtocol, string httpVersion)
         {
-            Interlocked.Decrement(ref _http2RequestQueueLength);
+            Interlocked.Decrement(ref _httpRequestQueueLength);
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestDequeued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestDequeued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(12, Level = EventLevel.Verbose)]
-        private void RequestDequeued(string connectionId, string requestId)
+        private void RequestDequeued(string connectionId, string requestId, string httpVersion)
         {
-            WriteEvent(12, connectionId, requestId);
+            WriteEvent(12, connectionId, requestId, httpVersion);
         }
 
         protected override void OnEventCommand(EventCommandEventArgs command)
@@ -300,9 +322,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     DisplayName = "Connection Queue Length"
                 };
 
-                _http2RequestQueueLengthCounter ??= new PollingCounter("http2-request-queue-length", this, () => _http2RequestQueueLength)
+                _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => _httpRequestQueueLength)
                 {
-                    DisplayName = "HTTP/2 Request Queue Length"
+                    DisplayName = "Request Queue Length"
                 };
             }
         }
