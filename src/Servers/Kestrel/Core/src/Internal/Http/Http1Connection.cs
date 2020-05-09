@@ -82,6 +82,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Reset();
 
             _http1Output.Dispose();
+
+            if (IsUpgraded)
+            {
+                KestrelEventSource.Log.RequestUpgradedStop(this);
+
+                ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+            }
         }
 
         public void OnInputOrOutputCompleted()

@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private PollingCounter _failedTlsHandshakesCounter;
         private PollingCounter _connectionQueueLengthCounter;
         private PollingCounter _httpRequestQueueLengthCounter;
+        private PollingCounter _currrentUpgradedHttpRequestsCounter;
 
         private long _totalConnections;
         private long _currentConnections;
@@ -34,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _currentTlsHandshakes;
         private long _failedTlsHandshakes;
         private long _httpRequestQueueLength;
+        private long _currentUpgradedHttpRequests;
 
         private KestrelEventSource()
         {
@@ -275,6 +277,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             WriteEvent(12, connectionId, requestId, httpVersion);
         }
 
+        [NonEvent]
+        public void RequestUpgradedStart(HttpProtocol httpProtocol)
+        {
+            Interlocked.Increment(ref _currentUpgradedHttpRequests);
+            if (IsEnabled())
+            {
+                RequestUpgradedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(13, Level = EventLevel.Informational)]
+        private void RequestUpgradedStart(string connectionId, string requestId)
+        {
+            WriteEvent(13, connectionId, requestId);
+        }
+
+        [NonEvent]
+        public void RequestUpgradedStop(HttpProtocol httpProtocol)
+        {
+            Interlocked.Decrement(ref _currentUpgradedHttpRequests);
+            if (IsEnabled())
+            {
+                RequestUpgradedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(14, Level = EventLevel.Informational)]
+        private void RequestUpgradedStop(string connectionId, string requestId)
+        {
+            WriteEvent(14, connectionId, requestId);
+        }
+
         protected override void OnEventCommand(EventCommandEventArgs command)
         {
             if (command.Command == EventCommand.Enable)
@@ -327,6 +363,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 _httpRequestQueueLengthCounter ??= new PollingCounter("request-queue-length", this, () => _httpRequestQueueLength)
                 {
                     DisplayName = "Request Queue Length"
+                };
+
+                _currrentUpgradedHttpRequestsCounter ??= new PollingCounter("current-upgraded-requests", this, () => _currentUpgradedHttpRequests)
+                {
+                    DisplayName = "Current Upgraded Requests (WebSockets)"
                 };
             }
         }
