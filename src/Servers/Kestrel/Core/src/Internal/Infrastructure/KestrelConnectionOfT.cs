@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             try
             {
+                KestrelEventSource.Log.ConnectionDequeued(connectionContext);
+
                 Logger.ConnectionStart(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStart(connectionContext);
 
