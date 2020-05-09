@@ -169,6 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     {
                         selector = (sender, name) =>
                         {
+                            feature.HostName = name;
                             context.Features.Set(sslStream);
                             var cert = _serverCertificateSelector(context, name);
                             if (cert != null)

@@ -218,15 +218,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 // TODO: Write this without a string allocation using WriteEventData
                 var applicationProtocol = feature == null ? null : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
-                TlsHandshakeStop(connectionContext.ConnectionId, feature?.Protocol.ToString(), applicationProtocol);
+                TlsHandshakeStop(connectionContext.ConnectionId, feature?.Protocol.ToString(), applicationProtocol, feature?.HostName);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(9, Level = EventLevel.Verbose)]
-        private void TlsHandshakeStop(string connectionId, string applicationProtocol, string sslProtocols)
+        private void TlsHandshakeStop(string connectionId, string applicationProtocol, string sslProtocols, string hostName)
         {
-            WriteEvent(9, connectionId, sslProtocols, applicationProtocol);
+            WriteEvent(9, connectionId, sslProtocols, applicationProtocol, hostName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
