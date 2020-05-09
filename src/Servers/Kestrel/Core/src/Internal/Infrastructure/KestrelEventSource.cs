@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("requests-per-second", this, () => _totalConnections)
+                _connectionsPerSecondCounter ??= new IncrementingPollingCounter("connections-per-second", this, () => _totalConnections)
                 {
                     DisplayName = "Connection Rate",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
