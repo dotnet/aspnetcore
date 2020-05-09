@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return SyntaxKind.RazorCommentStar; }
         }
 
-        protected override SyntaxToken CreateToken(string content, SyntaxKind type, IReadOnlyList<RazorDiagnostic> errors)
+        protected override SyntaxToken CreateToken(string content, SyntaxKind type, RazorDiagnostic[] errors)
         {
             return SyntaxFactory.Token(type, content, errors);
         }

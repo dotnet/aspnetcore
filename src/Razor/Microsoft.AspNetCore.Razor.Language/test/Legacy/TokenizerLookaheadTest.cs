@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             protected override SyntaxToken CreateToken(
                 string content,
                 SyntaxKind type,
-                IReadOnlyList<RazorDiagnostic> errors)
+                RazorDiagnostic[] errors)
             {
                 throw new NotImplementedException();
             }

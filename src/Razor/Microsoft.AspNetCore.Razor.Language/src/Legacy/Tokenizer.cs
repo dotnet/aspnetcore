@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SourceLocation CurrentStart { get; private set; }
 
-        protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, IReadOnlyList<RazorDiagnostic> errors);
+        protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, RazorDiagnostic [] errors);
 
         protected abstract StateResult Dispatch();
 

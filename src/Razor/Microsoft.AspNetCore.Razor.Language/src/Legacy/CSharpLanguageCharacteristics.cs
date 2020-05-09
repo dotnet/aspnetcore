@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CSharpTokenizer(source);
         }
 
-        protected override SyntaxToken CreateToken(string content, SyntaxKind kind, IReadOnlyList<RazorDiagnostic> errors)
+        protected override SyntaxToken CreateToken(string content, SyntaxKind kind, RazorDiagnostic[] errors)
         {
             return SyntaxFactory.Token(kind, content, errors);
         }

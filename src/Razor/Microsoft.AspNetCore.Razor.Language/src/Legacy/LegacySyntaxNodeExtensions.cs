@@ -95,14 +95,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return null;
             }
 
+            if (node.EndPosition < change.Span.AbsoluteIndex)
+            {
+                // no need to look into this node as it completely precedes the change
+                return null;
+            }
+
             if (IsSpanKind(node))
             {
                 var editHandler = node.GetSpanContext()?.EditHandler ?? SpanEditHandler.CreateDefault();
                 return editHandler.OwnsChange(node, change) ? node : null;
             }
 
-            SyntaxNode owner = null;
-            IEnumerable<SyntaxNode> children;
+            IReadOnlyList<SyntaxNode> children;
             if (node is MarkupStartTagSyntax startTag)
             {
                 children = startTag.Children;
@@ -124,8 +129,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 children = node.ChildNodes();
             }
 
-            foreach (var child in children)
+            SyntaxNode owner = null;
+            for (int i = 0; i < children.Count; i++)
             {
+                var child = children[i];
                 owner = LocateOwner(child, change);
                 if (owner != null)
                 {

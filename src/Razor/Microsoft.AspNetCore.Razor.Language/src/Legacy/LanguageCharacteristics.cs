@@ -103,6 +103,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return type == KnownTokenType.Unknown || !Equals(GetKnownTokenType(type), GetKnownTokenType(KnownTokenType.Unknown));
         }
 
-        protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, IReadOnlyList<RazorDiagnostic> errors);
+        protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, RazorDiagnostic[] errors);
     }
 }

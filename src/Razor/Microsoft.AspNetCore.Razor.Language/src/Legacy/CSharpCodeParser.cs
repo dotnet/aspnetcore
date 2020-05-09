@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         });
 
         private static readonly Func<SyntaxToken, bool> IsValidStatementSpacingToken =
-            IsSpacingToken(includeNewLines: true, includeComments: true);
+            IsSpacingTokenIncludingNewLinesAndComments;
 
         internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.AddTagHelperKeyword,
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     NextToken();
 
-                    var precedingWhitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                    var precedingWhitespace = ReadWhile(IsSpacingTokenIncludingNewLinesAndComments);
 
                     // We are usually called when the other parser sees a transition '@'. Look for it.
                     SyntaxToken transitionToken = null;
@@ -1317,7 +1317,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         if (At(SyntaxKind.Whitespace))
                         {
-                            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                            AcceptWhile(IsSpacingTokenIncludingComments);
 
                             if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
@@ -1443,7 +1443,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         directiveBuilder.Add(OutputTokensAsStatementLiteral());
                     }
 
-                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                    AcceptWhile(IsSpacingTokenIncludingComments);
                     SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
 
                     switch (descriptor.Kind)
@@ -1455,7 +1455,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             TryAccept(SyntaxKind.Semicolon);
                             directiveBuilder.Add(OutputAsMetaCode(Output(), AcceptedCharactersInternal.Whitespace));
 
-                            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                            AcceptWhile(IsSpacingTokenIncludingComments);
 
                             if (At(SyntaxKind.NewLine))
                             {
@@ -1478,7 +1478,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             directiveBuilder.Add(OutputAsMarkupEphemeralLiteral());
                             break;
                         case DirectiveKind.RazorBlock:
-                            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                            AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
                             SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.AllWhitespace;
                             directiveBuilder.Add(OutputTokensAsUnclassifiedLiteral());
 
@@ -1502,7 +1502,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             });
                             break;
                         case DirectiveKind.CodeBlock:
-                            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                            AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
                             SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.AllWhitespace;
                             directiveBuilder.Add(OutputTokensAsUnclassifiedLiteral());
 
@@ -1753,7 +1753,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AcceptAndMoveNext();
 
             // Accept 1 or more spaces between the await and the following code.
-            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+            AcceptWhile(IsSpacingTokenIncludingComments);
 
             // Top level basically indicates if we're within an expression or statement.
             // Ex: topLevel true = @await Foo()  |  topLevel false = @{ await Foo(); }
@@ -1806,12 +1806,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void ParseConditionalBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Block block)
         {
             AcceptAndMoveNext();
-            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+            AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
 
             // Parse the condition, if present (if not present, we'll let the C# compiler complain)
             if (TryParseCondition(builder))
             {
-                AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
 
                 ParseExpectedCodeBlock(builder, block);
             }
@@ -1874,7 +1874,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert(SyntaxKind.Keyword);
             var block = new Block(CurrentToken, CurrentStart);
             AcceptAndMoveNext();
-            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+            AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
             ParseExpectedCodeBlock(builder, block);
         }
 
@@ -1937,7 +1937,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var block = new Block(CurrentToken, CurrentStart);
 
             AcceptAndMoveNext();
-            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+            AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
             if (At(CSharpKeyword.If))
             {
                 // ElseIf
@@ -2059,7 +2059,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Accept(whitespace);
                 Assert(CSharpKeyword.While);
                 AcceptAndMoveNext();
-                AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
                 if (TryParseCondition(builder) && TryAccept(SyntaxKind.Semicolon))
                 {
                     SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
@@ -2078,7 +2078,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var topLevel = transition != null;
             var block = new Block(CurrentToken, CurrentStart);
             var usingToken = EatCurrentToken();
-            var whitespaceOrComments = ReadWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+            var whitespaceOrComments = ReadWhile(IsSpacingTokenIncludingComments);
             var atLeftParen = At(SyntaxKind.LeftParenthesis);
             var atIdentifier = At(SyntaxKind.Identifier);
             var atStatic = At(CSharpKeyword.Static);
@@ -2115,7 +2115,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         builder.Add(transition);
                     }
                     AcceptAndMoveNext();
-                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                    AcceptWhile(IsSpacingTokenIncludingComments);
                     ParseStandardStatement(builder);
                 }
                 else
@@ -2132,7 +2132,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 AcceptAndMoveNext();
-                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                AcceptWhile(IsSpacingTokenIncludingComments);
             }
 
             if (topLevel)
@@ -2145,7 +2145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             Assert(CSharpKeyword.Using);
             AcceptAndMoveNext();
-            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+            AcceptWhile(IsSpacingTokenIncludingComments);
 
             Assert(SyntaxKind.LeftParenthesis);
             if (transition != null)
@@ -2156,7 +2156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Parse condition
             if (TryParseCondition(builder))
             {
-                AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
 
                 // Parse code block
                 ParseExpectedCodeBlock(builder, block);
@@ -2174,14 +2174,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 AcceptAndMoveNext();
                 var isStatic = false;
                 var nonNamespaceTokenCount = TokenBuilder.Count;
-                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                AcceptWhile(IsSpacingTokenIncludingComments);
                 var start = CurrentStart;
                 if (At(SyntaxKind.Identifier))
                 {
                     // non-static using
                     nonNamespaceTokenCount = TokenBuilder.Count;
                     TryParseNamespaceOrTypeName(directiveBuilder);
-                    var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                    var whitespace = ReadWhile(IsSpacingTokenIncludingNewLinesAndComments);
                     if (At(SyntaxKind.Assign))
                     {
                         // Alias
@@ -2189,7 +2189,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Assert(SyntaxKind.Assign);
                         AcceptAndMoveNext();
 
-                        AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                        AcceptWhile(IsSpacingTokenIncludingNewLinesAndComments);
 
                         // One more namespace or type name
                         TryParseNamespaceOrTypeName(directiveBuilder);
@@ -2205,7 +2205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // static using
                     isStatic = true;
                     AcceptAndMoveNext();
-                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                    AcceptWhile(IsSpacingTokenIncludingComments);
                     nonNamespaceTokenCount = TokenBuilder.Count;
                     TryParseNamespaceOrTypeName(directiveBuilder);
                 }
@@ -2391,7 +2391,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             while (!EndOfFile)
             {
-                var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                var whitespace = ReadWhile(IsSpacingTokenIncludingNewLinesAndComments);
                 if (At(SyntaxKind.RazorCommentTransition))
                 {
                     Accept(whitespace);
@@ -2622,11 +2622,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 result.Value == keyword;
         }
 
-        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines, bool includeComments)
+        protected static bool IsSpacingToken(SyntaxToken token)
         {
-            return token => token.Kind == SyntaxKind.Whitespace ||
-                          (includeNewLines && token.Kind == SyntaxKind.NewLine) ||
-                          (includeComments && token.Kind == SyntaxKind.CSharpComment);
+            return token.Kind == SyntaxKind.Whitespace;
+        }
+
+        protected static bool IsSpacingTokenIncludingNewLines(SyntaxToken token)
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.NewLine;
+        }
+
+        protected static bool IsSpacingTokenIncludingComments(SyntaxToken token)
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.CSharpComment;
+        }
+
+        protected static bool IsSpacingTokenIncludingNewLinesAndComments(SyntaxToken token)
+        {
+            return IsSpacingTokenIncludingNewLines(token) || token.Kind == SyntaxKind.CSharpComment;
         }
 
         protected class Block

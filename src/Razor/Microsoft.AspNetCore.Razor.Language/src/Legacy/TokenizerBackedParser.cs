@@ -185,6 +185,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
+        protected internal void PutBack(IReadOnlyList<SyntaxToken> tokens)
+        {
+            for (int i = tokens.Count - 1; i >= 0; i--)
+            {
+                PutBack(tokens[i]);
+            }
+        }
+
         protected internal void PutCurrentBack()
         {
             if (!EndOfFile && CurrentToken != null)
