@@ -102,15 +102,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(3, Level = EventLevel.Informational)]
-        private void RequestStart(string connectionId, string requestId)
+        private void RequestStart(string connectionId, string requestId, string httpVersion, string path, string method)
         {
-            WriteEvent(3, connectionId, requestId);
+            WriteEvent(3, connectionId, requestId, httpVersion, path, method);
         }
 
         [NonEvent]
@@ -119,15 +119,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(4, Level = EventLevel.Informational)]
-        private void RequestStop(string connectionId, string requestId)
+        private void RequestStop(string connectionId, string requestId, string httpVersion, string path, string method)
         {
-            WriteEvent(4, connectionId, requestId);
+            WriteEvent(4, connectionId, requestId, httpVersion, path, method);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -283,15 +283,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Interlocked.Increment(ref _currentUpgradedHttpRequests);
             if (IsEnabled())
             {
-                RequestUpgradedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestUpgradedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(13, Level = EventLevel.Informational)]
-        private void RequestUpgradedStart(string connectionId, string requestId)
+        private void RequestUpgradedStart(string connectionId, string requestId, string httpVersion, string path, string method)
         {
-            WriteEvent(13, connectionId, requestId);
+            WriteEvent(13, connectionId, requestId, httpVersion, path, method);
         }
 
         [NonEvent]
@@ -300,15 +300,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Interlocked.Decrement(ref _currentUpgradedHttpRequests);
             if (IsEnabled())
             {
-                RequestUpgradedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+                RequestUpgradedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpProtocol.HttpVersion, httpProtocol.Path, httpProtocol.MethodText);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(14, Level = EventLevel.Informational)]
-        private void RequestUpgradedStop(string connectionId, string requestId)
+        private void RequestUpgradedStop(string connectionId, string requestId, string httpVersion, string path, string method)
         {
-            WriteEvent(14, connectionId, requestId);
+            WriteEvent(14, connectionId, requestId, httpVersion, path, method);
         }
 
         protected override void OnEventCommand(EventCommandEventArgs command)

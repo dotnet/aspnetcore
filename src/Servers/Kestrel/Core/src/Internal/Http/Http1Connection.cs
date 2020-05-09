@@ -76,19 +76,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnded()
         {
-            TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
-
-            // Prevent RequestAborted from firing. Free up unneeded feature references.
-            Reset();
-
-            _http1Output.Dispose();
-
             if (IsUpgraded)
             {
                 KestrelEventSource.Log.RequestUpgradedStop(this);
 
                 ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
             }
+
+            TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
+
+            // Prevent RequestAborted from firing. Free up unneeded feature references.
+            Reset();
+
+            _http1Output.Dispose();
         }
 
         public void OnInputOrOutputCompleted()
