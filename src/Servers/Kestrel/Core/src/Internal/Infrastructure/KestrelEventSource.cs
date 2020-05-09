@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(1, Level = EventLevel.Verbose)]
+        [Event(1, Level = EventLevel.Informational)]
         private void ConnectionStart(string connectionId,
             string localEndPoint,
             string remoteEndPoint)
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(2, Level = EventLevel.Verbose)]
+        [Event(2, Level = EventLevel.Informational)]
         private void ConnectionStop(string connectionId)
         {
             WriteEvent(2, connectionId);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(3, Level = EventLevel.Verbose)]
+        [Event(3, Level = EventLevel.Informational)]
         private void RequestStart(string connectionId, string requestId)
         {
             WriteEvent(3, connectionId, requestId);
@@ -122,14 +122,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(4, Level = EventLevel.Verbose)]
+        [Event(4, Level = EventLevel.Informational)]
         private void RequestStop(string connectionId, string requestId)
         {
             WriteEvent(4, connectionId, requestId);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(5, Level = EventLevel.Verbose)]
+        [Event(5, Level = EventLevel.Informational)]
         public void ConnectionRejected(string connectionId)
         {
             if (IsEnabled())
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(6, Level = EventLevel.Verbose)]
+        [Event(6, Level = EventLevel.Informational)]
         private void ConnectionQueued(string connectionId,
             string localEndPoint,
             string remoteEndPoint)
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(7, Level = EventLevel.Verbose)]
+        [Event(7, Level = EventLevel.Informational)]
         private void ConnectionDequeued(string connectionId,
             string localEndPoint,
             string remoteEndPoint)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(8, Level = EventLevel.Verbose)]
+        [Event(8, Level = EventLevel.Informational)]
         private void TlsHandshakeStart(string connectionId, string sslProtocols)
         {
             WriteEvent(8, connectionId, sslProtocols);
@@ -217,20 +217,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             if (IsEnabled())
             {
                 // TODO: Write this without a string allocation using WriteEventData
-                var applicationProtocol = feature == null ? null : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
-                TlsHandshakeStop(connectionContext.ConnectionId, feature?.Protocol.ToString(), applicationProtocol, feature?.HostName);
+                var applicationProtocol = feature == null ? string.Empty : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
+                var sslProtocols = feature?.Protocol.ToString() ?? string.Empty;
+                var hostName = feature?.HostName ?? string.Empty;
+                TlsHandshakeStop(connectionContext.ConnectionId, sslProtocols, applicationProtocol, hostName);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(9, Level = EventLevel.Verbose)]
-        private void TlsHandshakeStop(string connectionId, string applicationProtocol, string sslProtocols, string hostName)
+        [Event(9, Level = EventLevel.Informational)]
+        private void TlsHandshakeStop(string connectionId, string sslProtocols, string applicationProtocol, string hostName)
         {
             WriteEvent(9, connectionId, sslProtocols, applicationProtocol, hostName);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(10, Level = EventLevel.Verbose)]
+        [Event(10, Level = EventLevel.Error)]
         public void TlsHandshakeFailed(string connectionId)
         {
             Interlocked.Increment(ref _failedTlsHandshakes);
@@ -249,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(11, Level = EventLevel.Verbose)]
+        [Event(11, Level = EventLevel.Informational)]
         private void RequestQueued(string connectionId, string requestId, string httpVersion)
         {
             WriteEvent(11, connectionId, requestId, httpVersion);
@@ -267,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        [Event(12, Level = EventLevel.Verbose)]
+        [Event(12, Level = EventLevel.Informational)]
         private void RequestDequeued(string connectionId, string requestId, string httpVersion)
         {
             WriteEvent(12, connectionId, requestId, httpVersion);
