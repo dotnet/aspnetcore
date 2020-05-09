@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
@@ -93,13 +92,6 @@ namespace RunTests
         {
             try
             {
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        $"tool install dotnet-dump --tool-path {Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
-
                 if (File.Exists(Options.AspNetRuntime))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
@@ -194,6 +186,27 @@ namespace RunTests
             }
         }
 
+        public async Task<bool> InstallDotnetDump()
+        {
+            try
+            {
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                            $"tool install dotnet-dump --tool-path {Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools " +
+                              "--version 5.0.0-* --add-source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json",
+                            environmentVariables: EnvironmentVariables,
+                            outputDataReceived: Console.WriteLine,
+                            errorDataReceived: Console.Error.WriteLine,
+                            throwOnError: false);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in InstallDotnetDump: {e}");
+                return false;
+            }
+        }
+
         public async Task<bool> CheckTestDiscoveryAsync()
         {
             try
@@ -201,7 +214,8 @@ namespace RunTests
                 // Run test discovery so we know if there are tests to run
                 var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                     $"vstest {Options.Target} -lt",
-                    environmentVariables: EnvironmentVariables);
+                    environmentVariables: EnvironmentVariables,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                 if (discoveryResult.StandardOutput.Contains("Exception thrown"))
                 {
@@ -228,8 +242,6 @@ namespace RunTests
                 {
                     Console.WriteLine("Running quarantined tests.");
 
-                    var cts = new CancellationTokenSource(10000);
-
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
@@ -237,7 +249,7 @@ namespace RunTests
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
-                        cancellationToken: cts.Token);
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(25)).Token);
 
                     if (result.ExitCode != 0)
                     {
@@ -248,8 +260,6 @@ namespace RunTests
                 {
                     Console.WriteLine("Running non-quarantined tests.");
 
-                    var cts = new CancellationTokenSource(20000);
-
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
@@ -257,7 +267,7 @@ namespace RunTests
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
-                        cancellationToken: cts.Token);
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(25)).Token);
 
                     if (result.ExitCode != 0)
                     {
