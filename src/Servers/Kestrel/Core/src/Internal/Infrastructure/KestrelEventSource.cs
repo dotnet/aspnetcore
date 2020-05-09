@@ -16,13 +16,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static readonly KestrelEventSource Log = new KestrelEventSource();
 
         private IncrementingPollingCounter _connectionsPerSecondCounter;
+        private IncrementingPollingCounter _tlsHandshakesPerSecondCounter;
         private PollingCounter _totalConnectionsCounter;
         private PollingCounter _currentConnectionsCounter;
+        private PollingCounter _totalTlsHandshakesCounter;
+        private PollingCounter _currentTlsHandshakesCounter;
+        private PollingCounter _failedTlsHandshakesCounter;
         private PollingCounter _connectionQueueLengthCounter;
 
         private long _totalConnections;
         private long _currentConnections;
         private long _connectionQueueLength;
+        private long _totalTlsHandshakes;
+        private long _currentTlsHandshakes;
+        private long _failedTlsHandshakes;
 
         private KestrelEventSource()
         {
@@ -181,6 +188,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             );
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(8, Level = EventLevel.Verbose)]
+        public void TlsHandshakeStart(string connectionId)
+        {
+            Interlocked.Increment(ref _currentTlsHandshakes);
+            Interlocked.Increment(ref _totalTlsHandshakes);
+            WriteEvent(8, connectionId);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(9, Level = EventLevel.Verbose)]
+        public void TlsHandshakeStop(string connectionId)
+        {
+            Interlocked.Decrement(ref _currentTlsHandshakes);
+            WriteEvent(9, connectionId);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(10, Level = EventLevel.Verbose)]
+        public void TlsHandshakeFailed(string connectionId)
+        {
+            Interlocked.Increment(ref _failedTlsHandshakes);
+            WriteEvent(10, connectionId);
+        }
 
         protected override void OnEventCommand(EventCommandEventArgs command)
         {
@@ -198,6 +229,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => _totalConnections)
                 {
                     DisplayName = "Total Connections",
+                };
+
+                _tlsHandshakesPerSecondCounter ??= new IncrementingPollingCounter("tls-handshakes-per-second", this, () => _totalTlsHandshakes)
+                {
+                    DisplayName = "TLS Handshake Rate",
+                    DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+                };
+
+                _totalTlsHandshakesCounter ??= new PollingCounter("total-tls-handshakes", this, () => _totalTlsHandshakes)
+                {
+                    DisplayName = "Total TLS Handshakes",
+                };
+
+                _currentTlsHandshakesCounter ??= new PollingCounter("current-tls-handshakes", this, () => _currentTlsHandshakes)
+                {
+                    DisplayName = "Current TLS Handshakes"
+                };
+
+                _failedTlsHandshakesCounter ??= new PollingCounter("failed-tls-handshakes", this, () => _failedTlsHandshakes)
+                {
+                    DisplayName = "Failed TLS Handshakes"
                 };
 
                 _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => _currentConnections)
