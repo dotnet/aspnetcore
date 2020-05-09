@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private PollingCounter _currentTlsHandshakesCounter;
         private PollingCounter _failedTlsHandshakesCounter;
         private PollingCounter _connectionQueueLengthCounter;
+        private PollingCounter _http2RequestQueueLengthCounter;
 
         private long _totalConnections;
         private long _currentConnections;
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private long _totalTlsHandshakes;
         private long _currentTlsHandshakes;
         private long _failedTlsHandshakes;
+        private long _http2RequestQueueLength;
 
         private KestrelEventSource()
         {
@@ -213,6 +215,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             WriteEvent(10, connectionId);
         }
 
+        [NonEvent]
+        public void RequestQueued(HttpProtocol httpProtocol)
+        {
+            Interlocked.Increment(ref _http2RequestQueueLength);
+            // avoid allocating the trace identifier unless logging is enabled
+            if (IsEnabled())
+            {
+                RequestQueued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(11, Level = EventLevel.Verbose)]
+        private void RequestQueued(string connectionId, string requestId)
+        {
+            WriteEvent(11, connectionId, requestId);
+        }
+
+        [NonEvent]
+        public void RequestDequeued(HttpProtocol httpProtocol)
+        {
+            Interlocked.Decrement(ref _http2RequestQueueLength);
+            // avoid allocating the trace identifier unless logging is enabled
+            if (IsEnabled())
+            {
+                RequestDequeued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(12, Level = EventLevel.Verbose)]
+        private void RequestDequeued(string connectionId, string requestId)
+        {
+            WriteEvent(12, connectionId, requestId);
+        }
+
         protected override void OnEventCommand(EventCommandEventArgs command)
         {
             if (command.Command == EventCommand.Enable)
@@ -260,6 +298,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 _connectionQueueLengthCounter ??= new PollingCounter("connection-queue-length", this, () => _connectionQueueLength)
                 {
                     DisplayName = "Connection Queue Length"
+                };
+
+                _http2RequestQueueLengthCounter ??= new PollingCounter("http2-request-queue-length", this, () => _http2RequestQueueLength)
+                {
+                    DisplayName = "HTTP/2 Request Queue Length"
                 };
             }
         }
