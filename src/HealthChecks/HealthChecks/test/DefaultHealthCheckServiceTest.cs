@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
-    public class DefaultHealthCheckServiceTest
+    public class DefaultHealthCheckServiceTest : LoggedTest
     {
         [Fact]
         public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
@@ -529,6 +529,43 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             // Assert
             Assert.False(hangs);
+        }
+
+        [Theory]
+        [InlineData(HealthStatus.Healthy)]
+        [InlineData(HealthStatus.Unhealthy)]
+        [InlineData(HealthStatus.Degraded)]
+        public async Task CheckHealthAsync_LogsExceptionFromResultOnHealthCheckEnd(HealthStatus status)
+        {
+            // Arrange
+            var exception = new Exception();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging();
+            AddTestLogging(serviceCollection);
+            serviceCollection.AddHealthChecks()
+                .AddCheck("ex", () => new HealthCheckResult(status, exception: exception));
+
+            var service = (DefaultHealthCheckService)serviceCollection.BuildServiceProvider(validateScopes: true).GetRequiredService<HealthCheckService>();
+
+            Exception loggedException = null;
+            TestSink.MessageLogged += context =>
+            {
+                if (context.LoggerName != "Microsoft.Extensions.Diagnostics.HealthChecks.DefaultHealthCheckService")
+                {
+                    return;
+                }
+
+                if (context.EventId == DefaultHealthCheckService.EventIds.HealthCheckEnd)
+                {
+                    loggedException = context.Exception;
+                }
+            };
+
+            // Act
+            await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Equal(exception, loggedException);
         }
 
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
