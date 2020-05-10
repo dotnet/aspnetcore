@@ -59,7 +59,7 @@ namespace RunTests
                 return Task.CompletedTask;
             }
 
-            return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
+            return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
         }
 
         public static async Task<ProcessResult> RunAsync(

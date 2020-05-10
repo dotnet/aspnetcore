@@ -526,6 +526,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_LongPolling()
         {
+        await Task.Delay(1500000);
             try
             {
                 await ServerClosesConnectionWithErrorIfHubCannotBeCreated(HttpTransportType.LongPolling);

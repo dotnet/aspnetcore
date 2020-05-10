@@ -191,7 +191,7 @@ namespace RunTests
             try
             {
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            $"tool install dotnet-dump --tool-path {Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD")}/tools " +
+                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} " +
                               "--version 5.0.0-* --add-source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json",
                             environmentVariables: EnvironmentVariables,
                             outputDataReceived: Console.WriteLine,
