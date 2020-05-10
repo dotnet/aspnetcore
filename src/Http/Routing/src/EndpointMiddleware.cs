@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Routing
                     }
                 }
 
+                EndpointMiddlewareEventSource.Log.ExecutingEndpoint(endpoint.DisplayName);
                 Log.ExecutingEndpoint(_logger, endpoint);
 
                 try
@@ -62,10 +63,13 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 catch (Exception exception)
                 {
+                    EndpointMiddlewareEventSource.Log.ExecutedEndpoint(endpoint.DisplayName);
+                    EndpointMiddlewareEventSource.Log.FailedEndpoint(endpoint.DisplayName);
                     Log.ExecutedEndpoint(_logger, endpoint);
                     return Task.FromException(exception);
                 }
 
+                EndpointMiddlewareEventSource.Log.ExecutedEndpoint(endpoint.DisplayName);
                 Log.ExecutedEndpoint(_logger, endpoint);
                 return Task.CompletedTask;
             }
@@ -77,6 +81,12 @@ namespace Microsoft.AspNetCore.Routing
                 try
                 {
                     await requestTask;
+                    EndpointMiddlewareEventSource.Log.ExecutedEndpoint(endpoint.DisplayName);
+                }
+                catch
+                {
+                    EndpointMiddlewareEventSource.Log.FailedEndpoint(endpoint.DisplayName);
+                    throw;
                 }
                 finally
                 {
