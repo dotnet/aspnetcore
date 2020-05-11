@@ -28,6 +28,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 throw new ArgumentNullException(nameof(node));
             }
 
+            if (!node.ContainsAnnotations)
+            {
+                return null;
+            }
+
             var annotation = node.GetAnnotations().FirstOrDefault(n => n.Kind == key);
             return annotation?.Data;
         }

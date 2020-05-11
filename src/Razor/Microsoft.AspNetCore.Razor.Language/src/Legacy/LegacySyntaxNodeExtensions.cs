@@ -67,17 +67,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var newAnnotation = new SyntaxAnnotation(SyntaxConstants.SpanContextKind, spanContext);
 
-            var newAnnotations = new List<SyntaxAnnotation>();
-            newAnnotations.Add(newAnnotation);
-            foreach (var annotation in node.GetAnnotations())
+            List<SyntaxAnnotation> newAnnotations = null;
+            if (node.ContainsAnnotations)
             {
-                if (annotation.Kind != newAnnotation.Kind)
+                var existingNodeAnnotations = node.GetAnnotations();
+                for (int i = 0; i < existingNodeAnnotations.Length; i++)
                 {
-                    newAnnotations.Add(annotation);
+                    var annotation = existingNodeAnnotations[i];
+                    if (annotation.Kind != newAnnotation.Kind)
+                    {
+                        if (newAnnotations == null)
+                        {
+                            newAnnotations = new List<SyntaxAnnotation>();
+                            newAnnotations.Add(newAnnotation);
+                        }
+
+                        newAnnotations.Add(annotation);
+                    }
                 }
             }
 
-            return node.WithAnnotations(newAnnotations.ToArray());
+            var newAnnotationsArray = newAnnotations == null ? new[] { newAnnotation } : newAnnotations.ToArray();
+
+            return node.WithAnnotations(newAnnotationsArray);
         }
 
         public static SyntaxNode LocateOwner(this SyntaxNode node, SourceChange change)
