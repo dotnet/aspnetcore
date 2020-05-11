@@ -7,7 +7,7 @@
       This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
       has netcoreapp dependencies that need to be built first.
     -->
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->

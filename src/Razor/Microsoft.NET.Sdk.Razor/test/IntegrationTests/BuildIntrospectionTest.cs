@@ -235,8 +235,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 .Value;
 
             var tfm =
-#if NETCOREAPP5_0
-                "netcoreapp5.0";
+#if NETCOREAPP
+                "net5.0";
 #else
 #error Target framework needs to be updated.
 #endif
