@@ -11,7 +11,7 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>542b92b5ca0fe8e31b17240b0acd8610f2bad57f</Sha>
+      <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="3.2.0">
       <Uri>https://github.com/dotnet/corefx</Uri>
