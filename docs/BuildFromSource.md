@@ -225,6 +225,12 @@ TargetOsName             | The base runtime identifier to build for (win, linux,
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
+Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them: 
+
+```ps1
+build.cmd -BuildInstallers
+```
+
 * Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 * Add a NuGet.Config to your project directory with the following content:
 
@@ -255,3 +261,13 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 ## Resx files
 
 If you need to make changes to a .resx file, run `dotnet msbuild /t:Resx <path to csproj>`. This will update the generated C#.
+
+## Building installers
+
+For building installers run
+
+```ps1
+build.cmd -BuildInstallers
+```
+
+Installers built located in the `artifacts/installers/{Debug, Release}` 
