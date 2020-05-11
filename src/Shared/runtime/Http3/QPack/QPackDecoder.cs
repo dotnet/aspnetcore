@@ -413,7 +413,7 @@ namespace System.Net.Http.QPack
 
             if (_index is int index)
             {
-                Debug.Assert(index >= 0 && index <= H3StaticTable.Instance.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
+                Debug.Assert(index >= 0 && index <= H3StaticTable.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
                 handler.OnStaticIndexedHeader(index, headerValueSpan);
                 _index = null;
 
