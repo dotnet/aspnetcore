@@ -893,7 +893,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected bool TryParseDirective(in SyntaxListBuilder<RazorSyntaxNode> builder, IEnumerable<SyntaxToken> whitespace, CSharpTransitionSyntax transition, string directive)
+        protected bool TryParseDirective(in SyntaxListBuilder<RazorSyntaxNode> builder, IReadOnlyList<SyntaxToken> whitespace, CSharpTransitionSyntax transition, string directive)
         {
             if (_directiveParserMap.TryGetValue(directive, out var handler))
             {
@@ -1679,7 +1679,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private bool TryParseKeyword(in SyntaxListBuilder<RazorSyntaxNode> builder, IEnumerable<SyntaxToken> whitespace, CSharpTransitionSyntax transition)
+        private bool TryParseKeyword(in SyntaxListBuilder<RazorSyntaxNode> builder, IReadOnlyList<SyntaxToken> whitespace, CSharpTransitionSyntax transition)
         {
             var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
             Debug.Assert(CurrentToken.Kind == SyntaxKind.Keyword && result.HasValue);
@@ -2387,7 +2387,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private IEnumerable<SyntaxToken> SkipToNextImportantToken(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        private IReadOnlyList<SyntaxToken> SkipToNextImportantToken(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
             while (!EndOfFile)
             {
@@ -2406,7 +2406,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return whitespace;
                 }
             }
-            return Enumerable.Empty<SyntaxToken>();
+            return Array.Empty<SyntaxToken>();
         }
 
         private void DefaultSpanContextConfig(SpanContextBuilder spanContext)

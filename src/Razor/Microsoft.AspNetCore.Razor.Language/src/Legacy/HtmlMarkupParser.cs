@@ -1085,9 +1085,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private bool TryParseAttributeName(out IEnumerable<SyntaxToken> nameTokens)
+        private bool TryParseAttributeName(out IReadOnlyList<SyntaxToken> nameTokens)
         {
-            nameTokens = Enumerable.Empty<SyntaxToken>();
+            nameTokens = Array.Empty<SyntaxToken>();
             //
             // We are currently here <input |name="..." />
             // If we encounter a transition (@) here, it can be parsed as CSharp or Markup depending on the feature flag.

@@ -266,14 +266,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return true;
         }
 
-        protected internal IEnumerable<SyntaxToken> ReadWhile(params SyntaxKind[] types)
+        protected internal IReadOnlyList<SyntaxToken> ReadWhile(Func<SyntaxToken, bool> condition)
         {
-            return ReadWhile(token => types.Any(expected => expected == token.Kind));
-        }
+            if (!EnsureCurrent() || !condition(CurrentToken))
+            {
+                return Array.Empty<SyntaxToken>();
+            }
 
-        protected internal IEnumerable<SyntaxToken> ReadWhile(Func<SyntaxToken, bool> condition)
-        {
-            return ReadWhileLazy(condition).ToList();
+            var result = new List<SyntaxToken>();
+            do
+            {
+                result.Add(CurrentToken);
+                NextToken();
+            }
+            while (EnsureCurrent() && condition(CurrentToken));
+
+            return result;
         }
 
         protected bool AtIdentifier(bool allowKeywords)
@@ -281,17 +289,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return CurrentToken != null &&
                    (Language.IsIdentifier(CurrentToken) ||
                     (allowKeywords && Language.IsKeyword(CurrentToken)));
-        }
-
-        // Don't open this to sub classes because it's lazy but it looks eager.
-        // You have to advance the Enumerable to read the next characters.
-        internal IEnumerable<SyntaxToken> ReadWhileLazy(Func<SyntaxToken, bool> condition)
-        {
-            while (EnsureCurrent() && condition(CurrentToken))
-            {
-                yield return CurrentToken;
-                NextToken();
-            }
         }
 
         protected RazorCommentBlockSyntax ParseRazorComment()
@@ -430,13 +427,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal void AcceptWhile(Func<SyntaxToken, bool> condition)
         {
-            Accept(ReadWhileLazy(condition));
+            Accept(ReadWhile(condition));
         }
 
-        protected internal void Accept(IEnumerable<SyntaxToken> tokens)
+        protected internal void Accept(IReadOnlyList<SyntaxToken> tokens)
         {
-            foreach (var token in tokens)
+            for(int i = 0; i < tokens.Count; i++)
             {
+                var token = tokens[i];
                 Accept(token);
             }
         }
