@@ -416,7 +416,7 @@ namespace System.Net.Http.QPack
                 case 404:
                 case 500:
                     // TODO this isn't safe, some index can be larger than 64. Encoded here!
-                    buffer[0] = (byte)(0xC0 | H3StaticTable.Instance.StatusIndex[statusCode]);
+                    buffer[0] = (byte)(0xC0 | H3StaticTable.StatusIndex[statusCode]);
                     return 1;
                 default:
                     // Send as Literal Header Field Without Indexing - Indexed Name
