@@ -192,7 +192,7 @@ namespace RunTests
             {
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                             $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} " +
-                              "--version 5.0.0-* --add-source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json",
+                              "--version 5.0.0-* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json",
                             environmentVariables: EnvironmentVariables,
                             outputDataReceived: Console.WriteLine,
                             errorDataReceived: Console.Error.WriteLine,
