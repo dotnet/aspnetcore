@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next);
 
-        Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next) => next(context);
-        Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next) => next(context, exception);
+        Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next) => next(context);
+        Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next) => next(context, exception);
     }
 }

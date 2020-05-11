@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
         private readonly Func<HubInvocationContext, ValueTask<object>> _invokeMiddleware;
-        private readonly Func<HubInvocationContext, Task> _onConnectedMiddleware;
-        private readonly Func<HubInvocationContext, Exception, Task> _onDisconnectedMiddleware;
+        private readonly Func<SomeHubContext, Task> _onConnectedMiddleware;
+        private readonly Func<SomeHubContext, Exception, Task> _onDisconnectedMiddleware;
 
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
             ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter> hubFilters)
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     if (invocationContext.ObjectMethodExecutor != null)
                     {
-                        return new ValueTask<object>(ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments));
+                        return ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments);
                     }
-                    return new ValueTask<object>(ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments));
+                    return ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments);
                 };
 
                 _onConnectedMiddleware = (context) => context.Hub.OnConnectedAsync();
@@ -85,8 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (_onConnectedMiddleware != null)
                     {
-                        var methodInfo = typeof(THub).GetMethod("OnConnectedAsync");
-                        var context = new HubInvocationContext(connection.HubCallerContext, scope.ServiceProvider, hub, methodInfo, Array.Empty<object>());
+                        var context = new SomeHubContext(connection.HubCallerContext, scope.ServiceProvider, hub);
                         await _onConnectedMiddleware(context);
                     }
                     else
@@ -121,8 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (_onDisconnectedMiddleware != null)
                     {
-                        var methodInfo = typeof(THub).GetMethod("OnDisconnectedAsync");
-                        var context = new HubInvocationContext(connection.HubCallerContext, scope.ServiceProvider, hub, methodInfo, Array.Empty<object>());
+                        var context = new SomeHubContext(connection.HubCallerContext, scope.ServiceProvider, hub);
                         await _onDisconnectedMiddleware(context, exception);
                     }
                     else
@@ -498,26 +496,26 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+        private ValueTask<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
         {
             if (_invokeMiddleware != null)
             {
                 var invocationContext = new HubInvocationContext(methodExecutor, connection.HubCallerContext, serviceProvider, hub, arguments);
-                return _invokeMiddleware(invocationContext).AsTask();
+                return _invokeMiddleware(invocationContext);
             }
 
             // If no Hub filters are registered
             return ExecuteMethod(methodExecutor, hub, arguments);
         }
 
-        private Task<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)
+        private ValueTask<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)
         {
             _methods.TryGetValue(hubMethodName, out var methodDescriptor);
             var methodExecutor = methodDescriptor.MethodExecutor;
             return ExecuteMethod(methodExecutor, hub, arguments);
         }
 
-        private async Task<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
+        private async ValueTask<object> ExecuteMethod(ObjectMethodExecutor methodExecutor, Hub hub, object[] arguments)
         {
             if (methodExecutor.IsMethodAsync)
             {

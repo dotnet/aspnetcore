@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _service = tcsService;
             }
 
-            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 await next(context);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 await next(context, exception);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task PerHubFilterByType_MethodsAreCalled()
+        public async Task PerHubFilterByCompileTimeType_MethodsAreCalled()
         {
             using (StartVerifiableLog())
             {
@@ -116,6 +116,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.AddSignalR().AddHubOptions<MethodHub>(options =>
                     {
                         options.AddFilter<VerifyMethodFilter>();
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                await AssertMethodsCalled(serviceProvider, tcsService);
+            }
+        }
+
+        [Fact]
+        public async Task PerHubFilterByRuntimeType_MethodsAreCalled()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                    {
+                        options.AddFilter(typeof(VerifyMethodFilter));
                     });
 
                     services.AddSingleton(tcsService);
@@ -310,7 +330,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _syncPoint = syncPoints;
             }
 
-            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
             {
                 await _syncPoint[0].WaitToContinue();
                 await next(context);
@@ -324,7 +344,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
             {
                 await _syncPoint[2].WaitToContinue();
                 await next(context, exception);
@@ -551,13 +571,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _counter.OnDisconnectedAsyncCount = 0;
             }
 
-            public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+            public Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
             {
                 _counter.OnConnectedAsyncCount++;
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+            public Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
             {
                 _counter.OnDisconnectedAsyncCount++;
                 return next(context, exception);
@@ -666,7 +686,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class NoExceptionFilter : IHubFilter
         {
-            public async Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
             {
                 try
                 {
@@ -675,7 +695,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch { }
             }
 
-            public async Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
             {
                 try
                 {
@@ -740,7 +760,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _skipOnDisconnected = skipOnDisconnected;
             }
 
-            public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+            public Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
             {
                 if (_skipOnConnected)
                 {
@@ -750,7 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+            public Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
             {
                 if (_skipOnDisconnected)
                 {
@@ -833,5 +853,198 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         //        }
         //    }
         //}
+
+        public class DisposableFilter : IHubFilter, IDisposable
+        {
+            private readonly TcsService _tcsService;
+
+            public DisposableFilter(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            public void Dispose()
+            {
+                _tcsService.StartedMethod.SetResult(null);
+            }
+
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            {
+                return next(invocationContext);
+            }
+        }
+
+        [Fact]
+        public async Task FiltersWithIDisposableAreDisposed()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.EnableDetailedErrors = true;
+                        options.AddFilter<DisposableFilter>();
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // OnConnectedAsync creates and destroys the filter
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    tcsService.Reset();
+
+                    var message = await client.InvokeAsync("Echo", "Hello");
+                    Assert.Equal("Hello", message.Result);
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    tcsService.Reset();
+
+                    client.Dispose();
+
+                    // OnDisconnectedAsync creates and destroys the filter
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstanceFiltersWithIDisposableAreNotDisposed()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.EnableDetailedErrors = true;
+                        options.AddFilter(new DisposableFilter(tcsService));
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var message = await client.InvokeAsync("Echo", "Hello");
+                    Assert.Equal("Hello", message.Result);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.False(tcsService.StartedMethod.Task.IsCompleted);
+                }
+            }
+        }
+
+        public class AsyncDisposableFilter : IHubFilter, IAsyncDisposable
+        {
+            private readonly TcsService _tcsService;
+
+            public AsyncDisposableFilter(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                return default;
+            }
+
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            {
+                return next(invocationContext);
+            }
+        }
+
+        [Fact]
+        public async Task FiltersWithIAsyncDisposableAreDisposed()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.EnableDetailedErrors = true;
+                        options.AddFilter<AsyncDisposableFilter>();
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // OnConnectedAsync creates and destroys the filter
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    tcsService.Reset();
+
+                    var message = await client.InvokeAsync("Echo", "Hello");
+                    Assert.Equal("Hello", message.Result);
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    tcsService.Reset();
+
+                    client.Dispose();
+
+                    // OnDisconnectedAsync creates and destroys the filter
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstanceFiltersWithIAsyncDisposableAreNotDisposed()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.EnableDetailedErrors = true;
+                        options.AddFilter(new AsyncDisposableFilter(tcsService));
+                    });
+
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var message = await client.InvokeAsync("Echo", "Hello");
+                    Assert.Equal("Hello", message.Result);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.False(tcsService.StartedMethod.Task.IsCompleted);
+                }
+            }
+        }
     }
 }

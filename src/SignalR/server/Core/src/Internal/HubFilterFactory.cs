@@ -16,30 +16,81 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _objectFactory = ActivatorUtilities.CreateFactory(typeof(T), Array.Empty<Type>());
         }
 
-        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
-            return GetFilter(_objectFactory, invocationContext.ServiceProvider).InvokeMethodAsync(invocationContext, next);
+            var (filter, owned) = GetFilter(invocationContext.ServiceProvider);
+
+            try
+            {
+                return await filter.InvokeMethodAsync(invocationContext, next);
+            }
+            finally
+            {
+                if (owned)
+                {
+                    await DisposeFilter(filter);
+                }
+            }
         }
 
-        public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+        public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
         {
-            return GetFilter(_objectFactory, context.ServiceProvider).OnConnectedAsync(context, next);
+            var (filter, owned) = GetFilter(context.ServiceProvider);
+
+            try
+            {
+                await filter.OnConnectedAsync(context, next);
+            }
+            finally
+            {
+                if (owned)
+                {
+                    await DisposeFilter(filter);
+                }
+            }
         }
 
-        public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+        public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
         {
-            return GetFilter(_objectFactory, context.ServiceProvider).OnDisconnectedAsync(context, exception, next);
+            var (filter, owned) = GetFilter(context.ServiceProvider);
+
+            try
+            {
+                await filter.OnDisconnectedAsync(context, exception, next);
+            }
+            finally
+            {
+                if (owned)
+                {
+                    await DisposeFilter(filter);
+                }
+            }
         }
 
-        private static IHubFilter GetFilter(ObjectFactory objectFactory, IServiceProvider serviceProvider)
+        private ValueTask DisposeFilter(IHubFilter filter)
         {
+            if (filter is IAsyncDisposable asyncDispsable)
+            {
+                return asyncDispsable.DisposeAsync();
+            }
+            if (filter is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            return default;
+        }
+
+        private (IHubFilter, bool) GetFilter(IServiceProvider serviceProvider)
+        {
+            var owned = false;
             var filter = (IHubFilter)serviceProvider.GetService<T>();
             if (filter == null)
             {
-                filter = (IHubFilter)objectFactory.Invoke(serviceProvider, null);
+                filter = (IHubFilter)_objectFactory.Invoke(serviceProvider, null);
+                owned = true;
             }
 
-            return filter;
+            return (filter, owned);
         }
     }
 }

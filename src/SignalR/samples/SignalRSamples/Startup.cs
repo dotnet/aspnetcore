@@ -64,13 +64,13 @@ namespace SignalRSamples
             }
         }
 
-        public Task OnConnectedAsync(HubInvocationContext context, Func<HubInvocationContext, Task> next)
+        public Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
         {
             _h.HttpContext = context.Context.GetHttpContext();
             return next(context);
         }
 
-        public Task OnDisconnectedAsync(HubInvocationContext context, Exception exception, Func<HubInvocationContext, Exception, Task> next)
+        public Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
         {
             _h.HttpContext = context.Context.GetHttpContext();
             return next(context, exception);
@@ -109,7 +109,7 @@ namespace SignalRSamples
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
 
-            services.AddSingleton<IHubFilter, CustomHubFilter>();
+            services.AddSingleton<CustomHubFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
