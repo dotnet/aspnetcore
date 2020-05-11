@@ -186,16 +186,31 @@ namespace WebAssembly.Net.Debugging {
 					var bpid = resp.Value["breakpointId"]?.ToString ();
 					var locations = resp.Value["locations"]?.Values<object>();
 					var request = BreakpointRequest.Parse (bpid, args);
-					context.BreakpointRequests[bpid] = request;
+
+					// is the store done loading?
+					var loaded = context.Source.Task.IsCompleted;
+					if (!loaded) {
+						// Send and empty response immediately if not
+						// and register the breakpoint for resolution
+						context.BreakpointRequests [bpid] = request;
+						SendResponse (id, resp, token);
+					}
+
 					if (await IsRuntimeAlreadyReadyAlready (id, token)) {
 						var store = await RuntimeReady (id, token);
 
 						Log ("verbose", $"BP req {args}");
-						await SetBreakpoint (id, store, request, token);
+						await SetBreakpoint (id, store, request, !loaded, token);
 					}
 
-					var result = Result.OkFromObject (request.AsSetBreakpointByUrlResponse (locations));
-					SendResponse (id, result, token);
+					if (loaded) {
+						// we were already loaded so we should send a response
+						// with the locations included and register the request
+						context.BreakpointRequests [bpid] = request;
+						var result = Result.OkFromObject (request.AsSetBreakpointByUrlResponse (locations));
+						SendResponse (id, result, token);
+
+					}
 					return true;
 				}
 
@@ -709,7 +724,7 @@ namespace WebAssembly.Net.Debugging {
 
 					foreach (var req in context.BreakpointRequests.Values) {
 						if (req.TryResolve (source)) {
-							await SetBreakpoint (sessionId, context.store, req, token);
+							await SetBreakpoint (sessionId, context.store, req, true, token);
 						}
 					}
 				}
@@ -759,7 +774,7 @@ namespace WebAssembly.Net.Debugging {
 			breakpointRequest.Locations.Clear ();
 		}
 
-		async Task SetBreakpoint (SessionId sessionId, DebugStore store, BreakpointRequest req, CancellationToken token)
+		async Task SetBreakpoint (SessionId sessionId, DebugStore store, BreakpointRequest req, bool sendResolvedEvent, CancellationToken token)
 		{
 			var context = GetContext (sessionId);
 			if (req.Locations.Any ()) {
@@ -796,7 +811,8 @@ namespace WebAssembly.Net.Debugging {
 					location = loc.AsLocation ()
 				};
 
-				SendEvent (sessionId, "Debugger.breakpointResolved", JObject.FromObject (resolvedLocation), token);
+				if (sendResolvedEvent)
+					SendEvent (sessionId, "Debugger.breakpointResolved", JObject.FromObject (resolvedLocation), token);
 			}
 
 			req.Locations.AddRange (breakpoints);
