@@ -386,6 +386,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       Uri="$(DotNetRuntimeDownloadUrl)"
+      Timeout="100"
       PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
       PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
       DestinationPath="$(DotNetRuntimeArchive)" />

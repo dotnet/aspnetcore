@@ -40,6 +40,7 @@
 
     <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
                   Uri="$(DotNetAssetRootUrl)%(RemoteAsset.Identity)"
+                  Timeout="100"
                   PrivateUri="$(DotNetPrivateAssetRootUrl)%(RemoteAsset.Identity)"
                   PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
                   DestinationPath="$(DepsPath)%(RemoteAsset.TargetFileName)" />

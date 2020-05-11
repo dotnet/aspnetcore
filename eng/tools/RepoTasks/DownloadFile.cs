@@ -30,6 +30,8 @@ namespace RepoTasks
 
         public int MaxRetries { get; set; } = 5;
 
+        public int Timeout { get; set; } = 100;
+
         [Required]
         public string DestinationPath { get; set; }
 
@@ -102,6 +104,7 @@ namespace RepoTasks
 
             using (var httpClient = new HttpClient())
             {
+                httpClient.Timeout = TimeSpan.FromSeconds(Timeout);
                 for (int retryNumber = 0; retryNumber < MaxRetries; retryNumber++)
                 {
                     try
