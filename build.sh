@@ -13,6 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 target_os_name=''
 ci=false
 use_default_binary_log=false
+exclude_ci_binary_log=false
 verbosity='minimal'
 run_restore=''
 run_build=true
@@ -74,6 +75,7 @@ Options:
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --excludeCIBinarylog              Don't output binary log (short: -nobl)
 
     --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
     --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
@@ -204,6 +206,9 @@ while [[ $# -gt 0 ]]; do
         -binarylog|-bl)
             use_default_binary_log=true
             ;;
+        -excludeCIBinarylog|-nobl)
+            exclude_ci_binary_log=true
+            ;;
         -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --dotnet-runtime-source-feed" && __usage
@@ -311,7 +316,7 @@ warn_as_error=false
 
 # Workaround Arcade check which asserts BinaryLog is true on CI.
 # We always use binlogs on CI, but we customize the name of the log file
-if [ "$ci" = true ]; then
+if [ "$ci" = true && "$exclude_ci_binary_log" == false ]; then
   binary_log=true
 fi
 
