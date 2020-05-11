@@ -3,6 +3,7 @@ import { HtmlUI } from './lib/minibench/minibench.ui.js';
 import './renderListStress.js';
 import './jsonHandlingStress.js';
 import './orgChartStress.js';
+import './timerStress.js';
 
 import { BlazorStressApp } from './util/BlazorStressApp.js';
 
