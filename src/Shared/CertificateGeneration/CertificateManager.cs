@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             .ToArray());
 
         internal static string GetDescription(X509Certificate2 c) =>
-            $"{c.Thumbprint[0..6]} - {c.Subject} - {c.GetEffectiveDateString()} - {c.GetExpirationDateString()} - {Instance.IsHttpsDevelopmentCertificate(c)} - {Instance.IsExportable(c)}";
+            $"{c.Thumbprint[0..6]} - {c.Subject} - {c.GetEffectiveDateString()} - {c.GetExpirationDateString()} - {Instance.IsHttpsDevelopmentCertificate(c)}";
 
         [EventSource(Name = "Dotnet-dev-certs")]
         public class CertificateManagerEventSource : EventSource
