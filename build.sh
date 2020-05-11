@@ -12,7 +12,7 @@ YELLOW="\033[0;33m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 target_os_name=''
 ci=false
-use_default_binary_log=false
+binary_log=false
 exclude_ci_binary_log=false
 verbosity='minimal'
 run_restore=''
@@ -74,8 +74,8 @@ Options:
 
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
+    --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    --excludeCIBinarylog              Don't output binary log (short: -nobl)
 
     --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
     --dotnet-runtime-source-feed-key  Key for feed that can be used when downloading .NET runtimes
@@ -204,7 +204,7 @@ while [[ $# -gt 0 ]]; do
             ci=true
             ;;
         -binarylog|-bl)
-            use_default_binary_log=true
+            binary_log=true
             ;;
         -excludeCIBinarylog|-nobl)
             exclude_ci_binary_log=true
@@ -314,12 +314,6 @@ export MSBUILDDISABLENODEREUSE=1
 # Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 warn_as_error=false
 
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-if [ "$ci" = true && "$exclude_ci_binary_log" == false ]; then
-  binary_log=true
-fi
-
 # increase file descriptor limit on macOS
 if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
@@ -327,10 +321,6 @@ fi
 
 # Import Arcade
 . "$DIR/eng/common/tools.sh"
-
-if [ "$use_default_binary_log" = true ]; then
-    msbuild_args[${#msbuild_args[*]}]="-bl:\"$log_dir/Build.binlog\""
-fi
 
 # Capture MSBuild crash logs
 export MSBUILDDEBUGPATH="$log_dir"
