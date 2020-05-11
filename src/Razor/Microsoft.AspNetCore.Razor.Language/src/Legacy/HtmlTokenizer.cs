@@ -255,19 +255,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool AtToken()
         {
-            return CurrentCharacter == '<' ||
-                   CurrentCharacter == '<' ||
-                   CurrentCharacter == '!' ||
-                   CurrentCharacter == '/' ||
-                   CurrentCharacter == '?' ||
-                   CurrentCharacter == '[' ||
-                   CurrentCharacter == '>' ||
-                   CurrentCharacter == ']' ||
-                   CurrentCharacter == '=' ||
-                   CurrentCharacter == '"' ||
-                   CurrentCharacter == '\'' ||
-                   CurrentCharacter == '@' ||
-                   (CurrentCharacter == '-' && Peek() == '-');
+            switch (CurrentCharacter)
+            {
+                case '<':
+                case '!':
+                case '/':
+                case '?':
+                case '[':
+                case '>':
+                case ']':
+                case '=':
+                case '"':
+                case '\'':
+                case '@':
+                    return true;
+                case '-':
+                    return Peek() == '-';
+            }
+
+            return false;
         }
 
         private StateResult Transition(HtmlTokenizerState state)
