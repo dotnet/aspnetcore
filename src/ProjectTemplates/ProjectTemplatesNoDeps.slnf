@@ -6,7 +6,8 @@
       "Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
       "Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
       "Web.Spa.ProjectTemplates\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
-      "test\\ProjectTemplates.Tests.csproj"
+      "test\\ProjectTemplates.Tests.csproj",
+      "BlazorTemplates.Tests\\BlazorTemplates.Tests.csproj"
     ]
   }
 }
