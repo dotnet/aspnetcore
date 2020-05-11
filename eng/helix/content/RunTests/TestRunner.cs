@@ -122,26 +122,30 @@ namespace RunTests
                         $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile NuGet.config",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false);
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget list source",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine);
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false);
 
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
