@@ -136,6 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public int LocalPort { get; set; }
         public string Scheme { get; set; }
         public HttpMethod Method { get; set; }
+        public string MethodText => ((IHttpRequestFeature)this).Method;
         public string PathBase { get; set; }
 
         public string Path { get; set; }

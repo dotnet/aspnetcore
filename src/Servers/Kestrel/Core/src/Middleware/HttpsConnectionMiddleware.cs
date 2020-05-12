@@ -11,13 +11,13 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -169,6 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     {
                         selector = (sender, name) =>
                         {
+                            feature.HostName = name;
                             context.Features.Set(sslStream);
                             var cert = _serverCertificateSelector(context, name);
                             if (cert != null)
@@ -204,22 +205,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
+                    KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+
                     await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (IOException ex)
                 {
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (AuthenticationException ex)
                 {
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
                     _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
 
                     await sslStream.DisposeAsync();
@@ -237,6 +249,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
             feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
             feature.Protocol = sslStream.SslProtocol;
+
+            KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
             var originalTransport = context.Transport;
 

@@ -243,6 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         {
                             _streams[streamId] = http3Stream;
                         }
+                        KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                 }
