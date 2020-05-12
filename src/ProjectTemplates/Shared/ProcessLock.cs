@@ -24,7 +24,7 @@ namespace Templates.Test.Helpers
 
         public async Task WaitAsync(TimeSpan? timeout = null)
         {
-            timeout ??= TimeSpan.FromMinutes(2);
+            timeout ??= TimeSpan.FromMinutes(20);
             Assert.True(await Semaphore.WaitAsync(timeout.Value), $"Unable to acquire process lock for process {Name}");
         }
 

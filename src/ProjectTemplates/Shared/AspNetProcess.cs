@@ -63,9 +63,9 @@ namespace Templates.Test.Helpers
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            output.WriteLine("Running ASP.NET application...");
+            output.WriteLine("Running ASP.NET Core application...");
 
-            var arguments = published ? $"exec {dllPath}" : "run";
+            var arguments = published ? $"exec {dllPath}" : "run --no-build";
 
             logger?.LogInformation($"AspNetProcess - process: {DotNetMuxer.MuxerPathOrDefault()} arguments: {arguments}");
 
