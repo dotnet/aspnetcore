@@ -9,7 +9,7 @@ namespace System.Net.Http.QPack
 {
     internal static class H3StaticTable
     {
-        private static readonly Dictionary<int, int> _statusIndex = new Dictionary<int, int>
+        private static readonly Dictionary<int, int> s_statusIndex = new Dictionary<int, int>
         {
             [103] = 24,
             [200] = 25,
@@ -27,7 +27,7 @@ namespace System.Net.Http.QPack
             [500] = 71,
         };
 
-        private static readonly Dictionary<HttpMethod, int> _methodIndex = new Dictionary<HttpMethod, int>
+        private static readonly Dictionary<HttpMethod, int> s_methodIndex = new Dictionary<HttpMethod, int>
         {
             // TODO connect is internal to system.net.http
             [HttpMethod.Delete] = 16,
@@ -38,15 +38,15 @@ namespace System.Net.Http.QPack
             [HttpMethod.Put] = 21,
         };
 
-        public static int Count => _staticTable.Length;
+        public static int Count => s_staticTable.Length;
 
         // TODO: just use Dictionary directly to avoid interface dispatch.
-        public static IReadOnlyDictionary<int, int> StatusIndex => _statusIndex;
-        public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => _methodIndex;
+        public static IReadOnlyDictionary<int, int> StatusIndex => s_statusIndex;
+        public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => s_methodIndex;
 
-        public static HeaderField GetHeaderFieldAt(int index) => _staticTable[index];
+        public static HeaderField GetHeaderFieldAt(int index) => s_staticTable[index];
 
-        private static readonly HeaderField[] _staticTable = new HeaderField[]
+        private static readonly HeaderField[] s_staticTable = new HeaderField[]
         {
             CreateHeaderField(":authority", ""), // 0
             CreateHeaderField(":path", "/"), // 1
