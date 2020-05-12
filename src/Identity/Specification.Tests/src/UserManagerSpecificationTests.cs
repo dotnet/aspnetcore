@@ -1450,6 +1450,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        [QuarantinedTest]
         public async Task ChangePhoneNumberFailsWithWrongPhoneNumber()
         {
             var manager = CreateManager();
@@ -1518,6 +1519,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        [QuarantinedTest]
         public async Task CanChangeEmailOnlyIfEmailSame()
         {
             var manager = CreateManager();
