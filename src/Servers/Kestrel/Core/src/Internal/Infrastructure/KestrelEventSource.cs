@@ -141,12 +141,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void ConnectionQueued(BaseConnectionContext connection)
+        public void ConnectionQueuedStart(BaseConnectionContext connection)
         {
             Interlocked.Increment(ref _connectionQueueLength);
             if (IsEnabled())
             {
-                ConnectionQueued(
+                ConnectionQueuedStart(
                     connection.ConnectionId,
                     connection.LocalEndPoint?.ToString(),
                     connection.RemoteEndPoint?.ToString());
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(6, Level = EventLevel.Informational)]
-        private void ConnectionQueued(string connectionId,
+        private void ConnectionQueuedStart(string connectionId,
             string localEndPoint,
             string remoteEndPoint)
         {
@@ -168,12 +168,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void ConnectionDequeued(BaseConnectionContext connection)
+        public void ConnectionQueuedStop(BaseConnectionContext connection)
         {
             Interlocked.Decrement(ref _connectionQueueLength);
             if (IsEnabled())
             {
-                ConnectionDequeued(
+                ConnectionQueuedStop(
                     connection.ConnectionId,
                     connection.LocalEndPoint?.ToString(),
                     connection.RemoteEndPoint?.ToString());
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(7, Level = EventLevel.Informational)]
-        private void ConnectionDequeued(string connectionId,
+        private void ConnectionQueuedStop(string connectionId,
             string localEndPoint,
             string remoteEndPoint)
         {
@@ -242,37 +242,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void RequestQueued(HttpProtocol httpProtocol, string httpVersion)
+        public void RequestQueuedStart(HttpProtocol httpProtocol, string httpVersion)
         {
             Interlocked.Increment(ref _httpRequestQueueLength);
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestQueued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
+                RequestQueuedStart(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(11, Level = EventLevel.Informational)]
-        private void RequestQueued(string connectionId, string requestId, string httpVersion)
+        private void RequestQueuedStart(string connectionId, string requestId, string httpVersion)
         {
             WriteEvent(11, connectionId, requestId, httpVersion);
         }
 
         [NonEvent]
-        public void RequestDequeued(HttpProtocol httpProtocol, string httpVersion)
+        public void RequestQueuedStop(HttpProtocol httpProtocol, string httpVersion)
         {
             Interlocked.Decrement(ref _httpRequestQueueLength);
             // avoid allocating the trace identifier unless logging is enabled
             if (IsEnabled())
             {
-                RequestDequeued(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
+                RequestQueuedStop(httpProtocol.ConnectionIdFeature, httpProtocol.TraceIdentifier, httpVersion);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(12, Level = EventLevel.Informational)]
-        private void RequestDequeued(string connectionId, string requestId, string httpVersion)
+        private void RequestQueuedStop(string connectionId, string requestId, string httpVersion)
         {
             WriteEvent(12, connectionId, requestId, httpVersion);
         }

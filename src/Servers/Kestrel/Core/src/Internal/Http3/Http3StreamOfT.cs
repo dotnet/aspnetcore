@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void Execute()
         {
-            KestrelEventSource.Log.RequestDequeued(this, AspNetCore.Http.HttpProtocol.Http3);
+            KestrelEventSource.Log.RequestQueuedStop(this, AspNetCore.Http.HttpProtocol.Http3);
 
             if (_requestHeaderParsingState == Http3Stream.RequestHeaderParsingState.Ready)
             {
