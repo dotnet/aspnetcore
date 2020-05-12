@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 

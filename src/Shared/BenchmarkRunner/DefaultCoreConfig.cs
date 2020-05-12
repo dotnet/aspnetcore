@@ -34,8 +34,8 @@ namespace BenchmarkDotNet.Attributes
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
 #elif NETCOREAPP3_1
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.1", null, ".NET Core 3.1")))
-#elif NETCOREAPP5_0
-                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp5.0", null, ".NET Core 5.0")))
+#elif NET5_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net5.0", null, ".NET Core 5.0")))
 #else
 #error Target frameworks need to be updated.
 #endif
