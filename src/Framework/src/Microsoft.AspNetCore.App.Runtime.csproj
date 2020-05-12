@@ -104,7 +104,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
     <!-- Disambiguated RID-specific crossgen executable relative path -->
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
     <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'microsoft.netcore.app.runtime.$(RuntimeIdentifier)', '$(MicrosoftNETCoreAppRuntimeVersion)'))</RuntimePackageRoot>
@@ -492,7 +492,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="IncludeVersionFile"
-          DependsOnTargets="GenerateSharedFxVersionsFiles" 
+          DependsOnTargets="GenerateSharedFxVersionsFiles"
           BeforeTargets="_GetPackageFiles">
 
     <ItemGroup>
