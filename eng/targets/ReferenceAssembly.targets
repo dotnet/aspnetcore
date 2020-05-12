@@ -51,6 +51,7 @@
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
       <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
+      <_RefSourceFileTFM Condition=" '$(TargetFramework)' == 'net5.0' ">netcoreapp</_RefSourceFileTFM>
       <_RefProjectFileTFM>$(TargetFramework)</_RefProjectFileTFM>
       <_RefProjectFileTFM Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">%24(DefaultNetCoreTargetFramework)</_RefProjectFileTFM>
 
