@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
     {
         private const int UserCancelledErrorCode = 1223;
 
+        // Cache to store the result of validating whether a key is exportable or not.
+        // This avoid requesting the key multiple times and avoids an issue when we try to access
+        // the key after it has been exported.
+        private Dictionary<string, bool> _areKeysExportable = new Dictionary<string, bool>();
+
         public WindowsCertificateManager()
         {
         }
@@ -26,10 +31,15 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // For the first run experience we don't need to know if the certificate can be exported.
             return true;
 #else
-            return (c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
-                    rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
-                (c.GetRSAPrivateKey() is RSACng cngPrivateKey &&
-                    cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport);
+            if (_areKeysExportable.TryGetValue(c.Thumbprint,out var result))
+            {
+                return result;
+            }
+            using var key = c.GetRSAPrivateKey();
+            _areKeysExportable[c.Thumbprint] = (key is RSACryptoServiceProvider rsaPrivateKey && rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
+                (key is RSACng cngPrivateKey && cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport);
+
+            return _areKeysExportable[c.Thumbprint];
 #endif
         }
 
