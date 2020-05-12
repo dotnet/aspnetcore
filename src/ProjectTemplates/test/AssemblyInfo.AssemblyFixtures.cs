@@ -10,3 +10,5 @@ using Xunit;
 
 [assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(ProjectFactoryFixture))]
 [assembly: Microsoft.AspNetCore.E2ETesting.AssemblyFixture(typeof(SeleniumStandaloneServer))]
+
+[assembly: QuarantinedTest("Investigation pending in https://github.com/dotnet/aspnetcore/issues/21748")]
