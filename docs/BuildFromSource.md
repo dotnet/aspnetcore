@@ -230,7 +230,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
 ```ps1
 .\build.cmd -all -pack -arch x64
 .\build.cmd -all -pack -arch x86 -noBuildJava
-.\build.cmd -BuildInstallers
+.\build.cmd -buildInstallers
 ```
 
 *Note*: Additional build steps listed above aren't necessary on Linux or macOS.
