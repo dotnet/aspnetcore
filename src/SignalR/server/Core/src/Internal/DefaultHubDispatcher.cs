@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
         private readonly Func<HubInvocationContext, ValueTask<object>> _invokeMiddleware;
-        private readonly Func<SomeHubContext, Task> _onConnectedMiddleware;
-        private readonly Func<SomeHubContext, Exception, Task> _onDisconnectedMiddleware;
+        private readonly Func<HubLifetimeContext, Task> _onConnectedMiddleware;
+        private readonly Func<HubLifetimeContext, Exception, Task> _onDisconnectedMiddleware;
 
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
             ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter> hubFilters)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (_onConnectedMiddleware != null)
                     {
-                        var context = new SomeHubContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
                         await _onConnectedMiddleware(context);
                     }
                     else
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (_onDisconnectedMiddleware != null)
                     {
-                        var context = new SomeHubContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                        var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
                         await _onDisconnectedMiddleware(context, exception);
                     }
                     else

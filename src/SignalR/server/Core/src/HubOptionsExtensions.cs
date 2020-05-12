@@ -27,15 +27,17 @@ namespace Microsoft.AspNetCore.SignalR
                 options.HubFilters = new List<IHubFilter>();
             }
 
-            options.HubFilters.Add(new HubFilterFactory<T>());
+            options.HubFilters.Add(new HubFilterFactory(typeof(T)));
         }
 
         public static void AddFilter(this HubOptions options, Type filterType)
         {
-            typeof(HubOptionsExtensions).GetMethods()
-            .Single(m => m.Name.Equals("AddFilter") && m.IsGenericMethod)
-            .MakeGenericMethod(filterType)
-            .Invoke(null, new object[] { options });
+            if (options.HubFilters == null)
+            {
+                options.HubFilters = new List<IHubFilter>();
+            }
+
+            options.HubFilters.Add(new HubFilterFactory(filterType));
         }
     }
 }

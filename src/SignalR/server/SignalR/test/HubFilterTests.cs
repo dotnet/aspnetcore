@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _service = tcsService;
             }
 
-            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
+            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 await next(context);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
             {
                 _service.StartedMethod.TrySetResult(null);
                 await next(context, exception);
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _syncPoint = syncPoints;
             }
 
-            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
+            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
             {
                 await _syncPoint[0].WaitToContinue();
                 await next(context);
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return result;
             }
 
-            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
             {
                 await _syncPoint[2].WaitToContinue();
                 await next(context, exception);
@@ -571,13 +571,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _counter.OnDisconnectedAsyncCount = 0;
             }
 
-            public Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
+            public Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
             {
                 _counter.OnConnectedAsyncCount++;
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
+            public Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
             {
                 _counter.OnDisconnectedAsyncCount++;
                 return next(context, exception);
@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public class NoExceptionFilter : IHubFilter
         {
-            public async Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
+            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
             {
                 try
                 {
@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch { }
             }
 
-            public async Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
+            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
             {
                 try
                 {
@@ -760,7 +760,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _skipOnDisconnected = skipOnDisconnected;
             }
 
-            public Task OnConnectedAsync(SomeHubContext context, Func<SomeHubContext, Task> next)
+            public Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
             {
                 if (_skipOnConnected)
                 {
@@ -770,7 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return next(context);
             }
 
-            public Task OnDisconnectedAsync(SomeHubContext context, Exception exception, Func<SomeHubContext, Exception, Task> next)
+            public Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
             {
                 if (_skipOnDisconnected)
                 {

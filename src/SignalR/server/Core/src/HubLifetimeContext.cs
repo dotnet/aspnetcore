@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.SignalR
 {
     // TODO: naming
-    public class SomeHubContext
+    public class HubLifetimeContext
     {
-        public SomeHubContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub)
+        public HubLifetimeContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub)
         {
             Hub = hub;
             ServiceProvider = serviceProvider;
