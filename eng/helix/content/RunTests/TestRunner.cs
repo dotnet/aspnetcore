@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RunTests
@@ -24,7 +24,7 @@ namespace RunTests
 
         public bool SetupEnvironment()
         {
-            try 
+            try
             {
                 // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
                 // We use a local NuGet.config file to avoid polluting global machine state and avoid relying on global machine state
@@ -32,7 +32,7 @@ namespace RunTests
                 {
                     File.Copy("default.NuGet.config", "NuGet.config");
                 }
-                
+
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("DOTNET_ROOT", Options.DotnetRoot);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
@@ -68,7 +68,7 @@ namespace RunTests
 
         public void DisplayContents(string path = "./")
         {
-            try 
+            try
             {
                 Console.WriteLine();
                 Console.WriteLine($"Displaying directory contents for {path}:");
@@ -88,9 +88,9 @@ namespace RunTests
             }
         }
 
-        public async Task<bool> InstallAspNetAppIfNeededAsync() 
+        public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
-            try 
+            try
             {
                 if (File.Exists(Options.AspNetRuntime))
                 {
@@ -113,7 +113,7 @@ namespace RunTests
                             }
                         }
                     }
-                    
+
                     DisplayContents(appRuntimePath);
 
                     Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
@@ -152,7 +152,7 @@ namespace RunTests
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                     EnvironmentVariables["PATH"] = Options.Path;
                 }
-                else 
+                else
                 {
                     Console.WriteLine($"No AspNetRuntime found: {Options.AspNetRuntime}, skipping...");
                 }
@@ -165,19 +165,19 @@ namespace RunTests
             }
         }
 
-        public bool InstallAspNetRefIfNeeded() 
+        public bool InstallAspNetRefIfNeeded()
         {
-            try 
+            try
             {
                 if (File.Exists(Options.AspNetRef))
                 {
                     var refPath = $"Microsoft.AspNetCore.App.Ref";
                     Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
                     ZipFile.ExtractToDirectory(Options.AspNetRef, "Microsoft.AspNetCore.App.Ref");
-                    
+
                     DisplayContents(refPath);
                 }
-                else 
+                else
                 {
                     Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
                 }
@@ -189,7 +189,28 @@ namespace RunTests
                 return false;
             }
         }
-        
+
+        public async Task<bool> InstallDotnetDump()
+        {
+            try
+            {
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                            $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} " +
+                              "--version 5.0.0-* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json",
+                            environmentVariables: EnvironmentVariables,
+                            outputDataReceived: Console.WriteLine,
+                            errorDataReceived: Console.Error.WriteLine,
+                            throwOnError: false);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in InstallDotnetDump: {e}");
+                return false;
+            }
+        }
+
         public async Task<bool> CheckTestDiscoveryAsync()
         {
             try
@@ -197,7 +218,8 @@ namespace RunTests
                 // Run test discovery so we know if there are tests to run
                 var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                     $"vstest {Options.Target} -lt",
-                    environmentVariables: EnvironmentVariables);
+                    environmentVariables: EnvironmentVariables,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                 if (discoveryResult.StandardOutput.Contains("Exception thrown"))
                 {
@@ -217,8 +239,10 @@ namespace RunTests
         public async Task<int> RunTestsAsync()
         {
             var exitCode = 0;
-            try 
+            try
             {
+                // Timeout test run 5 minutes before the Helix job would timeout
+                var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
                 var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
                 if (Options.Quarantined)
                 {
@@ -230,7 +254,8 @@ namespace RunTests
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {
@@ -247,7 +272,8 @@ namespace RunTests
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: cts.Token);
 
                     if (result.ExitCode != 0)
                     {
