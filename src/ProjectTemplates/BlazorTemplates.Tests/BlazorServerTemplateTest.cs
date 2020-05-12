@@ -139,8 +139,6 @@ namespace Templates.Test
 
         private void TestBasicNavigation()
         {
-            // Give components.server enough time to load so that it can replace
-            // the prerendered content before we start making assertions.
             var retries = 3;
             var connected = false;
             do
