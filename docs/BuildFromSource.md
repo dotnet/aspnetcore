@@ -228,8 +228,12 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them: 
 
 ```ps1
-build.cmd -BuildInstallers
+.\build.cmd -all -pack -arch x64
+.\build.cmd -all -pack -arch x86 -noBuildJava
+.\build.cmd -BuildInstallers
 ```
+
+*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
 
 * Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 * Add a NuGet.Config to your project directory with the following content:
