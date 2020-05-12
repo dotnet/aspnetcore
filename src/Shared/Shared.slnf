@@ -1,0 +1,8 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Shared\\test\\Shared.Tests\\Microsoft.AspNetCore.Shared.Tests.csproj"
+    ]
+  }
+}
