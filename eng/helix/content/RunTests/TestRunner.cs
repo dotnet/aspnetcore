@@ -237,8 +237,8 @@ namespace RunTests
             var exitCode = 0;
             try
             {
-                // Helix timeout is 30 minutes right now
-                var cts = new CancellationTokenSource(TimeSpan.FromMinutes(25));
+                // Timeout test run 5 minutes before the Helix job would timeout
+                var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
                 var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
                 if (Options.Quarantined)
                 {
