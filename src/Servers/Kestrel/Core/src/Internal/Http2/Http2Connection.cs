@@ -1181,7 +1181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
             if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
             {
-                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2StreamErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             ValidateHeader(name, value);
