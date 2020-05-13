@@ -8,13 +8,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"/>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
   </ItemGroup>
 
 </Project>

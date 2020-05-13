@@ -8,14 +8,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"/>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>
