@@ -67,7 +67,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- There is no way to suppress the .dev.runtimeconfig.json generation. -->
     <ProjectRuntimeConfigDevFilePath>$(IntermediateOutputPath)ignoreme.dev.runtimeconfig.json</ProjectRuntimeConfigDevFilePath>
 
-    <VersionFileIntermediateOutputPath>$(IntermediateOutputPath)$(SharedFxName).versions.txt</VersionFileIntermediateOutputPath>
+    <VersionTxtFileIntermediateOutputPath>$(IntermediateOutputPath)$(SharedFxName).versions.txt</VersionTxtFileIntermediateOutputPath>
+    <DotVersionFileIntermediateOutputPath>$(IntermediateOutputPath).version</DotVersionFileIntermediateOutputPath>
 
     <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
     <DebugType>none</DebugType>
@@ -259,7 +260,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
 
     <WriteLinesToFile
-      File="$(VersionFileIntermediateOutputPath)"
+      File="$(VersionTxtFileIntermediateOutputPath)"
+      Lines="@(VersionLines)"
+      Overwrite="true" />
+
+    <WriteLinesToFile
+      File="$(DotVersionFileIntermediateOutputPath)"
       Lines="@(VersionLines)"
       Overwrite="true" />
   </Target>
@@ -402,7 +408,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_ResolveSharedFrameworkContent" DependsOnTargets="ResolveReferences;Crossgen">
     <ItemGroup>
-      <SharedFxContent Include="$(VersionFileIntermediateOutputPath)" />
+      <SharedFxContent Include="$(DotVersionFileIntermediateOutputPath)" />
       <SharedFxContent Include="$(ProjectDepsFilePath)" />
       <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
       <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
@@ -501,7 +507,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles">
 
     <ItemGroup>
-      <None Include="$(VersionFileIntermediateOutputPath)" Pack="true" PackagePath="." />
+      <None Include="$(VersionTxtFileIntermediateOutputPath)" Pack="true" PackagePath="." />
     </ItemGroup>
   </Target>
 
