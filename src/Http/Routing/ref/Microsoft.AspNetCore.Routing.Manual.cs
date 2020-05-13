@@ -199,6 +199,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
     internal partial class DfaMatcherBuilder : Microsoft.AspNetCore.Routing.Matching.MatcherBuilder
     {
         public DfaMatcherBuilder(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Routing.ParameterPolicyFactory parameterPolicyFactory, Microsoft.AspNetCore.Routing.Matching.EndpointSelector selector, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.MatcherPolicy> policies) { }
+        internal EndpointComparer Comparer { get; }
+        internal bool UseCorrectCatchAllBehavior { get; set; }
         public override void AddEndpoint(Microsoft.AspNetCore.Routing.RouteEndpoint endpoint) { }
         public override Microsoft.AspNetCore.Routing.Matching.Matcher Build() { throw null; }
         public Microsoft.AspNetCore.Routing.Matching.DfaNode BuildDfaTree(bool includeLabel = false) { throw null; }
