@@ -308,7 +308,7 @@
                     ManifestCommit="$(CommitHash)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)"
-                    Condition="@(PackageToPublish->Count()) != 0" />
+                    Condition="@(PackageToPublishToTransport->Count()) != 0" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"
