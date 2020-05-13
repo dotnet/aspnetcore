@@ -22,22 +22,12 @@ namespace Microsoft.AspNetCore.SignalR
 
         public static void AddFilter<T>(this HubOptions options) where T : IHubFilter
         {
-            if (options.HubFilters == null)
-            {
-                options.HubFilters = new List<IHubFilter>();
-            }
-
-            options.HubFilters.Add(new HubFilterFactory(typeof(T)));
+            options.AddFilter(typeof(T));
         }
 
         public static void AddFilter(this HubOptions options, Type filterType)
         {
-            if (options.HubFilters == null)
-            {
-                options.HubFilters = new List<IHubFilter>();
-            }
-
-            options.HubFilters.Add(new HubFilterFactory(filterType));
+            options.AddFilter(new HubFilterFactory(filterType));
         }
     }
 }

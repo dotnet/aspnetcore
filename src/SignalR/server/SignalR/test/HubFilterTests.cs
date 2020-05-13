@@ -6,13 +6,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
     // Tests:
-    // Not running OnConnected, Invoke, and OnDisconnected
-    // Global filters added to local filters, so you can remove global filters per hub if wanted
+    // Not running Invoke
     //
 
     public class HubFilterTests : VerifiableLoggedTest
@@ -1043,6 +1043,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connectionHandlerTask.OrTimeout();
 
                     Assert.False(tcsService.StartedMethod.Task.IsCompleted);
+                }
+            }
+        }
+
+        public class ChangeMethodFilter : IHubFilter
+        {
+            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+            {
+                var methodInfo = typeof(BaseHub).GetMethod(nameof(BaseHub.BaseMethod));
+                var context = new HubInvocationContext(invocationContext.Context, invocationContext.ServiceProvider, invocationContext.Hub, methodInfo, invocationContext.Arguments);
+                return next(context);
+            }
+        }
+
+        [Fact]
+        public async Task InvokeFailsWhenFilterCallsNonExistantMethod()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.EnableDetailedErrors = true;
+                        options.AddFilter<ChangeMethodFilter>();
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var message = await client.InvokeAsync("Echo", "Hello");
+                    Assert.Equal("An unexpected error occurred invoking 'Echo' on the server. HubException: Unknown hub method 'BaseMethod'", message.Error);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
                 }
             }
         }

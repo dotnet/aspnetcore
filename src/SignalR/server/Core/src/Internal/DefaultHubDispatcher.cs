@@ -510,7 +510,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private ValueTask<object> ExecuteMethod(string hubMethodName, Hub hub, object[] arguments)
         {
-            _methods.TryGetValue(hubMethodName, out var methodDescriptor);
+            if (!_methods.TryGetValue(hubMethodName, out var methodDescriptor))
+            {
+                throw new HubException($"Unknown hub method '{hubMethodName}'");
+            }
             var methodExecutor = methodDescriptor.MethodExecutor;
             return ExecuteMethod(methodExecutor, hub, arguments);
         }
