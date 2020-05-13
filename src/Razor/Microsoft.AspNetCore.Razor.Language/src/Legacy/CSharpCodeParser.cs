@@ -16,6 +16,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
         });
 
+        // Following four high traffic methods cached as using method groups would cause allocation on every invocation.
+        protected static readonly Func<SyntaxToken, bool> IsSpacingToken = (token) =>
+        {
+            return token.Kind == SyntaxKind.Whitespace;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingNewLines = (token) =>
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.NewLine;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingComments = (token) =>
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.CSharpComment;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingNewLinesAndComments = (token) =>
+        {
+            return IsSpacingTokenIncludingNewLines(token) || token.Kind == SyntaxKind.CSharpComment;
+        };
+
         private static readonly Func<SyntaxToken, bool> IsValidStatementSpacingToken =
             IsSpacingTokenIncludingNewLinesAndComments;
 
@@ -2620,26 +2641,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return At(SyntaxKind.Keyword) &&
                 result.HasValue &&
                 result.Value == keyword;
-        }
-
-        protected static bool IsSpacingToken(SyntaxToken token)
-        {
-            return token.Kind == SyntaxKind.Whitespace;
-        }
-
-        protected static bool IsSpacingTokenIncludingNewLines(SyntaxToken token)
-        {
-            return IsSpacingToken(token) || token.Kind == SyntaxKind.NewLine;
-        }
-
-        protected static bool IsSpacingTokenIncludingComments(SyntaxToken token)
-        {
-            return IsSpacingToken(token) || token.Kind == SyntaxKind.CSharpComment;
-        }
-
-        protected static bool IsSpacingTokenIncludingNewLinesAndComments(SyntaxToken token)
-        {
-            return IsSpacingTokenIncludingNewLines(token) || token.Kind == SyntaxKind.CSharpComment;
         }
 
         protected class Block
