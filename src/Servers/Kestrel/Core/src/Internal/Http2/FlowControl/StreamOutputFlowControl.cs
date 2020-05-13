@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
@@ -12,17 +14,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         private readonly OutputFlowControl _connectionLevelFlowControl;
         private readonly OutputFlowControl _streamLevelFlowControl;
 
-        private OutputFlowControlAwaitable _currentConnectionLevelAwaitable;
+        private ManualResetValueTaskSource<object> _currentConnectionLevelAwaitable;
+        private int _currentConnectionLevelAwaitableVersion;
 
         public StreamOutputFlowControl(OutputFlowControl connectionLevelFlowControl, uint initialWindowSize)
         {
             _connectionLevelFlowControl = connectionLevelFlowControl;
-            _streamLevelFlowControl = new OutputFlowControl(initialWindowSize);
+            _streamLevelFlowControl = new OutputFlowControl(new SingleAwaitableProvider(), initialWindowSize);
         }
 
         public int Available => Math.Min(_connectionLevelFlowControl.Available, _streamLevelFlowControl.Available);
 
         public bool IsAborted => _connectionLevelFlowControl.IsAborted || _streamLevelFlowControl.IsAborted;
+
+        public void Reset(uint initialWindowSize)
+        {
+            _streamLevelFlowControl.Reset(initialWindowSize);
+            if (_currentConnectionLevelAwaitable != null)
+            {
+                Debug.Assert(_currentConnectionLevelAwaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Should have been completed by the previous stream.");
+                _currentConnectionLevelAwaitable = null;
+                _currentConnectionLevelAwaitableVersion = -1;
+            }
+        }
 
         public void Advance(int bytes)
         {
@@ -30,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _streamLevelFlowControl.Advance(bytes);
         }
 
-        public int AdvanceUpToAndWait(long bytes, out OutputFlowControlAwaitable awaitable)
+        public int AdvanceUpToAndWait(long bytes, out ValueTask<object> availabilityTask)
         {
             var leastAvailableFlow = _connectionLevelFlowControl.Available < _streamLevelFlowControl.Available
                 ? _connectionLevelFlowControl : _streamLevelFlowControl;
@@ -42,17 +56,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _connectionLevelFlowControl.Advance(actual);
             _streamLevelFlowControl.Advance(actual);
 
-            awaitable = null;
+            availabilityTask = default;
             _currentConnectionLevelAwaitable = null;
+            _currentConnectionLevelAwaitableVersion = -1;
 
             if (actual < bytes)
             {
-                awaitable = leastAvailableFlow.AvailabilityAwaitable;
+                var awaitable = leastAvailableFlow.AvailabilityAwaitable;
 
                 if (leastAvailableFlow == _connectionLevelFlowControl)
                 {
                     _currentConnectionLevelAwaitable = awaitable;
+                    _currentConnectionLevelAwaitableVersion = awaitable.Version;
                 }
+
+                availabilityTask = new ValueTask<object>(awaitable, awaitable.Version);
             }
 
             return actual;
@@ -73,7 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // connection-level awaitable so the stream abort is observed immediately.
             // This could complete an awaitable still sitting in the connection-level awaitable queue,
             // but this is safe because completing it again will just no-op.
-            _currentConnectionLevelAwaitable?.Complete();
+            if (_currentConnectionLevelAwaitable != null &&
+                _currentConnectionLevelAwaitable.Version == _currentConnectionLevelAwaitableVersion)
+            {
+                _currentConnectionLevelAwaitable.SetResult(null);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

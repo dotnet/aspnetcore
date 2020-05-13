@@ -11,13 +11,13 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -77,16 +77,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger<HttpsConnectionMiddleware>();
-        }
-        public Task OnConnectionAsync(ConnectionContext context)
-        {
-            return Task.Run(() => InnerOnConnectionAsync(context));
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
 
-        private async Task InnerOnConnectionAsync(ConnectionContext context)
+        public async Task OnConnectionAsync(ConnectionContext context)
         {
+            await Task.Yield();
+
             bool certificateRequired;
+            if (context.Features.Get<ITlsConnectionFeature>() != null)
+            {
+                await _next(context);
+                return;
+            }
+
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
@@ -156,7 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslStream = sslDuplexPipe.Stream;
 
             using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
-            using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
             {
                 try
                 {
@@ -166,6 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     {
                         selector = (sender, name) =>
                         {
+                            feature.HostName = name;
                             context.Features.Set(sslStream);
                             var cert = _serverCertificateSelector(context, name);
                             if (cert != null)
@@ -201,32 +205,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
-                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                    KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
+                    _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (IOException ex)
                 {
-                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
+                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (AuthenticationException ex)
                 {
-                    if (_serverCertificate == null ||
-                        !CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
-                        CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
-                    {
-                        _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                    }
-                    else
-                    {
-                        _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
-                    }
+                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+
+                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
 
                     await sslStream.DisposeAsync();
                     return;
@@ -243,6 +249,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
             feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
             feature.Protocol = sslStream.SslProtocol;
+
+            KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
             var originalTransport = context.Transport;
 
@@ -287,20 +295,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             return new X509Certificate2(certificate);
-        }
-
-        private class SslDuplexPipe : DuplexPipeStreamAdapter<SslStream>
-        {
-            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions)
-                : this(transport, readerOptions, writerOptions, s => new SslStream(s))
-            {
-
-            }
-
-            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, SslStream> factory) :
-                base(transport, readerOptions, writerOptions, factory)
-            {
-            }
         }
     }
 }

@@ -1,6 +1,6 @@
 <Project>
-
   <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
+  <Import Project="Common.props" />
 
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
@@ -69,7 +69,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
     <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
   </PropertyGroup>

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
@@ -21,6 +22,7 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);

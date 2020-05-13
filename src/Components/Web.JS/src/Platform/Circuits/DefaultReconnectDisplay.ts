@@ -22,7 +22,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       'right: 0',
       'bottom: 0',
       'left: 0',
-      'z-index: 1000',
+      'z-index: 1050',
       'display: none',
       'overflow: hidden',
       'background-color: #fff',

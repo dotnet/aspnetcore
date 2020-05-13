@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -104,7 +105,7 @@ namespace FunctionalTests
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
@@ -120,6 +121,7 @@ namespace FunctionalTests
                 var originHeader = context.Request.Headers[HeaderNames.Origin];
                 if (!StringValues.IsNullOrEmpty(originHeader))
                 {
+                    logger.LogInformation("Setting CORS headers.");
                     context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
                     context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
 
@@ -136,8 +138,9 @@ namespace FunctionalTests
                     }
                 }
 
-                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                if (HttpMethods.IsOptions(context.Request.Method))
                 {
+                    logger.LogInformation("Setting '204' CORS response.");
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return Task.CompletedTask;
                 }

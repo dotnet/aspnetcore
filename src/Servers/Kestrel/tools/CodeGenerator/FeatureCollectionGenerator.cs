@@ -31,8 +31,6 @@ namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection
     {{{Each(features, feature => $@"
-        private static readonly Type {feature.Name}Type = typeof({feature.Name});")}
-{Each(features, feature => $@"
         private object _current{feature.Name};")}
 
         private int _featureRevision;
@@ -98,7 +96,7 @@ namespace {namespaceName}
             get
             {{
                 object feature = null;{Each(features, feature => $@"
-                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
                     feature = _current{feature.Name};
                 }}")}
@@ -114,7 +112,7 @@ namespace {namespaceName}
             {{
                 _featureRevision++;
 {Each(features, feature => $@"
-                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
                     _current{feature.Name} = value;
                 }}")}
@@ -162,7 +160,7 @@ namespace {namespaceName}
         {{{Each(features, feature => $@"
             if (_current{feature.Name} != null)
             {{
-                yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name});
+                yield return new KeyValuePair<Type, object>(typeof({feature.Name}), _current{feature.Name});
             }}")}
 
             if (MaybeExtra != null)

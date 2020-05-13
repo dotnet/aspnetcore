@@ -79,6 +79,18 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
+        public async Task ReadFormAsync_ValueContainsInvalidCharacters_Throw()
+        {
+            var bodyPipe = await MakePipeReader("%00");
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(
+                () => ReadFormAsync(new FormPipeReader(bodyPipe)));
+
+            Assert.Equal("The form value contains invalid characters.", exception.Message);
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
+        }
+
+        [Fact]
         public async Task ReadFormAsync_ValueCountLimitMet_Success()
         {
             var bodyPipe = await MakePipeReader("foo=1&bar=2&baz=3");

@@ -1,0 +1,16 @@
+{
+  "solution": {
+    "path": "..\\Middleware.sln",
+    "projects": [
+      "Localization.Routing\\src\\Microsoft.AspNetCore.Localization.Routing.csproj",
+      "Localization.Routing\\test\\Microsoft.AspNetCore.Localization.Routing.Tests.csproj",
+      "Localization\\sample\\LocalizationSample.csproj",
+      "Localization\\src\\Microsoft.AspNetCore.Localization.csproj",
+      "Localization\\test\\FunctionalTests\\Microsoft.AspNetCore.Localization.FunctionalTests.csproj",
+      "Localization\\test\\UnitTests\\Microsoft.AspNetCore.Localization.Tests.csproj",
+      "Localization\\testassets\\LocalizationWebsite\\LocalizationWebsite.csproj",
+      "Localization\\testassets\\ResourcesClassLibraryNoAttribute\\ResourcesClassLibraryNoAttribute.csproj",
+      "Localization\\testassets\\ResourcesClassLibraryWithAttribute\\ResourcesClassLibraryWithAttribute.csproj"
+    ]
+  }
+}

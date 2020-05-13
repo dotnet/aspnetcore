@@ -308,7 +308,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             const string key = "\u00141\u00F3d\017c";
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
+#pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(
+#pragma warning restore CS0618 // Type or member is obsolete
                 () => headers.Append(encoding.GetBytes(key), Encoding.ASCII.GetBytes("value")));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }

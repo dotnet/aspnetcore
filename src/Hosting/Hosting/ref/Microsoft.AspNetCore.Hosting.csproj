@@ -19,6 +19,5 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 </Project>

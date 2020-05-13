@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
@@ -51,11 +50,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
-    <!-- Platform manifest and package override metatdata -->
-    <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
-    <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
-    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
-    <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
+    <!-- Runtime extensions transport paths -->
+    <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -112,7 +109,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
-      <_AvailableExtensionsRefAssemblies Include="$(MicrosoftInternalExtensionsRefsPath)\*.dll" />
+      <_AvailableExtensionsRefAssemblies Include="$(RuntimeExtensionsReferenceDirectory)*.dll" />
     </ItemGroup>
 
     <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
@@ -141,15 +138,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
             @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
       <AspNetCoreReferenceAssemblyPath
-          Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName)%(Extension)')" />
+          Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName)%(Extension)')" />
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
-      <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
-      <RefPackContent Include="$(ReferencePlatformManifestPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
@@ -159,10 +156,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
     <ItemGroup>
       <!-- Use package version for non-Extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Internal.Extensions.Refs' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
       <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
 
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(AspNetCoreReferenceAssemblyPath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
@@ -205,7 +202,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition=" '$(IsPackable)' == 'true' ">
     <PropertyGroup>
       <_TarCommand>tar</_TarCommand>
-      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">$(RepoRoot).tools\tar.exe</_TarCommand>
+      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">"$(RepoRoot).tools\tar.exe"</_TarCommand>
 
       <!-- For the tar packed with git, transform e.g. "C:\root\AspNetCore\File.tar.gz" to "/C/root/AspNetCore/File.tar.gz". -->
       <_TarArchiveOutputPath>$(TarArchiveOutputPath)</_TarArchiveOutputPath>
@@ -219,8 +216,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true" />
 
     <!-- Requires Windows 10 version 1803 or newer -->
-    <Message Importance="High" Text="Executing: $(_TarCommand) -czf $(_TarArchiveOutputPath) ." />
-    <Exec Command="$(_TarCommand) -czf $(_TarArchiveOutputPath) ."
+    <Message Importance="High" Text="Executing: $(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ." />
+    <Exec Command="$(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ."
         WorkingDirectory="$(TargetingPackLayoutRoot)" />
 
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />

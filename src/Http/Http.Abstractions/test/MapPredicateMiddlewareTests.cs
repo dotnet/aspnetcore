@@ -61,44 +61,44 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Fact]
-        public void PredicateTrue_BranchTaken()
+        public async Task PredicateTrue_BranchTaken()
         {
             HttpContext context = CreateRequest();
             var builder = new ApplicationBuilder(serviceProvider: null);
             builder.MapWhen(TruePredicate, UseSuccess);
             var app = builder.Build();
-            app.Invoke(context).Wait();
+            await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
         }
 
         [Fact]
-        public void PredicateTrueAction_BranchTaken()
+        public async Task PredicateTrueAction_BranchTaken()
         {
             HttpContext context = CreateRequest();
             var builder = new ApplicationBuilder(serviceProvider: null);
             builder.MapWhen(TruePredicate, UseSuccess);
             var app = builder.Build();
-            app.Invoke(context).Wait();
+            await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
         }
 
         [Fact]
-        public void PredicateFalseAction_PassThrough()
+        public async Task PredicateFalseAction_PassThrough()
         {
             HttpContext context = CreateRequest();
             var builder = new ApplicationBuilder(serviceProvider: null);
             builder.MapWhen(FalsePredicate, UseNotImplemented);
             builder.Run(Success);
             var app = builder.Build();
-            app.Invoke(context).Wait();
+            await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
         }
 
         [Fact]
-        public void ChainedPredicates_Success()
+        public async Task ChainedPredicates_Success()
         {
             var builder = new ApplicationBuilder(serviceProvider: null);
             builder.MapWhen(TruePredicate, map1 =>
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             var app = builder.Build();
 
             HttpContext context = CreateRequest();
-            app.Invoke(context).Wait();
+            await app.Invoke(context);
             Assert.Equal(200, context.Response.StatusCode);
         }
 

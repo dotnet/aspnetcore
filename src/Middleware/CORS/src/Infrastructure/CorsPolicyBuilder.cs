@@ -54,6 +54,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </remarks>
         public CorsPolicyBuilder WithOrigins(params string[] origins)
         {
+            if (origins is null)
+            {
+                throw new ArgumentNullException(nameof(origins));
+            }
+
             foreach (var origin in origins)
             {
                 var normalizedOrigin = GetNormalizedOrigin(origin);
@@ -65,6 +70,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         internal static string GetNormalizedOrigin(string origin)
         {
+            if (origin is null)
+            {
+                throw new ArgumentNullException(nameof(origin));
+            }
+
             if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
                 (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
                 !string.Equals(uri.IdnHost, uri.Host, StringComparison.Ordinal))
@@ -73,9 +83,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 if (!uri.IsDefaultPort)
                 {
                     // Uri does not have a way to differentiate between a port value inferred by default (e.g. Port = 80 for http://www.example.com) and
-                    // a default port value that is specified (e.g. Port = 80 for http://www.example.com:80). Although the HTTP or FETCH spec does not say 
+                    // a default port value that is specified (e.g. Port = 80 for http://www.example.com:80). Although the HTTP or FETCH spec does not say
                     // anything about including the default port as part of the Origin header, at the time of writing, browsers drop "default" port when navigating
-                    // and when sending the Origin header. All this goes to say, it appears OK to drop an explicitly specified port, 
+                    // and when sending the Origin header. All this goes to say, it appears OK to drop an explicitly specified port,
                     // if it is the default port when working with an IDN host.
                     builder.Port = uri.Port;
                 }
@@ -208,7 +218,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         /// <summary>
         /// Sets the <see cref="CorsPolicy.IsOriginAllowed"/> property of the policy to be a function
-        /// that allows origins to match a configured wildcarded domain when evaluating if the 
+        /// that allows origins to match a configured wildcarded domain when evaluating if the
         /// origin is allowed.
         /// </summary>
         /// <returns>The current policy builder.</returns>

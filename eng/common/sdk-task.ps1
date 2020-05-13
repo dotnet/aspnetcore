@@ -1,8 +1,8 @@
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [string] $configuration = "Debug",
+  [string] $configuration = 'Debug',
   [string] $task,
-  [string] $verbosity = "minimal",
+  [string] $verbosity = 'minimal',
   [string] $msbuildEngine = $null,
   [switch] $restore,
   [switch] $prepareMachine,
@@ -32,7 +32,7 @@ function Print-Usage() {
 }
 
 function Build([string]$target) {
-  $logSuffix = if ($target -eq "Execute") { "" } else { ".$target" }
+  $logSuffix = if ($target -eq 'Execute') { '' } else { ".$target" }
   $log = Join-Path $LogDir "$task$logSuffix.binlog"
   $outputPath = Join-Path $ToolsetDir "$task\\"
 
@@ -46,33 +46,44 @@ function Build([string]$target) {
 }
 
 try {
-  if ($help -or (($null -ne $properties) -and ($properties.Contains("/help") -or $properties.Contains("/?")))) {
+  if ($help -or (($null -ne $properties) -and ($properties.Contains('/help') -or $properties.Contains('/?')))) {
     Print-Usage
     exit 0
   }
 
   if ($task -eq "") {
-    Write-Host "Missing required parameter '-task <value>'" -ForegroundColor Red
+    Write-PipelineTelemetryError -Category 'Build' -Message "Missing required parameter '-task <value>'" -ForegroundColor Red
     Print-Usage
     ExitWithExitCode 1
   }
 
+  if( $msbuildEngine -eq "vs") {
+    # Ensure desktop MSBuild is available for sdk tasks.
+    if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "vs" )) {
+      $GlobalJson.tools | Add-Member -Name "vs" -Value (ConvertFrom-Json "{ `"version`": `"16.4`" }") -MemberType NoteProperty
+    }
+    if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "xcopy-msbuild" )) {
+      $GlobalJson.tools | Add-Member -Name "xcopy-msbuild" -Value "16.4.0-alpha" -MemberType NoteProperty
+    }
+
+    InitializeXCopyMSBuild $GlobalJson.tools."xcopy-msbuild" -install $true
+  }
+
   $taskProject = GetSdkTaskProject $task
   if (!(Test-Path $taskProject)) {
-    Write-Host "Unknown task: $task" -ForegroundColor Red
+    Write-PipelineTelemetryError -Category 'Build' -Message "Unknown task: $task" -ForegroundColor Red
     ExitWithExitCode 1
   }
 
   if ($restore) {
-    Build "Restore"
+    Build 'Restore'
   }
 
-  Build "Execute"
+  Build 'Execute'
 }
 catch {
-  Write-Host $_
-  Write-Host $_.Exception
   Write-Host $_.ScriptStackTrace
+  Write-PipelineTelemetryError -Category 'Build' -Message $_
   ExitWithExitCode 1
 }
 

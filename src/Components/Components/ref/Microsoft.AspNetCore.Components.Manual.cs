@@ -46,32 +46,6 @@ namespace Microsoft.AspNetCore.Components
         bool HasDelegate { get; }
         object UnpackForRenderTree();
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback : Microsoft.AspNetCore.Components.IEventCallback
-    {
-        public static readonly Microsoft.AspNetCore.Components.EventCallback Empty;
-        public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
-        internal readonly MulticastDelegate Delegate;
-        internal readonly IHandleEvent Receiver;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
-        public bool HasDelegate { get { throw null; } }
-        internal bool RequiresExplicitReceiver { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
-        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback<TValue> : Microsoft.AspNetCore.Components.IEventCallback
-    {
-        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
-        internal readonly MulticastDelegate Delegate;
-        internal readonly IHandleEvent Receiver;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
-        public bool HasDelegate { get { throw null; } }
-        internal bool RequiresExplicitReceiver { get { throw null; } }
-        internal Microsoft.AspNetCore.Components.EventCallback AsUntyped() { throw null; }
-        public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
-        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
-    }
     internal partial interface ICascadingValueComponent
     {
         object CurrentValue { get; }

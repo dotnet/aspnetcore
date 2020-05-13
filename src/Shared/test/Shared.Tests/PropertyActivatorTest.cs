@@ -153,7 +153,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             [TestActivate]
-            public static int StaticActivatablProperty { get; set; }
+            public static int StaticActivatableProperty { get; set; }
         }
 
         private class TestClassWithPropertyVisiblity

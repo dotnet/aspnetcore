@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
   </PropertyGroup>
 
   <ItemGroup>

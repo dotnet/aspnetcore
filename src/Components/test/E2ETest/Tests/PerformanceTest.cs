@@ -13,11 +13,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class PerformanceTest
-        : ServerTestBase<DevHostServerFixture<Blazor.E2EPerformance.Program>>
+        : ServerTestBase<DevHostServerFixture<Wasm.Performance.TestApp.Program>>
     {
         public PerformanceTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Blazor.E2EPerformance.Program> serverFixture,
+            DevHostServerFixture<Wasm.Performance.TestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -52,10 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 () => runAllButton.Displayed || Browser.FindElements(By.CssSelector(".benchmark-error")).Any(),
                 TimeSpan.FromSeconds(60));
 
-            var finishedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-idle"));
-            var failedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-error"));
-            Assert.NotEmpty(finishedBenchmarks);
-            Assert.Empty(failedBenchmarks);
+            Browser.DoesNotExist(By.CssSelector(".benchmark-error")); // no failures
+            Browser.Exists(By.CssSelector(".benchmark-idle")); // everything's done
         }
     }
 }

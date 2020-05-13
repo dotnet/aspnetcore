@@ -7,7 +7,7 @@
     "PresetHeaders": "Json",
     "ReadyStateText": "Application started.",
     "Source": {
-      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "Repository": "https://github.com/dotnet/aspnetcore.git",
       "BranchOrCommit": "master",
       "Project": "src/Mvc/benchmarkapps/BasicApi/BasicApi.csproj"
     }
@@ -19,20 +19,20 @@
   },
   "BasicApi.GetUsingQueryString": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/findByStatus",
     "Query": "?status=available"
   },
   "BasicApi.GetUsingRouteValue": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/-1"
   },
   "BasicApi.GetUsingRouteValueWithoutAuthorization": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicApi/getWithToken.lua"
     },
     "Path": "/pet/anonymous/-1"
   },
@@ -41,14 +41,14 @@
   },
   "BasicApi.Post": {
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/postJsonWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicApi/postJsonWithToken.lua"
     },
     "Path": "/pet"
   },
   "BasicApi.PostWithoutDb": {
     "Path": "/pet/add-pet",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/postJsonWithToken.lua"
+      "Scripts": "https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Mvc/benchmarkapps/BasicApi/postJsonWithToken.lua"
     }
   }
 }

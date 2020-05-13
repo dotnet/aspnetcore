@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -383,9 +384,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private static byte[] ReadFileContent(FileStream fileStream)
         {
-            fileStream.Position = 0;
+            var fs = new FileStream(fileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite);
             using var memoryStream = new MemoryStream();
-            fileStream.CopyTo(memoryStream);
+            fs.CopyTo(memoryStream);
 
             return memoryStream.ToArray();
         }

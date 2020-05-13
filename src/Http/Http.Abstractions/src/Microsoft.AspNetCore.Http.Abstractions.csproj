@@ -14,7 +14,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsPackable>false</IsPackable>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +24,8 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
 
-    <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)"/>
+    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

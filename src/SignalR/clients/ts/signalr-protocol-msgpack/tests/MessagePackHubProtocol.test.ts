@@ -217,4 +217,32 @@ describe("MessagePackHubProtocol", () => {
         const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.CancelInvocation, invocationId: "abc" });
         expect(new Uint8Array(buffer)).toEqual(payload);
     });
+
+    it("will preserve double precision if forceFloat64 is set", () => {
+        const invocation = {
+            arguments: [Number(0.005)],
+            headers: {},
+            invocationId: "123",
+            streamIds: [],
+            target: "myMethod",
+            type: MessageType.Invocation,
+        } as InvocationMessage;
+
+        const protocol = new MessagePackHubProtocol({ forceFloat64: true });
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
+        expect(parsedMessages[0]).toEqual({
+            arguments: [0.005],
+            headers: {},
+            invocationId: "123",
+            streamIds: [],
+            target: "myMethod",
+            type: 1,
+        });
+    });
+
+    it("will force compatibilityMode to false", () => {
+        const options: any = { compatibilityMode: true };
+        const protocol: any = new MessagePackHubProtocol(options);
+        expect(protocol.messagePackOptions.compatibilityMode).toBe(false);
+    });
 });

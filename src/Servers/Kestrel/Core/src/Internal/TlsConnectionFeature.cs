@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         public X509Certificate2 ClientCertificate { get; set; }
 
+        public string HostName { get; set; }
+
         public ReadOnlyMemory<byte> ApplicationProtocol { get; set; }
 
         public SslProtocols Protocol { get; set; }
