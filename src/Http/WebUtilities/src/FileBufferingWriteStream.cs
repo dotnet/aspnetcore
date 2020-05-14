@@ -186,25 +186,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             // unspooled content. Copy the FileStream content first when available.
             if (FileStream != null)
             {
-                // We make a new stream for async reads from disk and async writes to the destination
-                await using var readStream = new FileStream(FileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite, bufferSize: 1, useAsync: true);
+                await FileStream.FlushAsync(cancellationToken);
 
-                await readStream.CopyToAsync(destination, cancellationToken);
-
-                // This is created with delete on close
-                await FileStream.DisposeAsync();
-                FileStream = null;
-            }
-
-            await PagedByteBuffer.MoveToAsync(destination, cancellationToken);
-        }
-
-        public async Task DrainBufferAsync(PipeWriter destination, CancellationToken cancellationToken = default)
-        {
-            // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"
-            // unspooled content. Copy the FileStream content first when available.
-            if (FileStream != null)
-            {
                 // We make a new stream for async reads from disk and async writes to the destination
                 await using var readStream = new FileStream(FileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite, bufferSize: 1, useAsync: true);
 
