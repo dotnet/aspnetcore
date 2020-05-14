@@ -16,6 +16,8 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
     <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
