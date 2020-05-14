@@ -2,7 +2,7 @@ blank_issues_enabled: true
 contact_links:
   - name: Issue with .NET runtime or core .NET libraries
     url:  https://github.com/dotnet/runtime/issues/new/choose
-    about: Please open issues with the .NET runtime or core in their repo
+    about: Please open issues with the .NET runtime or core .NET libraries in their repo
   - name: Issue with .NET Core SDK
     url:  https://github.com/dotnet/sdk/issues/new/choose
     about: Please open issues with the .NET Core SDK in their repo
