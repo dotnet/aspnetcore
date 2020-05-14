@@ -40,6 +40,8 @@ parameters:
   Net5Preview3ChannelId: 739
   Net5Preview4ChannelId: 856
   Net5Preview5ChannelId: 857
+  NetCoreSDK313xxChannelId: 759
+  NetCoreSDK313xxInternalChannelId: 760
   NetCoreSDK314xxChannelId: 921
   NetCoreSDK314xxInternalChannelId: 922
   
@@ -66,7 +68,7 @@ stages:
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
           arguments: -PromoteToChannels "$(TargetChannels)"
-            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview3ChannelId}},${{parameters.Net5Preview4ChannelId}},${{parameters.Net5Preview5ChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}}
+            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview3ChannelId}},${{parameters.Net5Preview4ChannelId}},${{parameters.Net5Preview5ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}}
 
   - job:
     displayName: NuGet Validation
@@ -405,6 +407,32 @@ stages:
     stageName: 'NETCore_SDK_314xx_Internal_Publishing'
     channelName: '.NET Core SDK 3.1.4xx Internal'
     channelId: ${{ parameters.NetCoreSDK314xxInternalChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
+
+- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'NETCore_SDK_313xx_Publishing'
+    channelName: '.NET Core SDK 3.1.3xx'
+    channelId: ${{ parameters.NetCoreSDK313xxChannelId }}
+    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+
+- template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    dependsOn: ${{ parameters.publishDependsOn }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    stageName: 'NETCore_SDK_313xx_Internal_Publishing'
+    channelName: '.NET Core SDK 3.1.3xx Internal'
+    channelId: ${{ parameters.NetCoreSDK313xxInternalChannelId }}
     transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
     shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
     symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
