@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
   </PropertyGroup>
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
