@@ -314,6 +314,12 @@ export MSBUILDDISABLENODEREUSE=1
 # Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 warn_as_error=false
 
+# Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
+# to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
+if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
+fi
+
 # increase file descriptor limit on macOS
 if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
