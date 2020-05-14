@@ -1486,8 +1486,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(token1, token2);
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num1));
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num2));
-            Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num1));
-            Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
+            Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, "bogus", num1));
+            Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, "bogus", num2));
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangePhoneNumber:{num1} for user {await manager.GetUserIdAsync(user)}.");
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangePhoneNumber:{num2} for user {await manager.GetUserIdAsync(user)}.");
         }
