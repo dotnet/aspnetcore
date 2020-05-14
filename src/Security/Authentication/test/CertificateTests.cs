@@ -474,6 +474,80 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [Fact]
+        public async Task VerifyValidationResultIsCached()
+        {
+            const string Expected = "John Doe";
+            var validationCount = 0;
+
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    Events = new CertificateAuthenticationEvents
+                    {
+                        OnCertificateValidated = context =>
+                        {
+                            validationCount++;
+
+                            // Make sure we get the validated principal
+                            Assert.NotNull(context.Principal);
+
+                            var claims = new[]
+                            {
+                                new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                                new Claim("ValidationCount", validationCount.ToString(), ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                            };
+
+                            context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                            context.Success();
+                            return Task.CompletedTask;
+                        }
+                    }
+                },
+                Certificates.SelfSignedValidWithNoEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            XElement responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+            Assert.NotNull(responseAsXml);
+            var name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(name);
+            Assert.Equal(Expected, name.First().Value);
+            var count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+            Assert.Single(count);
+            Assert.Equal("1", count.First().Value);
+
+            // Second request should not trigger validation
+            response = await server.CreateClient().GetAsync("https://example.com/");
+            responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(name);
+            Assert.Equal(Expected, name.First().Value);
+            count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+            Assert.Single(count);
+            Assert.Equal("1", count.First().Value);
+        }
+
+        [Fact]
         public async Task VerifyValidationEventPrincipalIsPropogated()
         {
             const string Expected = "John Doe";
