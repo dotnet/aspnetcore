@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
