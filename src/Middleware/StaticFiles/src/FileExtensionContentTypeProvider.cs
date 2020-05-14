@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".p7m", "application/pkcs7-mime" },
                 { ".p7r", "application/x-pkcs7-certreqresp" },
                 { ".p7s", "application/pkcs7-signature" },
-                { ".pbf", "image/x-pbf" },
+                { ".pbf", "application/x-pbf" },
                 { ".pbm", "image/x-portable-bitmap" },
                 { ".pcx", "application/octet-stream" },
                 { ".pcz", "application/octet-stream" },
