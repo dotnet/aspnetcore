@@ -18,11 +18,11 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ActivatorUtilities\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" />
     <Reference Include="Microsoft.Net.Http.Headers" />
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
