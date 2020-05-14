@@ -3,13 +3,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Methods to add <see cref="IHubFilter"/>'s to Hubs.
+    /// </summary>
     public static class HubOptionsExtensions
     {
+        /// <summary>
+        /// Adds an instance of an <see cref="IHubFilter"/> to the <see cref="HubOptions"/>.
+        /// </summary>
+        /// <param name="options">The options to add a filter to.</param>
+        /// <param name="hubFilter">The filter instance to add to the options.</param>
         public static void AddFilter(this HubOptions options, IHubFilter hubFilter)
         {
             if (options.HubFilters == null)
@@ -20,11 +27,21 @@ namespace Microsoft.AspNetCore.SignalR
             options.HubFilters.Add(hubFilter);
         }
 
+        /// <summary>
+        /// Adds an <see cref="IHubFilter"/> type to the <see cref="HubOptions"/> that will be resolved via DI or the <see cref="Activator"/>.
+        /// </summary>
+        /// <typeparam name="T">The <see cref="IHubFilter"/> type that will be added to the options.</typeparam>
+        /// <param name="options">The options to add a filter to.</param>
         public static void AddFilter<T>(this HubOptions options) where T : IHubFilter
         {
             options.AddFilter(typeof(T));
         }
 
+        /// <summary>
+        /// Adds an <see cref="IHubFilter"/> type to the <see cref="HubOptions"/> that will be resolved via DI or the <see cref="Activator"/>.
+        /// </summary>
+        /// <param name="options">The options to add a filter to.</param>
+        /// <param name="filterType">The <see cref="IHubFilter"/> type that will be added to the options.</param>
         public static void AddFilter(this HubOptions options, Type filterType)
         {
             options.AddFilter(new HubFilterFactory(filterType));

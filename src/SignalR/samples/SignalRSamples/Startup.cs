@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,80 +9,9 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
-using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using Microsoft.AspNetCore.Http;
 
 namespace SignalRSamples
 {
-    public class CustomHubFilter : IHubFilter
-    {
-        private readonly ILogger _logger;
-        private readonly IHttpContextAccessor _h;
-        public CustomHubFilter(ILogger<CustomHubFilter> logger, IHttpContextAccessor h)
-        {
-            _logger = logger;
-            _h = h;
-        }
-
-        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-        {
-            try
-            {
-                _h.HttpContext = invocationContext.Context.GetHttpContext();
-                _logger.LogInformation("Starting invoke");
-                var res = await next(invocationContext);
-                if (invocationContext.HubMethod.Name == nameof(Chat.Echo))
-                {
-                    return "test";
-                }
-                else if (invocationContext.HubMethod.Name == nameof(Streaming.AsyncEnumerableCounter))
-                {
-                    return Add((IAsyncEnumerable<int>)res);
-
-                    static async IAsyncEnumerable<int> Add(IAsyncEnumerable<int> enumerable)
-                    {
-                        await foreach(var item in enumerable)
-                        {
-                            yield return item + 5;
-                        }
-                    }
-                }
-                return res;
-            }
-            catch (Exception ex)
-            {
-                throw new HubException($"some error: {ex.Message}");
-            }
-            finally
-            {
-                _logger.LogInformation("Ending invoke");
-            }
-        }
-
-        public Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-        {
-            _h.HttpContext = context.Context.GetHttpContext();
-            return next(context);
-        }
-
-        public Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-        {
-            _h.HttpContext = context.Context.GetHttpContext();
-            return next(context, exception);
-        }
-    }
-
-    public class InstanceFilter : IHubFilter
-    {
-        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-        {
-            return next(invocationContext);
-        }
-    }
 
     public class Startup
     {
@@ -97,19 +25,9 @@ namespace SignalRSamples
             services.AddHttpContextAccessor();
             services.AddConnections();
 
-            services.AddSignalR(options =>
-            {
-                options.AddFilter<CustomHubFilter>();
-                options.AddFilter(new InstanceFilter());
-            })
-            .AddHubOptions<Chat>(options =>
-            {
-                options.AddFilter(new InstanceFilter());
-            })
+            services.AddSignalR()
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
-
-            services.AddSingleton<CustomHubFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

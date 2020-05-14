@@ -11,44 +11,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    // Tests:
-    // Not running Invoke
-    //
-
     public class HubFilterTests : VerifiableLoggedTest
     {
-        public class VerifyMethodFilter : IHubFilter
-        {
-            private readonly TcsService _service;
-            public VerifyMethodFilter(TcsService tcsService)
-            {
-                _service = tcsService;
-            }
-
-            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-            {
-                _service.StartedMethod.TrySetResult(null);
-                await next(context);
-                _service.EndMethod.TrySetResult(null);
-            }
-
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                _service.StartedMethod.TrySetResult(null);
-                var result = await next(invocationContext);
-                _service.EndMethod.TrySetResult(null);
-
-                return result;
-            }
-
-            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-            {
-                _service.StartedMethod.TrySetResult(null);
-                await next(context, exception);
-                _service.EndMethod.TrySetResult(null);
-            }
-        }
-
         [Fact]
         public async Task GlobalHubFilterByType_MethodsAreCalled()
         {
@@ -321,36 +285,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public class SyncPointFilter : IHubFilter
-        {
-            private readonly SyncPoint[] _syncPoint;
-            public SyncPointFilter(SyncPoint[] syncPoints)
-            {
-                Debug.Assert(syncPoints.Length == 3);
-                _syncPoint = syncPoints;
-            }
-
-            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-            {
-                await _syncPoint[0].WaitToContinue();
-                await next(context);
-            }
-
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                await _syncPoint[1].WaitToContinue();
-                var result = await next(invocationContext);
-
-                return result;
-            }
-
-            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-            {
-                await _syncPoint[2].WaitToContinue();
-                await next(context, exception);
-            }
-        }
-
         [Fact]
         public async Task GlobalFiltersRunInOrder()
         {
@@ -553,43 +487,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public class FilterCounter
-        {
-            public int OnConnectedAsyncCount;
-            public int InvokeMethodAsyncCount;
-            public int OnDisconnectedAsyncCount;
-        }
-
-        public class CounterFilter : IHubFilter
-        {
-            private readonly FilterCounter _counter;
-            public CounterFilter(FilterCounter counter)
-            {
-                _counter = counter;
-                _counter.OnConnectedAsyncCount= 0;
-                _counter.InvokeMethodAsyncCount = 0;
-                _counter.OnDisconnectedAsyncCount = 0;
-            }
-
-            public Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-            {
-                _counter.OnConnectedAsyncCount++;
-                return next(context);
-            }
-
-            public Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-            {
-                _counter.OnDisconnectedAsyncCount++;
-                return next(context, exception);
-            }
-
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                _counter.InvokeMethodAsyncCount++;
-                return next(invocationContext);
-            }
-        }
-
         [Fact]
         public async Task FiltersHaveTransientScopeByDefault()
         {
@@ -684,38 +581,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public class NoExceptionFilter : IHubFilter
-        {
-            public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-            {
-                try
-                {
-                    await next(context);
-                }
-                catch { }
-            }
-
-            public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-            {
-                try
-                {
-                    await next(context, exception);
-                }
-                catch { }
-            }
-
-            public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                try
-                {
-                    return await next(invocationContext);
-                }
-                catch { }
-
-                return null;
-            }
-        }
-
         [Fact]
         public async Task ConnectionContinuesIfOnConnectedAsyncThrowsAndFilterDoesNot()
         {
@@ -744,50 +609,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await connectionHandlerTask.OrTimeout();
                 }
-            }
-        }
-
-        public class SkipNextFilter : IHubFilter
-        {
-            private readonly bool _skipOnConnected;
-            private readonly bool _skipInvoke;
-            private readonly bool _skipOnDisconnected;
-
-            public SkipNextFilter(bool skipOnConnected = false, bool skipInvoke = false, bool skipOnDisconnected = false)
-            {
-                _skipOnConnected = skipOnConnected;
-                _skipInvoke = skipInvoke;
-                _skipOnDisconnected = skipOnDisconnected;
-            }
-
-            public Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
-            {
-                if (_skipOnConnected)
-                {
-                    return Task.CompletedTask;
-                }
-
-                return next(context);
-            }
-
-            public Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
-            {
-                if (_skipOnDisconnected)
-                {
-                    return Task.CompletedTask;
-                }
-
-                return next(context, exception);
-            }
-
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                if (_skipInvoke)
-                {
-                    return new ValueTask<object>(null);
-                }
-
-                return next(invocationContext);
             }
         }
 
@@ -822,55 +643,36 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        //[Fact]
-        //public async Task InvokeFailsIfFilterSkipsCallingHubMethod()
-        //{
-        //    using (StartVerifiableLog())
-        //    {
-        //        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-        //        {
-        //            services.AddSignalR(options =>
-        //            {
-        //                options.AddFilter(new SkipNextFilter(skipInvoke: true));
-        //            });
-        //        }, LoggerFactory);
-
-        //        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-        //        using (var client = new TestClient())
-        //        {
-        //            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-        //            await client.Connected.OrTimeout();
-
-        //            var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
-
-        //            Assert.Equal("Method not called", message.Error);
-
-        //            client.Dispose();
-
-        //            await connectionHandlerTask.OrTimeout();
-        //        }
-        //    }
-        //}
-
-        public class DisposableFilter : IHubFilter, IDisposable
+        [Fact]
+        public async Task FilterCanSkipCallingHubMethod()
         {
-            private readonly TcsService _tcsService;
-
-            public DisposableFilter(TcsService tcsService)
+            using (StartVerifiableLog())
             {
-                _tcsService = tcsService;
-            }
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.AddFilter(new SkipNextFilter(skipInvoke: true));
+                    });
+                }, LoggerFactory);
 
-            public void Dispose()
-            {
-                _tcsService.StartedMethod.SetResult(null);
-            }
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                return next(invocationContext);
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+
+                    Assert.Null(message.Error);
+                    Assert.Null(message.Result);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
             }
         }
 
@@ -950,27 +752,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public class AsyncDisposableFilter : IHubFilter, IAsyncDisposable
-        {
-            private readonly TcsService _tcsService;
-
-            public AsyncDisposableFilter(TcsService tcsService)
-            {
-                _tcsService = tcsService;
-            }
-
-            public ValueTask DisposeAsync()
-            {
-                _tcsService.StartedMethod.SetResult(null);
-                return default;
-            }
-
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                return next(invocationContext);
-            }
-        }
-
         [Fact]
         public async Task FiltersWithIAsyncDisposableAreDisposed()
         {
@@ -1044,16 +825,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.False(tcsService.StartedMethod.Task.IsCompleted);
                 }
-            }
-        }
-
-        public class ChangeMethodFilter : IHubFilter
-        {
-            public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
-            {
-                var methodInfo = typeof(BaseHub).GetMethod(nameof(BaseHub.BaseMethod));
-                var context = new HubInvocationContext(invocationContext.Context, invocationContext.ServiceProvider, invocationContext.Hub, methodInfo, invocationContext.Arguments);
-                return next(context);
             }
         }
 

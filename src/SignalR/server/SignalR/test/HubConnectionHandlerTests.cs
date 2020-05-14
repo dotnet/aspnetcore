@@ -2242,6 +2242,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.NotNull(resource.Context);
                 Assert.Equal(context.User, resource.Context.User);
                 Assert.NotNull(resource.Context.GetHttpContext());
+                Assert.NotNull(resource.ServiceProvider);
+                Assert.Equal(typeof(MethodHub).GetMethod(nameof(MethodHub.MultiParamAuthMethod)), resource.HubMethod);
 
                 return Task.CompletedTask;
             }
