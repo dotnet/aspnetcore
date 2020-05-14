@@ -44,7 +44,7 @@ namespace Templates.Test.Helpers
             string workingDirectory,
             string dllPath,
             IDictionary<string, string> environmentVariables,
-            bool published = true,
+            bool published,
             bool hasListeningUri = true,
             ILogger logger = null)
         {
