@@ -216,53 +216,6 @@
     <_CompileTfmUsingReferenceAssemblies
         Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
-    <_ReferenceProjectFile>$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)</_ReferenceProjectFile>
-
-    <!--
-      Set properties controlling the item group GetTargetPathWithTargetPlatformMoniker, GetTargetPath and Build return.
-      Ensures dependent projects know about the ref/ assembly. Done late enough that Compile does not attempt to create
-      this assembly. Reset properties to avoid error when copying non-existent @(IntermediateRefAssembly) to
-      $(TargetRefPath).
-    -->
-    <GetTargetPathWithTargetPlatformMonikerDependsOn>
-      $(GetTargetPathWithTargetPlatformMonikerDependsOn);AddReferenceProjectMetadata
-    </GetTargetPathWithTargetPlatformMonikerDependsOn>
-    <PrepareForRunDependsOn>RemoveReferenceProjectMetadata;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
-  </PropertyGroup>
-  <ItemGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
-    <!-- Ensure ref/ project is built prior to the implementation project. -->
-    <ProjectReference Include="$(_ReferenceProjectFile)">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <Target Name="GetReferenceProjectTargetPathMetadata">
-    <Error Condition=" !($(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies)) "
-        Text="GetReferenceProjectTargetPathMetadata called in project without a reference assembly or when targeting non-default TFM." />
-    <MSBuild Projects="$(_ReferenceProjectFile)" Targets="GetTargetPathMetadata" RebaseOutputs="true" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)">
-      <Output TaskParameter="TargetOutputs" ItemName="ReferenceProjectTargetPathMetadata" />
-    </MSBuild>
-  </Target>
-  <Target Name="GetTargetPathMetadata" Returns="@(TargetPathMetadata)">
-    <ItemGroup>
-      <TargetPathMetadata Include="$(TargetPath)">
-        <IntermediateAssembly>@(IntermediateAssembly)</IntermediateAssembly>
-      </TargetPathMetadata>
-    </ItemGroup>
-  </Target>
-  <Target Name="AddReferenceProjectMetadata" DependsOnTargets="GetReferenceProjectTargetPathMetadata">
-    <PropertyGroup>
-      <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-      <TargetRefPath>@(ReferenceProjectTargetPathMetadata)</TargetRefPath>
-    </PropertyGroup>
-  </Target>
-  <Target Name="RemoveReferenceProjectMetadata">
-    <PropertyGroup>
-      <ProduceReferenceAssembly />
-      <TargetRefPath />
-    </PropertyGroup>
-  </Target>
-
   <!--
     If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
