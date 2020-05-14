@@ -265,13 +265,3 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 ## Resx files
 
 If you need to make changes to a .resx file, run `dotnet msbuild /t:Resx <path to csproj>`. This will update the generated C#.
-
-## Building installers
-
-For building installers run
-
-```ps1
-build.cmd -BuildInstallers
-```
-
-Installers built located in the `artifacts/installers/{Debug, Release}` 
