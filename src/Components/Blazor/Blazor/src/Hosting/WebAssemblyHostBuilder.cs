@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -14,87 +16,89 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
-    //
-    // This code was taken virtually as-is from the Microsoft.Extensions.Hosting project in aspnet/Hosting and then
-    // lots of things were removed.
-    //
-    internal class WebAssemblyHostBuilder : IWebAssemblyHostBuilder
+    /// <summary>
+    /// A builder for configuring and creating a <see cref="WebAssemblyHost"/>.
+    /// </summary>
+    public sealed class WebAssemblyHostBuilder
     {
-        private List<Action<WebAssemblyHostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<WebAssemblyHostBuilderContext, IServiceCollection>>();
-        private bool _hostBuilt;
-        private WebAssemblyHostBuilderContext _BrowserHostBuilderContext;
-        private IWebAssemblyServiceFactoryAdapter _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<IServiceCollection>(new DefaultServiceProviderFactory());
-        private IServiceProvider _appServices;
-
         /// <summary>
-        /// A central location for sharing state between components during the host building process.
+        /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
+        /// conventions and settings.
         /// </summary>
-        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
-        /// <summary>
-        /// Adds services to the container. This can be called multiple times and the results will be additive.
-        /// </summary>
-        /// <param name="configureDelegate"></param>
-        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
-        public IWebAssemblyHostBuilder ConfigureServices(Action<WebAssemblyHostBuilderContext, IServiceCollection> configureDelegate)
+        /// <param name="args">The argument passed to the application's main method.</param>
+        /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
+        public static WebAssemblyHostBuilder CreateDefault(string[] args = default)
         {
-            _configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
-            return this;
+            // We don't use the args for anything right now, but we want to accept them
+            // here so that it shows up this way in the project templates.
+            args ??= Array.Empty<string>();
+            var builder = new WebAssemblyHostBuilder();
+
+            // Right now we don't have conventions or behaviors that are specific to this method
+            // however, making this the default for the template allows us to add things like that
+            // in the future, while giving `new WebAssemblyHostBuilder` as an opt-out of opinionated
+            // settings.
+            return builder;
         }
 
         /// <summary>
-        /// Overrides the factory used to create the service provider.
+        /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
         /// </summary>
-        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
-        public IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
+        private WebAssemblyHostBuilder()
         {
-            _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<TContainerBuilder>(factory ?? throw new ArgumentNullException(nameof(factory)));
-            return this;
+            // Private right now because we don't have much reason to expose it. This can be exposed
+            // in the future if we want to give people a choice between CreateDefault and something
+            // less opinionated.
+            Configuration = new ConfigurationBuilder();
+            RootComponents = new RootComponentMappingCollection();
+            Services = new ServiceCollection();
+
+            InitializeDefaultServices();
         }
 
         /// <summary>
-        /// Overrides the factory used to create the service provider.
+        /// Gets an <see cref="IConfigurationBuilder"/> that can be used to customize the application's
+        /// configuration sources.
         /// </summary>
-        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
-        public IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<WebAssemblyHostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory)
-        {
-            _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<TContainerBuilder>(() => _BrowserHostBuilderContext, factory ?? throw new ArgumentNullException(nameof(factory)));
-            return this;
-        }
+        public IConfigurationBuilder Configuration { get; }
 
         /// <summary>
-        /// Run the given actions to initialize the host. This can only be called once.
+        /// Gets the collection of root component mappings configured for the application.
         /// </summary>
-        /// <returns>An initialized <see cref="IWebAssemblyHost"/></returns>
-        public IWebAssemblyHost Build()
+        public RootComponentMappingCollection RootComponents { get; }
+
+        /// <summary>
+        /// Gets the service collection.
+        /// </summary>
+        public IServiceCollection Services { get; }
+
+        /// <summary>
+        /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
+        /// </summary>
+        /// <returns>A <see cref="WebAssemblyHost"/> object.</returns>
+        public WebAssemblyHost Build()
         {
-            if (_hostBuilt)
-            {
-                throw new InvalidOperationException("Build can only be called once.");
-            }
-            _hostBuilt = true;
+            // Intentionally overwrite configuration with the one we're creating.
+            var configuration = Configuration.Build();
+            Services.AddSingleton<IConfiguration>(configuration);
 
-            CreateBrowserHostBuilderContext();
-            CreateServiceProvider();
+            // A Blazor application always runs in a scope. Since we want to make it possible for the user
+            // to configure services inside *that scope* inside their startup code, we create *both* the
+            // service provider and the scope here.
+            var services = Services.BuildServiceProvider();
+            var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return _appServices.GetRequiredService<IWebAssemblyHost>();
+            return new WebAssemblyHost(services, scope, configuration, RootComponents.ToArray());
         }
 
-        private void CreateBrowserHostBuilderContext()
+        private void InitializeDefaultServices()
         {
-            _BrowserHostBuilderContext = new WebAssemblyHostBuilderContext(Properties);
-        }
-
-        private void CreateServiceProvider()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(_BrowserHostBuilderContext);
-            services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
-            services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
-            services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
-            services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
-            services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
-            services.AddSingleton<HttpClient>(s =>
+            Services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
+            Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
+            Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+            Services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
+            Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
+            Services.AddSingleton<HttpClient>(s =>
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
                 var navigationManager = s.GetRequiredService<NavigationManager>();
@@ -103,20 +107,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                     BaseAddress = new Uri(navigationManager.BaseUri)
                 };
             });
-
-            // Needed for authorization
-            // However, since authorization isn't on by default, we could consider removing these and
-            // having a separate services.AddBlazorAuthorization() call that brings in the required services.
-            services.AddOptions();
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
-
-            foreach (var configureServicesAction in _configureServicesActions)
-            {
-                configureServicesAction(_BrowserHostBuilderContext, services);
-            }
-
-            var builder = _serviceProviderFactory.CreateBuilder(services);
-            _appServices = _serviceProviderFactory.CreateServiceProvider(builder);
         }
     }
 }

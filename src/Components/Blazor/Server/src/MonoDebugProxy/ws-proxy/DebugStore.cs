@@ -545,7 +545,7 @@ namespace WsProxy {
 			return assemblies.FirstOrDefault (a => a.Name.Equals (name, StringComparison.InvariantCultureIgnoreCase));
 		}
 
-		/*
+		/*	
 		V8 uses zero based indexing for both line and column.
 		PPDBs uses one based indexing for both line and column.
 		*/
@@ -598,7 +598,7 @@ namespace WsProxy {
 		PPDBs uses one based indexing for both line and column.
 		*/
 		static bool Match (SequencePoint sp, int line, int column)
-		{
+		{ 
 			var bp = (line: line + 1, column: column + 1);
 
 			if (sp.StartLine > bp.line || sp.EndLine < bp.line)

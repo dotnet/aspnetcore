@@ -37,7 +37,7 @@ namespace TestServer
             app.Map("/subdir", app =>
             {
                 app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
 
                 app.UseRequestLocalization(options =>
                 {

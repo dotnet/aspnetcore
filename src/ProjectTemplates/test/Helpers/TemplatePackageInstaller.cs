@@ -36,7 +36,8 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates"
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates",
+            "Microsoft.AspNetCore.Blazor.Templates",
         };
 
         public static string CustomHivePath { get; } = typeof(TemplatePackageInstaller)
@@ -86,7 +87,7 @@ namespace Templates.Test.Helpers
                 .Where(p => _templatePackages.Any(t => Path.GetFileName(p).StartsWith(t, StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
 
-            Assert.Equal(4, builtPackages.Length);
+            Assert.Equal(5, builtPackages.Length);
 
             /*
              * The templates are indexed by path, for example:
