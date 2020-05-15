@@ -1,7 +1,7 @@
 Optional certificates sample
 ============================
 
-Client certificates are relatively easy to configure when they're required for requests, you configure it in the server bindings as required and add the auth handler to validate it. Things are much trickier when you only want to require client certifiates for some parts of your application.
+Client certificates are relatively easy to configure when they're required for all requests, you configure it in the server bindings as required and add the auth handler to validate it. Things are much trickier when you only want to require client certificates for some parts of your application.
 
 Client certificates are not an HTTP feature, they're a TLS feature. As such they're not included in the HTTP request structure like headers, they're negotiated when establishing the connection. This makes it impossible to require a certificate for some requests but not others on a given connection.
 

@@ -7,6 +7,9 @@ namespace Certificate.Sample
 {
     public class Program
     {
+        public const string Host1 = "127.0.0.1";
+        public const string Host2 = "127.0.0.2";
+
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -19,17 +22,16 @@ namespace Certificate.Sample
                     webBuilder.UseStartup<Startup>();
                     webBuilder.ConfigureKestrel((context, options) =>
                     {
-                        // Kestrel can't have different ssl settings on the same IP because there's no way to change them based on SNI.
+                        // Kestrel can't have different ssl settings for different hosts on the same IP because there's no way to change them based on SNI.
                         // https://github.com/dotnet/runtime/issues/31097
-                        // TODO: Provide a certificate that allows 127.0.0.1 as a host so we don't have to worry about setting up DNS, host files, etc..
-                        options.Listen(IPAddress.Parse("127.0.0.1"), 5001, listenOptions =>
+                        options.Listen(IPAddress.Parse(Host1), 5001, listenOptions =>
                         {
                             listenOptions.UseHttps(httpsOptions =>
                             {
                                 httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
                             });
                         });
-                        options.Listen(IPAddress.Parse("127.0.0.2"), 5001, listenOptions =>
+                        options.Listen(IPAddress.Parse(Host2), 5001, listenOptions =>
                         {
                             listenOptions.UseHttps(httpsOptions =>
                             {

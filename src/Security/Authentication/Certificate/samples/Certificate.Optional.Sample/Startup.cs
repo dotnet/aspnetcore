@@ -1,14 +1,10 @@
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Certificate;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
 
 namespace Certificate.Sample
 {
@@ -21,6 +17,20 @@ namespace Certificate.Sample
             services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
                 .AddCertificate(options =>
                 {
+                    options.Events = new CertificateAuthenticationEvents()
+                    {
+                        // If there is no certificate we must be on Host1 that does not require one. Redirect to Host2 to prompt for a certificate.
+                        OnChallenge = context =>
+                        {
+                            var request = context.Request;
+                            var redirect = UriHelper.BuildAbsolute("https",
+                                new HostString(Program.Host2, context.HttpContext.Connection.LocalPort),
+                                request.PathBase, request.Path, request.QueryString);
+                            context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
+                            context.HandleResponse(); // Don't do the default behavior that would send a 403 response.
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddAuthorization();
@@ -36,45 +46,14 @@ namespace Certificate.Sample
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/required", context =>
-                {
-                    if (context.User.Identity.IsAuthenticated)
-                    {
-                        return context.Response.WriteAsync($"Hello {context.User.Identity.Name} at {context.Request.Host}");
-                    }
-                    else
-                    {
-                        var request = context.Request;
-                        var redirect = UriHelper.BuildAbsolute("https", new HostString("127.0.0.2", context.Connection.LocalPort), request.PathBase, request.Path, request.QueryString);
-                        context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
-                        return Task.CompletedTask;
-                    }
-                });
-                endpoints.Map("/signout", context =>
-                {
-                    if (context.User.Identity.IsAuthenticated)
-                    {
-                        // Closing the connection doesn't reset Chrome's state, it still remembers which client cert was last used for which host until you close the browser.
-                        // context.Response.Headers[HeaderNames.Connection] = "close";
-
-                        // Sign out by switching back to the other host. This isn't a real sign-out because the browser has still cached the client certificate for this host.
-                        // The only real way to clear that is to close the browser.
-                        if (context.Request.Host.Host.Equals("127.0.0.2"))
-                        {
-                            var request = context.Request;
-                            var redirect = UriHelper.BuildAbsolute("https", new HostString("127.0.0.1", context.Connection.LocalPort), request.PathBase);
-                            context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
-                        }
-                        return context.Response.WriteAsync($"Goodbye {context.User.Identity.Name} at {context.Request.Host}");
-                    }
-                    else
-                    {
-                        return context.Response.WriteAsync("Already signed out.");
-                    }
-                });
-                endpoints.Map("{*url}", context =>
+                endpoints.Map("/auth", context =>
                 {
                     return context.Response.WriteAsync($"Hello {context.User.Identity.Name} at {context.Request.Host}");
+                }).RequireAuthorization();
+
+                endpoints.Map("{*url}", context =>
+                {
+                    return context.Response.WriteAsync($"Hello {context.User.Identity.Name} at {context.Request.Host}. Try /auth");
                 });
             });
         }
