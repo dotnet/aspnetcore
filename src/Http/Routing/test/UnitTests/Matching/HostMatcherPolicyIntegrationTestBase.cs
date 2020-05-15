@@ -337,6 +337,38 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
+        [Fact]
+        public async Task Match_CatchAllRouteWithMatchingHost_Success()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/{**path}", hosts: new string[] { "contoso.com", });
+
+            var matcher = CreateMatcher(endpoint);
+            var httpContext = CreateContext("/hello", "contoso.com");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, endpoint, new { path = "hello" });
+        }
+
+        [Fact]
+        public async Task Match_CatchAllRouteFailureHost_NoMatch()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/{**path}", hosts: new string[] { "contoso.com", });
+
+            var matcher = CreateMatcher(endpoint);
+            var httpContext = CreateContext("/hello", "nomatch.com");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertNotMatch(httpContext);
+        }
+
         private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var services = new ServiceCollection()
