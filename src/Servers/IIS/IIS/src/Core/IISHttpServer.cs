@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.AbortIO(clientDisconnect: true);
+                context?.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
