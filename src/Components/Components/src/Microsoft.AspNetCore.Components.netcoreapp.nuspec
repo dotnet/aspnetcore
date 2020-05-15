@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NETCoreApp5.0">
+      <group targetFramework=".net5.0">
         <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerPackageVersion$" />
         <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />

@@ -56,7 +56,7 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <DefaultNetCoreTargetFramework>netcoreapp5.0</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
