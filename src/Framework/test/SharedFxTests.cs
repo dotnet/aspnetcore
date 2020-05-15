@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", TestData.GetTestDataValue("RuntimePackageVersion"))

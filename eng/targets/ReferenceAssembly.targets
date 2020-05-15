@@ -50,7 +50,8 @@
       Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
-      <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
+      <_RefSourceFileTFM Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+          $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))">netcoreapp</_RefSourceFileTFM>
       <_RefProjectFileTFM>$(TargetFramework)</_RefProjectFileTFM>
       <_RefProjectFileTFM Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">%24(DefaultNetCoreTargetFramework)</_RefProjectFileTFM>
 

@@ -6,6 +6,7 @@
     <Python>py -3</Python>
     <CoreRun>%HELIX_CORRELATION_PAYLOAD%\Core_Root\CoreRun.exe</CoreRun>
     <BaselineCoreRun>%HELIX_CORRELATION_PAYLOAD%\Baseline_Core_Root\CoreRun.exe</BaselineCoreRun>
+    
     <HelixPreCommands>$(HelixPreCommands);call %HELIX_CORRELATION_PAYLOAD%\performance\tools\machine-setup.cmd;set PYTHONPATH=%HELIX_WORKITEM_PAYLOAD%\scripts%3B%HELIX_WORKITEM_PAYLOAD%</HelixPreCommands>
     <ArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts</ArtifactsDirectory>
     <BaselineArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts_Baseline</BaselineArtifactsDirectory>
@@ -38,6 +39,13 @@
     <DotnetExe>$(PerformanceDirectory)/tools/dotnet/$(Architecture)/dotnet</DotnetExe>
     <Percent>%25</Percent>
     <XMLResults>$HELIX_WORKITEM_ROOT/testResults.xml</XMLResults>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MonoDotnet)' == 'true' and '$(AGENT_OS)' == 'Windows_NT'">
+    <CoreRunArgument>--corerun %HELIX_CORRELATION_PAYLOAD%\dotnet-mono\shared\Microsoft.NETCore.App\5.0.0\corerun.exe</CoreRunArgument>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MonoDotnet)' == 'true' and '$(AGENT_OS)' != 'Windows_NT'">
+    <CoreRunArgument>--corerun $(BaseDirectory)/dotnet-mono/shared/Microsoft.NETCore.App/5.0.0/corerun</CoreRunArgument>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseCoreRun)' == 'true'">

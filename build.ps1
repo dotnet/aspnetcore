@@ -71,6 +71,9 @@ You can also use -NoBuildInstallers to suppress this project type.
 .PARAMETER BinaryLog
 Enable the binary logger
 
+.PARAMETER ExcludeCIBinarylog
+Don't output binary log by default in CI builds (short: -nobl).
+
 .PARAMETER Verbosity
 MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
@@ -151,6 +154,8 @@ param(
     # Diagnostics
     [Alias('bl')]
     [switch]$BinaryLog,
+    [Alias('nobl')]
+    [switch]$ExcludeCIBinarylog,
     [Alias('v')]
     [string]$Verbosity = 'minimal',
     [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
@@ -344,11 +349,10 @@ if ($ForceCoreMsbuild) {
     $msbuildEngine = 'dotnet'
 }
 
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-$tmpBinaryLog = $BinaryLog
-if ($CI) {
-    $BinaryLog = $true
+# Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
+# $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
+if ($CI -and -not $excludeCIBinarylog) {
+    $binaryLog = $true
 }
 
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
@@ -359,10 +363,6 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
-
-if ($tmpBinaryLog) {
-    $MSBuildArguments += "/bl:$LogDir/Build.binlog"
-}
 
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
