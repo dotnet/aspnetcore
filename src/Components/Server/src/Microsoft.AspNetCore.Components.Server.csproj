@@ -76,7 +76,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BlazorServerJSFile>..\..\Web.JS\dist\$(Configuration)\blazor.server.js</BlazorServerJSFile>
+    <BlazorServerJSFile>..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
   </PropertyGroup>
 
   <ItemGroup>
