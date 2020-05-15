@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
@@ -11,54 +12,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
-        private int _doingWork;
+        private int _processingRequested;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ScheduleToProcessWork()
+        {
+            // Schedule a thread pool work item to process Work.
+            // Only one work item is scheduled at any given time to avoid over-parallelization.
+            // When the work item begins running, this field is reset to 0.
+            if (Interlocked.CompareExchange(ref _processingRequested, 1, 0) == 0)
+            {
+                System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+            }
+        }
 
         public override void Schedule(Action<object> action, object state)
         {
             _workItems.Enqueue(new Work(action, state));
 
-            // Set working if it wasn't (via atomic Interlocked).
-            if (Interlocked.CompareExchange(ref _doingWork, 1, 0) == 0)
-            {
-                // Wasn't working, schedule.
-                System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-            }
+            ScheduleToProcessWork();
         }
 
         void IThreadPoolWorkItem.Execute()
         {
+            // Ensure processing is requested when new work is queued.
+            Interlocked.Exchange(ref _processingRequested, 0);
+
+            ConcurrentQueue<Work> workItems = _workItems;
+            if (!workItems.TryDequeue(out Work work))
+            {
+                return;
+            }
+
+            int startTimeMs = Environment.TickCount;
+
+            // Schedule a work item to parallelize processing of work.
+            ScheduleToProcessWork();
+
             while (true)
             {
-                while (_workItems.TryDequeue(out Work item))
+                work.Callback(work.State);
+
+                // Avoid this work item for delaying other items on the ThreadPool queue.
+                if (Environment.TickCount - startTimeMs >= 15)
                 {
-                    item.Callback(item.State);
-                }
-
-                // All work done.
-
-                // Set _doingWork (0 == false) prior to checking IsEmpty to catch any missed work in interim.
-                // This doesn't need to be volatile due to the following barrier (i.e. it is volatile).
-                _doingWork = 0;
-
-                // Ensure _doingWork is written before IsEmpty is read.
-                // As they are two different memory locations, we insert a barrier to guarantee ordering.
-                Thread.MemoryBarrier();
-
-                // Check if there is work to do
-                if (_workItems.IsEmpty)
-                {
-                    // Nothing to do, exit.
                     break;
                 }
 
-                // Is work, can we set it as active again (via atomic Interlocked), prior to scheduling?
-                if (Interlocked.Exchange(ref _doingWork, 1) == 1)
+                if (!workItems.TryDequeue(out work))
                 {
-                    // Execute has been rescheduled already, exit.
-                    break;
+                    return;
                 }
-
-                // Is work, wasn't already scheduled so continue loop.
             }
         }
 

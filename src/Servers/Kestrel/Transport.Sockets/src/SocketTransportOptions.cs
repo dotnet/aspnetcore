@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// <remarks>
         /// Defaults to <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
         /// </remarks>
-        public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
+        public int IOQueueCount { get; set; } = 1;
 
         /// <summary>
         /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
