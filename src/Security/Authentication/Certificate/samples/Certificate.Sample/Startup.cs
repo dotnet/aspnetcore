@@ -37,6 +37,8 @@ namespace Certificate.Sample
                     };
                 });
 
+            // Adding a ICertificateValidationCache will result in certificate auth caching the results, the default implementation uses a memory cache
+            services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
             services.AddAuthorization();
         }
 

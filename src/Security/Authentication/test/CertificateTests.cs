@@ -473,8 +473,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         }
 
-        [Fact]
-        public async Task VerifyValidationResultIsCached()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task VerifyValidationResultCanBeCached(bool cache)
         {
             const string Expected = "John Doe";
             var validationCount = 0;
@@ -504,7 +506,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                         }
                     }
                 },
-                Certificates.SelfSignedValidWithNoEku);
+                Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -526,7 +528,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Single(count);
             Assert.Equal("1", count.First().Value);
 
-            // Second request should not trigger validation
+            // Second request should not trigger validation if caching
             response = await server.CreateClient().GetAsync("https://example.com/");
             responseAsXml = null;
             if (response.Content != null &&
@@ -537,14 +539,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 responseAsXml = XElement.Parse(responseContent);
             }
 
-
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
             Assert.Single(name);
             Assert.Equal(Expected, name.First().Value);
             count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
             Assert.Single(count);
-            Assert.Equal("1", count.First().Value);
+            var expected = cache ? "1" : "2"; 
+            Assert.Equal(expected, count.First().Value);
         }
 
         [Fact]
@@ -600,7 +602,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null,
             bool wireUpHeaderMiddleware = false,
-            string headerName = "")
+            string headerName = "",
+            bool useCache = false)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -666,6 +669,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 else
                 {
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                }
+                if (useCache)
+                {
+                    services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
                 }
 
                 if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))

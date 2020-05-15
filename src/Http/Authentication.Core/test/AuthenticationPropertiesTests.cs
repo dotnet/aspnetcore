@@ -9,6 +9,33 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
     public class AuthenticationPropertiesTests
     {
         [Fact]
+        public void Clone_Copies()
+        {
+            var items = new Dictionary<string, string>
+            {
+                ["foo"] = "bar",
+            };
+            var value = "value";
+            var parameters = new Dictionary<string, object>
+            {
+                ["foo2"] = value,
+            };
+            var props = new AuthenticationProperties(items, parameters);
+            Assert.Same(items, props.Items);
+            Assert.Same(parameters, props.Parameters);
+            var copy = props.Clone();
+            Assert.NotSame(props.Items, copy.Items);
+            Assert.NotSame(props.Parameters, copy.Parameters);
+            // Objects in the dictionaries will still be the same
+            Assert.Equal(props.Items, copy.Items);
+            Assert.Equal(props.Parameters, copy.Parameters);
+            props.Items["change"] = "good";
+            props.Parameters["something"] = "bad";
+            Assert.NotEqual(props.Items, copy.Items);
+            Assert.NotEqual(props.Parameters, copy.Parameters);
+        }
+
+        [Fact]
         public void DefaultConstructor_EmptyCollections()
         {
             var props = new AuthenticationProperties();

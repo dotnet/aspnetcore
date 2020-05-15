@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,10 +23,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             IOptionsMonitor<CertificateAuthenticationOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock,
-            ICertificateValidationCache cache) : base(options, logger, encoder, clock)
+            ISystemClock clock) : base(options, logger, encoder, clock)
         {
-            _cache = cache;
         }
 
         /// <summary>
@@ -44,11 +43,18 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new CertificateAuthenticationEvents());
 
+        protected override Task InitializeHandlerAsync()
+        {
+            _cache = Context.RequestServices.GetService<ICertificateValidationCache>();
+            return base.InitializeHandlerAsync();
+        }
+
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             // You only get client certificates over HTTPS
             if (!Context.Request.IsHttps)
             {
+                Logger.NotHttps();
                 return AuthenticateResult.NoResult();
             }
 
@@ -63,14 +69,20 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                     return AuthenticateResult.NoResult();
                 }
 
-                var cacheHit = _cache.Get(Context.Connection, clientCertificate);
-                if (cacheHit != null)
+                if (_cache != null)
                 {
-                    return cacheHit;
+                    var cacheHit = _cache.Get(Context, clientCertificate);
+                    if (cacheHit != null)
+                    {
+                        return cacheHit;
+                    }
                 }
 
                 var result = await ValidateCertificateAsync(clientCertificate);
-                _cache.Put(Context.Connection, clientCertificate, result);
+                if (_cache != null)
+                {
+                    _cache.Put(Context, clientCertificate, result);
+                }
                 return result;
             }
             catch (Exception ex)

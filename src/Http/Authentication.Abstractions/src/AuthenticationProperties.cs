@@ -46,6 +46,13 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
+        /// Return a copy.
+        /// </summary>
+        /// <returns>A copy.</returns>
+        public AuthenticationProperties Clone()
+            => new AuthenticationProperties(new Dictionary<string, string>(Items), new Dictionary<string, object>(Parameters));
+
+        /// <summary>
         /// State values about the authentication session.
         /// </summary>
         public IDictionary<string, string> Items { get; }
