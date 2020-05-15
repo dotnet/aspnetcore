@@ -14,7 +14,7 @@
     <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
       Files="@(_BuildOutput)"
       FrameworkOnlyPackages="@(AspNetCoreAppReference)"
-      SharedFrameworkTargetFramework="netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
+      SharedFrameworkTargetFramework="net$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
   </Target>
 
 </Project>
