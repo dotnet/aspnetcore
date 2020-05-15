@@ -1,24 +1,23 @@
+using System.Collections.Generic;
+
 namespace Wasm.Performance.Driver
 {
     class BenchmarkResult
     {
-        public string Name { get; set; }
+        /// <summary>The result of executing scenario benchmarks</summary>
+        public List<BenchmarkScenarioResult> ScenarioResults { get; set; }
 
-        public BenchmarkDescriptor Descriptor { get; set; }
+        /// <summary>Downloaded application size in bytes</summary>
+        public long? DownloadSize { get; set; }
 
-        public string ShortDescription { get; set; }
+        /// <summary>WASM memory usage</summary>
+        public long? WasmMemory { get; set; }
 
-        public bool Success { get; set; }
+        // See https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
+        /// <summary>JS memory usage</summary>
+        public long? UsedJSHeapSize { get; set; }
 
-        public int NumExecutions { get; set; }
-
-        public double Duration { get; set; }
-
-        public class BenchmarkDescriptor
-        {
-            public string Name { get; set; }
-
-            public string Description { get; set; }
-        }
+        /// <summary>JS memory usage</summary>
+        public long? TotalJSHeapSize { get; set; }
     }
 }

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>blazor-brotli</AssemblyName>
+    <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <MicrosoftNETCoreAppRuntimeVersion>3.1.0</MicrosoftNETCoreAppRuntimeVersion>
+  </PropertyGroup>
+
+</Project>

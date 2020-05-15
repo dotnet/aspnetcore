@@ -120,7 +120,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl /nr:false {additionalArgs}", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl:publish.binlog /nr:false {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -515,10 +515,20 @@ namespace Templates.Test.Helpers
         {
             if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
             {
-                var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
-                Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
-                var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
-                File.Move(sourceFile, destination);
+                var build = Path.Combine(TemplateOutputDir, "msbuild.binlog");
+                var publish = Path.Combine(TemplateOutputDir, "publish.binlog");
+                Assert.True(File.Exists(build) || File.Exists(publish), $"Log for '{ProjectName}' not found in '{build}'.");
+                if (File.Exists(build))
+                {
+                    var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
+                    File.Move(build, destination);
+                }
+
+                if (File.Exists(publish))
+                {
+                    var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".publish.binlog");
+                    File.Move(publish, destination);
+                }
             }
         }
 

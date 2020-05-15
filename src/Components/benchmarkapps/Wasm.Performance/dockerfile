@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 
+ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup for nodejs
@@ -21,7 +22,8 @@ RUN git init \
     && git reset --hard FETCH_HEAD \
     && git submodule update --init
 
-RUN dotnet publish -c Release -r linux-x64 -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN ./restore.sh
+RUN .dotnet/dotnet publish -c Release -r linux-x64 -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app

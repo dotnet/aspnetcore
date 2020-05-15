@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                     m => m.Value);
         }
 
-        protected static string FindSampleOrTestSitePath(string projectName)
+        public static string FindSampleOrTestSitePath(string projectName)
         {
             var projects = _projects.Value;
             if (projects.TryGetValue(projectName, out var dir))
