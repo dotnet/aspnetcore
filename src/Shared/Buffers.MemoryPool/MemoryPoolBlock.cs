@@ -17,7 +17,7 @@ namespace System.Buffers
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
-        internal MemoryPoolBlock(SlabMemoryPool pool, MemoryPoolSlab slab, int offset, int length)
+        internal MemoryPoolBlock(SlabMemoryPool.MemoryPoolShard pool, MemoryPoolSlab slab, int offset, int length)
         {
             _offset = offset;
             _length = length;
@@ -31,7 +31,7 @@ namespace System.Buffers
         /// <summary>
         /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
         /// </summary>
-        public SlabMemoryPool Pool { get; }
+        public SlabMemoryPool.MemoryPoolShard Pool { get; }
 
         /// <summary>
         /// Back-reference to the slab from which this block was taken, or null if it is one-time-use memory.
