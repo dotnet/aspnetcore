@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class AuthorizationEndpointConventionBuilderExtensions
     {
+        public static TBuilder AllowAnonymous<TBuilder>(this TBuilder builder) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
         public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
         public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.Authorization.IAuthorizeData[] authorizeData) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
         public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params string[] policyNames) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
