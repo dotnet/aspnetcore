@@ -44,6 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Singleton;
+        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
     }
 }
