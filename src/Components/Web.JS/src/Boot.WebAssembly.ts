@@ -31,6 +31,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   // Configure navigation via JS Interop
+  // Wrap getBaseURI \ getLocationHref to return unmarshaled values
+  const getBaseUri = window['Blazor']._internal.navigationManager.getBaseURI;
+  const getLocationHref = window['Blazor']._internal.navigationManager.getLocationHref;
+  window['Blazor']._internal.navigationManager.getBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
+  window['Blazor']._internal.navigationManager.getLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
+
   window['Blazor']._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
