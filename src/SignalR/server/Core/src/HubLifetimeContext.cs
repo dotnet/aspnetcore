@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// Context for the hub lifetime events <see cref="Hub.OnConnectedAsync"/> and <see cref="Hub.OnDisconnectedAsync(Exception)"/>.
     /// </summary>
-    public class HubLifetimeContext
+    public sealed class HubLifetimeContext
     {
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubLifetimeContext"/> class.

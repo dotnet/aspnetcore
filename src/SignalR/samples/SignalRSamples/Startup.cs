@@ -12,17 +12,14 @@ using SignalRSamples.Hubs;
 
 namespace SignalRSamples
 {
-
     public class Startup
     {
-
         private readonly JsonWriterOptions _jsonWriterOptions = new JsonWriterOptions { Indented = true };
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpContextAccessor();
             services.AddConnections();
 
             services.AddSignalR()

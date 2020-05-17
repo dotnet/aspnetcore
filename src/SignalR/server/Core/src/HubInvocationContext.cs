@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubInvocationContext
     {
-        internal readonly object[] Arguments;
-        internal readonly ObjectMethodExecutor ObjectMethodExecutor;
+        internal object[] Arguments { get; }
+        internal ObjectMethodExecutor ObjectMethodExecutor { get; }
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the name of the Hub method being invoked.
         /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is to use HubMethod.Name.")]
+        [Obsolete("This property is obsolete and will be removed in a future version. Use HubMethod.Name instead.")]
         public string HubMethodName { get; }
 
         /// <summary>
         /// Gets the arguments provided by the client.
         /// </summary>
-        public IReadOnlyList<object> HubMethodArguments { get => Arguments; }
+        public IReadOnlyList<object> HubMethodArguments => Arguments;
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> specific to the scope of this Hub method invocation.

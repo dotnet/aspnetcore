@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _onConnectedMiddleware = (context) => context.Hub.OnConnectedAsync();
                 _onDisconnectedMiddleware = (context, exception) => context.Hub.OnDisconnectedAsync(exception);
 
-                for (var i = 1; i <= count; i++)
+                for (var i = count - 1; i > -1; i--)
                 {
-                    var resolvedFilter = hubFilters[count - i];
+                    var resolvedFilter = hubFilters[i];
                     var nextFilter = _invokeMiddleware;
                     _invokeMiddleware = (context) => resolvedFilter.InvokeMethodAsync(context, nextFilter);
 
