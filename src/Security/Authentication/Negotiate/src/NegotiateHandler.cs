@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new NegotiateEvents Events
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 _negotiateState ??= Options.StateFactory.CreateInstance();
 
                 var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
-                Logger.LogInformation(errorType.ToString());
+                Logger.NegotiateStateErrorType(errorType.ToString());
                 if (errorType != BlobErrorType.None)
                 {
                     _negotiateState.Dispose();

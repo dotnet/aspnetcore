@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _challengeNegotiate;
         private static Action<ILogger, Exception> _reauthenticating;
         private static Action<ILogger, Exception> _deferring;
+        private static Action<ILogger, Exception> _negotiateStateErrorType;
 
         static NegotiateLoggingExtensions()
         {
@@ -43,7 +44,7 @@ namespace Microsoft.Extensions.Logging
             _challengeNegotiate = LoggerMessage.Define(
                 eventId: new EventId(6, "ChallengeNegotiate"),
                 logLevel: LogLevel.Debug,
-                formatString: "Challenged 401 Negotiate");
+                formatString: "Challenged 401 Negotiate.");
             _reauthenticating = LoggerMessage.Define(
                 eventId: new EventId(7, "Reauthenticating"),
                 logLevel: LogLevel.Debug,
@@ -60,6 +61,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(10, "ClientError"),
                 logLevel: LogLevel.Debug,
                 formatString: "The users authentication request was invalid.");
+            _negotiateStateErrorType = LoggerMessage.Define<string>(
+                eventId: new EventId(11, "NegotiateStateErrorType"),
+                logLevel: LogLevel.Information,
+                formatString: "Negotiate State BlobErrorType of {blobErrorType}.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
@@ -91,5 +96,8 @@ namespace Microsoft.Extensions.Logging
 
         public static void ClientError(this ILogger logger, Exception ex)
             => _clientError(logger, ex);
+
+        public static void NegotiateStateErrorType(this ILogger logger, string errorType)
+            => _negotiateStateErrorType(logger, errorType, null);
     }
 }
