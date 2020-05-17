@@ -121,18 +121,18 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
             }
 
-            return document.WithSyntaxRoot(root);
+            return document.WithSyntaxRoot(root!);
         }
 
         private async Task<CodeActionContext?> CreateCodeActionContext(CancellationToken cancellationToken)
         {
             var root = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var methodReturnStatement = (ReturnStatementSyntax)root.FindNode(_diagnostic.Location.SourceSpan);
+            var methodReturnStatement = (ReturnStatementSyntax)root!.FindNode(_diagnostic.Location.SourceSpan);
             var methodSyntax = methodReturnStatement.FirstAncestorOrSelf<MethodDeclarationSyntax>();
             var method = semanticModel.GetDeclaredSymbol(methodSyntax, cancellationToken);
 
-            var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
+            var statusCodesType = semanticModel!.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes)!;
             var statusCodeConstants = GetStatusCodeConstants(statusCodesType);
 
             if (!ApiControllerSymbolCache.TryCreate(semanticModel.Compilation, out var symbolCache))

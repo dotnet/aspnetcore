@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <UseRazorSdk>true</UseRazorSdk>
   </PropertyGroup>
 
 </Project>

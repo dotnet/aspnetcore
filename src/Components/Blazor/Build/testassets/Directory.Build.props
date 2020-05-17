@@ -23,9 +23,19 @@
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
 
-      <PackageReference Include="Microsoft.NET.Sdk.Razor"
-        Version="$(MicrosoftNETSdkRazorPackageVersion)"
+      <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
         PrivateAssets="All"
-        IsImplicitlyDefined="true" />
+        IsImplicitlyDefined="true"
+        ReferenceOutputAssembly="false"
+        Condition="'$(UseRazorSdk)' == 'true'">
+        <SetTargetFramework>TargetFramework=netcoreapp5.0</SetTargetFramework>
+      </ProjectReference>
     </ItemGroup>
+
+    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"
+         Condition="'$(UseRazorSdk)' == 'true'"/>
+
+    <PropertyGroup Condition="'$(UseRazorSdk)' == 'true'">
+      <RazorSdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    </PropertyGroup>
 </Project>

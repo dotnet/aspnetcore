@@ -9,6 +9,7 @@
     <IsPackable>true</IsPackable>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <UseRazorSdk>true</UseRazorSdk>
   </PropertyGroup>
 
   <ItemGroup>

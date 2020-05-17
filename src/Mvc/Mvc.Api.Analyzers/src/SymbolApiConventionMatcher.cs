@@ -61,14 +61,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         internal static SymbolApiConventionNameMatchBehavior GetNameMatchBehavior(ApiControllerSymbolCache symbolCache, ISymbol symbol)
         {
             var attribute = symbol.GetAttributes(symbolCache.ApiConventionNameMatchAttribute).FirstOrDefault();
-            if (attribute == null || 
+            if (attribute == null ||
                 attribute.ConstructorArguments.Length != 1 ||
                 attribute.ConstructorArguments[0].Kind != TypedConstantKind.Enum)
             {
                 return SymbolApiConventionNameMatchBehavior.Exact;
             }
 
-            var intValue = (int)attribute.ConstructorArguments[0].Value;
+            var intValue = (int)attribute.ConstructorArguments[0].Value!;
             return (SymbolApiConventionNameMatchBehavior)intValue;
         }
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 return SymbolApiConventionTypeMatchBehavior.AssignableFrom;
             }
 
-            var intValue = (int)attribute.ConstructorArguments[0].Value;
+            var intValue = (int)attribute.ConstructorArguments[0].Value!;
             return (SymbolApiConventionTypeMatchBehavior)intValue;
         }
 

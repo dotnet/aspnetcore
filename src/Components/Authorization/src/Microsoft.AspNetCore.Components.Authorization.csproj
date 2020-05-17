@@ -7,6 +7,7 @@
     <Description>Authentication and authorization support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <UseRazorSdk>true</UseRazorSdk>
   </PropertyGroup>
 
   <ItemGroup>

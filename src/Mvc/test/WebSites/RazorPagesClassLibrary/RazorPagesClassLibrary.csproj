@@ -4,8 +4,9 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsTestAssetProject>true</IsTestAssetProject>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <UseRazorSdk>true</UseRazorSdk>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>

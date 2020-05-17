@@ -141,11 +141,12 @@ namespace Microsoft.CodeAnalysis
 
         private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)
         {
-            while (typeSymbol != null)
+            var typeSymbolNullable = typeSymbol;
+            while (typeSymbolNullable != null)
             {
-                yield return typeSymbol;
+                yield return typeSymbolNullable;
 
-                typeSymbol = typeSymbol.BaseType;
+                typeSymbolNullable = typeSymbolNullable.BaseType;
             }
         }
     }

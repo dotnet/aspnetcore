@@ -25,6 +25,7 @@
     <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap4</IdentityUIFrameworkVersion>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
 
+    <UseRazorSdk>true</UseRazorSdk>
   </PropertyGroup>
 
   <ItemGroup>

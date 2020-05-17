@@ -85,13 +85,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         protected virtual bool DesignTime { get; } = false;
 
         /// <summary>
-        /// Gets the 
+        /// Gets the
         /// </summary>
         internal VirtualRazorProjectFileSystem FileSystem { get; } = new VirtualRazorProjectFileSystem();
 
         /// <summary>
-        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings. 
-        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of 
+        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings.
+        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of
         /// characters written.
         /// </summary>
         protected virtual string LineEnding { get; } = "\r\n";
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = text,
             };
-            
+
             return projectItem;
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = fileContent,
             };
-            
+
             return projectItem;
         }
 
@@ -491,12 +491,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 var span = spans[i];
                 var sourceSpan = span.GetSourceSpan(codeDocument.Source);
-                if (sourceSpan == null)
-                {
-                    // Not in the main file, skip.
-                    continue;
-                }
-
                 var expectedSpan = sourceContent.Substring(sourceSpan.AbsoluteIndex, sourceSpan.Length);
 
                 // See #2593

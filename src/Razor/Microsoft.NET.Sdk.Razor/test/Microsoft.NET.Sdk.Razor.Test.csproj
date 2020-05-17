@@ -13,6 +13,9 @@
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
+
+    <!-- Tests do not work on Helix yet -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,16 +24,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PregeneratedPackages</_Parameter2>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testassets\PregeneratedPackages</_Parameter2>
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
@@ -50,27 +51,27 @@
 
   </ItemGroup>
 
-  <!-- The test projects rely on these binaries being available -->
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj" />
+    <!-- The test projects rely on these binaries being available -->
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <Reference Include="rzc" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" />
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
 
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" >
+      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
+    </ProjectReference>
   </ItemGroup>
 
   <PropertyGroup>
     <MSBuildLocationFileOutput>$(IntermediateOutputPath)BuildVariables.generated.cs</MSBuildLocationFileOutput>
   </PropertyGroup>
 
+  <!-- Only run this target if we are actually testing. Skip if we are building only. -->
   <Target
     Name="GenerateMSBuildLocationFile"
-    Condition="'$(TargetFramework)'!=''"
+    Condition="'$(TargetFramework)'!='' AND '$(Test)' == 'true'"
     AfterTargets="BeforeBuild"
     Inputs="$(MSBuildAllProjects)"
     Outputs="$(MSBuildLocationFileOutput)">
@@ -111,21 +112,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
       <FileWrites Include="$(MSBuildLocationFileOutput)" />
     </ItemGroup>
 
-  </Target>
-
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
-
-    <MSBuild Projects="..\testapps\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <MSBuild Projects="..\testapps\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
-
-    <!-- This target restores SimpleMvc11 and SimpleMvc11NetFx separately because otherwise the TFMs in SimpleMvc11.csproj and SimpleMvc11NetFx.csproj are not respected. -->
-    <PropertyGroup>
-      <TargetFramework11>netcoreapp1.1</TargetFramework11>
-      <TargetFrameworkNetFx>net461</TargetFrameworkNetFx>
-    </PropertyGroup>
-    <MSBuild Projects="..\testapps\SimpleMvc11\SimpleMvc11.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);TargetFramework=$(TargetFramework11)" />
-    <MSBuild Projects="..\testapps\SimpleMvc11NetFx\SimpleMvc11NetFx.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);TargetFramework=$(TargetFrameworkNetFx)" />
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">

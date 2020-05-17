@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             while (method.IsOverride)
             {
-                method = method.OverriddenMethod;
+                method = method.OverriddenMethod!;
             }
 
             return method.ContainingType;

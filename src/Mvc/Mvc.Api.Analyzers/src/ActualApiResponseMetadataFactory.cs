@@ -102,13 +102,13 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 case ObjectCreationExpressionSyntax creation:
                     {
                         // Read values from 'return new StatusCodeResult(200) case.
-                        var result = InspectMethodArguments(semanticModel, creation, creation.ArgumentList, cancellationToken);
+                        var result = InspectMethodArguments(semanticModel, creation, creation.ArgumentList!, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
                         returnType = result.returnType;
 
                         // Read values from property assignments e.g. 'return new ObjectResult(...) { StatusCode = 200 }'.
                         // Property assignments override constructor assigned values and defaults.
-                        result = InspectInitializers(symbolCache, semanticModel, creation.Initializer, cancellationToken);
+                        result = InspectInitializers(symbolCache, semanticModel, creation.Initializer!, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
                         returnType = result.returnType ?? returnType;
                         break;
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private static ITypeSymbol GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
         {
             var typeInfo = semanticModel.GetTypeInfo(expression, cancellationToken);
-            return typeInfo.Type;
+            return typeInfo.Type!;
         }
 
         private static bool TryGetExpressionStatusCode(

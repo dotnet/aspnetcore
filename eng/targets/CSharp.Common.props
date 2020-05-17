@@ -14,13 +14,22 @@
     <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+  <ItemGroup Condition="'$(UseRazorSdk)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <!--
       Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
       several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
+      We explicitly resolve the dependency using the default netcore taget framework to ensure projects that uses the SDK resolves correctly.
     -->
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" IsImplicitlyDefined="true" />
+    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj" PrivateAssets="All" IsImplicitlyDefined="true" ReferenceOutputAssembly="false" >
+      <SetTargetFramework>TargetFramework=$(DefaultNetCoreTargetFramework)</SetTargetFramework>
+    </ProjectReference>
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" Condition="'$(UseRazorSdk)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
+
+  <PropertyGroup Condition="'$(UseRazorSdk)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+    <RazorSdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />

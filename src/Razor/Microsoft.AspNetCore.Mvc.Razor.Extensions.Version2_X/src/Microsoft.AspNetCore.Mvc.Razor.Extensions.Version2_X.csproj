@@ -5,17 +5,19 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
     <IsShipping>false</IsShipping>
+    <!-- Need to build this project in source build -->
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs">
+    <Compile Include="..\..\Microsoft.AspNetCore.Razor.Language\src\CodeGeneration\CodeWriterExtensions.cs">
       <Link>Shared\CodeWriterExtensions.cs</Link>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.AspNetCore.Razor.Language/Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReference Include="../Microsoft.CodeAnalysis.Razor/Microsoft.CodeAnalysis.Razor.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
   </ItemGroup>
 
 </Project>
