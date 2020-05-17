@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net461</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+  </ItemGroup>
+
+</Project>

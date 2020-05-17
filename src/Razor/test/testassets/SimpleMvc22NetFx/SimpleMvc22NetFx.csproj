@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    This project references a shipped version of MVC. It will reference the local build of Tasks but not the compiler or any test shims.
+  -->
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+  </ItemGroup>
+
+  <!-- Test Placeholder -->
+
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+</Project>

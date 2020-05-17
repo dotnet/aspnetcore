@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- 
+  This project references a shipped version of MVC and should not reference local builds of 
+  the CodeGeneration targets, rzc, or any of the test shims.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.2">
+      <!-- Avoid exporting types from real MVC that will conflict with the test shim -->
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
