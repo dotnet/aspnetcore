@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'=='' AND EXISTS('$(MSBuildThisFileDirectory)..\PregeneratedPackages\')">$(MSBuildThisFileDirectory)..\PregeneratedPackages\</RuntimeAdditionalRestoreSources>
@@ -36,7 +32,7 @@
 
   <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <BinariesRoot>$(RepositoryRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
+    <BinariesRoot>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">

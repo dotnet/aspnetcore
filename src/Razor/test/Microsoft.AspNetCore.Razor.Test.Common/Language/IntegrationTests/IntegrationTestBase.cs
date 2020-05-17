@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         }
 
-        protected IntegrationTestBase(bool? generateBaselines = null)
+        protected IntegrationTestBase(bool? generateBaselines = null, string? projectDirectoryHint = null)
         {
-            TestProjectRoot = TestProject.GetProjectDirectory(GetType());
+            TestProjectRoot = projectDirectoryHint == null ? TestProject.GetProjectDirectory(GetType()) : TestProject.GetProjectDirectory(projectDirectoryHint);
 
             if (generateBaselines.HasValue)
             {

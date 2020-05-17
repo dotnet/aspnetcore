@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
         private readonly static CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         public InstrumentationPassIntegrationTest()
-            : base(generateBaselines: null)
+            : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X")
         {
             Configuration = RazorConfiguration.Create(
                 RazorLanguageVersion.Version_2_0,
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
             {
                 b.AddTagHelpers(descriptors);
                 b.Features.Add(new InstrumentationPass());
-                
+
                 // This test includes templates
                 b.AddTargetExtension(new TemplateTargetExtension());
             });

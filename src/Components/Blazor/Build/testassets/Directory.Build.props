@@ -22,14 +22,6 @@
         Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
-
-      <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
-        PrivateAssets="All"
-        IsImplicitlyDefined="true"
-        ReferenceOutputAssembly="false"
-        Condition="'$(UseRazorSdk)' == 'true'">
-        <SetTargetFramework>TargetFramework=netcoreapp5.0</SetTargetFramework>
-      </ProjectReference>
     </ItemGroup>
 
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"

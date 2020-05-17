@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         private readonly static CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         public CodeGenerationIntegrationTest()
-            : base(generateBaselines: null)
+            : base(generateBaselines: null, projectDirectoryHint: "Microsoft.AspNetCore.Mvc.Razor.Extensions")
         {
             Configuration = RazorConfiguration.Create(
                 RazorLanguageVersion.Version_3_0,

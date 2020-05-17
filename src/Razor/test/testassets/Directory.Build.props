@@ -11,10 +11,16 @@
 
     <!-- Do not resolve Reference ItemGroup since it has a different semantic meaning in Razor test apps -->
     <EnableCustomReferenceResolution>false</EnableCustomReferenceResolution>
-    <UseRazorSdk>true</UseRazorSdk>
+
+    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)eng\Versions.props" />
+
   <PropertyGroup>
+    <!-- Reset version prefix to 1.0.0 for test projects -->
+    <VersionPrefix>1.0.0</VersionPrefix>
+
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
 
@@ -39,6 +45,7 @@
         IsImplicitlyDefined="true" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
 
 </Project>

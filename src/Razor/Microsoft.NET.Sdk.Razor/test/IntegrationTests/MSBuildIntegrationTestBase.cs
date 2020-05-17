@@ -80,8 +80,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // Let the test app know it is running as part of a test.
                 "/p:RunningAsTest=true",
 
-                $"/p:MicrosoftNETCoreApp50PackageVersion={BuildVariables.MicrosoftNETCoreApp50PackageVersion}",
+                $"/p:MicrosoftNETCoreAppRuntimeVersion={BuildVariables.MicrosoftNETCoreAppRuntimeVersion}",
                 $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
+                $"/p:RazorSdkDirectoryRoot={BuildVariables.RazorSdkDirectoryRoot}",
+                $"/p:RepoRoot={BuildVariables.RepoRoot}",
             };
 
             if (!suppressBuildServer)

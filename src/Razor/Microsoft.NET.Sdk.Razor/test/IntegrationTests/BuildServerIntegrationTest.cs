@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Publish rzc tool to a temporary path. This is the location based on which the pipe name is generated.
             var repositoryRoot = ProjectDirectory.SearchUp(AppContext.BaseDirectory, "global.json");
             var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
-            var toolAssemblyDirectory = Path.Combine(solutionRoot, "src", "Microsoft.AspNetCore.Razor.Tools");
+            var toolAssemblyDirectory = Path.Combine(solutionRoot, "Microsoft.AspNetCore.Razor.Tools", "src");
             var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "Microsoft.AspNetCore.Razor.Tools.csproj");
             var projectDirectory = new TestProjectDirectory(solutionRoot, toolAssemblyDirectory, toolAssemblyPath);
             var publishDir = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName(), "RzcPublish");
