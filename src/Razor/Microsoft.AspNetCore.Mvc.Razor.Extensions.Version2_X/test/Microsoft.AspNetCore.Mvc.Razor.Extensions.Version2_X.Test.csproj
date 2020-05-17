@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
 
     <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
+
+    <!-- Tests do not work on Helix yet -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,18 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
 
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(Runtime_MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj" />
   </ItemGroup>
 
   <Target Name="CopyDepsFromShims" AfterTargets="Build">

@@ -11,11 +11,6 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public static SourceChange AsSourceChange(this TextChange textChange)
         {
-            if (textChange == null)
-            {
-                throw new ArgumentNullException(nameof(textChange));
-            }
-
             return new SourceChange(textChange.Span.AsSourceSpan(), textChange.NewText);
         }
     }

@@ -6,6 +6,7 @@
     "dotnet": "5.0.100-preview.5.20258.4",
     "runtimes": {
       "dotnet/x64": [
+        "2.1.11",
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ],
       "dotnet/x86": [

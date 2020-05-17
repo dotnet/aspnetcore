@@ -20,24 +20,27 @@
 
     <!-- Don't produce rzc.exe -->
     <UseAppHost>false</UseAppHost>
+
+    <!-- Need to build this project in source build -->
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Serialization\TagHelperDescriptorJsonConverter.cs">
+    <Compile Include="$(SharedSourceRoot)RazorShared\TagHelperDescriptorJsonConverter.cs">
       <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\RazorDiagnosticJsonConverter.cs">
+    <Compile Include="$(SharedSourceRoot)RazorShared\RazorDiagnosticJsonConverter.cs">
       <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
     </Compile>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <Reference Include="Newtonsoft.Json" Version="$(Razor_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
   </ItemGroup>
 
   <!-- This makes it so that the runtimeconfig.json is included as part of the build output of the project that references this project. -->

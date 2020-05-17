@@ -1,8 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  
-  <PropertyGroup>
-    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-  </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,7 +12,7 @@
 
   <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <BinariesRoot>$(RepositoryRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
+    <BinariesRoot>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
   </PropertyGroup>
 
   <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->

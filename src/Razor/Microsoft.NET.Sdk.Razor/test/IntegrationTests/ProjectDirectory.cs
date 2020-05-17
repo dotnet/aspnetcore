@@ -30,18 +30,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new InvalidOperationException($"{destinationPath} should be empty");
                 }
 
-                var repositoryRoot = SearchUp(AppContext.BaseDirectory, "global.json");
-                if (repositoryRoot == null)
-                {
-                    throw new InvalidOperationException("Could not find repository root.");
-                }
-
+                var repositoryRoot = BuildVariables.RepoRoot;
                 var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
 
                 foreach (var project in new string[] { originalProjectName, }.Concat(additionalProjects))
                 {
-                    var testAppsRoot = Path.Combine(solutionRoot, "test", "testapps");
+                    var testAppsRoot = Path.Combine(solutionRoot, "test", "testassets");
                     var projectRoot = Path.Combine(testAppsRoot, project);
                     if (!Directory.Exists(projectRoot))
                     {
@@ -51,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     var projectDestination = Path.Combine(destinationPath, project);
                     var projectDestinationDir = Directory.CreateDirectory(projectDestination);
                     CopyDirectory(new DirectoryInfo(projectRoot), projectDestinationDir);
-                    SetupDirectoryBuildFiles(solutionRoot, binariesRoot, testAppsRoot, projectDestination);
+                    SetupDirectoryBuildFiles(repositoryRoot, binariesRoot, testAppsRoot, projectDestination);
                 }
 
                 // Rename the csproj/fsproj
@@ -120,12 +115,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            void SetupDirectoryBuildFiles(string solutionRoot, string binariesRoot, string testAppsRoot, string projectDestination)
+            void SetupDirectoryBuildFiles(string repoRoot, string binariesRoot, string testAppsRoot, string projectDestination)
             {
                 var beforeDirectoryPropsContent =
 $@"<Project>
   <PropertyGroup>
-    <SolutionRoot>{solutionRoot}</SolutionRoot>
+    <RepoRoot>{repoRoot}</RepoRoot>
+    <RazorSdkDirectoryRoot>{BuildVariables.RazorSdkDirectoryRoot}</RazorSdkDirectoryRoot>
     <BinariesRoot>{binariesRoot}</BinariesRoot>
   </PropertyGroup>
 </Project>";

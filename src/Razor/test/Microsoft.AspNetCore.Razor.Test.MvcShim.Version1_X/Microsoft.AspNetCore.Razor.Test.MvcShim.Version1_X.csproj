@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

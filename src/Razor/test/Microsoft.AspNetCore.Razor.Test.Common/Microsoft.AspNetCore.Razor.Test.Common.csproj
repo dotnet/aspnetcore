@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(Runtime_MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
 </Project>

@@ -56,6 +56,7 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
+    <!-- Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props -->
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
@@ -70,6 +71,9 @@
     <NoWarn>$(NoWarn);NU5131</NoWarn>
     <!-- Needed until we resolve https://github.com/dotnet/aspnetcore-internal/issues/3103 -->
     <NoWarn>$(NoWarn);NU5048</NoWarn>
+
+    <!-- TODO: Figure out why these warnings are occuring -->
+    <NoWarn Condition="'$(IsAnalyzersProject)' == 'true'">$(NoWarn);RS1024;RS1025;RS1026</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->

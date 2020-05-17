@@ -3,9 +3,6 @@
   <!--
     This project references a shipped version of MVC. It will reference the local build of Tasks but not the compiler or any test shims.
   -->
-  <PropertyGroup>
-    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-  </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>

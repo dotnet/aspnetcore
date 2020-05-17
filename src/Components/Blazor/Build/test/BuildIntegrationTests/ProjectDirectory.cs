@@ -100,10 +100,12 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             static void SetupDirectoryBuildFiles(string repoRoot, string testAppsRoot, string projectDestination)
             {
+                var razorSdkDirectoryRoot = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(a => a.Key == "RazorSdkDirectoryRoot").Value;
                 var beforeDirectoryPropsContent =
 $@"<Project>
   <PropertyGroup>
     <RepoRoot>{repoRoot}</RepoRoot>
+    <RazorSdkDirectoryRoot>{razorSdkDirectoryRoot}</RazorSdkDirectoryRoot>
   </PropertyGroup>
 </Project>";
                 File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);
