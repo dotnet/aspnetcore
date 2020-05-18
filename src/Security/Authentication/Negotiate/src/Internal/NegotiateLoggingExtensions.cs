@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _challengeNegotiate;
         private static Action<ILogger, Exception> _reauthenticating;
         private static Action<ILogger, Exception> _deferring;
-        private static Action<ILogger, Exception> _negotiateStateErrorType;
+        private static Action<ILogger, string, Exception> _negotiateStateErrorType;
 
         static NegotiateLoggingExtensions()
         {
