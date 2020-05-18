@@ -1254,7 +1254,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 Assert.Equal("UserAuthorizationFailed", eventId.Name);
                 var message = formatter(state, exception);
 
-                Assert.Equal("Authorization failed for Fail() was explicitly called.", message);
+                Assert.Equal("Authorization failed. Fail() was explicitly called.", message);
             }
 
             var authorizationService = BuildAuthorizationService(services =>
