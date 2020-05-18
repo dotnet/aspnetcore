@@ -16,9 +16,6 @@
     <PropertyGroup>
       <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">%(_TargetingPackVersionInfo.PackageVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
       <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(TargetingPackVersionPrefix)</MicrosoftAspNetCoreAppRefPackageVersion>
-
-    <!-- For blazor-wasm we want the runtime to match the baseline, as we want to target the latest released asp.net core app -->
-    <MicrosoftAspNetCoreAppRuntimePackageVersion>$(AspNetCoreBaselineVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
     </PropertyGroup>
 
     <!-- Runtime and Ref packs may have separate versions. -->
@@ -37,7 +34,7 @@
         MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
         MicrosoftAspNetCoreAppRefPackageVersion=$(MicrosoftAspNetCoreAppRefPackageVersion);
-        MicrosoftAspNetCoreAppRuntimePackageVersion=$(MicrosoftAspNetCoreAppRuntimePackageVersion);
+        MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       </PropsProperties>

@@ -20,7 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
   </ItemGroup>
 
-  <Target Name="_BuildBlazorBuildProject" BeforeTargets="ResolveProjectReferences">
+  <Target Name="_BuildBlazorBuildProject" BeforeTargets="ResolveProjectReferences" Condition="'$(NoBuild)' != 'true'">
     <!--
       The Blazor.Build project cross-compiles and we need the output of all TFMs to be available in the build output.
       We can't represent this in any good way using ProjectReference elements, but we can try and build it instead.

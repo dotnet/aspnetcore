@@ -40,7 +40,7 @@
     <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
   </ItemGroup>
 
-  <Target Name="_CreateInteropHash" BeforeTargets="CompileInterop" Condition="'$(DesignTimeBuild)' != 'true'">
+  <Target Name="_CreateInteropHash" BeforeTargets="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'">
 
     <PropertyGroup>
       <InteropCompilationCacheFile>$(IntermediateOutputPath)interop.cache</InteropCompilationCacheFile>
@@ -58,7 +58,7 @@
 
   </Target>
 
-  <Target Name="CompileInterop" Condition="'$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
+  <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
     <Yarn Command="install --mutex network" WorkingDirectory="$(YarnWorkingDir)" />
     <Yarn Command="run build:release" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" />
     <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" />

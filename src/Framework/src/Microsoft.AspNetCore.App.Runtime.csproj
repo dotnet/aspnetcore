@@ -175,6 +175,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _BatchCopyToRedistLayout;
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
+      _InstallFrameworkIntoLocalDotNet;
     </CoreBuildDependsOn>
     <CrossGenDependsOn>
       ResolveReferences;

@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     return (TResult)(object)_environment;
                 case "Blazor._internal.getConfig":
                     return (TResult)(object)null;
-                case "Blazor._internal.navigationManager.getBaseURI":
+                case "Blazor._internal.navigationManager.getUnmarshalledBaseURI":
                     var testUri = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests";
                     return (TResult)(object)testUri;
-                case "Blazor._internal.navigationManager.getLocationHref":
+                case "Blazor._internal.navigationManager.getUnmarshalledLocationHref":
                     var testHref = "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
                     return (TResult)(object)testHref;
                 default:

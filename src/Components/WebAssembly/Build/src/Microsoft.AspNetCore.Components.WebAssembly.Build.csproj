@@ -40,6 +40,11 @@
       Private="false"
       Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
 
+    <ProjectReference
+      Include="..\..\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj"
+      ReferenceOutputAssemblies="false"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'" />
+
     <Reference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <Reference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="Runtime" />
     <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
@@ -82,7 +87,8 @@
     Name="GetBrotliTools"
     BeforeTargets="Build;GenerateNuspec"
     Inputs="@(_BrotliToolPathInput)"
-    Outputs="@(_BrotliToolPathOutput)">
+    Outputs="@(_BrotliToolPathOutput)"
+    Condition="'$(DotNetBuildFromSource)' != 'true'">
     <ItemGroup>
       <_BrotliToolsPath Include="$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\compression\" />
     </ItemGroup>

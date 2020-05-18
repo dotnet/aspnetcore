@@ -36,7 +36,7 @@ namespace Templates.Test.Helpers
             string workingDirectory,
             string dllPath,
             IDictionary<string, string> environmentVariables,
-            bool published = true,
+            bool published,
             bool hasListeningUri = true)
         {
             _output = output;
@@ -55,7 +55,7 @@ namespace Templates.Test.Helpers
 
             output.WriteLine("Running ASP.NET application...");
 
-            var arguments = published ? $"exec {dllPath}" : "run";
+            var arguments = published ? $"exec {dllPath}" : "run --no-build";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
             if (hasListeningUri)
             {

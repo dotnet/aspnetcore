@@ -25,15 +25,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{A7ABAC29-F73F-456D-AE54-46842CFC2E10}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj", "{FD37F740-A654-4117-BFB6-9112CE4C1D3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj", "{FD37F740-A654-4117-BFB6-9112CE4C1D3B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{C1E2C117-BE47-4E29-94B3-753262D97A5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{C1E2C117-BE47-4E29-94B3-753262D97A5C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "Blazor\testassets\MonoSanity\MonoSanity.csproj", "{F16C1A7C-A2BD-4EB1-8BC8-23B1375F3B9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "WebAssembly\testassets\MonoSanity\MonoSanity.csproj", "{F16C1A7C-A2BD-4EB1-8BC8-23B1375F3B9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj", "{1C4BF2D3-44A8-4A71-B031-15B983663CB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "WebAssembly\testassets\MonoSanityClient\MonoSanityClient.csproj", "{1C4BF2D3-44A8-4A71-B031-15B983663CB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "Blazor\testassets\StandaloneApp\StandaloneApp.csproj", "{C0FFB29E-4696-4875-9039-E5FA1AC5A42A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj", "{C0FFB29E-4696-4875-9039-E5FA1AC5A42A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{A27FF193-195B-4474-8E6C-840B2E339373}"
 EndProject

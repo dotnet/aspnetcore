@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,9 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Remove the reference to Microsoft.AspNetCore.App from IdentityServer4 -->
-    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
-
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />

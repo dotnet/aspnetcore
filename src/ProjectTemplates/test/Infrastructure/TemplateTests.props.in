@@ -40,14 +40,6 @@
       IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <!-- Temporarily remove the components analyzer due to build issues -->
-  <Target Name="RemoveComponentsAnalyzer" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <_AnalyzerToRemove Include="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'Microsoft.AspNetCore.Components.Analyzers'" />
-      <Analyzer Remove="@(_AnalyzerToRemove)" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <!--
       Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK

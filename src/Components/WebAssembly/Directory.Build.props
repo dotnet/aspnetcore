@@ -3,5 +3,8 @@
   <PropertyGroup>
     <!-- Override version labels -->
     <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
+
+    <!-- Avoid source build issues with WebAssembly -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 </Project>

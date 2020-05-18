@@ -253,6 +253,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.JSInterop.WebAssembly" Version="[3.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" Version="[3.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[3.1.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.3, )" />

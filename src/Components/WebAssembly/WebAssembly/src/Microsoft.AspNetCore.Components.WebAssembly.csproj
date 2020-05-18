@@ -13,9 +13,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
-    <ProjectReference
-      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
-      IncludeAssets="compile" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" IncludeAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,5 +28,4 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
   </ItemGroup>
-
 </Project>
