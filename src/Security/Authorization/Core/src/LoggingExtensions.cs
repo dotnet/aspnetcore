@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging
             _userAuthorizationFailed = LoggerMessage.Define<string>(
                 eventId: new EventId(2, "UserAuthorizationFailed"),
                 logLevel: LogLevel.Information,
-                formatString: "Authorization failed for {0}");
+                formatString: "Authorization failed. {0}");
         }
 
         public static void UserAuthorizationSucceeded(this ILogger logger)
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging
         {
             var reason = failure.FailCalled
                 ? "Fail() was explicitly called."
-                : "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
+                : "These requirements were not met: " + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
 
             _userAuthorizationFailed(logger, reason, null);
         }

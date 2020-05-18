@@ -1221,7 +1221,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 Assert.Equal("UserAuthorizationFailed", eventId.Name);
                 var message = formatter(state, exception);
 
-                Assert.Equal("Authorization failed for these requirements which were not met:" + Environment.NewLine + "LogRequirement" + Environment.NewLine + "LogRequirement", message);
+                Assert.Equal("Authorization failed. These requirements were not met:" + Environment.NewLine + "LogRequirement" + Environment.NewLine + "LogRequirement", message);
             }
 
             var authorizationService = BuildAuthorizationService(services =>
