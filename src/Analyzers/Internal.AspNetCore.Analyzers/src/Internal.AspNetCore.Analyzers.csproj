@@ -15,6 +15,7 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
     <!-- This project needs an older version of M.CA.CSharp.Workspaces since it targets netstandard1.3 -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
