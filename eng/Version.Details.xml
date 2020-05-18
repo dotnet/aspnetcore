@@ -13,21 +13,21 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.6.20268.1">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-preview.6.20268.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>c514b972bb6cbcae1a88440d1353682e96a89c28</Sha>
+      <Sha>0d29bc475853479bdf12ef326bdfb91f93b2a6c7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.6.20268.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-preview.6.20268.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>c514b972bb6cbcae1a88440d1353682e96a89c28</Sha>
+      <Sha>0d29bc475853479bdf12ef326bdfb91f93b2a6c7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.6.20268.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-preview.6.20268.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>c514b972bb6cbcae1a88440d1353682e96a89c28</Sha>
+      <Sha>0d29bc475853479bdf12ef326bdfb91f93b2a6c7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.6.20268.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.6.20268.3">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>c514b972bb6cbcae1a88440d1353682e96a89c28</Sha>
+      <Sha>0d29bc475853479bdf12ef326bdfb91f93b2a6c7</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-preview.6.20265.2">
       <Uri>https://github.com/dotnet/efcore</Uri>
@@ -312,9 +312,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>898e51ed5fdcc4871087ac5754ca9056e58e575d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-2.20259.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-2.20267.1" CoherentParentDependency="Microsoft.AspNetCore.Razor.Language">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d0ef8687ce735c8aa32035396f521705a8ff7392</Sha>
+      <Sha>3126e7a9753bf09a99e4c4f152b8dfef76862dc5</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
