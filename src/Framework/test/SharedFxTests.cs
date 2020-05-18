@@ -15,17 +15,19 @@ namespace Microsoft.AspNetCore
     {
         private readonly string _expectedTfm;
         private readonly string _expectedRid;
+        private readonly string _expectedVersionFileName;
         private readonly string _sharedFxRoot;
         private readonly ITestOutputHelper _output;
 
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", TestData.GetTestDataValue("RuntimePackageVersion"))
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
+            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")) ? ".version" : "Microsoft.AspNetCore.App.versions.txt";
         }
 
         [Fact]
@@ -133,7 +135,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void ItContainsVersionFile()
         {
-            var versionFile = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.versions.txt");
+            var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
             AssertEx.FileExists(versionFile);
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);

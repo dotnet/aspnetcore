@@ -26,6 +26,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         }
 
         [Fact]
+        // Keep this test in quarantine, it verifies that quarantined test logs are preserved
         [QuarantinedTest]
         public void FunctionalLogs_LogsPreservedFromQuarantinedTest()
         {

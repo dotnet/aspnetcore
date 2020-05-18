@@ -812,7 +812,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Fact]
         [CollectDump]
-        [QuarantinedTest]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value

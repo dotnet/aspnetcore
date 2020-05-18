@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
@@ -33,7 +34,7 @@ namespace InteropTests.Helpers
             _process.OutputDataReceived += Process_OutputDataReceived;
             _process.Start();
 
-            _processEx = new ProcessEx(output, _process);
+            _processEx = new ProcessEx(output, _process, Timeout.InfiniteTimeSpan);
 
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         }

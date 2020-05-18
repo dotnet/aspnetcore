@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
-        /// <summary>
-        /// Configures the endpoints that Kestrel should listen to.
-        /// </summary>
-        /// <remarks>
-        /// If this list is empty, the server.urls setting (e.g. UseUrls) is used.
-        /// </remarks>
-        internal List<ListenOptions> ListenOptions { get; } = new List<ListenOptions>();
+        // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
+        internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
+        internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
+        internal IEnumerable<ListenOptions> ListenOptions => CodeBackedListenOptions.Concat(ConfigurationBackedListenOptions);
+
+        // For testing and debugging.
+        internal List<ListenOptions> OptionsInUse { get; } = new List<ListenOptions>();
 
         /// <summary>
         /// Gets or sets whether the <c>Server</c> header should be included in each response.
@@ -202,20 +202,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Creates a configuration loader for setting up Kestrel.
         /// </summary>
-        public KestrelConfigurationLoader Configure()
-        {
-            var loader = new KestrelConfigurationLoader(this, new ConfigurationBuilder().Build());
-            ConfigurationLoader = loader;
-            return loader;
-        }
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for configuring endpoints.</returns>
+        public KestrelConfigurationLoader Configure() => Configure(new ConfigurationBuilder().Build());
 
         /// <summary>
-        /// Creates a configuration loader for setting up Kestrel that takes an IConfiguration as input.
+        /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
+        /// This configuration must be scoped to the configuration section for Kestrel.
+        /// Call <see cref="Configure(IConfiguration, bool)"/> to enable dynamic endpoint binding updates.
+        /// </summary>
+        /// <param name="config">The configuration section for Kestrel.</param>
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+        public KestrelConfigurationLoader Configure(IConfiguration config) => Configure(config, reloadOnChange: false);
+
+        /// <summary>
+        /// Creates a configuration loader for setting up Kestrel that takes an <see cref="IConfiguration"/> as input.
         /// This configuration must be scoped to the configuration section for Kestrel.
         /// </summary>
-        public KestrelConfigurationLoader Configure(IConfiguration config)
+        /// <param name="config">The configuration section for Kestrel.</param>
+        /// <param name="reloadOnChange">
+        /// If <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes.
+        /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
+        /// </param>
+        /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+        public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
         {
-            var loader = new KestrelConfigurationLoader(this, config);
+            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);
             ConfigurationLoader = loader;
             return loader;
         }
@@ -286,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(endPoint);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -309,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new LocalhostListenOptions(port);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -330,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new AnyIPListenOptions(port);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -364,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(socketPath);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
 
         /// <summary>
@@ -389,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var listenOptions = new ListenOptions(handle);
             ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
-            ListenOptions.Add(listenOptions);
+            CodeBackedListenOptions.Add(listenOptions);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50);
+                .WithTfms(Tfm.Net50);
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.WindowsAuthentication)]

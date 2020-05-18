@@ -136,6 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public int LocalPort { get; set; }
         public string Scheme { get; set; }
         public HttpMethod Method { get; set; }
+        public string MethodText => ((IHttpRequestFeature)this).Method;
         public string PathBase { get; set; }
 
         public string Path { get; set; }
@@ -1070,10 +1071,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             var responseHeaders = HttpResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
-            var connectionOptions = HttpHeaders.ParseConnection(responseHeaders.HeaderConnection);
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
 
-            if (_keepAlive && hasConnection && (connectionOptions & ConnectionOptions.KeepAlive) != ConnectionOptions.KeepAlive)
+            if (_keepAlive &&
+                hasConnection &&
+                (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)
             {
                 _keepAlive = false;
             }

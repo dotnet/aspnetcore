@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
         public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
-                .WithTfms(Tfm.NetCoreApp50);
+                .WithTfms(Tfm.Net50);
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]

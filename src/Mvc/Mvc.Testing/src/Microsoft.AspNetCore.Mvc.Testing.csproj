@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Support for writing functional tests for MVC applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- !!! Temporary workaround while we switch TFMs. -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
+
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
     <IsPackable>true</IsPackable>
@@ -21,5 +24,4 @@
   <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
-
 </Project>

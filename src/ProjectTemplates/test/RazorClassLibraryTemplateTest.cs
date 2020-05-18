@@ -42,7 +42,6 @@ namespace Templates.Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorClassLibraryTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels();
 
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [RequiresNewShim]
         public async Task SetsConnectionCloseHeader()
         {
-            // Only tests OutOfProcess as the Connection header is removed for out of process and not inprocess. 
+            // Only tests OutOfProcess as the Connection header is removed for out of process and not inprocess.
             // This test checks a quirk to allow setting the Connection header.
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 

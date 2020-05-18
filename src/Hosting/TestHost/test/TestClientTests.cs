@@ -433,7 +433,6 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20164")]
         public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
         {
             // Arrange

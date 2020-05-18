@@ -11,9 +11,7 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <SkipHelixArm>true</SkipHelixArm>
-    
-    <!-- Some tests still do not work on Helix, so continue running these on azdo for now-->
-    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
+
     <BaseOutputPath />
     <OutputPath />
 
@@ -29,14 +27,8 @@
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
-    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="AngleSharp" />
-
-    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="..\Shared\**" LinkBase="Helpers" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,7 +73,7 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
+  <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <TestTemplateTestsProps>$(TestTemplateCreationFolder)$(TestTemplateTestsProps)</TestTemplateTestsProps>

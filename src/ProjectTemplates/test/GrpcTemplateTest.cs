@@ -27,7 +27,6 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Not supported queues", Queues = "Windows.7.Amd64;Windows.7.Amd64.Open;OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task GrpcTemplate()
         {
             // Setup AssemblyTestLog

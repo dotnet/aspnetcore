@@ -4,7 +4,7 @@ source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 baseline_core_root_directory=
 architecture=x64
-framework=netcoreapp5.0
+framework=net5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH
@@ -12,13 +12,18 @@ commit_sha=$BUILD_SOURCEVERSION
 build_number=$BUILD_BUILDNUMBER
 internal=false
 compare=false
+mono_dotnet=
 kind="micro"
+llvm=false
+monointerpreter=false
+monoaot=false
 run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
 configurations="CompliationMode=$compilation_mode RunKind=$kind"
 run_from_perf_repo=false
 use_core_run=true
 use_baseline_core_run=true
+using_mono=false
 
 while (($# > 0)); do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
@@ -65,6 +70,7 @@ while (($# > 0)); do
       ;;
     --kind)
       kind=$2
+      configurations="CompliationMode=$compilation_mode RunKind=$kind"
       shift 2
       ;;
     --runcategories)
@@ -78,6 +84,22 @@ while (($# > 0)); do
     --internal)
       internal=true
       shift 1
+      ;;
+    --llvm)
+      llvm=true
+      shift 1
+      ;;
+    --monointerpreter)
+      monointerpreter=true
+      shift 1
+      ;;
+    --monoaot)
+      monoaot=true
+      shift 1
+      ;;
+    --monodotnet)
+      mono_dotnet=$2
+      shift 2
       ;;
     --compare)
       compare=true
@@ -107,6 +129,7 @@ while (($# > 0)); do
       echo "  --kind <value>                 Related to csproj. The kind of benchmarks that should be run. Defaults to micro"
       echo "  --runcategories <value>        Related to csproj. Categories of benchmarks to run. Defaults to \"coreclr corefx\""
       echo "  --internal                     If the benchmarks are running as an official job."
+      echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
       echo ""
       exit 0
       ;;
@@ -164,6 +187,10 @@ if [[ "$internal" == true ]]; then
     fi
 fi
 
+if [[ "$mono_dotnet" != "" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+fi
+
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
@@ -184,6 +211,12 @@ else
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
+fi
+
+if [[ "$mono_dotnet" != "" ]]; then
+    using_mono=true
+    mono_dotnet_path=$payload_directory/dotnet-mono
+    mv $mono_dotnet $mono_dotnet_path
 fi
 
 if [[ "$use_core_run" = true ]]; then
@@ -221,3 +254,4 @@ Write-PipelineSetVariable -name "HelixSourcePrefix" -value "$helix_source_prefix
 Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable false
 Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Compare" -value "$compare" -is_multi_job_variable false
+Write-PipelineSetVariable -name "MonoDotnet" -value "$using_mono" -is_multi_job_variable false

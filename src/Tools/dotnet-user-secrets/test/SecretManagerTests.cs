@@ -82,6 +82,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [QuarantinedTest]
         public void SetSecrets(bool fromCurrentDirectory)
         {
             var secrets = new KeyValuePair<string, string>[]
@@ -269,6 +270,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [QuarantinedTest]
         public void Clear_Secrets(bool fromCurrentDirectory)
         {
             var projectPath = _fixture.GetTempSecretProject();

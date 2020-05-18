@@ -49,7 +49,25 @@ dotnet vstest My.Tests.dll
 If that doesn't help, you can try the Get Repro environment link from mission control and try to debug that way.
 
 ## Differences from running tests locally
-Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test depends on will need to be included to the payload (TBD how to do this).
+Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test depends on will need to be included to the payload.
+
+This can be accomplished by using the `HelixContent` property like so.
+
+```
+<ItemGroup>
+  <HelixContent Include="$(RepoRoot)src\KeepMe.js"/>
+  <HelixContent Include="$(RepoRoot)src\Project\**"/>
+</ItemGroup>
+```
+
+By default, these files will be included in the root directory. To include these files in a different directory, you can use either the `Link` or `LinkBase` attributes to set the included path.
+
+```
+<ItemGroup>
+  <HelixContent Include="$(RepoRoot)src\KeepMe.js" Link="$(MSBuildThisFileDirectory)\myassets\KeepMe.js"/>
+  <HelixContent Include="$(RepoRoot)src\Project\**" LinkBase="$(MSBuildThisFileDirectory)\myassets"/>
+</ItemGroup>
+```
 
 ## How to skip tests on helix
 There are two main ways to opt out of helix
