@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
 
@@ -24,14 +25,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="hub">The instance of the Hub.</param>
         /// <param name="hubMethod">The <see cref="MethodInfo"/> for the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
-        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo hubMethod, object[] hubMethodArguments)
-#pragma warning disable CS0618 // Type or member is obsolete
-            : this(context, hubMethod.Name, hubMethodArguments)
-#pragma warning restore CS0618 // Type or member is obsolete
+        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo hubMethod, IReadOnlyList<object> hubMethodArguments)
         {
             Hub = hub;
             ServiceProvider = serviceProvider;
             HubMethod = hubMethod;
+            Arguments = hubMethodArguments as object[] ?? hubMethodArguments.ToArray();
+            Context = context;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            HubMethodName = HubMethod.Name;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -43,11 +47,7 @@ namespace Microsoft.AspNetCore.SignalR
         [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is to use the other constructor.")]
         public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            HubMethodName = hubMethodName;
-#pragma warning restore CS0618 // Type or member is obsolete
-            Arguments = hubMethodArguments;
-            Context = context;
+            throw new NotSupportedException("This constructor no longer works. Use the other constructor.");
         }
 
         internal HubInvocationContext(ObjectMethodExecutor objectMethodExecutor, HubCallerContext context, IServiceProvider serviceProvider, Hub hub, object[] hubMethodArguments)
