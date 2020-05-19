@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.</Description>
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="StreamCopyOperationInternal.cs" />
+    <Compile Include="..\..\Shared\PipeCopyOperationInternal.cs" Link="PipeCopyOperationInternal.cs" />
   </ItemGroup>
 
   <ItemGroup>

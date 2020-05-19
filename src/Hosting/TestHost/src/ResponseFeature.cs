@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
-            return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
+            return SendFileFallback.SendFileAsync(Writer, path, offset, count, cancellation);
         }
 
         public Task CompleteAsync()

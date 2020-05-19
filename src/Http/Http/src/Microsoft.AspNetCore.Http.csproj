@@ -17,6 +17,7 @@
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
+    <Compile Include="..\..\Shared\PipeCopyOperationInternal.cs" Link="Internal\PipeCopyOperationInternal.cs" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
   </ItemGroup>
 

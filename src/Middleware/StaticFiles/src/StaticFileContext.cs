@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 using (var readStream = _fileInfo.CreateReadStream())
                 {
                     // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
+                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, StreamCopyBufferSize, _context.RequestAborted);
                 }
             }
             catch (OperationCanceledException ex)
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
                     _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
+                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, length, _context.RequestAborted);
                 }
             }
             catch (OperationCanceledException ex)

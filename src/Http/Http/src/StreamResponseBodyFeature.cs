@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 await StartAsync(cancellationToken);
             }
-            await SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellationToken);
+            await SendFileFallback.SendFileAsync(Writer, path, offset, count, cancellationToken);
         }
 
         /// <summary>
