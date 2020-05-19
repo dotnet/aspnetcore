@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging
             _userAuthorizationFailed = LoggerMessage.Define<string>(
                 eventId: new EventId(2, "UserAuthorizationFailed"),
                 logLevel: LogLevel.Information,
-                formatString: "Authorization failed for {0}");
+                formatString: "Authorization failed. {0}");
         }
 
         public static void UserAuthorizationSucceeded(this ILogger logger)

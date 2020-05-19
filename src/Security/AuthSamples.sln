@@ -68,6 +68,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomPolicyProvider", "sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticFilesAuth", "samples\StaticFilesAuth\StaticFilesAuth.csproj", "{E1E8A599-AB42-4551-8C24-BE4404B65283}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomAuthorizationFailureResponse", "samples\CustomAuthorizationFailureResponse\CustomAuthorizationFailureResponse.csproj", "{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -402,6 +404,18 @@ Global
 		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x64.Build.0 = Release|Any CPU
 		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x86.ActiveCfg = Release|Any CPU
 		{E1E8A599-AB42-4551-8C24-BE4404B65283}.Release|x86.Build.0 = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|x64.Build.0 = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Debug|x86.Build.0 = Debug|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|x64.ActiveCfg = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|x64.Build.0 = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|x86.ActiveCfg = Release|Any CPU
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -434,6 +448,7 @@ Global
 		{82C0816D-7051-4DDB-9B9E-6777973AD7AE} = {142C8260-90B5-4D72-9564-17BFDD72F496}
 		{38C0E122-64D0-497F-ABB0-C6A9C3349F02} = {CA4538F5-9DA8-4139-B891-A13279889F79}
 		{E1E8A599-AB42-4551-8C24-BE4404B65283} = {CA4538F5-9DA8-4139-B891-A13279889F79}
+		{EA51BBBC-58AC-42F8-97C1-5CF3C9725513} = {CA4538F5-9DA8-4139-B891-A13279889F79}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {39E3AF62-B1FD-4156-92AA-F4FA99B5AD89}

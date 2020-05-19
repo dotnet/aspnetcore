@@ -107,13 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
             }
-            finally
-            {
-                if (_http1Connection?.IsUpgraded == true)
-                {
-                    _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
-                }
-            }
         }
 
         // For testing only

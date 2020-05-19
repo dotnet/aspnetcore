@@ -326,6 +326,40 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.NotNull(outputFormatterContext.HttpContext.Response.ContentLength);
         }
 
+        [Fact]
+        public async Task SerializingWithPreserveReferenceHandling()
+        {
+            // Arrange
+            var expected = "{\"$id\":\"1\",\"fullName\":\"John\",\"age\":35}";
+            var user = new User { FullName = "John", age = 35 };
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+                PreserveReferencesHandling = PreserveReferencesHandling.All,
+            };
+            var formatter = new TestableJsonOutputFormatter(settings);
+
+            for (var i = 0; i < 3; i++)
+            {
+                // Act
+                var context = GetOutputFormatterContext(user, typeof(User));
+                await formatter.WriteResponseBodyAsync(context, Encoding.UTF8);
+
+                // Assert
+                var body = context.HttpContext.Response.Body;
+
+                Assert.NotNull(body);
+                body.Position = 0;
+
+                var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+                Assert.Equal(expected, content);
+            }
+        }
+
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
         {
             public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
