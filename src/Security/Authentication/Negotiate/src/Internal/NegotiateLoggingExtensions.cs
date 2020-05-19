@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "The users authentication request was invalid.");
             _negotiateStateErrorType = LoggerMessage.Define<string>(
                 eventId: new EventId(11, "NegotiateStateErrorType"),
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "Negotiate error code: {error}.");
         }
 
