@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 _negotiateState ??= Options.StateFactory.CreateInstance();
 
                 var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
-                Logger.NegotiateStateErrorType(errorType.ToString());
                 if (errorType != BlobErrorType.None)
                 {
+                    Logger.NegotiateStateErrorType(errorType.ToString());
                     _negotiateState.Dispose();
                     _negotiateState = null;
                     if (persistence?.State != null)
