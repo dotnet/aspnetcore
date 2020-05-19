@@ -97,7 +97,7 @@ namespace Microsoft.Extensions.Logging
         public static void ClientError(this ILogger logger, Exception ex)
             => _clientError(logger, ex);
 
-        public static void NegotiateStateErrorType(this ILogger logger, string errorType)
+        public static void NegotiateError(this ILogger logger, string error)
             => _negotiateStateErrorType(logger, errorType, null);
     }
 }
