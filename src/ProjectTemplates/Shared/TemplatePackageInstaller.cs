@@ -6,10 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,7 +16,6 @@ namespace Templates.Test.Helpers
 {
     internal static class TemplatePackageInstaller
     {
-        private static readonly SemaphoreSlim InstallerLock = new SemaphoreSlim(1);
         private static bool _haveReinstalledTemplatePackages;
 
         private static readonly string[] _templatePackages = new[]
@@ -52,7 +49,7 @@ namespace Templates.Test.Helpers
 
         public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
         {
-            Assert.True(await InstallerLock.WaitAsync(TimeSpan.FromMinutes(1)), "Unable to grab installer lock");
+            await ProcessLock.DotNetNewLock.WaitAsync();
             try
             {
                 if (!_haveReinstalledTemplatePackages)
@@ -67,7 +64,7 @@ namespace Templates.Test.Helpers
             }
             finally
             {
-                InstallerLock.Release();
+                ProcessLock.DotNetNewLock.Release();
             }
         }
 
