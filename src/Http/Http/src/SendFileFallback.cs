@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public static async Task SendFileAsync(Stream destination, string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
-            using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
+            await using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
             await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, cancellationToken);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public static async Task SendFileAsync(PipeWriter writer, string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
-            using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
+            await using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
             await PipeCopyOperationInternal.CopyToAsync(fileStream, writer, count, cancellationToken);
