@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Get or sets the associated value from the collection as a single string.
+        /// Gets the associated set of values from the collection.
         /// </summary>
         /// <param name="key">The key name.</param>
         /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>

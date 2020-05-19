@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Net.Http.Headers;
 
 namespace FunctionalTests
 {
@@ -134,6 +135,11 @@ namespace FunctionalTests
         public string GetContentTypeHeader()
         {
             return Context.GetHttpContext().Request.Headers["Content-Type"];
+        }
+
+        public string GetHeader(string headerName)
+        {
+            return Context.GetHttpContext().Request.Headers[headerName];
         }
 
         public string GetCookie(string cookieName)

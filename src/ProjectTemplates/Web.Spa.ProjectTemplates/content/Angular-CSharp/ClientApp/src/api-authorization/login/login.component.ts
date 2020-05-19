@@ -101,7 +101,7 @@ export class LoginComponent implements OnInit {
 
   private getReturnUrl(state?: INavigationState): string {
     const fromQuery = (this.activatedRoute.snapshot.queryParams as INavigationState).returnUrl;
-    // If the url is comming from the query string, check that is either
+    // If the url is coming from the query string, check that is either
     // a relative url or an absolute url
     if (fromQuery &&
       !(fromQuery.startsWith(`${window.location.origin}/`) ||
@@ -118,7 +118,7 @@ export class LoginComponent implements OnInit {
     // It's important that we do a replace here so that when the user hits the back arrow on the
     // browser they get sent back to where it was on the app instead of to an endpoint on this
     // component.
-    const redirectUrl = `${window.location.origin}${apiAuthorizationPath}`;
+    const redirectUrl = `${window.location.origin}/${apiAuthorizationPath}`;
     window.location.replace(redirectUrl);
   }
 }

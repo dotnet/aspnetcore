@@ -6,6 +6,7 @@ buildscript {
   }
   dependencies {
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.14.0"
+    classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
   }
 }
 
@@ -16,6 +17,7 @@ plugins {
 
 apply plugin: "java-library"
 apply plugin: "com.diffplug.gradle.spotless"
+apply plugin: 'org.junit.platform.gradle.plugin'
 
 group 'com.microsoft.signalr'
 
@@ -64,8 +66,8 @@ spotless {
     }
 }
 
-test {
-    useJUnitPlatform()
+junitPlatform {
+    reportsDir file('test-results')
 }
 
 task sourceJar(type: Jar) {
@@ -83,7 +85,7 @@ task generatePOM {
         project {
             inceptionYear '2018'
             description 'ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/aspnet/AspNetCore'
+            url 'https://github.com/dotnet/aspnetcore'
             name groupId + ':' + artifactId
             licenses {
                 license {
@@ -93,9 +95,9 @@ task generatePOM {
                 }
             }
             scm {
-                connection 'scm:git:git://github.com/aspnet/AspNetCore.git'
-                developerConnection 'scm:git:git://github.com/aspnet/AspNetCore.git'
-                url 'http://github.com/aspnet/AspNetCore/tree/master'
+                connection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                developerConnection 'scm:git:git://github.com/dotnet/aspnetcore.git'
+                url 'http://github.com/dotnet/aspnetcore/tree/master'
             }
             developers {
                 developer {
@@ -108,3 +110,27 @@ task generatePOM {
 }
 
 task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
+
+task generateVersionClass {
+    inputs.property "version", project.version
+    outputs.dir "$buildDir/generated"
+    doFirst {
+        def versionFile = file("$buildDir/../src/main/java/com/microsoft/signalr/Version.java")
+        versionFile.parentFile.mkdirs()
+        versionFile.text =
+                """
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+package com.microsoft.signalr;
+
+class Version {
+    public static String getDetailedVersion() {
+        return "$project.version";
+    }
+}
+"""
+    }
+}
+
+compileJava.dependsOn generateVersionClass

@@ -14,6 +14,8 @@
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemClock.cs" Link="Internal\SystemClock.cs" />
   </ItemGroup>
 
   <ItemGroup>

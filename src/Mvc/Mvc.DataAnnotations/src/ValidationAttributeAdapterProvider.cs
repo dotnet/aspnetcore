@@ -29,51 +29,51 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             var type = attribute.GetType();
 
-            if (type == typeof(RegularExpressionAttribute))
+            if (typeof(RegularExpressionAttribute).IsAssignableFrom(type))
             {
                 adapter = new RegularExpressionAttributeAdapter((RegularExpressionAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(MaxLengthAttribute))
+            else if (typeof(MaxLengthAttribute).IsAssignableFrom(type))
             {
                 adapter = new MaxLengthAttributeAdapter((MaxLengthAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(RequiredAttribute))
+            else if (typeof(RequiredAttribute).IsAssignableFrom(type))
             {
                 adapter = new RequiredAttributeAdapter((RequiredAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(CompareAttribute))
+            else if (typeof(CompareAttribute).IsAssignableFrom(type))
             {
                 adapter = new CompareAttributeAdapter((CompareAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(MinLengthAttribute))
+            else if (typeof(MinLengthAttribute).IsAssignableFrom(type))
             {
                 adapter = new MinLengthAttributeAdapter((MinLengthAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(CreditCardAttribute))
+            else if (typeof(CreditCardAttribute).IsAssignableFrom(type))
             {
                 adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-creditcard", stringLocalizer);
             }
-            else if (type == typeof(StringLengthAttribute))
+            else if (typeof(StringLengthAttribute).IsAssignableFrom(type))
             {
                 adapter = new StringLengthAttributeAdapter((StringLengthAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(RangeAttribute))
+            else if (typeof(RangeAttribute).IsAssignableFrom(type))
             {
                 adapter = new RangeAttributeAdapter((RangeAttribute)attribute, stringLocalizer);
             }
-            else if (type == typeof(EmailAddressAttribute))
+            else if (typeof(EmailAddressAttribute).IsAssignableFrom(type))
             {
                 adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-email", stringLocalizer);
             }
-            else if (type == typeof(PhoneAttribute))
+            else if (typeof(PhoneAttribute).IsAssignableFrom(type))
             {
                 adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-phone", stringLocalizer);
             }
-            else if (type == typeof(UrlAttribute))
+            else if (typeof(UrlAttribute).IsAssignableFrom(type))
             {
                 adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-url", stringLocalizer);
             }
-            else if (type == typeof(FileExtensionsAttribute))
+            else if (typeof(FileExtensionsAttribute).IsAssignableFrom(type))
             {
                 adapter = new FileExtensionsAttributeAdapter((FileExtensionsAttribute)attribute, stringLocalizer);
             }

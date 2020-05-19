@@ -6,7 +6,8 @@
     <Python>py -3</Python>
     <CoreRun>%HELIX_CORRELATION_PAYLOAD%\Core_Root\CoreRun.exe</CoreRun>
     <BaselineCoreRun>%HELIX_CORRELATION_PAYLOAD%\Baseline_Core_Root\CoreRun.exe</BaselineCoreRun>
-    <HelixPreCommands>$(HelixPreCommands);call %HELIX_CORRELATION_PAYLOAD%\performance\tools\machine-setup.cmd</HelixPreCommands>
+    
+    <HelixPreCommands>$(HelixPreCommands);call %HELIX_CORRELATION_PAYLOAD%\performance\tools\machine-setup.cmd;set PYTHONPATH=%HELIX_WORKITEM_PAYLOAD%\scripts%3B%HELIX_WORKITEM_PAYLOAD%</HelixPreCommands>
     <ArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts</ArtifactsDirectory>
     <BaselineArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts_Baseline</BaselineArtifactsDirectory>
     <ResultsComparer>%HELIX_CORRELATION_PAYLOAD%\performance\src\tools\ResultsComparer\ResultsComparer.csproj</ResultsComparer>
@@ -38,6 +39,13 @@
     <DotnetExe>$(PerformanceDirectory)/tools/dotnet/$(Architecture)/dotnet</DotnetExe>
     <Percent>%25</Percent>
     <XMLResults>$HELIX_WORKITEM_ROOT/testResults.xml</XMLResults>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MonoDotnet)' == 'true' and '$(AGENT_OS)' == 'Windows_NT'">
+    <CoreRunArgument>--corerun %HELIX_CORRELATION_PAYLOAD%\dotnet-mono\shared\Microsoft.NETCore.App\5.0.0\corerun.exe</CoreRunArgument>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MonoDotnet)' == 'true' and '$(AGENT_OS)' != 'Windows_NT'">
+    <CoreRunArgument>--corerun $(BaseDirectory)/dotnet-mono/shared/Microsoft.NETCore.App/5.0.0/corerun</CoreRunArgument>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseCoreRun)' == 'true'">
@@ -97,6 +105,25 @@
       <Command>$(WorkItemCommand) --bdn-artifacts $(ArtifactsDirectory) --bdn-arguments="--anyCategories $(BDNCategories) $(ExtraBenchmarkDotNetArguments) $(CoreRunArgument)"</Command>
       <PostCommands Condition="'$(Compare)' == 'true'">$(DotnetExe) run -f $(_Framework) -p $(ResultsComparer) --base $(BaselineArtifactsDirectory) --diff $(ArtifactsDirectory) --threshold 2$(Percent) --xml $(XMLResults)</PostCommands>
       <Timeout>4:00</Timeout>
+    </HelixWorkItem>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AGENT_OS)' == 'Windows_NT'">
+    <HelixWorkItem Include="Crossgen System.Private.Xml.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name System.Private.Xml.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+     <HelixWorkItem Include="Crossgen System.Linq.Expressions.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name System.Linq.Expressions.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+     <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.VisualBasic.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name Microsoft.CodeAnalysis.VisualBasic.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+     <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.CSharp.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name Microsoft.CodeAnalysis.CSharp.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
   </ItemGroup>
 </Project>

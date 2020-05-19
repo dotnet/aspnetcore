@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
@@ -842,7 +843,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var readStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+#pragma warning disable CS0618 // Type or member is obsolete
             var exTcs = new TaskCompletionSource<BadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -853,7 +856,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await readTask;
                 }
+#pragma warning disable CS0618 // Type or member is obsolete
                 catch (BadHttpRequestException badRequestEx)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     exTcs.TrySetResult(badRequestEx);
                 }

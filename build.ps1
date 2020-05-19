@@ -71,6 +71,9 @@ You can also use -NoBuildInstallers to suppress this project type.
 .PARAMETER BinaryLog
 Enable the binary logger
 
+.PARAMETER ExcludeCIBinarylog
+Don't output binary log by default in CI builds (short: -nobl).
+
 .PARAMETER Verbosity
 MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
@@ -99,7 +102,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
@@ -151,6 +154,8 @@ param(
     # Diagnostics
     [Alias('bl')]
     [switch]$BinaryLog,
+    [Alias('nobl')]
+    [switch]$ExcludeCIBinarylog,
     [Alias('v')]
     [string]$Verbosity = 'minimal',
     [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
@@ -185,7 +190,8 @@ if ($DumpProcesses -or $CI) {
 if ($All) {
     $MSBuildArguments += '/p:BuildAllProjects=true'
 }
-elseif ($Projects) {
+
+if ($Projects) {
     if (![System.IO.Path]::IsPathRooted($Projects))
     {
         $Projects = Join-Path (Get-Location) $Projects
@@ -193,7 +199,7 @@ elseif ($Projects) {
     $MSBuildArguments += "/p:ProjectToBuild=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
-elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
     Write-Warning "No default group of projects was specified, so building the 'managed' and its dependent subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -203,7 +209,7 @@ elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -a
 }
 
 if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
-    if ((-not $BuildNodeJS) -and (-not $NoBuildNodeJS)) {
+    if (-not ($BuildNodeJS -or $NoBuildNodeJS)) {
         $node = Get-Command node -ErrorAction Ignore -CommandType Application
 
         if ($node) {
@@ -336,18 +342,17 @@ $env:MSBUILDDISABLENODEREUSE=1
 
 # Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
 # conditions in building C++
-# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
+# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 $warnAsError = $false
 
 if ($ForceCoreMsbuild) {
     $msbuildEngine = 'dotnet'
 }
 
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-$tmpBinaryLog = $BinaryLog
-if ($CI) {
-    $BinaryLog = $true
+# Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
+# $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
+if ($CI -and -not $excludeCIBinarylog) {
+    $binaryLog = $true
 }
 
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
@@ -358,10 +363,6 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
-
-if ($tmpBinaryLog) {
-    $MSBuildArguments += "/bl:$LogDir/Build.binlog"
-}
 
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir

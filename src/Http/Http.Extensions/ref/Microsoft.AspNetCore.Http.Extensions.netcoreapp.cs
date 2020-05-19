@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
     public partial class QueryBuilder : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>, System.Collections.IEnumerable
     {
         public QueryBuilder() { }
+        public QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> parameters) { }
         public QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> parameters) { }
         public void Add(string key, System.Collections.Generic.IEnumerable<string> values) { }
         public void Add(string key, string value) { }
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue> Cookie { get { throw null; } set { } }
         public System.DateTimeOffset? Date { get { throw null; } set { } }
         public System.DateTimeOffset? Expires { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.HostString Host { get { throw null; } set { } }
         public System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue> IfMatch { get { throw null; } set { } }
         public System.DateTimeOffset? IfModifiedSince { get { throw null; } set { } }
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         public System.DateTimeOffset? Date { get { throw null; } set { } }
         public Microsoft.Net.Http.Headers.EntityTagHeaderValue ETag { get { throw null; } set { } }
         public System.DateTimeOffset? Expires { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.DateTimeOffset? LastModified { get { throw null; } set { } }
         public System.Uri Location { get { throw null; } set { } }
         public System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue> SetCookie { get { throw null; } set { } }

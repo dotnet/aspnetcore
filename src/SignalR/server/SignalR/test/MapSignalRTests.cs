@@ -33,41 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             builder
                 .UseKestrel()
-                .Configure(app =>
-                {
-                    executedConfigure = true;
-
-                    var ex = Assert.Throws<InvalidOperationException>(() =>
-                    {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        app.UseSignalR(routes =>
-                        {
-                            routes.MapHub<AuthHub>("/overloads");
-                        });
-#pragma warning restore CS0618 // Type or member is obsolete
-                    });
-
-                    Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
-                                 "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.", ex.Message);
-                })
-                .UseUrls("http://127.0.0.1:0");
-
-            using (var host = builder.Build())
-            {
-                host.Start();
-            }
-
-            Assert.True(executedConfigure);
-        }
-
-        [Fact]
-        public void NotAddingSignalRServiceThrowsWhenUsingEndpointRouting()
-        {
-            var executedConfigure = false;
-            var builder = new WebHostBuilder();
-
-            builder
-                .UseKestrel()
                 .ConfigureServices(services =>
                 {
                     services.AddRouting();
@@ -189,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubEndPointRoutingFindsAttributesOnHub()
         {
             var authCount = 0;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
+            using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
@@ -219,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var authCount = 0;
             HttpConnectionDispatcherOptions configuredOptions = null;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
+            using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
                 options.AuthorizationData.Add(new AuthorizeAttribute());
@@ -256,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                       .RequireAuthorization(new AuthorizeAttribute("Foo"));
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (var host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
@@ -295,7 +260,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 endpoints.MapHub<AuthHub>("/path");
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (var host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
@@ -320,9 +285,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubAppliesHubMetadata()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            void ConfigureRoutes(HubRouteBuilder routes)
-#pragma warning restore CS0618 // Type or member is obsolete
+            void ConfigureRoutes(IEndpointRouteBuilder routes)
             {
                 // This "Foo" policy should override the default auth attribute
                 routes.MapHub<AuthHub>("/path");
@@ -375,7 +338,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
         }
 
-        private IWebHost BuildWebHostWithEndPointRouting(Action<IEndpointRouteBuilder> configure)
+        private IWebHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
             return new WebHostBuilder()
                 .UseKestrel()
@@ -391,23 +354,5 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .UseUrls("http://127.0.0.1:0")
                 .Build();
         }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        private IWebHost BuildWebHost(Action<HubRouteBuilder> configure)
-        {
-            return new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(services =>
-                {
-                    services.AddSignalR();
-                })
-                .Configure(app =>
-                {
-                    app.UseSignalR(options => configure(options));
-                })
-                .UseUrls("http://127.0.0.1:0")
-                .Build();
-        }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

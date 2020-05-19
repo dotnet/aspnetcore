@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     configure the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to map static web assets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     adds the HostFiltering middleware,
         ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.

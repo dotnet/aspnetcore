@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, options => options.ListenOptions.Add(listenOptions), _ => { })
+            : this(app, context, options => options.CodeBackedListenOptions.Add(listenOptions), _ => { })
         {
         }
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     KestrelServerOptions = options
                 };
                 configureListenOptions(listenOptions);
-                options.ListenOptions.Add(listenOptions);
+                options.CodeBackedListenOptions.Add(listenOptions);
             }, _ => { })
         {
         }
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             c.Configure(context.ServerOptions);
                         }
 
-                        return new KestrelServer(sp.GetRequiredService<IConnectionListenerFactory>(), context);
+                        return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
                     });
                     configureServices(services);
                 })

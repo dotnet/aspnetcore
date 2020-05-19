@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         public static void Run(this IWebAssemblyHost host)
         {
             // Behave like async void, because we don't yet support async-main properly on WebAssembly.
-            // However, don't actualy make this method async, because we rely on startup being synchronous
+            // However, don't actually make this method async, because we rely on startup being synchronous
             // for things like attaching navigation event handlers.
             host.StartAsync().ContinueWith(task =>
             {

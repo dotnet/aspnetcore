@@ -598,7 +598,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     });
                 });
 
-            var server = new TestServer(builder);
+            var server = new TestServer(builder)
+            {
+                AllowSynchronousIO = true // needed for synchronous flush
+            };
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");

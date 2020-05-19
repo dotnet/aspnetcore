@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Authorization
                 throw new ArgumentNullException(nameof(authenticationSchemes));
             }
 
-            if (requirements.Count() == 0)
+            if (!requirements.Any())
             {
                 throw new InvalidOperationException(Resources.Exception_AuthorizationPolicyEmpty);
             }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Authorization
                     }
 
                     var rolesSplit = authorizeDatum.Roles?.Split(',');
-                    if (rolesSplit != null && rolesSplit.Any())
+                    if (rolesSplit?.Length > 0)
                     {
                         var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
                         policyBuilder.RequireRole(trimmedRolesSplit);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Authorization
                     }
 
                     var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
-                    if (authTypesSplit != null && authTypesSplit.Any())
+                    if (authTypesSplit?.Length > 0)
                     {
                         foreach (var authType in authTypesSplit)
                         {
