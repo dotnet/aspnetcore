@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Logging
             _negotiateStateErrorType = LoggerMessage.Define<string>(
                 eventId: new EventId(11, "NegotiateStateErrorType"),
                 logLevel: LogLevel.Information,
-                formatString: "Negotiate State BlobErrorType of {blobErrorType}.");
+                formatString: "Negotiate error code: {error}.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
