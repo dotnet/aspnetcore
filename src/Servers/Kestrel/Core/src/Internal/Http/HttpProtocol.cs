@@ -927,6 +927,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        {
+            var initializeTask = Task.CompletedTask;
+
+            if (!HasResponseStarted)
+            {
+                // Flush headers before calling SendFileAsync
+                initializeTask = InitializeResponseAsync(0);
+            }
+
+            if (!initializeTask.IsCompletedSuccessfully)
+            {
+                return SendFileAsyncAwaitedAsync(initializeTask, path, offset, count, cancellation);
+            }
+
+            return SendFileFallback.SendFileAsync(ResponseBodyPipeWriter, path, offset, count, cancellation);
+        }
+
+        private async Task SendFileAsyncAwaitedAsync(Task initializeTask, string path, long offset, long? count, CancellationToken cancellation)
+        {
+            await initializeTask;
+
+            await SendFileFallback.SendFileAsync(ResponseBodyPipeWriter, path, offset, count, cancellation);
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         public async Task InitializeResponseAwaited(Task startingTask, int firstWriteByteCount)
         {

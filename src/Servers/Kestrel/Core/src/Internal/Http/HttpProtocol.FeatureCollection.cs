@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
-            return SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
+            return SendFileAsync(path, offset, count, cancellation);
         }
 
         Task IHttpResponseBodyFeature.CompleteAsync()

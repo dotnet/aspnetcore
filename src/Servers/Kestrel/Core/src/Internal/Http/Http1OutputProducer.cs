@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // These should be cleared by the end of the request
         private List<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
-        private IMemoryOwner<byte> _currentSegmentOwner;
+        private object _currentSegmentOwner;
         private int _position;
         private bool _startCalled;
 
@@ -436,7 +436,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void DisposeCurrentSegment()
         {
-            _currentSegmentOwner?.Dispose();
+            if (_currentSegmentOwner is IMemoryOwner<byte> owner)
+            {
+                owner.Dispose();
+            }
+            else if (_currentSegmentOwner is byte[] array)
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
+
             _currentSegmentOwner = null;
             _currentSegment = default;
         }
@@ -600,13 +608,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // Calculating ChunkWriter.GetBeginChunkByteCount isn't free, so instead, we can add
                 // the max length for the prefix and suffix and add it to the sizeHint.
                 // This still guarantees that the memory passed in will be larger than the sizeHint.
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 UpdateCurrentChunkMemory(sizeHint);
             }
             // Check if we need to allocate a new memory.
             else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
-                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength;
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
@@ -632,7 +640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             _currentChunkMemoryUpdated = true;
         }
-       
+
         private void WriteCurrentChunkMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
@@ -714,8 +722,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                _currentSegment = new byte[sizeHint];
-                _currentSegmentOwner = null;
+                _currentSegment = ArrayPool<byte>.Shared.Rent(sizeHint);
+                _currentSegmentOwner = _currentSegment;
             }
 
             _position = 0;
@@ -741,14 +749,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// </summary>
         private readonly struct CompletedBuffer
         {
-            private readonly IMemoryOwner<byte> _memoryOwner;
+            private readonly object _memoryOwner;
 
             public Memory<byte> Buffer { get; }
             public int Length { get; }
 
             public ReadOnlySpan<byte> Span => Buffer.Span.Slice(0, Length);
 
-            public CompletedBuffer(IMemoryOwner<byte> owner, Memory<byte> buffer, int length)
+            public CompletedBuffer(object owner, Memory<byte> buffer, int length)
             {
                 _memoryOwner = owner;
 
@@ -758,9 +766,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Return()
             {
-                if (_memoryOwner != null)
+                if (_memoryOwner is IMemoryOwner<byte> owner)
                 {
-                    _memoryOwner.Dispose();
+                    owner.Dispose();
+                }
+                else if (_memoryOwner is byte[] array)
+                {
+                    ArrayPool<byte>.Shared.Return(array);
                 }
             }
         }

@@ -360,19 +360,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         protected static async Task WriteFileAsync(HttpContext context, Stream fileStream, RangeItemHeaderValue range, long rangeLength)
         {
-            var outputStream = context.Response.Body;
-            using (fileStream)
+            var outputPipeWriter = context.Response.BodyWriter;
+            await using (fileStream)
             {
                 try
                 {
                     if (range == null)
                     {
-                        await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count: null, bufferSize: BufferSize, cancel: context.RequestAborted);
+                        await StreamCopyOperation.CopyToAsync(fileStream, outputPipeWriter, count: null, cancel: context.RequestAborted);
                     }
                     else
                     {
                         fileStream.Seek(range.From.Value, SeekOrigin.Begin);
-                        await StreamCopyOperation.CopyToAsync(fileStream, outputStream, rangeLength, BufferSize, context.RequestAborted);
+                        await StreamCopyOperation.CopyToAsync(fileStream, outputPipeWriter, rangeLength, context.RequestAborted);
                     }
                 }
                 catch (OperationCanceledException)

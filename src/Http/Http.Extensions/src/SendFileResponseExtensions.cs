@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 
@@ -16,8 +15,6 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class SendFileResponseExtensions
     {
-        private const int StreamCopyBufferSize = 64 * 1024;
-
         /// <summary>
         /// Sends the given file using the SendFile extension.
         /// </summary>
@@ -124,13 +121,13 @@ namespace Microsoft.AspNetCore.Http
                     {
                         fileContent.Seek(offset, SeekOrigin.Begin);
                     }
-                    await StreamCopyOperation.CopyToAsync(fileContent, response.Body, count, StreamCopyBufferSize, localCancel);
+                    await StreamCopyOperationInternal.CopyToAsync(fileContent, response.BodyWriter, count, localCancel);
                 }
                 catch (OperationCanceledException) when (useRequestAborted) { }
             }
             else
             {
-                await response.SendFileAsync(file.PhysicalPath, offset, count, cancellationToken);
+                await SendFileAsyncCore(response, file.PhysicalPath, offset, count, cancellationToken);
             }
         }
 
