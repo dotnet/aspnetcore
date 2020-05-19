@@ -37,8 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
-                                  PipeScheduler readScheduler,
-                                  PipeScheduler writeScheduler,
+                                  PipeScheduler scheduler,
                                   ISocketsTrace trace,
                                   long? maxReadBufferSize = null,
                                   long? maxWriteBufferSize = null,
@@ -61,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // On *nix platforms, Sockets already dispatches to the ThreadPool.
             // Yes, the IOQueues are still used for the PipeSchedulers. This is intentional.
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            var awaiterScheduler = IsWindows ? readScheduler : PipeScheduler.Inline;
+            var awaiterScheduler = IsWindows ? scheduler : PipeScheduler.Inline;
 
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
@@ -69,8 +68,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             maxReadBufferSize ??= 0;
             maxWriteBufferSize ??= 0;
 
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, readScheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, writeScheduler, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, scheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
