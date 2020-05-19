@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly int _numSchedulers;
-        private readonly PipeScheduler[] _schedulers;
+        private readonly PipeScheduler[] _readSchedulers;
+        private readonly PipeScheduler[] _writeSchedulers;
         private readonly ISocketsTrace _trace;
         private Socket _listenSocket;
         private int _schedulerIndex;
@@ -40,18 +41,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             if (ioQueueCount > 0)
             {
                 _numSchedulers = ioQueueCount;
-                _schedulers = new IOQueue[_numSchedulers];
+                _readSchedulers = new IOQueue[_numSchedulers];
+                _writeSchedulers = new IOQueue[_numSchedulers];
 
                 for (var i = 0; i < _numSchedulers; i++)
                 {
-                    _schedulers[i] = new IOQueue();
+                    _readSchedulers[i] = new IOQueue();
+                    _writeSchedulers[i] = new IOQueue();
                 }
             }
             else
             {
                 var directScheduler = new PipeScheduler[] { PipeScheduler.ThreadPool };
                 _numSchedulers = directScheduler.Length;
-                _schedulers = directScheduler;
+                _readSchedulers = directScheduler;
+                _writeSchedulers = directScheduler;
             }
         }
 
@@ -112,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace,
+                    var connection = new SocketConnection(acceptSocket, _memoryPool, _readSchedulers[_schedulerIndex], _writeSchedulers[_schedulerIndex], _trace,
                         _options.MaxReadBufferSize, _options.MaxWriteBufferSize, _options.WaitForDataBeforeAllocatingBuffer);
 
                     connection.Start();
