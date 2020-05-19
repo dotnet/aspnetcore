@@ -9,9 +9,19 @@ namespace Microsoft.AspNetCore.Authorization
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
+    public partial interface IAuthorizationMiddlewareResultHandler
+    {
+        System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult authorizeResult);
+    }
 }
 namespace Microsoft.AspNetCore.Authorization.Policy
 {
+    public partial class AuthorizationMiddlewareResultHandler : Microsoft.AspNetCore.Authorization.IAuthorizationMiddlewareResultHandler
+    {
+        public AuthorizationMiddlewareResultHandler() { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult authorizeResult) { throw null; }
+    }
     public partial interface IPolicyEvaluator
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Http.HttpContext context);
@@ -20,11 +30,13 @@ namespace Microsoft.AspNetCore.Authorization.Policy
     public partial class PolicyAuthorizationResult
     {
         internal PolicyAuthorizationResult() { }
+        public Microsoft.AspNetCore.Authorization.AuthorizationFailure AuthorizationFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Challenged { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Forbidden { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Challenge() { throw null; }
         public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Forbid() { throw null; }
+        public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Forbid(Microsoft.AspNetCore.Authorization.AuthorizationFailure authorizationFailure) { throw null; }
         public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Success() { throw null; }
     }
     public partial class PolicyEvaluator : Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator

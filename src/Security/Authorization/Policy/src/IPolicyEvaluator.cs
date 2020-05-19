@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// If a resource is not required for policy evaluation you may pass null as the value.
         /// </param>
         /// <returns>Returns <see cref="PolicyAuthorizationResult.Success"/> if authorization succeeds.
-        /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
+        /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid(AuthorizationFailure)"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
         /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
         Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource);
     }
