@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubInvocationContext
     {
-        internal object[] Arguments { get; }
         internal ObjectMethodExecutor ObjectMethodExecutor { get; }
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
             Hub = hub;
             ServiceProvider = serviceProvider;
             HubMethod = hubMethod;
-            Arguments = hubMethodArguments as object[] ?? hubMethodArguments.ToArray();
+            HubMethodArguments = hubMethodArguments;
             Context = context;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the arguments provided by the client.
         /// </summary>
-        public IReadOnlyList<object> HubMethodArguments => Arguments;
+        public IReadOnlyList<object> HubMethodArguments { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> specific to the scope of this Hub method invocation.

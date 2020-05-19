@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             var methodInfo = typeof(BaseHub).GetMethod(nameof(BaseHub.BaseMethod));
-            var context = new HubInvocationContext(invocationContext.Context, invocationContext.ServiceProvider, invocationContext.Hub, methodInfo, invocationContext.Arguments);
+            var context = new HubInvocationContext(invocationContext.Context, invocationContext.ServiceProvider, invocationContext.Hub, methodInfo, invocationContext.HubMethodArguments);
             return next(context);
         }
     }

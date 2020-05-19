@@ -44,11 +44,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 _invokeMiddleware = (invocationContext) =>
                 {
+                    var arguments = invocationContext.HubMethodArguments as object[] ?? invocationContext.HubMethodArguments.ToArray();
                     if (invocationContext.ObjectMethodExecutor != null)
                     {
-                        return ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, invocationContext.Arguments);
+                        return ExecuteMethod(invocationContext.ObjectMethodExecutor, invocationContext.Hub, arguments);
                     }
-                    return ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, invocationContext.Arguments);
+                    return ExecuteMethod(invocationContext.HubMethod.Name, invocationContext.Hub, arguments);
                 };
 
                 _onConnectedMiddleware = (context) => context.Hub.OnConnectedAsync();

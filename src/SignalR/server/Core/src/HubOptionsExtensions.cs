@@ -21,10 +21,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="hubFilter">The filter instance to add to the options.</param>
         public static void AddFilter(this HubOptions options, IHubFilter hubFilter)
         {
-            if (hubFilter == null)
-            {
-                throw new ArgumentNullException(nameof(hubFilter));
-            }
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+            _ = hubFilter ?? throw new ArgumentNullException(nameof(hubFilter));
 
             if (options.HubFilters == null)
             {
@@ -41,6 +39,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="options">The options to add a filter to.</param>
         public static void AddFilter<T>(this HubOptions options) where T : IHubFilter
         {
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+
             options.AddFilter(typeof(T));
         }
 
@@ -51,10 +51,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="filterType">The <see cref="IHubFilter"/> type that will be added to the options.</param>
         public static void AddFilter(this HubOptions options, Type filterType)
         {
-            if (filterType == null)
-            {
-                throw new ArgumentNullException(nameof(filterType));
-            }
+            _ = options ?? throw new ArgumentNullException(nameof(options));
+            _ = filterType ?? throw new ArgumentNullException(nameof(filterType));
 
             options.AddFilter(new HubFilterFactory(filterType));
         }
