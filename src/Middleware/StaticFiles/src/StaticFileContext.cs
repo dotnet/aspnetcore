@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 using (var readStream = _fileInfo.CreateReadStream())
                 {
                     // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, StreamCopyBufferSize, _context.RequestAborted);
+                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, _context.RequestAborted);
                 }
             }
             catch (OperationCanceledException ex)

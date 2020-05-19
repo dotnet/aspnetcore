@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http
     // FYI: In most cases the source will be a FileStream and the destination will be to the network.
     internal static class PipeCopyOperationInternal
     {
-        private const int DefaultBufferSize = 4096;
+        private const int DefaultBufferSize = 2048;
 
         /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them using pipe writer.</summary>
         /// <returns>A task that represents the asynchronous copy operation.</returns>
@@ -21,19 +21,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="writer"></param>
         /// <param name="count">The count of bytes to be copied.</param>
         /// <param name="cancel">The token to monitor for cancellation requests.</param>
-        public static Task CopyToAsync(Stream source, PipeWriter writer, long? count, CancellationToken cancel)
-        {
-            return CopyToAsync(source, writer, count, DefaultBufferSize, cancel);
-        }
-
-        /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them using pipe writer.</summary>
-        /// <returns>A task that represents the asynchronous copy operation.</returns>
-        /// <param name="source">The stream from which the contents will be copied.</param>
-        /// <param name="writer"></param>
-        /// <param name="count">The count of bytes to be copied.</param>
-        /// <param name="bufferSize">The size, in bytes, of the buffer. This value must be greater than zero. The default size is 4096.</param>
-        /// <param name="cancel">The token to monitor for cancellation requests.</param>
-        public static async Task CopyToAsync(Stream source, PipeWriter writer, long? count, int bufferSize, CancellationToken cancel)
+        public static async Task CopyToAsync(Stream source, PipeWriter writer, long? count, CancellationToken cancel)
         {
             long? bytesRemaining = count;
 
@@ -49,16 +37,15 @@ namespace Microsoft.AspNetCore.Http
                     return;
                 }
 
-                cancel.ThrowIfCancellationRequested();
+                var memory = writer.GetMemory();
 
-                var readLength = bufferSize;
+                var readLength = memory.Length;
                 if (bytesRemaining.HasValue)
                 {
                     readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), readLength);
                 }
 
-                var memory = writer.GetMemory(readLength);
-                var read = await source.ReadAsync(memory, cancel);
+                var read = await source.ReadAsync(memory.Slice(0, readLength), cancel);
 
                 if (bytesRemaining.HasValue)
                 {
@@ -73,9 +60,7 @@ namespace Microsoft.AspNetCore.Http
 
                 writer.Advance(read);
 
-                cancel.ThrowIfCancellationRequested();
-
-                FlushResult result = await writer.FlushAsync();
+                FlushResult result = await writer.FlushAsync(cancel);
 
                 if (result.IsCompleted)
                 {

@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Http
 {
     public static class SendFileFallback
     {
-        const int DefaultBufferSize = 1024 * 16;
 
         /// <summary>
         /// Copies the segment of the file to the destination stream.
@@ -24,13 +23,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public static async Task SendFileAsync(Stream destination, string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
-            FileStream fileStream = GetFileStream(filePath, offset, count, DefaultBufferSize, cancellationToken);
+            using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
-            using (fileStream)
-            {
-                fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, DefaultBufferSize, cancellationToken);
-            }
+            fileStream.Seek(offset, SeekOrigin.Begin);
+            await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, cancellationToken);
         }
 
         /// <summary>
@@ -44,16 +40,13 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public static async Task SendFileAsync(PipeWriter writer, string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
-            FileStream fileStream = GetFileStream(filePath, offset, count, DefaultBufferSize, cancellationToken);
+            using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
-            using (fileStream)
-            {
-                fileStream.Seek(offset, SeekOrigin.Begin);
-                await PipeCopyOperationInternal.CopyToAsync(fileStream, writer, count, DefaultBufferSize, cancellationToken);
-            }
+            fileStream.Seek(offset, SeekOrigin.Begin);
+            await PipeCopyOperationInternal.CopyToAsync(fileStream, writer, count, cancellationToken);
         }
 
-        private static FileStream GetFileStream(string filePath, long offset, long? count, int bufferSize, CancellationToken cancellationToken)
+        private static FileStream GetFileStream(string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
             var fileInfo = new FileInfo(filePath);
             if (offset < 0 || offset > fileInfo.Length)
@@ -67,6 +60,8 @@ namespace Microsoft.AspNetCore.Http
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            int bufferSize = 1024 * 16;
 
             return new FileStream(
                 filePath,
