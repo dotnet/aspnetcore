@@ -121,6 +121,20 @@ namespace Microsoft.JSInterop
             }
         }
 
+        /// <summary>
+        /// Invokes the specified JavaScript function asynchronously.
+        /// </summary>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
+        /// <param name="cancellationToken">
+        /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
+        /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+        /// </param>
+        /// <param name="args">JSON-serializable arguments.</param>
+        public async ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            await this.InvokeAsync<VoidReturn>(identifier, cancellationToken, args);
+        }
+
         private void CleanupTasksAndRegistrations(long taskId)
         {
             _pendingTasks.TryRemove(taskId, out _);
@@ -172,9 +186,11 @@ namespace Microsoft.JSInterop
                 if (succeeded)
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-
-                    var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    if (resultType != typeof(VoidReturn))
+                    {
+                        var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                        TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    }
                 }
                 else
                 {
@@ -231,5 +247,10 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
+
+        /// <summary>
+        /// Used as a type for the <see cref="TaskCompletionSource{TResult}"/> that represents nothing should be returned.
+        /// </summary>
+        private class VoidReturn { }
     }
 }
