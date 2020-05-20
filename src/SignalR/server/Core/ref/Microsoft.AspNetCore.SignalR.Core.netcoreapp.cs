@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         public static void AddFilter(this Microsoft.AspNetCore.SignalR.HubOptions options, Microsoft.AspNetCore.SignalR.IHubFilter hubFilter) { }
         public static void AddFilter(this Microsoft.AspNetCore.SignalR.HubOptions options, System.Type filterType) { }
-        public static void AddFilter<T>(this Microsoft.AspNetCore.SignalR.HubOptions options) where T : Microsoft.AspNetCore.SignalR.IHubFilter { }
+        public static void AddFilter<TFilter>(this Microsoft.AspNetCore.SignalR.HubOptions options) where TFilter : Microsoft.AspNetCore.SignalR.IHubFilter { }
     }
     public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
     {

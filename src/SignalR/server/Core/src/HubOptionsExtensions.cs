@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Adds an <see cref="IHubFilter"/> type to the <see cref="HubOptions"/> that will be resolved via DI or type activated.
         /// </summary>
-        /// <typeparam name="T">The <see cref="IHubFilter"/> type that will be added to the options.</typeparam>
+        /// <typeparam name="TFilter">The <see cref="IHubFilter"/> type that will be added to the options.</typeparam>
         /// <param name="options">The options to add a filter to.</param>
-        public static void AddFilter<T>(this HubOptions options) where T : IHubFilter
+        public static void AddFilter<TFilter>(this HubOptions options) where TFilter : IHubFilter
         {
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
-            options.AddFilter(typeof(T));
+            options.AddFilter(typeof(TFilter));
         }
 
         /// <summary>
