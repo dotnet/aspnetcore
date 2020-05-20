@@ -17,7 +17,7 @@
     <_BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(BlazorBuildConfiguration)\tools\</_BlazorToolsDir>
   </PropertyGroup>
 
-  <Target Name="Check_BlazorJSFiles" BeforeTargets="Build">
+  <Target Name="Check_BlazorJSFiles" BeforeTargets="Build" Condition="'$(ExcludeFromBuild)' != 'true'">
     <Error Text="blazor.webassembly.js file could not be found at $(_BlazorJsPath)" Condition="!Exists($(_BlazorJsPath))" />
   </Target>
 
