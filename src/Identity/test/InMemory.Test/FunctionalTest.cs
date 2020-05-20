@@ -253,9 +253,9 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             var transaction4 = await SendAsync(server, "http://example.com/signoutEverywhere", transaction2.CookieNameValue);
             Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
 
-            // Doesn't validate until after interval has passed
+            // Now validates immediately
             var transaction5 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
-            Assert.Equal(HttpStatusCode.OK, transaction5.Response.StatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, transaction5.Response.StatusCode);
 
             // Wait for validation interval
             clock.Add(TimeSpan.FromMinutes(30));
