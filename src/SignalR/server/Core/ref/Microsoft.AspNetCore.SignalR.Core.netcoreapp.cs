@@ -181,12 +181,23 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial class HubInvocationContext
     {
+        public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, System.IServiceProvider serviceProvider, Microsoft.AspNetCore.SignalR.Hub hub, System.Reflection.MethodInfo hubMethod, System.Collections.Generic.IReadOnlyList<object> hubMethodArguments) { }
+        [System.ObsoleteAttribute("This constructor is obsolete and will be removed in a future version. The recommended alternative is to use the other constructor.")]
         public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, string hubMethodName, object[] hubMethodArguments) { }
-        public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, System.Type hubType, string hubMethodName, object[] hubMethodArguments) { }
         public Microsoft.AspNetCore.SignalR.HubCallerContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.SignalR.Hub Hub { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Reflection.MethodInfo HubMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<object> HubMethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        [System.ObsoleteAttribute("This property is obsolete and will be removed in a future version. Use HubMethod.Name instead.")]
         public string HubMethodName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public System.Type HubType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+    }
+    public sealed partial class HubLifetimeContext
+    {
+        public HubLifetimeContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, System.IServiceProvider serviceProvider, Microsoft.AspNetCore.SignalR.Hub hub) { }
+        public Microsoft.AspNetCore.SignalR.HubCallerContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.SignalR.Hub Hub { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class HubLifetimeManager<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
     {
@@ -226,6 +237,12 @@ namespace Microsoft.AspNetCore.SignalR
         public long? MaximumReceiveMessageSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int? StreamBufferCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IList<string> SupportedProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }
+    public static partial class HubOptionsExtensions
+    {
+        public static void AddFilter(this Microsoft.AspNetCore.SignalR.HubOptions options, Microsoft.AspNetCore.SignalR.IHubFilter hubFilter) { }
+        public static void AddFilter(this Microsoft.AspNetCore.SignalR.HubOptions options, System.Type filterType) { }
+        public static void AddFilter<TFilter>(this Microsoft.AspNetCore.SignalR.HubOptions options) where TFilter : Microsoft.AspNetCore.SignalR.IHubFilter { }
     }
     public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
     {
@@ -293,6 +310,12 @@ namespace Microsoft.AspNetCore.SignalR
     {
         Microsoft.AspNetCore.SignalR.IHubClients<T> Clients { get; }
         Microsoft.AspNetCore.SignalR.IGroupManager Groups { get; }
+    }
+    public partial interface IHubFilter
+    {
+        System.Threading.Tasks.ValueTask<object> InvokeMethodAsync(Microsoft.AspNetCore.SignalR.HubInvocationContext invocationContext, System.Func<Microsoft.AspNetCore.SignalR.HubInvocationContext, System.Threading.Tasks.ValueTask<object>> next);
+        System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.SignalR.HubLifetimeContext context, System.Func<Microsoft.AspNetCore.SignalR.HubLifetimeContext, System.Threading.Tasks.Task> next) { throw null; }
+        System.Threading.Tasks.Task OnDisconnectedAsync(Microsoft.AspNetCore.SignalR.HubLifetimeContext context, System.Exception exception, System.Func<Microsoft.AspNetCore.SignalR.HubLifetimeContext, System.Exception, System.Threading.Tasks.Task> next) { throw null; }
     }
     public partial interface IHubProtocolResolver
     {
