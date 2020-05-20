@@ -1471,6 +1471,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        [QuarantinedTest]
         public async Task CanVerifyPhoneNumber()
         {
             var manager = CreateManager();
