@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [QuarantinedTest] // Test still quarantined due to Sockets.Functional tests.
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21521")] // Test still quarantined due to Sockets.Functional tests.
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
