@@ -666,12 +666,19 @@ namespace Microsoft.AspNetCore.Identity.Test
             auth.Verify();
         }
 
-        [Fact]
-        public async Task RememberClientStoresUserId()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RememberClientStoresUserIdAndSecurityStampIfSupported(bool supportsStamp)
         {
             // Setup
             var user = new PocoUser { UserName = "Foo" };
             var manager = SetupUserManager(user);
+            if (supportsStamp)
+            {
+                manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true).Verifiable();
+                manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync(user.SecurityStamp).Verifiable();
+            }
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
             var helper = SetupSignInManager(manager.Object, context);
@@ -679,9 +686,9 @@ namespace Microsoft.AspNetCore.Identity.Test
                 context,
                 IdentityConstants.TwoFactorRememberMeScheme,
                 It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
+                    && (!supportsStamp || i.FindFirstValue("AspNet.Identity.SecurityStamp") == user.SecurityStamp)
                     && i.Identities.First().AuthenticationType == IdentityConstants.TwoFactorRememberMeScheme),
                 It.Is<AuthenticationProperties>(v => v.IsPersistent == true))).Returns(Task.FromResult(0)).Verifiable();
-
 
             // Act
             await helper.RememberTwoFactorClientAsync(user);
@@ -721,6 +728,54 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             // Assert
             Assert.True(result.Succeeded);
+            manager.Verify();
+            auth.Verify();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RememberBrowserSkipsTwoFactorVerificationSignInOnlyIfSecurityStampMatches(bool match)
+        {
+            // Setup
+            var user = new PocoUser { UserName = "Foo", SecurityStamp = new Guid().ToString() };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(true).Verifiable();
+            IList<string> providers = new List<string>();
+            providers.Add("PhoneNumber");
+            manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).Returns(Task.FromResult(providers)).Verifiable();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
+            manager.Setup(m => m.SupportsUserSecurityStamp).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.GetSecurityStampAsync(user)).ReturnsAsync(user.SecurityStamp).Verifiable();
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            if (match)
+            {
+                SetupSignIn(context, auth);
+            }
+            var id = new ClaimsIdentity(IdentityConstants.TwoFactorRememberMeScheme);
+            id.AddClaim(new Claim(ClaimTypes.Name, user.Id));
+            var stamp = match ? user.SecurityStamp : "bogus";
+            id.AddClaim(new Claim("AspNet.Identity.SecurityStamp", stamp));
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorRememberMeScheme))
+                .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(id), null, IdentityConstants.TwoFactorRememberMeScheme))).Verifiable();
+            var helper = SetupSignInManager(manager.Object, context);
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user.UserName, "password", true, false);
+
+            // Assert
+            if (match)
+            {
+                Assert.True(result.Succeeded);
+            }
+            else
+            {
+                Assert.True(result.RequiresTwoFactor);
+            }
             manager.Verify();
             auth.Verify();
         }

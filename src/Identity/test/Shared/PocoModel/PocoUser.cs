@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public PocoUser()
         {
             Id = Guid.NewGuid().ToString();
+            SecurityStamp = new Guid().ToString();
         }
 
         /// <summary>

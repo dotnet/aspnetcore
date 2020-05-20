@@ -280,13 +280,21 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="principal">The principal whose stamp should be validated.</param>
         /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
         /// if the stamp matches the persisted value, otherwise it will return false.</returns>
-        public virtual async Task<TUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+        public virtual Task<TUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+            => CheckTwoFactorSecurityStampAsync(principal);
+
+        private async Task<TUser> CheckTwoFactorSecurityStampAsync(ClaimsPrincipal principal, string expectedUserId = null)
         {
             if (principal == null || principal.Identity?.Name == null)
             {
                 return null;
             }
-            var user = await UserManager.FindByIdAsync(principal.Identity.Name);
+            var userId = principal.Identity.Name;
+            if (expectedUserId != null && userId != expectedUserId)
+            {
+                return null;
+            }
+            var user = await UserManager.FindByIdAsync(userId);
             if (await ValidateSecurityStampAsync(user, principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType)))
             {
                 return user;
@@ -413,7 +421,8 @@ namespace Microsoft.AspNetCore.Identity
         {
             var userId = await UserManager.GetUserIdAsync(user);
             var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorRememberMeScheme);
-            return (result?.Principal != null && result.Principal.FindFirstValue(ClaimTypes.Name) == userId);
+            var valid = await CheckTwoFactorSecurityStampAsync(result?.Principal, userId);
+            return valid != null;
         }
 
         /// <summary>
