@@ -48,10 +48,10 @@ try {
     if ($ci) {
         # Install dotnet.exe
         if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
-            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+            & $repoRoot/restore.cmd -ci -noBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
         }
         else{
-            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS
+            & $repoRoot/restore.cmd -ci -noBuildNodeJS
         }
     }
 
