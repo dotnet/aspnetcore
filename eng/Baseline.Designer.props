@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.17</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.18</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -658,11 +658,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Formatters.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Formatters.Json' ">
-    <BaselinePackageVersion>2.1.3</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.18</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Formatters.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="[2.1.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Formatters.Xml-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Formatters.Xml' ">
