@@ -246,6 +246,7 @@ namespace Microsoft.Net.Http.Headers
         public override bool Equals(object obj) { throw null; }
         public override int GetHashCode() { throw null; }
         public bool IsSubsetOf(Microsoft.Net.Http.Headers.MediaTypeHeaderValue otherMediaType) { throw null; }
+        public bool MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) { throw null; }
         public static Microsoft.Net.Http.Headers.MediaTypeHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
         public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue> ParseList(System.Collections.Generic.IList<string> inputs) { throw null; }
         public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue> ParseStrictList(System.Collections.Generic.IList<string> inputs) { throw null; }

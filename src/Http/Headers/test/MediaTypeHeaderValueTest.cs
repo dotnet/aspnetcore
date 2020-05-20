@@ -709,6 +709,100 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;charset=utf-8;foo=bar;q=0.0")]
         [InlineData("application/json;v=2", "application/json;*")]
         [InlineData("application/json;v=2;charset=utf-8", "application/json;v=2;*")]
+        public void MatchesMediaType_PositiveCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+
+            // Assert
+            Assert.True(matches);
+        }
+
+        [Theory]
+        [InlineData("application/html", "text/*")]
+        [InlineData("application/json", "application/html")]
+        [InlineData("*/*;", "text/plain;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("text/*;", "text/plain;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("text/*;charset=utf-8;foo=bar;q=0.0", "text/plain;missingparam=4;")]
+        [InlineData("*/*;charset=utf-8;foo=bar;q=0.0", "text/plain;missingparam=4;")]
+        public void MatchesMediaType_NegativeCases(string mediaType1, string mediaType2)
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+
+            // Act
+            var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+
+            // Assert
+            Assert.False(matches);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
+        [InlineData("application/*", "application/*+JSON")]
+        [InlineData("application/vnd.github+json", "application/vnd.github+json")]
+        [InlineData("application/*", "application/entity+JSON")]
+        [InlineData("*/*", "application/entity+json")]
+        public void MatchesMediaTypeWithSuffixes_PositiveCases(string set, string subset)
+        {
+            // Arrange
+            var subsetMediaType = MediaTypeHeaderValue.Parse(subset);
+
+            // Act
+            var result = subsetMediaType.MatchesMediaType(set);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/entity.v2+json")]
+        [InlineData("application/*+json", "application/entity+txt")]
+        [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
+        public void MatchesMediaTypeWithSuffixes_NegativeCases(string set, string subset)
+        {
+            // Arrange
+            var subSetMediaType = MediaTypeHeaderValue.Parse(subset);
+
+            // Act
+            var result = subSetMediaType.MatchesMediaType(set);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("*/*;", "*/*")]
+        [InlineData("text/*", "text/*")]
+        [InlineData("text/*;", "*/*")]
+        [InlineData("text/plain;", "text/plain")]
+        [InlineData("text/plain", "text/*")]
+        [InlineData("text/plain;", "*/*")]
+        [InlineData("*/*;missingparam=4", "*/*")]
+        [InlineData("text/*;missingparam=4;", "*/*;")]
+        [InlineData("text/plain;missingparam=4", "*/*;")]
+        [InlineData("text/plain;missingparam=4", "text/*")]
+        [InlineData("text/plain;charset=utf-8", "text/plain;charset=utf-8")]
+        [InlineData("text/plain;version=v1", "Text/plain;Version=v1")]
+        [InlineData("text/plain;version=v1", "tExT/plain;version=V1")]
+        [InlineData("text/plain;version=v1", "TEXT/PLAIN;VERSION=V1")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;foo=bar;q=0.0;charset=utf-8")] // different order of parameters
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/*;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("application/json;v=2", "application/json;*")]
+        [InlineData("application/json;v=2;charset=utf-8", "application/json;v=2;*")]
         public void IsSubsetOf_PositiveCases(string mediaType1, string mediaType2)
         {
             // Arrange
