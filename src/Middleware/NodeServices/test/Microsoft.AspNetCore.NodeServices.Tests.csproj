@@ -8,6 +8,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="js\**\*" />
   </ItemGroup>
 
