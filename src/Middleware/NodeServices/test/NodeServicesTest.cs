@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.NodeServices
             _nodeServices = NodeServicesFactory.CreateNodeServices(options);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanGetSuccessResult()
         {
             // Act
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.Equal("test result", result);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanGetErrorResult()
         {
             // Act/Assert
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.StartsWith("This is an error from Node", ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanGetResultAsynchronously()
         {
             // Act
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.Equal("delayed test result", result);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanPassParameters()
         {
             // Act
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.Equal("Param0: Hey; Param1: 123", result);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanPassParametersWithCamelCaseNameConversion()
         {
             // Act
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.Equal("Received: [{\"stringProp\":\"Abc\",\"intProp\":123,\"boolProp\":true}]", result);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanReceiveComplexResultWithPascalCaseNameConversion()
         {
             // Act
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.True(result.BoolProp);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanInvokeDefaultModuleExport()
         {
             // Act
