@@ -42,13 +42,13 @@ namespace Microsoft.AspNetCore.Http
             {
                 Debug.Assert(source != null);
                 Debug.Assert(destination != null);
-                Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.GetValueOrDefault() >= 0);
+                Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
                 Debug.Assert(buffer != null);
 
                 while (true)
                 {
                     // The natural end of the range.
-                    if (bytesRemaining.HasValue && bytesRemaining.GetValueOrDefault() <= 0)
+                    if (bytesRemaining.HasValue && bytesRemaining.Value <= 0)
                     {
                         return;
                     }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http
                     int readLength = buffer.Length;
                     if (bytesRemaining.HasValue)
                     {
-                        readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), (long)readLength);
+                        readLength = (int)Math.Min(bytesRemaining.Value, (long)readLength);
                     }
                     int read = await source.ReadAsync(buffer, 0, readLength, cancel);
 

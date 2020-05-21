@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     internal struct StaticFileContext
     {
-        private const int StreamCopyBufferSize = 64 * 1024;
-
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
         private readonly HttpRequest _request;
@@ -356,11 +354,8 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, _context.RequestAborted);
-                }
+                await using var readStream = _fileInfo.CreateReadStream();
+                await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
@@ -403,12 +398,10 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                    _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                    await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, length, _context.RequestAborted);
-                }
+                await using var readStream = _fileInfo.CreateReadStream();
+                readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
+                _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
+                await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {

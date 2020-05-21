@@ -27,25 +27,23 @@ namespace Microsoft.AspNetCore.Http
 
             Debug.Assert(source != null);
             Debug.Assert(writer != null);
-            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.GetValueOrDefault() >= 0);
+            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
 
             while (true)
             {
                 // The natural end of the range.
-                if (bytesRemaining.HasValue && bytesRemaining.GetValueOrDefault() <= 0)
+                if (bytesRemaining.HasValue && bytesRemaining.Value <= 0)
                 {
                     return;
                 }
 
                 var memory = writer.GetMemory();
-
-                var readLength = memory.Length;
-                if (bytesRemaining.HasValue)
+                if (bytesRemaining.HasValue && memory.Length > bytesRemaining.Value)
                 {
-                    readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), readLength);
+                    memory = memory.Slice(0, (int)bytesRemaining.Value);
                 }
 
-                var read = await source.ReadAsync(memory.Slice(0, readLength), cancel);
+                var read = await source.ReadAsync(memory, cancel);
 
                 if (bytesRemaining.HasValue)
                 {
