@@ -4,12 +4,14 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/22084", Queues = "Windows.10.Arm64;Windows.10.Arm64.Open")]
     [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class NodeServicesTest : IDisposable
     {
