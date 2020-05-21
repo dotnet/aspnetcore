@@ -171,7 +171,6 @@ namespace Microsoft.AspNetCore.Identity
         public virtual System.Threading.Tasks.Task<TUser> ValidateSecurityStampAsync(System.Security.Claims.ClaimsPrincipal principal) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> ValidateSecurityStampAsync(TUser user, string securityStamp) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<TUser> ValidateTwoFactorSecurityStampAsync(System.Security.Claims.ClaimsPrincipal principal) { throw null; }
     }
     public partial class TwoFactorSecurityStampValidator<TUser> : Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>, Microsoft.AspNetCore.Identity.ISecurityStampValidator, Microsoft.AspNetCore.Identity.ITwoFactorSecurityStampValidator where TUser : class
