@@ -26,6 +26,7 @@ namespace InteropTests
         }
 
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22101")]
         [MemberData(nameof(TestCaseData))]
         public async Task InteropTestCase(string name)
         {
