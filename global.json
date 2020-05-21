@@ -21,7 +21,8 @@
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.Windows10SDK.17134"
       ]
-    }
+    },
+    "xcopy-msbuild": "none"
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.15.2",
