@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Http
     // FYI: In most cases the source will be a FileStream and the destination will be to the network.
     internal static class PipeCopyOperationInternal
     {
-        private const int DefaultBufferSize = 2048;
-
         /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them using pipe writer.</summary>
         /// <returns>A task that represents the asynchronous copy operation.</returns>
         /// <param name="source">The stream from which the contents will be copied.</param>
