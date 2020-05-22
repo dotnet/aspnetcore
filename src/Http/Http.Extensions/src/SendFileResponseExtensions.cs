@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
                     {
                         fileContent.Seek(offset, SeekOrigin.Begin);
                     }
-                    await PipeCopyOperation.CopyToAsync(fileContent, response.BodyWriter, count, cancellationToken);
+                    await StreamCopyOperation.CopyToAsync(fileContent, response.BodyWriter, count, cancellationToken);
                 }
             }
             else

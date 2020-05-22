@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             try
             {
                 await using var readStream = _fileInfo.CreateReadStream();
-                await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, _context.RequestAborted);
+                await StreamCopyOperation.CopyToAsync(readStream, _response.BodyWriter, _length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 await using var readStream = _fileInfo.CreateReadStream();
                 readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
                 _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                await PipeCopyOperation.CopyToAsync(readStream, _response.BodyWriter, length, _context.RequestAborted);
+                await StreamCopyOperation.CopyToAsync(readStream, _response.BodyWriter, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
