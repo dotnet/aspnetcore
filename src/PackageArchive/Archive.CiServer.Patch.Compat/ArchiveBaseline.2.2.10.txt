@@ -1,0 +1,7 @@
+runtime.native.system.security.cryptography.apple\4.3.0\.signature.p7s
+runtime.native.system.security.cryptography.openssl\4.3.0\.signature.p7s
+runtime.opensuse.13.2-x64.runtime.native.system.security.cryptography.openssl\4.3.0\.signature.p7s
+system.collections.immutable\1.3.1\.signature.p7s
+system.collections.specialized\4.3.0\.signature.p7s
+system.security.claims\4.3.0\.signature.p7s
+system.security.cryptography.cng\4.3.0\.signature.p7s
