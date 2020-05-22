@@ -1,5 +1,7 @@
 JavaScript and TypeScript clients for SignalR for ASP.NET Core
 
+> Note: The JavaScript and TypeScript clients for SignalR for ASP.NET Core have been moved to [@microsoft/signalr](https://www.npmjs.com/package/@microsoft/signalr). If you are already using `@aspnet/signalr` and are unsure when to move to `@microsoft/signalr`, check the [Feature Distribution](https://docs.microsoft.com/en-us/aspnet/core/signalr/client-features) chart in the ASP.NET Core SignalR documentation.
+
 ## Installation
 
 ```bash
