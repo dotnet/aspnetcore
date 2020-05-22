@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using InteropTests.Helpers;
 using Microsoft.AspNetCore.Testing;
@@ -95,11 +93,22 @@ namespace InteropTests
 
                 using (var clientProcess = new ClientProcess(_output, _clientPath, serverProcess.ServerPort, name))
                 {
-                    await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
+                    try
+                    {
+                        await clientProcess.WaitForReadyAsync().TimeoutAfter(DefaultTimeout);
 
-                    await clientProcess.Exited.TimeoutAfter(DefaultTimeout);
+                        await clientProcess.WaitForExitAsync().TimeoutAfter(DefaultTimeout);
 
-                    Assert.Equal(0, clientProcess.ExitCode);
+                        Assert.Equal(0, clientProcess.ExitCode);
+                    }
+                    catch (Exception ex)
+                    {
+                        var clientOutput = clientProcess.GetOutput();
+                        var errorMessage = $@"Error while running client process. Process output:
+======================================
+{clientOutput}";
+                        throw new InvalidOperationException(errorMessage, ex);
+                    }
                 }
             }
         }
