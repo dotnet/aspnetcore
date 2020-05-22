@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http
             await using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
-            await PipeCopyOperationInternal.CopyToAsync(fileStream, writer, count, cancellationToken);
+            await StreamCopyOperationInternal.CopyToAsync(fileStream, writer, count, cancellationToken);
         }
 
         private static FileStream GetFileStream(string filePath, long offset, long? count, CancellationToken cancellationToken)
