@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="StreamCopyOperationInternal.cs" />
-    <Compile Include="..\..\Shared\PipeCopyOperationInternal.cs" Link="PipeCopyOperationInternal.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,6 +82,58 @@ namespace Microsoft.AspNetCore.Http
             finally
             {
                 ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them using pipe writer.</summary>
+        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        /// <param name="source">The stream from which the contents will be copied.</param>
+        /// <param name="writer">The PipeWriter to which the contents of the current stream will be copied.</param>
+        /// <param name="count">The count of bytes to be copied.</param>
+        /// <param name="cancel">The token to monitor for cancellation requests.</param>
+        public static async Task CopyToAsync(Stream source, PipeWriter writer, long? count, CancellationToken cancel)
+        {
+            long? bytesRemaining = count;
+
+            Debug.Assert(source != null);
+            Debug.Assert(writer != null);
+            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
+
+            while (true)
+            {
+                // The natural end of the range.
+                if (bytesRemaining.HasValue && bytesRemaining.Value <= 0)
+                {
+                    return;
+                }
+
+                var memory = writer.GetMemory();
+                if (bytesRemaining.HasValue && memory.Length > bytesRemaining.Value)
+                {
+                    memory = memory.Slice(0, (int)bytesRemaining.Value);
+                }
+
+                var read = await source.ReadAsync(memory, cancel);
+
+                if (bytesRemaining.HasValue)
+                {
+                    bytesRemaining -= read;
+                }
+
+                // End of the source stream.
+                if (read == 0)
+                {
+                    break;
+                }
+
+                writer.Advance(read);
+
+                var result = await writer.FlushAsync(cancel);
+
+                if (result.IsCompleted)
+                {
+                    break;
+                }
             }
         }
     }
