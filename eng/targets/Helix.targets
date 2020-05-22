@@ -80,7 +80,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
-      <BuildHelixPayload Condition="$(SkipHelixQueues).Contains('$HelixTargetQueue))">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$HelixTargetQueue))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>
 
