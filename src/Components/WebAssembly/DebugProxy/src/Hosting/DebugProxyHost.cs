@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.Hosting
                 {
                     config.AddCommandLine(args);
                 }
+                config.SetBasePath(Directory.GetCurrentDirectory());
                 config.AddJsonFile("blazor-debugproxysettings.json", optional: true, reloadOnChange: true);
             })
             .ConfigureLogging((hostingContext, logging) =>
