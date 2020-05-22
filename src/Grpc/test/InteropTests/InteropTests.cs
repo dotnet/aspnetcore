@@ -31,9 +31,11 @@ namespace InteropTests
         public Task EmptyUnary() => InteropTestCase("empty_unary");
 
         [Fact]
+        [QuarantinedTest]
         public Task LargeUnary() => InteropTestCase("large_unary");
 
         [Fact]
+        [QuarantinedTest]
         public Task ClientStreaming() => InteropTestCase("client_streaming");
 
         [Fact]
@@ -56,6 +58,7 @@ namespace InteropTests
         public Task TimeoutOnSleepingServer() => InteropTestCase("timeout_on_sleeping_server");
 
         [Fact]
+        [QuarantinedTest]
         public Task CustomMetadata() => InteropTestCase("custom_metadata");
 
         [Fact]
@@ -71,12 +74,14 @@ namespace InteropTests
         public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
         [Fact]
+        [QuarantinedTest]
         public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
         [Fact]
         public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
         [Fact]
+        [QuarantinedTest]
         public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
         [Fact]
