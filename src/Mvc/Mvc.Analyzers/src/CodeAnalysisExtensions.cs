@@ -139,14 +139,13 @@ namespace Microsoft.CodeAnalysis
             return false;
         }
 
-        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)
+        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
         {
-            var typeSymbolNullable = typeSymbol;
-            while (typeSymbolNullable != null)
+            while (typeSymbol != null)
             {
-                yield return typeSymbolNullable;
+                yield return typeSymbol;
 
-                typeSymbolNullable = typeSymbolNullable.BaseType;
+                typeSymbol = typeSymbol.BaseType;
             }
         }
     }

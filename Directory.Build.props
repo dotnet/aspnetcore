@@ -56,6 +56,7 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
+    <!-- Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props -->
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
