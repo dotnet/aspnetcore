@@ -13,6 +13,8 @@ using Xunit.Abstractions;
 
 namespace InteropTests
 {
+    // All interop test cases, minus GCE authentication specific tests.
+    // Tests are separate methods so that they can be quarantined separately.
     public class InteropTests
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
@@ -25,27 +27,62 @@ namespace InteropTests
             _output = output;
         }
 
-        // All interop test cases, minus GCE authentication specific tests
-        [ConditionalTheory]
-        [InlineData("empty_unary")]
-        [InlineData("large_unary")]
-        [InlineData("client_streaming")]
-        [InlineData("server_streaming")]
-        [InlineData("ping_pong", Skip = "https://github.com/dotnet/aspnetcore/issues/22101")]
-        [InlineData("empty_stream")]
-        [InlineData("cancel_after_begin")]
-        [InlineData("cancel_after_first_response")]
-        [InlineData("timeout_on_sleeping_server")]
-        [InlineData("custom_metadata")]
-        [InlineData("status_code_and_message")]
-        [InlineData("special_status_message")]
-        [InlineData("unimplemented_service")]
-        [InlineData("unimplemented_method")]
-        [InlineData("client_compressed_unary")]
-        [InlineData("client_compressed_streaming")]
-        [InlineData("server_compressed_unary")]
-        [InlineData("server_compressed_streaming")]
-        public async Task InteropTestCase(string name)
+        [Fact]
+        public Task EmptyUnary() => InteropTestCase("empty_unary");
+
+        [Fact]
+        public Task LargeUnary() => InteropTestCase("large_unary");
+
+        [Fact]
+        public Task ClientStreaming() => InteropTestCase("client_streaming");
+
+        [Fact]
+        public Task ServerStreaming() => InteropTestCase("server_streaming");
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22101")]
+        public Task PingPong() => InteropTestCase("ping_pong");
+
+        [Fact]
+        public Task EmptyStream() => InteropTestCase("empty_stream");
+
+        [Fact]
+        public Task CancelAfterBegin() => InteropTestCase("cancel_after_begin");
+
+        [Fact]
+        public Task CancelAfterFirstResponse() => InteropTestCase("cancel_after_first_response");
+
+        [Fact]
+        public Task TimeoutOnSleepingServer() => InteropTestCase("timeout_on_sleeping_server");
+
+        [Fact]
+        public Task CustomMetadata() => InteropTestCase("custom_metadata");
+
+        [Fact]
+        public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
+
+        [Fact]
+        public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
+
+        [Fact]
+        public Task UnimplementedService() => InteropTestCase("unimplemented_service");
+
+        [Fact]
+        public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
+
+        [Fact]
+        public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
+
+        [Fact]
+        public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
+
+        [Fact]
+        public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
+
+        [Fact]
+        public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
+
+        private async Task InteropTestCase(string name)
         {
             using (var serverProcess = new WebsiteProcess(_serverPath, _output))
             {
