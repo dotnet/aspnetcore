@@ -274,7 +274,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task RunAsync_PublishersCanTimeout()
         {
             // Arrange

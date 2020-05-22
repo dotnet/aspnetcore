@@ -132,7 +132,9 @@
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ResolveCustomReferences"
+      BeforeTargets="CheckForImplicitPackageReferenceOverrides;CollectPackageReferences;ResolvePackageAssets"
+      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>

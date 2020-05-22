@@ -1048,8 +1048,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object> StartedMethod;
+        public TaskCompletionSource<object> EndMethod;
+
+        public TcsService()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 
     public interface ITypedHubClient

@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
@@ -772,7 +773,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteIndented = false,
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 AllowTrailingCommas = false,
-                IgnoreNullValues = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,

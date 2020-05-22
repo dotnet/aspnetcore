@@ -51,8 +51,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <!-- Runtime extensions transport paths -->
-    <!-- TODO: revert tfm to $(TargetFramework) when we have updated to net5.0 -->
-    <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\net5.0\</RuntimeExtensionsReferenceDirectory>
+    <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
 
   </PropertyGroup>
 

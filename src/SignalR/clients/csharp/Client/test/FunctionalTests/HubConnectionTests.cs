@@ -1336,7 +1336,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest]
         [MemberData(nameof(HubProtocolsList))]
         public async Task ServerLogsErrorIfClientInvokeCannotBeSerialized(string protocolName)
         {
@@ -1384,7 +1383,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest]
         [MemberData(nameof(HubProtocolsList))]
         public async Task ServerLogsErrorIfReturnValueCannotBeSerialized(string protocolName)
         {

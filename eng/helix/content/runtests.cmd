@@ -3,9 +3,18 @@ REM Need delayed expansion !PATH! so parens in the path don't mess up the parens
 setlocal enabledelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
+set $target=%1
 set $sdkVersion=%2
 set $runtimeVersion=%3
+set $queue=%4
 set $arch=%5
+set $quarantined=%6
+set $ef=%7
+set $aspnetruntime=%8
+set $aspnetref=%9
+REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
+shift
+set $helixTimeout=%9
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -23,10 +32,11 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 set exit_code=0
 echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime %3 --queue %4 --arch %5 --quarantined %6 --ef %7 --aspnetruntime %8 --aspnetref %9..."
-dotnet run --project RunTests\RunTests.csproj -- --target %1 --sdk %2 --runtime %3 --queue %4 --arch %5 --quarantined %6 --ef %7 --aspnetruntime %8 --aspnetref %9
-if errorlevel 1 (
-    set exit_code=1
+
+echo "Running tests: dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%..."
+dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%
+if errorlevel neq 0 (
+    set exit_code=%errorlevel%
 )
 echo "Finished running tests: exit_code=%exit_code%"
 exit /b %exit_code%

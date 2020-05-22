@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -19,10 +20,53 @@ namespace RunTests
         [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
         private static extern int sys_kill(int pid, int sig);
 
+        public static Task CaptureDumpAsync()
+        {
+            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+            if (dumpDirectoryPath == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var process = Process.GetCurrentProcess();
+            var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}-{process.Id}.dmp");
+
+            return CaptureDumpAsync(process.Id, dumpFilePath);
+        }
+
+        public static Task CaptureDumpAsync(int pid)
+        {
+            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+            if (dumpDirectoryPath == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var process = Process.GetProcessById(pid);
+            var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}.{process.Id}.dmp");
+
+            return CaptureDumpAsync(process.Id, dumpFilePath);
+        }
+
+        public static Task CaptureDumpAsync(int pid, string dumpFilePath)
+        {
+            // Skip this on OSX, we know it's unsupported right now
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // Can we capture stacks or do a gcdump instead?
+                return Task.CompletedTask;
+            }
+
+            return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
+        }
+
         public static async Task<ProcessResult> RunAsync(
             string filename,
             string arguments,
             string? workingDirectory = null,
+            string dumpDirectoryPath = null,
             bool throwOnError = true,
             IDictionary<string, string?>? environmentVariables = null,
             Action<string>? outputDataReceived = null,
@@ -49,6 +93,14 @@ namespace RunTests
             if (workingDirectory != null)
             {
                 process.StartInfo.WorkingDirectory = workingDirectory;
+            }
+
+            dumpDirectoryPath ??= Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+            if (dumpDirectoryPath != null)
+            {
+                process.StartInfo.EnvironmentVariables["COMPlus_DbgEnableMiniDump"] = "1";
+                process.StartInfo.EnvironmentVariables["COMPlus_DbgMiniDumpName"] = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.%d.dmp");
             }
 
             if (environmentVariables != null)
@@ -112,13 +164,20 @@ namespace RunTests
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var cancelledTcs = new TaskCompletionSource<object?>();
-            await using var _ = cancellationToken.Register(() => cancelledTcs.TrySetResult(null));
+            var canceledTcs = new TaskCompletionSource<object?>();
+            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult(null));
 
-            var result = await Task.WhenAny(processLifetimeTask.Task, cancelledTcs.Task);
+            var result = await Task.WhenAny(processLifetimeTask.Task, canceledTcs.Task);
 
-            if (result == cancelledTcs.Task)
+            if (result == canceledTcs.Task)
             {
+                if (dumpDirectoryPath != null)
+                {
+                    var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.{process.Id}.dmp");
+                    // Capture a process dump if the dumpDirectory is set
+                    await CaptureDumpAsync(process.Id, dumpFilePath);
+                }
+
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     sys_kill(process.Id, sig: 2); // SIGINT
@@ -142,17 +201,6 @@ namespace RunTests
             }
 
             return await processLifetimeTask.Task;
-        }
-
-        public static void KillProcess(int pid)
-        {
-            try
-            {
-                using var process = Process.GetProcessById(pid);
-                process?.Kill();
-            }
-            catch (ArgumentException) { }
-            catch (InvalidOperationException) { }
         }
     }
 }

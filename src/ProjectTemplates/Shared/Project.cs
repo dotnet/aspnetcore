@@ -109,48 +109,30 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessResult> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
+        internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
-            Output.WriteLine("Publishing ASP.NET application...");
+            Output.WriteLine("Publishing ASP.NET Core application...");
 
-            // This is going to trigger a build, so we need to acquire the lock like in the other cases.
-            // We want to take the node lock as some builds run NPM as part of the build and we want to make sure
-            // it's run without interruptions.
-            var effectiveLock = takeNodeLock ? new OrderedLock(NodeLock, DotNetNewLock) : new OrderedLock(nodeLock: null, DotNetNewLock);
-            await effectiveLock.WaitAsync();
-            try
-            {
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl {additionalArgs}", packageOptions);
-                await result.Exited;
-                CaptureBinLogOnFailure(result);
-                return new ProcessResult(result);
-            }
-            finally
-            {
-                effectiveLock.Release();
-            }
+            // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
+            // should avoid any global contention and we can execute a build or publish in a lock-free way
+
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish --no-restore -c Release /bl {additionalArgs}", packageOptions);
+            await result.Exited;
+            CaptureBinLogOnFailure(result);
+            return new ProcessResult(result);
         }
 
-        internal async Task<ProcessResult> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
+        internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
-            Output.WriteLine("Building ASP.NET application...");
+            Output.WriteLine("Building ASP.NET Core application...");
 
-            // This is going to trigger a build, so we need to acquire the lock like in the other cases.
-            // We want to take the node lock as some builds run NPM as part of the build and we want to make sure
-            // it's run without interruptions.
-            var effectiveLock = takeNodeLock ? new OrderedLock(NodeLock, DotNetNewLock) : new OrderedLock(nodeLock: null, DotNetNewLock);
-            await effectiveLock.WaitAsync();
-            try
-            {
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug /bl {additionalArgs}", packageOptions);
-                await result.Exited;
-                CaptureBinLogOnFailure(result);
-                return new ProcessResult(result);
-            }
-            finally
-            {
-                effectiveLock.Release();
-            }
+            // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
+            // should avoid any global contention and we can execute a build or publish in a lock-free way
+
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
+            await result.Exited;
+            CaptureBinLogOnFailure(result);
+            return new ProcessResult(result);
         }
 
         internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
@@ -165,8 +147,33 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
+            var launchSettingsJson = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
+            if (File.Exists(launchSettingsJson))
+            {
+                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
+                // than ambient environment variables. When present, we have to edit this file to allow the application to pick random ports.
+                var original = File.ReadAllText(launchSettingsJson);
+                var updated = original.Replace(
+                    "\"applicationUrl\": \"https://localhost:5001;http://localhost:5000\"",
+                    $"\"applicationUrl\": \"{_urls}\"");
+
+                if (updated == original)
+                {
+                    Output.WriteLine("applicationUrl is not specified in launchSettings.json");
+                }
+                else
+                {
+                    Output.WriteLine("Updating applicationUrl in launchSettings.json");
+                    File.WriteAllText(launchSettingsJson, updated);
+                }
+            }
+            else
+            {
+                Output.WriteLine("No launchSettings.json found to update.");
+            }
+
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri, logger: logger);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
@@ -181,7 +188,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = $"{ProjectName}.dll";
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri);
         }
 
         internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName)

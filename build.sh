@@ -288,10 +288,6 @@ if [ -z "$configuration" ]; then
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
-# Set verbosity
-echo "Setting msbuild verbosity to $verbosity"
-msbuild_args[${#msbuild_args[*]}]="-verbosity:$verbosity"
-
 # Set up additional runtime args
 toolset_build_args=()
 if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
@@ -328,14 +324,24 @@ fi
 # Import Arcade
 . "$DIR/eng/common/tools.sh"
 
+# Add default .binlog location if not already on the command line. tools.sh does not handle this; it just checks
+# $binary_log, $ci and $exclude_ci_binary_log values for an error case.
+if [[ "$binary_log" == true ]]; then
+    found=false
+    for arg in "${msbuild_args[@]}"; do
+        opt="$(echo "${arg/#--/-}" | awk '{print tolower($0)}')"
+        if [[ "$opt" == [-/]bl:* || "$opt" == [-/]binarylogger:* ]]; then
+            found=true
+            break
+        fi
+    done
+    if [[ "$found" == false ]]; then
+        msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
+    fi
+fi
+
 # Capture MSBuild crash logs
 export MSBUILDDEBUGPATH="$log_dir"
-
-# Import custom tools configuration, if present in the repo.
-configure_toolset_script="$eng_root/configure-toolset.sh"
-if [[ -a "$configure_toolset_script" ]]; then
-  . "$configure_toolset_script"
-fi
 
 # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
 # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing

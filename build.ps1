@@ -253,9 +253,7 @@ $RunRestore = if ($NoRestore) { $false }
 # Target selection
 $MSBuildArguments += "/p:Restore=$RunRestore"
 $MSBuildArguments += "/p:Build=$RunBuild"
-if (-not $RunBuild) {
-    $MSBuildArguments += "/p:NoBuild=true"
-}
+if (-not $RunBuild) { $MSBuildArguments += "/p:NoBuild=true" }
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
@@ -364,18 +362,20 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
 
+# Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
+# $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
+if ($BinaryLog) {
+    $bl = GetMSBuildBinaryLogCommandLineArgument($MSBuildArguments)
+    if (-not $bl) {
+        $MSBuildArguments += "/bl:" + (Join-Path $LogDir "Build.binlog")
+    }
+}
+
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
 
 $local:exit_code = $null
 try {
-    # Import custom tools configuration, if present in the repo.
-    # Note: Import in global scope so that the script set top-level variables without qualification.
-    $configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
-    if (Test-Path $configureToolsetScript) {
-      . $configureToolsetScript
-    }
-
     # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
     # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing
     # the toolset is a better default behavior.

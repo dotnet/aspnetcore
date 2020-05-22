@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithIntegrityData))]
-        [QuarantinedTest]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
             var integrity = await GetShaIntegrity(scriptTag);
@@ -80,7 +79,6 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2267")]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);

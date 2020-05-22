@@ -50,15 +50,20 @@ namespace RunTests
                     aliases: new string[] { "--ef" },
                     description: "The version of the EF tool to use")
                 { Argument = new Argument<string>(), Required = true },
-                
+
                 new Option(
                     aliases: new string[] { "--aspnetruntime" },
                     description: "The path to the aspnet runtime nupkg to install")
                 { Argument = new Argument<string>(), Required = true },
-                
+
                 new Option(
                     aliases: new string[] { "--aspnetref" },
                     description: "The path to the aspnet ref nupkg to install")
+                { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--helixTimeout" },
+                    description: "The timeout duration of the Helix job")
                 { Argument = new Argument<string>(), Required = true },
             };
 
@@ -73,6 +78,7 @@ namespace RunTests
             options.EfVersion = parseResult.ValueForOption<string>("--ef");
             options.AspNetRuntime = parseResult.ValueForOption<string>("--aspnetruntime");
             options.AspNetRef = parseResult.ValueForOption<string>("--aspnetref");
+            options.Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"));
             options.HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
             options.Path = Environment.GetEnvironmentVariable("PATH");
             options.DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -91,5 +97,6 @@ namespace RunTests
         public string HELIX_WORKITEM_ROOT { get; set;}
         public string DotnetRoot { get; set; }
         public string Path { get; set; }
+        public TimeSpan Timeout { get; set; }
     }
 }

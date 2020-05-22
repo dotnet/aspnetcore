@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionContext = connectionContext,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                MemoryPool = memoryPoolFeature.MemoryPool,
+                MemoryPool = memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
                 LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };
