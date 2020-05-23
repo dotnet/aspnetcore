@@ -70,6 +70,5 @@ namespace Microsoft.AspNetCore.Http
                 bufferSize: bufferSize,
                 options: FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
-
     }
 }
