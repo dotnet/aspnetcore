@@ -98,6 +98,8 @@ namespace Microsoft.Net.Http.Headers
 
         public bool HttpOnly { get; set; }
 
+        public List<StringSegment> Extensions { get; set; }
+
         // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
         public override string ToString()
         {
@@ -154,6 +156,14 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
+            if(Extensions != null)
+            {
+                foreach (var extension in Extensions)
+                {
+                    length += SeparatorToken.Length + extension.Length;
+                }
+            }
+
             return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
             {
                 var (headerValue, maxAgeValue, sameSite) = tuple;
@@ -202,6 +212,14 @@ namespace Microsoft.Net.Http.Headers
                 if (headerValue.HttpOnly)
                 {
                     AppendSegment(ref span, HttpOnlyToken, null);
+                }
+
+                if(Extensions != null)
+                {
+                    foreach (var extension in Extensions)
+                    {
+                        AppendSegment(ref span, extension, null);
+                    }
                 }
             });
         }
@@ -279,6 +297,14 @@ namespace Microsoft.Net.Http.Headers
             if (HttpOnly)
             {
                 AppendSegment(builder, HttpOnlyToken, null);
+            }
+
+            if (Extensions != null)
+            {
+                foreach (var extension in Extensions)
+                {
+                    AppendSegment(builder, extension, null);
+                }
             }
         }
 
@@ -498,13 +524,13 @@ namespace Microsoft.Net.Http.Headers
                 // extension-av = <any CHAR except CTLs or ";">
                 else
                 {
-                    // TODO: skiping it for now to avoid parsing failure? Store it in a list?
-                    // = (no spaces)
-                    if (!ReadEqualsSign(input, ref offset))
-                    {
-                        return 0;
-                    }
+                    var tokenStart = offset - itemLength;
                     ReadToSemicolonOrEnd(input, ref offset);
+
+                    if (result.Extensions == null)
+                        result.Extensions = new List<StringSegment>();
+
+                    result.Extensions.Add(input.Subsegment(tokenStart, offset - tokenStart));
                 }
             }
 
@@ -554,12 +580,13 @@ namespace Microsoft.Net.Http.Headers
                 && StringSegment.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase)
                 && Secure == other.Secure
                 && SameSite == other.SameSite
-                && HttpOnly == other.HttpOnly;
+                && HttpOnly == other.HttpOnly
+                && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions);
         }
 
         public override int GetHashCode()
         {
-            return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
+            var hash = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
                 ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value)
                 ^ (Expires.HasValue ? Expires.GetHashCode() : 0)
                 ^ (MaxAge.HasValue ? MaxAge.GetHashCode() : 0)
@@ -568,6 +595,16 @@ namespace Microsoft.Net.Http.Headers
                 ^ Secure.GetHashCode()
                 ^ SameSite.GetHashCode()
                 ^ HttpOnly.GetHashCode();
+
+            if (Extensions != null)
+            {
+                foreach (var extension in Extensions)
+                {
+                    hash ^= extension.GetHashCode();
+                }
+            }
+
+            return hash;
         }
     }
 }
