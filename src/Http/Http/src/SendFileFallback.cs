@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Http
 {
     public static class SendFileFallback
     {
-
         /// <summary>
         /// Copies the segment of the file to the destination stream.
         /// </summary>
@@ -61,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            int bufferSize = 1024 * 16;
+            int bufferSize = 1;
 
             return new FileStream(
                 filePath,
