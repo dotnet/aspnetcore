@@ -309,6 +309,11 @@ namespace RunTests
             }
 
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+            {
+                Console.WriteLine("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
+                return;
+            }
             Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("artifacts/log"))
             {
