@@ -157,7 +157,7 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            if(Extensions != null)
+            if (Extensions != null)
             {
                 foreach (var extension in Extensions)
                 {
@@ -215,7 +215,7 @@ namespace Microsoft.Net.Http.Headers
                     AppendSegment(ref span, HttpOnlyToken, null);
                 }
 
-                if(Extensions != null)
+                if (Extensions != null)
                 {
                     foreach (var extension in Extensions)
                     {
@@ -526,7 +526,7 @@ namespace Microsoft.Net.Http.Headers
                 else
                 {
                     var tokenStart = offset - itemLength;
-                    ReadToSemicolonOrEnd(input, ref offset);
+                    ReadToSemicolonOrEnd(input, ref offset, includeComma: true);
 
                     if (result.Extensions == null)
                         result.Extensions = new List<StringSegment>();
@@ -550,14 +550,28 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset)
+        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset, bool includeComma = false)
         {
             var end = input.IndexOf(';', offset);
+            if (end < 0)
+            {
+                // Also valid end of cookie
+                if (includeComma)
+                    end = input.IndexOf(',', offset);
+            }
+            else if (includeComma)
+            {
+                var commaPosition = input.IndexOf(',', offset);
+                if (commaPosition >= 0 && commaPosition < end)
+                    end = commaPosition;
+            }
+
             if (end < 0)
             {
                 // Remainder of the string
                 end = input.Length;
             }
+
             var itemLength = end - offset;
             var result = input.Subsegment(offset, itemLength);
             offset += itemLength;
