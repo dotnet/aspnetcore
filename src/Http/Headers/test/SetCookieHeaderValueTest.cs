@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -24,9 +25,14 @@ namespace Microsoft.Net.Http.Headers
                     HttpOnly = true,
                     MaxAge = TimeSpan.FromDays(1),
                     Path = "path1",
-                    Secure = true
+                    Secure = true,
+                    Extensions = new List<StringSegment>()
+                    {
+                        "extension1",
+                        "extension2=value"
+                    }
                 };
-                dataset.Add(header1, "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly");
+                dataset.Add(header1, "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly; extension1; extension2=value");
 
                 var header2 = new SetCookieHeaderValue("name2", "");
                 dataset.Add(header2, "name2=");
@@ -59,6 +65,15 @@ namespace Microsoft.Net.Http.Headers
                 };
                 dataset.Add(header7, "name7=value7; samesite=none");
 
+                var header8 = new SetCookieHeaderValue("name8", "value8")
+                {
+                    Extensions = new List<StringSegment>()
+                    {
+                        "extension1",
+                        "extension2=value"
+                    }
+                };
+                dataset.Add(header8, "name8=value8; extension1; extension2=value");
 
                 return dataset;
             }
@@ -124,9 +139,14 @@ namespace Microsoft.Net.Http.Headers
                     HttpOnly = true,
                     MaxAge = TimeSpan.FromDays(1),
                     Path = "path1",
-                    Secure = true
+                    Secure = true,
+                    Extensions = new List<StringSegment>()
+                    {
+                        "extension1",
+                        "extension2=value"
+                    }
                 };
-                var string1 = "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly";
+                var string1 = "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly; extension1; extension2=value";
 
                 var header2 = new SetCookieHeaderValue("name2", "value2");
                 var string2 = "name2=value2";
@@ -170,6 +190,17 @@ namespace Microsoft.Net.Http.Headers
                 var string8a = "name8=value8; samesite";
                 var string8b = "name8=value8; samesite=invalid";
 
+                var header9 = new SetCookieHeaderValue("name9", "value9")
+                {
+                    Extensions = new List<StringSegment>
+                    {
+                        "extension1",
+                        "extension2=value"
+                    }
+                };
+                var string9 = "name9=value9; extension1; extension2=value";
+
+
                 dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, null, "", " ", ",", " , ", string1 });
@@ -185,6 +216,7 @@ namespace Microsoft.Net.Http.Headers
                 dataset.Add(new[] { header7 }.ToList(), new[] { string7 });
                 dataset.Add(new[] { header8 }.ToList(), new[] { string8a });
                 dataset.Add(new[] { header8 }.ToList(), new[] { string8b });
+                dataset.Add(new[] { header9 }.ToList(), new[] { string9 });
 
                 return dataset;
             }
@@ -378,15 +410,19 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void SetCookieHeaderValue_TryParse_SkipExtensionValues()
+        public void SetCookieHeaderValue_TryParse_Respects_Order()
         {
-            string cookieHeaderValue = "cookiename=value; extensionname=value;";
+            string cookieHeaderValue1 = "cookiename=value; extensionname1=value; extensionname2=value;";
+            string cookieHeaderValue2 = "cookiename=value; extensionname2=value; extensionname1=value;";
 
-            SetCookieHeaderValue setCookieHeaderValue;
 
-            SetCookieHeaderValue.TryParse(cookieHeaderValue, out setCookieHeaderValue);
+            SetCookieHeaderValue setCookieHeaderValue1;
+            SetCookieHeaderValue setCookieHeaderValue2;
 
-            Assert.Equal("value", setCookieHeaderValue.Value);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue1, out setCookieHeaderValue1);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue2, out setCookieHeaderValue2);
+
+            Assert.NotEqual(setCookieHeaderValue1, setCookieHeaderValue2);
         }
 
         [Theory]
