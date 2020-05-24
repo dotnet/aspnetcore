@@ -410,7 +410,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void SetCookieHeaderValue_TryParse_Respects_Order()
+        public void SetCookieHeaderValue_TryParse_ExtensionOrderDoesntMatter()
         {
             string cookieHeaderValue1 = "cookiename=value; extensionname1=value; extensionname2=value;";
             string cookieHeaderValue2 = "cookiename=value; extensionname2=value; extensionname1=value;";
@@ -422,7 +422,7 @@ namespace Microsoft.Net.Http.Headers
             SetCookieHeaderValue.TryParse(cookieHeaderValue1, out setCookieHeaderValue1);
             SetCookieHeaderValue.TryParse(cookieHeaderValue2, out setCookieHeaderValue2);
 
-            Assert.NotEqual(setCookieHeaderValue1, setCookieHeaderValue2);
+            Assert.Equal(setCookieHeaderValue1, setCookieHeaderValue2);
         }
 
         [Theory]

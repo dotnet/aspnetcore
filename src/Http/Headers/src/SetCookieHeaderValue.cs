@@ -587,7 +587,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            var equal = StringSegment.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase)
+            return StringSegment.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase)
                 && StringSegment.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase)
                 && Expires.Equals(other.Expires)
                 && MaxAge.Equals(other.MaxAge)
@@ -595,20 +595,8 @@ namespace Microsoft.Net.Http.Headers
                 && StringSegment.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase)
                 && Secure == other.Secure
                 && SameSite == other.SameSite
-                && HttpOnly == other.HttpOnly;
-
-            if (!equal)
-                return false;
-
-            if (Extensions == null)
-            {
-                return (other.Extensions == null) || (other.Extensions.Count == 0);
-            }
-
-            if (other.Extensions == null)
-                return Extensions.Count == 0;
-
-            return Extensions.SequenceEqual(other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
+                && HttpOnly == other.HttpOnly
+                && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
