@@ -5,21 +5,6 @@
 
 -->
 <Project>
-
-  <!-- For the targeting pack, always use packages with PatchVersion=0 -->
-  <!-- !!! Need to get ref/ assemblies for these packages some other way in order to feed correct information into Roslyn. !!! -->
-  <!-- !!! For example, might update target paths to contain latest implementation assemblies after building /everything/ against the original package content. !!! -->
-  <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' ">
-    <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
-    <MicrosoftWin32SystemEventsPackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsPackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemDrawingCommonPackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsPackageVersion>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Dependencies from dotnet/runtime -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
@@ -68,9 +53,13 @@
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
+    <!--
+      !!! Seems arbitrary that the following packages have their ref/ assemblies in our targeting pack but the above
+      !!! three do not. Is this about use in our public APIs i.e. external compilation requirements?
+    -->
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsPackageVersion)" />
   </ItemGroup>
