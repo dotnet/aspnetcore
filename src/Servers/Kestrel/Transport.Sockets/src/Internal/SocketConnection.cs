@@ -187,16 +187,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             // Resolve `input` PipeWriter via the IDuplexPipe interface prior to loop start for performance.
             var input = Input;
+
+            Memory<byte> buffer = default;
+            if (!_waitForData)
+            {
+                // Ensure we have some reasonable amount of buffer space to start.
+                buffer = input.GetMemory(MinAllocBufferSize);
+            }
+
             while (true)
             {
                 if (_waitForData)
                 {
                     // Wait for data before allocating a buffer.
                     await _receiver.WaitForDataAsync();
+                    // Data ready, allocate some memory to receive it.
+                    buffer = input.GetMemory(MinAllocBufferSize);
                 }
-
-                // Ensure we have some reasonable amount of buffer space
-                var buffer = input.GetMemory(MinAllocBufferSize);
 
                 var bytesReceived = await _receiver.ReceiveAsync(buffer);
 
@@ -208,6 +215,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 }
 
                 input.Advance(bytesReceived);
+
+                if (!_waitForData)
+                {
+                    // If not waiting for data allocate another buffer before flushing,
+                    // to reduce reader/writer contention on MemoryPool.
+                    buffer = input.GetMemory(MinAllocBufferSize);
+                }
 
                 var flushTask = input.FlushAsync();
 
