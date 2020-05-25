@@ -19,10 +19,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
 
-    <!-- We need to reference the implementation assemblies when composing the shared framework -->
-    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
-    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
-
     <!-- This file is used by the dotnet/core-sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFileOutputPath>$(InstallersOutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>

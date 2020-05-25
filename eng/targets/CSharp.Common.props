@@ -55,8 +55,6 @@
     </Content>
   </ItemDefinitionGroup>
 
-  <Import Project="CSharp.ReferenceAssembly.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-
   <!-- Properties to control how we handle warnings when using the tasks provided by the Yarn MSBuild SDK -->
   <PropertyGroup>
     <IgnoreYarnWarnings>false</IgnoreYarnWarnings>

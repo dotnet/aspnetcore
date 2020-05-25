@@ -5,8 +5,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
-    <!-- This is typically based on whether the project sits in a folder named `ref`, which this one does not - but we want it to resolve references like a ref project -->
-    <IsReferenceAssemblyProject>true</IsReferenceAssemblyProject>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
     <!-- This is a reference package and does not include any dependencies. -->
@@ -38,8 +36,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
 
-    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
-    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
     <!--
       We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
       We need both to compose the targeting pack with reference assemblies and xml docs.
