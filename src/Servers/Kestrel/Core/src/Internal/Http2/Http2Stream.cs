@@ -517,20 +517,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        protected override void ApplicationAbort()
+        protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http2ErrorCode.INTERNAL_ERROR);
+
+        private void ApplicationAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
+            if (ResetAndAbort(abortReason, error))
+            {
+                PoisonBodyStreamsAndPipes(abortReason);
+            }
         }
 
-        internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
+        internal bool ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
             // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
             var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
             if (oldState == newState)
             {
-                return;
+                return false;
             }
 
             Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
@@ -540,6 +544,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _ = _http2Output.WriteRstStreamAsync(error);
 
             AbortCore(abortReason);
+
+            return true;
         }
 
         private void AbortCore(Exception abortReason)
@@ -548,10 +554,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
             _http2Output.Stop();
 
-            AbortRequest();
+            CancelRequestAbortedToken();
 
             // Unblock the request body.
-            PoisonRequestBodyStream(abortReason);
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();

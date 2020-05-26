@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected abstract bool TryParseRequest(ReadResult result, out bool endConnection);
 
-        private void CancelRequestAbortedToken()
+        private void CancelRequestAbortedTokenCallback()
         {
             try
             {
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void AbortRequest()
+        protected void CancelRequestAbortedToken()
         {
             var shouldScheduleCancellation = false;
 
@@ -488,11 +488,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (shouldScheduleCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedTokenCallback(), this);
             }
         }
 
-        protected void PoisonRequestBodyStream(Exception abortReason)
+        protected void PoisonBodyStreamsAndPipes(Exception abortReason)
         {
             _bodyControl?.Abort(abortReason);
         }

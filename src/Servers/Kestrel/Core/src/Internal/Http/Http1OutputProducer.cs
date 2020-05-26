@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _flusher.FlushAsync(
                 _minResponseDataRateFeature.MinDataRate,
                 bytesWritten,
-                outputAborter,
+                _outputAborter,
                 cancellationToken);
         }
 

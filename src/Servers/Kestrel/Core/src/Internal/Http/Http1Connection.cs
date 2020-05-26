@@ -101,16 +101,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void Abort(ConnectionAbortedException abortReason)
         {
             _http1Output.Abort(abortReason);
-
-            AbortRequest();
-
-            PoisonRequestBodyStream(abortReason);
+            CancelRequestAbortedToken();
         }
 
         protected override void ApplicationAbort()
         {
             Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+
+            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
+            Abort(abortReason);
+            PoisonBodyStreamsAndPipes(abortReason);
         }
 
         /// <summary>
