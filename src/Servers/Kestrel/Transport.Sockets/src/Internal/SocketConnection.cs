@@ -216,14 +216,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 input.Advance(bytesReceived);
 
+                var flushTask = input.FlushAsync();
                 if (!_waitForData)
                 {
-                    // If not waiting for data allocate another buffer before flushing,
-                    // to reduce reader/writer contention on MemoryPool.
+                    // If not waiting for data allocate another buffer immediately after flushing,
+                    // to try and aquire some before the reader takes the lock.
                     buffer = input.GetMemory(MinAllocBufferSize);
                 }
-
-                var flushTask = input.FlushAsync();
 
                 var paused = !flushTask.IsCompleted;
 
