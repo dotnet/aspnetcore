@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Builder
             RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
             var debugProxyProcess = Process.Start(processStartInfo);
+            PassThroughConsoleOutput(debugProxyProcess);
             CompleteTaskWhenServerIsReady(debugProxyProcess, tcs);
 
             new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
@@ -95,6 +96,14 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return debugProxyPath;
+        }
+
+        private static void PassThroughConsoleOutput(Process process)
+        {
+            process.OutputDataReceived += (sender, eventArgs) =>
+            {
+                Console.WriteLine(eventArgs.Data);
+            };
         }
 
         private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
