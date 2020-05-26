@@ -248,6 +248,8 @@ namespace Microsoft.AspNetCore.Http
         public static readonly string Post;
         public static readonly string Put;
         public static readonly string Trace;
+        public static bool Equals(string methodA, string methodB) { throw null; }
+        public static string GetCanonicalizedValue(string method) { throw null; }
         public static bool IsConnect(string method) { throw null; }
         public static bool IsDelete(string method) { throw null; }
         public static bool IsGet(string method) { throw null; }

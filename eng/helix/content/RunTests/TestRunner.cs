@@ -123,14 +123,16 @@ namespace RunTests
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -138,14 +140,16 @@ namespace RunTests
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false);
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
@@ -305,6 +309,11 @@ namespace RunTests
             }
 
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+            {
+                Console.WriteLine("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
+                return;
+            }
             Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("artifacts/log"))
             {

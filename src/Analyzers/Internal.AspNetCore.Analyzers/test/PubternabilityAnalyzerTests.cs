@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -127,6 +128,7 @@ namespace A
         [Theory]
         [MemberData(nameof(PrivateMemberDefinitions))]
         [MemberData(nameof(PublicMemberDefinitions))]
+        [QuarantinedTest]
         public async Task DefinitionOfPubternalCrossAssemblyProducesPUB0002(string member)
         {
             var code = TestSource.Read($@"

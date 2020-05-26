@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,40 +64,8 @@ namespace Microsoft.AspNetCore.Authorization
             // Note that the resource will be null if there is no matched endpoint
             var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: endpoint);
 
-            if (authorizeResult.Challenged)
-            {
-                if (policy.AuthenticationSchemes.Count > 0)
-                {
-                    foreach (var scheme in policy.AuthenticationSchemes)
-                    {
-                        await context.ChallengeAsync(scheme);
-                    }
-                }
-                else
-                {
-                    await context.ChallengeAsync();
-                }
-
-                return;
-            }
-            else if (authorizeResult.Forbidden)
-            {
-                if (policy.AuthenticationSchemes.Count > 0)
-                {
-                    foreach (var scheme in policy.AuthenticationSchemes)
-                    {
-                        await context.ForbidAsync(scheme);
-                    }
-                }
-                else
-                {
-                    await context.ForbidAsync();
-                }
-
-                return;
-            }
-
-            await _next(context);
+            var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
+            await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
         }
     }
 }
