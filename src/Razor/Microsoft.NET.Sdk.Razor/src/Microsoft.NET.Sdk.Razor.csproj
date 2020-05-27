@@ -59,6 +59,7 @@
       Projects="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
       Properties="TargetFramework=netstandard2.0"
       Targets="Build"
+      Condition="'$(NoBuild)' != 'true'"
       ContinueOnError="true"  />
 
     <ItemGroup>
