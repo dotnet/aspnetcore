@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 {
     internal interface IAntiforgeryTokenStore
     {
-        string GetCookieToken(HttpContext httpContext);
+        string? GetCookieToken(HttpContext httpContext);
 
         /// <summary>
         /// Gets the cookie and request tokens from the request.

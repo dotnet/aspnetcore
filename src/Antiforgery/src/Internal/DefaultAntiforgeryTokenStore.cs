@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             _options = optionsAccessor.Value;
         }
 
-        public string GetCookieToken(HttpContext httpContext)
+        public string? GetCookieToken(HttpContext httpContext)
         {
             Debug.Assert(httpContext != null);
 
