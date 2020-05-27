@@ -176,7 +176,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <summary>
-        /// Gets a resource string from the <see cref="_resourceManager"/> and returns <c>null</c> instead of
+        /// Gets a resource string from a <see cref="ResourceManager"/> and returns <c>null</c> instead of
         /// throwing exceptions if a match isn't found.
         /// </summary>
         /// <param name="name">The name of the string resource.</param>
