@@ -55,6 +55,11 @@
       Properties="PublishDir=$(SdkOutputPath)temp;TargetFramework=netcoreapp3.0"
       Targets="Publish"
       ContinueOnError="true"  />
+    <MSBuild
+      Projects="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
+      Properties="TargetFramework=netstandard2.0"
+      Targets="Build"
+      ContinueOnError="true"  />
 
     <ItemGroup>
       <RazorToolsOutput Include="$(SdkOutputPath)temp\**\*.*" />
