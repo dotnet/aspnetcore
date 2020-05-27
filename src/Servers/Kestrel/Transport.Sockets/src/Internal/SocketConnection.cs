@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal sealed class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
+        private static readonly int MinAllocNoWaitBufferSize = MinAllocBufferSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             if (!_waitForData)
             {
                 // Ensure we have some reasonable amount of buffer space to start.
-                buffer = input.GetMemory(MinAllocBufferSize);
+                buffer = input.GetMemory(MinAllocNoWaitBufferSize);
             }
 
             while (true)
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 {
                     // If not waiting for data allocate another buffer immediately after flushing,
                     // to try and aquire some before the reader takes the lock.
-                    buffer = input.GetMemory(MinAllocBufferSize);
+                    buffer = input.GetMemory(MinAllocNoWaitBufferSize);
                 }
 
                 var paused = !flushTask.IsCompleted;
