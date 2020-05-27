@@ -54,7 +54,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression
 
                     using var sourceStream = File.OpenRead(inputPath);
                     using var fileStream = new FileStream(targetCompressionPath, FileMode.Create);
-                    using var stream = new BrotliStream(fileStream, CompressionLevel.Optimal);
+
+                    var compressionLevel = CompressionLevel.Optimal;
+                    if (Environment.GetEnvironmentVariable("_BlazorWebAssemblyBuildTest_BrotliCompressionLevel_NoCompression") == "1")
+                    {
+                        compressionLevel = CompressionLevel.NoCompression;
+                    }
+                    using var stream = new BrotliStream(fileStream, compressionLevel);
 
                     sourceStream.CopyTo(stream);
                 }

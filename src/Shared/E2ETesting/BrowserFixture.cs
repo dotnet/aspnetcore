@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var browsers = await Task.WhenAll(_browsers.Values);
             foreach (var (browser, log) in browsers)
             {
-                browser.Dispose();
+                browser?.Dispose();
             }
 
             await DeleteBrowserUserProfileDirectoriesAsync();
@@ -163,6 +163,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             var attempt = 0;
             const int maxAttempts = 3;
+            Exception innerException;
             do
             {
                 try
@@ -189,13 +190,14 @@ namespace Microsoft.AspNetCore.E2ETesting
                 catch (Exception ex)
                 {
                     output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
+                    innerException = ex;
                 }
 
                 attempt++;
 
             } while (attempt < maxAttempts);
 
-            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
         }
 
         private string UserProfileDirectory(string context)
