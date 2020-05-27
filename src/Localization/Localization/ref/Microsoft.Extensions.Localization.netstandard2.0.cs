@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Localization
 }
 namespace Microsoft.Extensions.Localization.Internal
 {
-    public partial class ResourceManagerStringProvider : Microsoft.Extensions.Localization.Internal.IResourceStringProvider
+    public partial class ResourceManagerStringProvider
     {
         public ResourceManagerStringProvider(Microsoft.Extensions.Localization.IResourceNamesCache resourceCache, System.Resources.ResourceManager resourceManager, System.Reflection.Assembly assembly, string baseName) { }
         public System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing) { throw null; }
