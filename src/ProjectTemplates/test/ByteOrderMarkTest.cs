@@ -22,6 +22,7 @@ namespace Templates.Test
 
         [ConditionalTheory]
         [SkipOnHelix("missing files")]
+        [InlineData("ComponentsWebAssembly.ProjectTemplates")]
         [InlineData("Web.ProjectTemplates")]
         [InlineData("Web.Spa.ProjectTemplates")]
         public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)

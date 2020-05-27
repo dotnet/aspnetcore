@@ -8,6 +8,7 @@ Update this list when preparing for a new patch.
   <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.3" />
   <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.3" />
   <Package Id="dotnet-sql-cache" Version="3.1.4" />
+  <Package Id="Microsoft.Authentication.WebAssembly.Msal" Version="3.2.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.4" />
@@ -36,6 +37,12 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Components.Authorization" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Components.Forms" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Components.Web" Version="3.1.4" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly" Version="3.2.0" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Build" Version="3.2.0" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.0" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="3.2.0" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" Version="3.2.0" />
+  <Package Id="Microsoft.JSInterop.WebAssembly" Version="3.2.0" />
   <Package Id="Microsoft.AspNetCore.ConcurrencyLimiter" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="3.1.4" />

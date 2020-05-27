@@ -47,6 +47,9 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static IWebElement Exists(this IWebDriver driver, By finder)
             => Exists(driver, finder, default);
 
+        public static TElement Exists<TElement>(this IWebDriver driver, Func<TElement> actual, TimeSpan timeout)
+            => WaitAssertCore(driver, actual, timeout);
+
         public static void DoesNotExist(this IWebDriver driver, By finder, TimeSpan timeout = default)
             => WaitAssertCore(driver, () =>
             {
@@ -128,7 +131,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             try
             {
                 assertion();
-                throw new InvalidOperationException("The assertion succeded after the timeout.");
+                throw new InvalidOperationException("The assertion succeeded after the timeout.");
             }
             catch (Exception ex)
             {
