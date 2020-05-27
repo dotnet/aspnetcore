@@ -29,11 +29,14 @@
       IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
-    <!--
-      Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
-      several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
-    -->
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="${MicrosoftNETSdkRazorPackageVersion}" />
-  </ItemGroup>
+  <!--
+    Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
+    several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
+    Since this is a project reference, we must explicitly import the props file and also specify the output location of the SDK directory.
+  -->
+  <Import Project="${RepoRoot}src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
+
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot>${ArtifactsBinDir}Microsoft.NET.Sdk.Razor\${Configuration}\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
 </Project>

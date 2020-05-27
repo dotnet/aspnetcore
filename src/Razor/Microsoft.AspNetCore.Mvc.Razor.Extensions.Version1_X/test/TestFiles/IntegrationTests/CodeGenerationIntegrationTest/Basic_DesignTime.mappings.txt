@@ -1,0 +1,34 @@
+Source Location: (13:0,13 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|this.ToString()|
+Generated Location: (1030:26,13 [15] )
+|this.ToString()|
+
+Source Location: (54:2,5 [29] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|string.Format("{0}", "Hello")|
+Generated Location: (1166:31,6 [29] )
+|string.Format("{0}", "Hello")|
+
+Source Location: (95:4,2 [25] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+| 
+    var cls = "foo";
+|
+Generated Location: (1312:36,2 [25] )
+| 
+    var cls = "foo";
+|
+
+Source Location: (134:7,11 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|if(cls != null) { |
+Generated Location: (1460:42,11 [18] )
+|if(cls != null) { |
+
+Source Location: (153:7,30 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|cls|
+Generated Location: (1622:47,30 [3] )
+|cls|
+
+Source Location: (156:7,33 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+| }|
+Generated Location: (1773:52,33 [2] )
+| }|
+

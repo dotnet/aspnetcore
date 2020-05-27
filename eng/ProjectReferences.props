@@ -41,6 +41,13 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices" ProjectPath="$(RepoRoot)src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepoRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices" ProjectPath="$(RepoRoot)src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Language" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj"  />
+    <ProjectReferenceProvider Include="rzc" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepoRoot)src\Razor\Microsoft.CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.NET.Sdk.Razor" ProjectPath="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" ProjectPath="$(RepoRoot)src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" ProjectPath="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Testing" ProjectPath="$(RepoRoot)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj"  />

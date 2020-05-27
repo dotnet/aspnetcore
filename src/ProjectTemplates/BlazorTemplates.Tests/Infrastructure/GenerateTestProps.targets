@@ -37,6 +37,9 @@
         MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+        RepoRoot=$(RepoRoot);
+        Configuration=$(Configuration);
+        ArtifactsBinDir=$(ArtifactsBinDir);
       </PropsProperties>
     </PropertyGroup>
 
