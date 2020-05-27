@@ -53,11 +53,9 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Intended for testing purposes only.
         /// </summary>
-        public ResourceManagerStringLocalizer(
+        internal ResourceManagerStringLocalizer(
             ResourceManager resourceManager,
-#pragma warning disable PUB0001 // Pubternal type AssemblyWrapper in public API
             AssemblyWrapper resourceAssemblyWrapper,
-#pragma warning restore PUB0001 // Pubternal type AssemblyWrapper in public API
             string baseName,
             IResourceNamesCache resourceNamesCache,
             ILogger logger)
@@ -77,11 +75,9 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Intended for testing purposes only.
         /// </summary>
-        public ResourceManagerStringLocalizer(
+        internal ResourceManagerStringLocalizer(
             ResourceManager resourceManager,
-#pragma warning disable PUB0001 // Pubternal type IResourceStringProvider in public API
             IResourceStringProvider resourceStringProvider,
-#pragma warning restore PUB0001 // Pubternal type IResourceStringProvider in public API
             string baseName,
             IResourceNamesCache resourceNamesCache,
             ILogger logger)
