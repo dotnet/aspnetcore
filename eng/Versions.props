@@ -30,7 +30,6 @@
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
-    <ComponentsWebAssemblyVersionPrefix>$(ComponentsWebAssemblyMajorVersion).$(ComponentsWebAssemblyMinorVersion).$(ComponentsWebAssemblyPatchVersion)</ComponentsWebAssemblyVersionPrefix>
     <!-- TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats. -->
     <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>
     <!-- Targeting packs do not produce patch versions in servicing builds. No API changes are allowed in patches. -->
@@ -112,6 +111,7 @@
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.6.20271.10</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-preview.6.20271.10</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.0-preview.6.20271.10</SystemIOPipelinesPackageVersion>
+    <SystemNetHttpJsonPackageVersion>5.0.0-preview.6.20271.10</SystemNetHttpJsonPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0-preview.6.20271.10</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>5.0.0-preview.6.20271.10</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20271.10</SystemReflectionMetadataPackageVersion>

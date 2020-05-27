@@ -104,7 +104,7 @@
     <MSBuild
       Projects="..\..\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj"
       Targets="Publish"
-      Properties="Configuration=$(Configuration);TargetFramework=netcoreapp3.1;PublishDir=$(_BrotliToolsOutputPath)">
+      Properties="Configuration=$(Configuration);TargetFramework=$(DefaultNetCoreTargetFramework);PublishDir=$(_BrotliToolsOutputPath)">
     </MSBuild>
 
   </Target>

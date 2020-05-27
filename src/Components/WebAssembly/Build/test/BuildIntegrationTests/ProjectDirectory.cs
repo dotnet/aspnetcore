@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             static void SetupDirectoryBuildFiles(string repoRoot, string testAppsRoot, string projectDestination)
             {
-                var razorSdkDirectoryRoot = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(a => a.Key == "RazorSdkDirectoryRoot").Value;
+                var razorSdkDirectoryRoot = TestFacts.RazorSdkDirectoryRoot;
                 var beforeDirectoryPropsContent =
 $@"<Project>
   <PropertyGroup>

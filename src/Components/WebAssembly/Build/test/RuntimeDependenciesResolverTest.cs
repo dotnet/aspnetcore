@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
@@ -43,13 +44,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                  uncalled implementation code from mscorlib.dll anyway.
                  */
                 "Microsoft.AspNetCore.Components.dll",
-                "Microsoft.AspNetCore.Components.pdb",
                 "Microsoft.AspNetCore.Components.Forms.dll",
-                "Microsoft.AspNetCore.Components.Forms.pdb",
                 "Microsoft.AspNetCore.Components.Web.dll",
-                "Microsoft.AspNetCore.Components.Web.pdb",
                 "Microsoft.AspNetCore.Components.WebAssembly.dll",
-                "Microsoft.AspNetCore.Components.WebAssembly.pdb",
                 "Microsoft.Bcl.AsyncInterfaces.dll",
                 "Microsoft.Extensions.Configuration.Abstractions.dll",
                 "Microsoft.Extensions.Configuration.dll",
@@ -66,12 +63,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "Microsoft.Extensions.Primitives.dll",
                 "Microsoft.JSInterop.dll",
                 "Microsoft.JSInterop.WebAssembly.dll",
-                "Microsoft.JSInterop.WebAssembly.pdb",
                 "Mono.Security.dll",
                 "mscorlib.dll",
                 "netstandard.dll",
                 "StandaloneApp.dll",
-                "StandaloneApp.pdb",
                 "System.dll",
                 "System.Buffers.dll",
                 "System.ComponentModel.Annotations.dll",
@@ -113,6 +108,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var contents = paths
                 .Select(p => Path.GetFileName(p))
+                .Where(p => Path.GetExtension(p) != ".pdb")
                 .OrderBy(i => i, StringComparer.Ordinal)
                 .ToArray();
 

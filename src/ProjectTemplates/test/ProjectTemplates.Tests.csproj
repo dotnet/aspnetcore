@@ -32,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../ComponentsWebAssembly.ProjectTemplates/Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>

@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
