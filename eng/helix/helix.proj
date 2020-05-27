@@ -64,4 +64,7 @@
     </MSBuild>
   </Target>
 
+  <Target Name="DisableWarning" BeforeTarget="_CheckForInvalidConfigurationAndPlatform">
+    <_InvalidConfigurationWarning>false</_InvalidConfigurationWarning>
+  </Target>
 </Project>
