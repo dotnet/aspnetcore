@@ -140,8 +140,11 @@ namespace Microsoft.AspNetCore.E2ETesting
                 opts.AddArgument("--headless");
             }
 
+            opts.AddArgument("--no-sandbox");
+
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
+            opts.SetLoggingPreference(LogType.Driver, LogLevel.All);
 
             // On Windows/Linux, we don't need to set opts.BinaryLocation
             // But for Travis Mac builds we do
