@@ -60,11 +60,3 @@ namespace Microsoft.Extensions.Localization
         public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
-namespace Microsoft.Extensions.Localization.Internal
-{
-    public partial class ResourceManagerStringProvider
-    {
-        public ResourceManagerStringProvider(Microsoft.Extensions.Localization.IResourceNamesCache resourceCache, System.Resources.ResourceManager resourceManager, System.Reflection.Assembly assembly, string baseName) { }
-        public System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing) { throw null; }
-    }
-}
