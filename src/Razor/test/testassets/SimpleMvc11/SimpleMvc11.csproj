@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    This project references a shipped version of MVC and should not reference local builds of
+    the CodeGeneration targets, rzc, or any of the test shims.
+  -->
+
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Test Placeholder -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.8">
+      <!-- Avoid exporting types from real MVC that will conflict with the test shim -->
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
