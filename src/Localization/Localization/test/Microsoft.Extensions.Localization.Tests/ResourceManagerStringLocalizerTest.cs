@@ -249,9 +249,9 @@ namespace Microsoft.Extensions.Localization
                 _assemblyWrapper = assemblyWrapper;
             }
 
-            public override string GetString(string name, CultureInfo culture) => null;
+            public override string? GetString(string name, CultureInfo? culture) => null;
 
-            public override ResourceSet GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents)
+            public override ResourceSet? GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents)
             {
                 var resourceStream = _assemblyWrapper.GetManifestResourceStream(BaseName);
 
@@ -287,7 +287,7 @@ namespace Microsoft.Extensions.Localization
 
             public int ManifestResourceStreamCallCount { get; private set; }
 
-            public override Stream GetManifestResourceStream(string name)
+            public override Stream? GetManifestResourceStream(string name)
             {
                 ManifestResourceStreamCallCount++;
 
