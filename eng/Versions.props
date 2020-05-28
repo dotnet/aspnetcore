@@ -130,13 +130,13 @@
     <!-- Packages from dotnet/blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>5.0.0-preview.6.20276.2</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.6.20276.2</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>5.0.0-preview.6.20277.5</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-preview.6.20277.5</MicrosoftEntityFrameworkCorePackageVersion>
   </PropertyGroup>
   <!--
 
