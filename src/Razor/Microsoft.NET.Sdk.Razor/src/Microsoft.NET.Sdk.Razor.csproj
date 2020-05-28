@@ -68,7 +68,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RazorToolsOutput)" DestinationFolder="$(SdkOutputPath)tools\netcoreapp3.0\" SkipUnchangedFiles="true" ContinueOnError="true" />
-    <Copy SourceFiles="@(MvcRazorExtensionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true" ContinueOnError="true" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'">
+    <Copy SourceFiles="@(MvcRazorExtensionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
