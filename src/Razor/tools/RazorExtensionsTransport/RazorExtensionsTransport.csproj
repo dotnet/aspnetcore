@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Transport package for Mvc.Razor.Extensions pdbs. For internal use only.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" />
+
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.pdb" PackagePath="pdb" />
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.pdb" PackagePath="pdb" />
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.pdb" PackagePath="pdb" />
+  </ItemGroup>
+
+</Project>
