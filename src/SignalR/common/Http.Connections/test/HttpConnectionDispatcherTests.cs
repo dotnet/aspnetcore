@@ -2385,62 +2385,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        public class CustomHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
-        {
-            public CancellationToken RequestAborted { get; set; }
-
-            private CancellationTokenSource _cts;
-            public CustomHttpRequestLifetimeFeature()
-            {
-                _cts = new CancellationTokenSource();
-                RequestAborted = _cts.Token;
-            }
-
-            public void Abort()
-            {
-                _cts.Cancel();
-            }
-        }
-
-        [Fact]
-        public async Task ApplicationCompletedAbortsHttpContext()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.WebSockets;
-
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-
-                var context = MakeRequest("/foo", connection);
-                var lifetimeFeature = new CustomHttpRequestLifetimeFeature();
-                context.Features.Set<IHttpRequestLifetimeFeature>(lifetimeFeature);
-                SetTransport(context, HttpTransportType.WebSockets);
-
-                var services = new ServiceCollection();
-                services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
-                var builder = new ConnectionBuilder(services.BuildServiceProvider());
-                builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
-
-                _ = dispatcher.ExecuteAsync(context, options, app);
-
-                var websocket = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
-                await websocket.Accepted.OrTimeout();
-
-                var tcs = new TaskCompletionSource<object>();
-                connection.ConnectionClosed.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
-
-                tcs = new TaskCompletionSource<object>();
-                lifetimeFeature.RequestAborted.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
-            }
-        }
-
         private static async Task CheckTransportSupported(HttpTransportType supportedTransports, HttpTransportType transportType, int status, ILoggerFactory loggerFactory)
         {
             var manager = CreateConnectionManager(loggerFactory);

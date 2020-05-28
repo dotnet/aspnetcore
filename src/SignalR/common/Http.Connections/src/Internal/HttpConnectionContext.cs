@@ -181,7 +181,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public override void Abort()
         {
             ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
-            HttpContext?.Abort();
         }
 
         public void OnHeartbeat(Action<object> action, object state)
