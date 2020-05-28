@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
   </PropertyGroup>
 
 </Project>
