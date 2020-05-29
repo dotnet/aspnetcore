@@ -127,6 +127,7 @@
         -->
         <DotNetProjects Include="
                           $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;

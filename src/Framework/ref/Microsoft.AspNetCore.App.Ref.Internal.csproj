@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <PackageId>$(TargetingPackName).Internal</PackageId>
+    <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
