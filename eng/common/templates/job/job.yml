@@ -26,7 +26,7 @@ parameters:
   enablePublishUsingPipelines: false
   useBuildManifest: false
   mergeTestResults: false
-  testRunTitle: $(AgentOsName)-$(BuildConfiguration)-xunit
+  testRunTitle: ''
   name: ''
   preSteps: []
   runAsPublic: false
@@ -197,7 +197,7 @@ jobs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
-        testRunTitle: ${{ parameters.testRunTitle }}
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()
