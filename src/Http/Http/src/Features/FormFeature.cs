@@ -160,6 +160,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 else if (HasMultipartFormContentType(contentType))
                 {
                     var formAccumulator = new KeyValueAccumulator();
+                    var contentTypesAccumulator = new KeyValueAccumulator();
 
                     var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
                     var multipartReader = new MultipartReader(boundary, _request.Body)
@@ -176,6 +177,8 @@ namespace Microsoft.AspNetCore.Http.Features
                         {
                             throw new InvalidDataException("Form section has invalid Content-Disposition value: " + section.ContentDisposition);
                         }
+
+                        contentTypesAccumulator.Append(contentDisposition.Name.Value, section.ContentType);
 
                         if (contentDisposition.IsFileDisposition())
                         {
@@ -243,7 +246,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
                     if (formAccumulator.HasValues)
                     {
-                        formFields = new FormCollection(formAccumulator.GetResults(), files);
+                        formFields = new FormCollection(formAccumulator.GetResults(), files, contentTypesAccumulator.GetResults());
                     }
                 }
             }

@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Http
     {
         public static readonly FormCollection Empty = new FormCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
@@ -24,6 +23,7 @@ namespace Microsoft.AspNetCore.Http
         private static IFormFileCollection EmptyFiles = new FormFileCollection();
 
         private IFormFileCollection _files;
+        private readonly Dictionary<string, StringValues> _contentTypes;
 
         private FormCollection()
         {
@@ -31,10 +31,16 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files = null)
+            : this(fields, files, contentTypes: null)
+        {
+        }
+
+        public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files, Dictionary<string, StringValues> contentTypes)
         {
             // can be null
             Store = fields;
             _files = files;
+            _contentTypes = contentTypes;
         }
 
         public IFormFileCollection Files
@@ -46,7 +52,7 @@ namespace Microsoft.AspNetCore.Http
             private set { _files = value; }
         }
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues> Store { get; }
 
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.
@@ -168,6 +174,12 @@ namespace Microsoft.AspNetCore.Http
             }
             // Boxed Enumerator
             return Store.GetEnumerator();
+        }
+
+        public bool TryGetContentType(string sectionName, out StringValues contentType)
+        {
+            contentType = default;
+            return _contentTypes != null && _contentTypes.TryGetValue(sectionName, out contentType);
         }
 
         public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

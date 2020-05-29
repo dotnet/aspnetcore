@@ -90,5 +90,13 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns>The files included with the request.</returns>
         IFormFileCollection Files { get; }
+
+#if NETCOREAPP
+        bool TryGetContentType(string sectionName, out StringValues contentType)
+        {
+            contentType = default;
+            return false;
+        }
+#endif
     }
 }

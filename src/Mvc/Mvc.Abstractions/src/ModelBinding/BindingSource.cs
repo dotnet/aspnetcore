@@ -24,6 +24,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             isFromRequest: true);
 
         /// <summary>
+        /// A <see cref="BindingSource"/> for a multipart section.
+        /// </summary>
+        public static readonly BindingSource MultipartSection = new BindingSource(
+            "MultipartSection",
+            nameof(MultipartSection),
+            isGreedy: true,
+            isFromRequest: true);
+
+        /// <summary>
         /// A <see cref="BindingSource"/> for a custom model binder (unknown data source).
         /// </summary>
         public static readonly BindingSource Custom = new BindingSource(
