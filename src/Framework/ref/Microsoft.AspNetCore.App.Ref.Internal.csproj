@@ -8,6 +8,7 @@
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName).Internal</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+  </PropertyGroup>
 
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
