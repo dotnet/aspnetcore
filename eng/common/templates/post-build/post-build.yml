@@ -1,4 +1,13 @@
 parameters:
+  # When set to true the publishing templates from the repo will be used
+  # otherwise Darc add-build-to-channel will be used to trigger the promotion pipeline
+  inline: true
+
+  # Only used if inline==false. When set to true will stall the current build until
+  # the Promotion Pipeline build finishes. Otherwise, the current build continue 
+  # execution concurrently with the promotion build.
+  waitPublishingFinish: true
+
   enableSourceLinkValidation: false
   enableSigningValidation: true
   enableSymbolValidation: false
@@ -37,402 +46,436 @@ parameters:
   NETCoreExperimentalChannelId: 562
   NetEngServicesIntChannelId: 678
   NetEngServicesProdChannelId: 679
-  Net5Preview3ChannelId: 739
-  Net5Preview4ChannelId: 856
   Net5Preview5ChannelId: 857
+  Net5Preview6ChannelId: 1013
+  Net5Preview7ChannelId: 1014
   NetCoreSDK313xxChannelId: 759
   NetCoreSDK313xxInternalChannelId: 760
   NetCoreSDK314xxChannelId: 921
   NetCoreSDK314xxInternalChannelId: 922
   
 stages:
-- stage: Validate
-  dependsOn: ${{ parameters.validateDependsOn }}
-  displayName: Validate
-  variables:
-    - template: common-variables.yml
-  jobs:
-  - template: setup-maestro-vars.yml
-
-  - job:
-    displayName: Post-build Checks
-    dependsOn: setupMaestroVars
-    variables:
-      - name: TargetChannels
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'] ]
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - task: PowerShell@2
-        displayName: Maestro Channels Consistency
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
-          arguments: -PromoteToChannels "$(TargetChannels)"
-            -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview3ChannelId}},${{parameters.Net5Preview4ChannelId}},${{parameters.Net5Preview5ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}}
-
-  - job:
-    displayName: NuGet Validation
-    dependsOn: setupMaestroVars
-    condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
-    pool:
-      vmImage: 'windows-2019'
-    variables:
-      - name: AzDOProjectName
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
-      - name: AzDOPipelineId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
-      - name: AzDOBuildId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
-    steps:
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Package Artifacts
-        inputs:
-          buildType: specific
-          buildVersionToDownload: specific
-          project: $(AzDOProjectName)
-          pipeline: $(AzDOPipelineId)
-          buildId: $(AzDOBuildId)
-          artifactName: PackageArtifacts
-
-      - task: PowerShell@2
-        displayName: Validate
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-          arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
-            -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
-
-  - job:
-    displayName: Signing Validation
-    dependsOn: setupMaestroVars
-    condition: eq( ${{ parameters.enableSigningValidation }}, 'true')
+- ${{ if ne(parameters.inline, 'true') }}:
+  - stage: publish_using_darc
+    dependsOn: ${{ parameters.validateDependsOn }}
+    displayName: Publish using Darc
     variables:
       - template: common-variables.yml
-      - name: AzDOProjectName
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
-      - name: AzDOPipelineId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
-      - name: AzDOBuildId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - ${{ if eq(parameters.useBuildManifest, true) }}:
+    jobs:
+    - template: setup-maestro-vars.yml
+
+    - job:
+      displayName: Publish Using Darc
+      dependsOn: setupMaestroVars
+      variables:
+        - name: BARBuildId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: PowerShell@2
+          displayName: Publish Using Darc
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+            arguments: -BuildId $(BARBuildId) 
+              -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
+              -MaestroToken '$(MaestroApiAccessToken)'
+              -WaitPublishingFinish ${{ parameters.waitPublishingFinish }}
+              -EnableSourceLinkValidation ${{ parameters.enableSourceLinkValidation }}
+              -EnableSigningValidation ${{ parameters.enableSourceLinkValidation }}
+              -EnableNugetValidation ${{ parameters.enableSourceLinkValidation }}
+              -PublishInstallersAndChecksums ${{ parameters.publishInstallersAndChecksums }}
+              -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
+              -SigningValidationAdditionalParameters '${{ parameters.signingValidationAdditionalParameters }}'
+
+- ${{ if eq(parameters.inline, 'true') }}:
+  - stage: Validate
+    dependsOn: ${{ parameters.validateDependsOn }}
+    displayName: Validate Build Assets
+    variables:
+      - template: common-variables.yml
+    jobs:
+    - template: setup-maestro-vars.yml
+
+    - job:
+      displayName: Post-build Checks
+      dependsOn: setupMaestroVars
+      variables:
+        - name: TargetChannels
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'] ]
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: PowerShell@2
+          displayName: Maestro Channels Consistency
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
+            arguments: -PromoteToChannels "$(TargetChannels)"
+              -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview5ChannelId}},${{parameters.Net5Preview6ChannelId}},${{parameters.Net5Preview7ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}}
+
+    - job:
+      displayName: NuGet Validation
+      dependsOn: setupMaestroVars
+      condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
+      pool:
+        vmImage: 'windows-2019'
+      variables:
+        - name: AzDOProjectName
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+        - name: AzDOPipelineId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+        - name: AzDOBuildId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+      steps:
         - task: DownloadBuildArtifacts@0
-          displayName: Download build manifest
+          displayName: Download Package Artifacts
           inputs:
             buildType: specific
             buildVersionToDownload: specific
             project: $(AzDOProjectName)
             pipeline: $(AzDOPipelineId)
             buildId: $(AzDOBuildId)
-            artifactName: BuildManifests
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Package Artifacts
-        inputs:
-          buildType: specific
-          buildVersionToDownload: specific
-          project: $(AzDOProjectName)
-          pipeline: $(AzDOPipelineId)
-          buildId: $(AzDOBuildId)
-          artifactName: PackageArtifacts
+            artifactName: PackageArtifacts
 
-      # This is necessary whenever we want to publish/restore to an AzDO private feed
-      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
-      # otherwise it'll complain about accessing a private feed.
-      - task: NuGetAuthenticate@0
-        displayName: 'Authenticate to AzDO Feeds'
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
 
-      - task: PowerShell@2
-        displayName: Enable cross-org publishing
-        inputs:
-          filePath: eng\common\enable-cross-org-publishing.ps1
-          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
-
-      # Signing validation will optionally work with the buildmanifest file which is downloaded from
-      # Azure DevOps above.
-      - task: PowerShell@2
-        displayName: Validate
-        inputs:
-          filePath: eng\common\sdk-task.ps1
-          arguments: -task SigningValidation -restore -msbuildEngine vs
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
-            /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-            ${{ parameters.signingValidationAdditionalParameters }}
-
-      - template: ../steps/publish-logs.yml
-        parameters:
-          StageLabel: 'Validation'
-          JobLabel: 'Signing'
-
-  - job:
-    displayName: SourceLink Validation
-    dependsOn: setupMaestroVars
-    condition: eq( ${{ parameters.enableSourceLinkValidation }}, 'true')
-    variables:
-      - template: common-variables.yml
-      - name: AzDOProjectName
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
-      - name: AzDOPipelineId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
-      - name: AzDOBuildId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
-        inputs:
-          buildType: specific
-          buildVersionToDownload: specific
-          project: $(AzDOProjectName)
-          pipeline: $(AzDOPipelineId)
-          buildId: $(AzDOBuildId)
-          artifactName: BlobArtifacts
-
-      - task: PowerShell@2
-        displayName: Validate
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
-          arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
-            -ExtractPath $(Agent.BuildDirectory)/Extract/ 
-            -GHRepoName $(Build.Repository.Name) 
-            -GHCommit $(Build.SourceVersion)
-            -SourcelinkCliVersion $(SourceLinkCLIVersion)
-        continueOnError: true
-
-  - template: /eng/common/templates/job/execute-sdl.yml
-    parameters:
-      enable: ${{ parameters.SDLValidationParameters.enable }}
+    - job:
+      displayName: Signing Validation
       dependsOn: setupMaestroVars
-      additionalParameters: ${{ parameters.SDLValidationParameters.params }}
-      continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
-      artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
-      downloadArtifacts: ${{ parameters.SDLValidationParameters.downloadArtifacts }}
+      condition: eq( ${{ parameters.enableSigningValidation }}, 'true')
+      variables:
+        - template: common-variables.yml
+        - name: AzDOProjectName
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+        - name: AzDOPipelineId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+        - name: AzDOBuildId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - ${{ if eq(parameters.useBuildManifest, true) }}:
+          - task: DownloadBuildArtifacts@0
+            displayName: Download build manifest
+            inputs:
+              buildType: specific
+              buildVersionToDownload: specific
+              project: $(AzDOProjectName)
+              pipeline: $(AzDOPipelineId)
+              buildId: $(AzDOBuildId)
+              artifactName: BuildManifests
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: PackageArtifacts
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NetCore_Dev5_Publish'
-    channelName: '.NET 5 Dev'
-    akaMSChannelName: 'net5/dev'
-    channelId: ${{ parameters.NetDev5ChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+        # This is necessary whenever we want to publish/restore to an AzDO private feed
+        # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+        # otherwise it'll complain about accessing a private feed.
+        - task: NuGetAuthenticate@0
+          displayName: 'Authenticate to AzDO Feeds'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview3_Publish'
-    channelName: '.NET 5 Preview 3'
-    akaMSChannelName: 'net5/preview3'
-    channelId: ${{ parameters.Net5Preview3ChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+        - task: PowerShell@2
+          displayName: Enable cross-org publishing
+          inputs:
+            filePath: eng\common\enable-cross-org-publishing.ps1
+            arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview4_Publish'
-    channelName: '.NET 5 Preview 4'
-    akaMSChannelName: 'net5/preview4'
-    channelId: ${{ parameters.Net5Preview4ChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+        # Signing validation will optionally work with the buildmanifest file which is downloaded from
+        # Azure DevOps above.
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: eng\common\sdk-task.ps1
+            arguments: -task SigningValidation -restore -msbuildEngine vs
+              /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+              /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
+              ${{ parameters.signingValidationAdditionalParameters }}
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net5_Preview5_Publish'
-    channelName: '.NET 5 Preview 5'
-    akaMSChannelName: 'net5/preview5'
-    channelId: ${{ parameters.Net5Preview5ChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+        - template: ../steps/publish-logs.yml
+          parameters:
+            StageLabel: 'Validation'
+            JobLabel: 'Signing'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net_Eng_Latest_Publish'
-    channelName: '.NET Eng - Latest'
-    akaMSChannelName: 'eng/daily'
-    channelId: ${{ parameters.NetEngLatestChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+    - job:
+      displayName: SourceLink Validation
+      dependsOn: setupMaestroVars
+      condition: eq( ${{ parameters.enableSourceLinkValidation }}, 'true')
+      variables:
+        - template: common-variables.yml
+        - name: AzDOProjectName
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+        - name: AzDOPipelineId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+        - name: AzDOBuildId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Blob Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: BlobArtifacts
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net_Eng_Validation_Publish'
-    channelName: '.NET Eng - Validation'
-    akaMSChannelName: 'eng/validation'
-    channelId: ${{ parameters.NetEngValidationChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
+              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
+              -GHRepoName $(Build.Repository.Name) 
+              -GHCommit $(Build.SourceVersion)
+              -SourcelinkCliVersion $(SourceLinkCLIVersion)
+          continueOnError: true
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'General_Testing_Publish'
-    channelName: 'General Testing'
-    akaMSChannelName: 'generaltesting'
-    channelId: ${{ parameters.GeneralTestingChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing-symbols/nuget/v3/index.json'
+    - template: /eng/common/templates/job/execute-sdl.yml
+      parameters:
+        enable: ${{ parameters.SDLValidationParameters.enable }}
+        dependsOn: setupMaestroVars
+        additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
+        artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
+        downloadArtifacts: ${{ parameters.SDLValidationParameters.downloadArtifacts }}
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_Tooling_Dev_Publishing'
-    channelName: '.NET Core Tooling Dev'
-    channelId: ${{ parameters.NETCoreToolingDevChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NetCore_Dev5_Publish'
+      channelName: '.NET 5 Dev'
+      akaMSChannelName: 'net5/dev'
+      channelId: ${{ parameters.NetDev5ChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_Tooling_Release_Publishing'
-    channelName: '.NET Core Tooling Release'
-    channelId: ${{ parameters.NETCoreToolingReleaseChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net5_Preview5_Publish'
+      channelName: '.NET 5 Preview 5'
+      akaMSChannelName: 'net5/preview5'
+      channelId: ${{ parameters.Net5Preview5ChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NET_Internal_Tooling_Publishing'
-    channelName: '.NET Internal Tooling'
-    channelId: ${{ parameters.NETInternalToolingChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net5_Preview6_Publish'
+      channelName: '.NET 5 Preview 6'
+      akaMSChannelName: 'net5/preview6'
+      channelId: ${{ parameters.Net5Preview6ChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_Experimental_Publishing'
-    channelName: '.NET Core Experimental'
-    channelId: ${{ parameters.NETCoreExperimentalChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net5_Preview7_Publish'
+      channelName: '.NET 5 Preview 7'
+      akaMSChannelName: 'net5/preview7'
+      channelId: ${{ parameters.Net5Preview7ChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net_Eng_Services_Int_Publish'
-    channelName: '.NET Eng Services - Int'
-    channelId: ${{ parameters.NetEngServicesIntChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net_Eng_Latest_Publish'
+      channelName: '.NET Eng - Latest'
+      akaMSChannelName: 'eng/daily'
+      channelId: ${{ parameters.NetEngLatestChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'Net_Eng_Services_Prod_Publish'
-    channelName: '.NET Eng Services - Prod'
-    channelId: ${{ parameters.NetEngServicesProdChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net_Eng_Validation_Publish'
+      channelName: '.NET Eng - Validation'
+      akaMSChannelName: 'eng/validation'
+      channelId: ${{ parameters.NetEngValidationChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_SDK_314xx_Publishing'
-    channelName: '.NET Core SDK 3.1.4xx'
-    channelId: ${{ parameters.NetCoreSDK314xxChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'General_Testing_Publish'
+      channelName: 'General Testing'
+      akaMSChannelName: 'generaltesting'
+      channelId: ${{ parameters.GeneralTestingChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_SDK_314xx_Internal_Publishing'
-    channelName: '.NET Core SDK 3.1.4xx Internal'
-    channelId: ${{ parameters.NetCoreSDK314xxInternalChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_Tooling_Dev_Publishing'
+      channelName: '.NET Core Tooling Dev'
+      channelId: ${{ parameters.NETCoreToolingDevChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_SDK_313xx_Publishing'
-    channelName: '.NET Core SDK 3.1.3xx'
-    channelId: ${{ parameters.NetCoreSDK313xxChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_Tooling_Release_Publishing'
+      channelName: '.NET Core Tooling Release'
+      channelId: ${{ parameters.NETCoreToolingReleaseChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
 
-- template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
-  parameters:
-    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-    dependsOn: ${{ parameters.publishDependsOn }}
-    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-    stageName: 'NETCore_SDK_313xx_Internal_Publishing'
-    channelName: '.NET Core SDK 3.1.3xx Internal'
-    channelId: ${{ parameters.NetCoreSDK313xxInternalChannelId }}
-    transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
-    shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
-    symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
+  - template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NET_Internal_Tooling_Publishing'
+      channelName: '.NET Internal Tooling'
+      channelId: ${{ parameters.NETInternalToolingChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_Experimental_Publishing'
+      channelName: '.NET Core Experimental'
+      channelId: ${{ parameters.NETCoreExperimentalChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net_Eng_Services_Int_Publish'
+      channelName: '.NET Eng Services - Int'
+      channelId: ${{ parameters.NetEngServicesIntChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'Net_Eng_Services_Prod_Publish'
+      channelName: '.NET Eng Services - Prod'
+      channelId: ${{ parameters.NetEngServicesProdChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_SDK_314xx_Publishing'
+      channelName: '.NET Core SDK 3.1.4xx'
+      channelId: ${{ parameters.NetCoreSDK314xxChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_SDK_314xx_Internal_Publishing'
+      channelName: '.NET Core SDK 3.1.4xx Internal'
+      channelId: ${{ parameters.NetCoreSDK314xxInternalChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_SDK_313xx_Publishing'
+      channelName: '.NET Core SDK 3.1.3xx'
+      channelId: ${{ parameters.NetCoreSDK313xxChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
+    parameters:
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'NETCore_SDK_313xx_Internal_Publishing'
+      channelName: '.NET Core SDK 3.1.3xx Internal'
+      channelId: ${{ parameters.NetCoreSDK313xxInternalChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-symbols/nuget/v3/index.json' 
