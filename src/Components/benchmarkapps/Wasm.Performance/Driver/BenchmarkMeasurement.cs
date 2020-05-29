@@ -9,6 +9,6 @@ namespace Wasm.Performance.Driver
     {
         public DateTime Timestamp { get; internal set; }
         public string Name { get; internal set; }
-        public double Value { get; internal set; }
+        public object Value { get; internal set; }
     }
 }

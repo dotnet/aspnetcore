@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.2.0-preview1.20067.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="3.2.0">
       <Uri>https://github.com/dotnet/blazor</Uri>
-      <Sha>dd7fb4d3931d556458f62642c2edfc59f6295bfb</Sha>
+      <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-preview.6.20278.10">
       <Uri>https://github.com/dotnet/efcore</Uri>
@@ -204,6 +204,10 @@
     <Dependency Name="System.IO.Pipelines" Version="5.0.0-preview.6.20271.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c44dc40b763b7c74012622a0a6120cd8ffa35ce4</Sha>
+    </Dependency>
+    <Dependency Name="System.Net.Http.Json" Version="5.0.0-preview.6.20271.10">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>66409e392d64ed96e5d3a5fda712d9baf51196ed</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.WinHttpHandler" Version="5.0.0-preview.6.20271.10">
       <Uri>https://github.com/dotnet/runtime</Uri>

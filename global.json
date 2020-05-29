@@ -11,6 +11,12 @@
       ],
       "dotnet/x86": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ],
+      "aspnetcore/x64": [
+        "3.1.0"
+      ],
+      "aspnetcore/x86": [
+        "3.1.0"
       ]
     },
     "Git": "2.22.0",

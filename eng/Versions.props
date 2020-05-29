@@ -111,6 +111,7 @@
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.6.20271.10</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-preview.6.20271.10</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.0-preview.6.20271.10</SystemIOPipelinesPackageVersion>
+    <SystemNetHttpJsonPackageVersion>5.0.0-preview.6.20271.10</SystemNetHttpJsonPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0-preview.6.20271.10</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>5.0.0-preview.6.20271.10</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20271.10</SystemReflectionMetadataPackageVersion>
@@ -128,7 +129,7 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/blazor -->
-    <MicrosoftAspNetCoreBlazorMonoPackageVersion>3.2.0-preview1.20067.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefPackageVersion>5.0.0-preview.6.20278.10</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-preview.6.20278.10</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>

@@ -62,13 +62,15 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" ProjectPath="$(RepoRoot)src\SignalR\common\Protocols.NewtonsoftJson\src\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepoRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepoRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepoRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.HttpClient" ProjectPath="$(RepoRoot)src\Components\Blazor\Http\src\Microsoft.AspNetCore.Blazor.HttpClient.csproj"  />
-    <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\Components\Blazor\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepoRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" ProjectPath="$(RepoRoot)src\Components\Blazor\Validation\src\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj"  />
     <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Build" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Build\src\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj"  />
+    <ProjectReferenceProvider Include="blazor-brotli" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Compression\src\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj"  />
+    <ProjectReferenceProvider Include="System.Net.Http.WebAssemblyHttpHandler" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.Testing.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepoRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" RefProjectPath="$(RepoRoot)src\DataProtection\Abstractions\ref\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />

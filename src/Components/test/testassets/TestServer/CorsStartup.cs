@@ -45,8 +45,8 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
+                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
                 app.UseRouting();
 
@@ -55,7 +55,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                    endpoints.MapFallbackToFile("index.html");
                 });
             });
         }

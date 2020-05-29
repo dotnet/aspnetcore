@@ -1,0 +1,43 @@
+@page "/authentication/{action}"
+@inject StateService State
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<RemoteAuthenticatorViewCore TAuthenticationState="RemoteAppState"
+                             AuthenticationState="AppState"
+                             OnLogInSucceeded="CompleteLogin"
+                             Action="@Action" />
+
+@code{
+    [Parameter] public string Action { get; set; }
+
+    public RemoteAppState AppState { get; set; } = new RemoteAppState();
+
+    protected override void OnInitialized()
+    {
+        if (RemoteAuthenticationActions.IsAction(RemoteAuthenticationActions.LogIn, Action))
+        {
+            AppState.State = State.GetCurrentState();
+        }
+
+        base.OnInitialized();
+    }
+
+    public async Task CompleteLogin(RemoteAppState remoteState)
+    {
+        if (RemoteAuthenticationActions.IsAction(RemoteAuthenticationActions.LogInCallback, Action))
+        {
+            State.RestoreCurrentState(remoteState.State);
+        }
+
+        var userState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = userState.User;
+
+        if (user.HasClaim("NewUser", "true"))
+        {
+            var originalReturnUrl = remoteState.ReturnUrl;
+            var preferencesUrl = Navigation.ToAbsoluteUri("preferences");
+            remoteState.ReturnUrl = $"{preferencesUrl}?returnUrl={Uri.EscapeDataString(originalReturnUrl)}";
+        }
+    }
+}
