@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate
 {
@@ -15,21 +15,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     public class CertificateValidationCache : ICertificateValidationCache
     {
         private MemoryCache _cache;
+        private CertificateValidationCacheOptions _options;
 
-        public CertificateValidationCache()
+        public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options)
         {
-             _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = CacheSize });
+            _options = options.Value;
+            _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize });
         }
-
-        /// <summary>
-        /// The expiration that should be used for entries in the MemoryCache, defaults to 2 minutes.
-        /// </summary>
-        public TimeSpan CacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// How many validated certificate results to store in the cache, defaults to 1024.
-        /// </summary>
-        public int CacheSize { get; set; } = 1024;
 
         /// <summary>
         /// Get the <see cref="AuthenticateResult"/> for the connection and certificate.
@@ -47,10 +39,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <param name="certificate">The certificate.</param>
         /// <param name="result">the <see cref="AuthenticateResult"/></param>
         public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
-            => _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(CacheEntryExpiration));
+            => _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(_options.CacheEntryExpiration));
 
         private string ComputeKey(X509Certificate2 certificate)
             => $"{certificate.GetCertHashString(HashAlgorithmName.SHA256)}";
     }
-
 }

@@ -652,9 +652,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 })
             .ConfigureServices(services =>
             {
+                AuthenticationBuilder authBuilder;
                 if (configureOptions != null)
                 {
-                    services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
+                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
                         options.CustomTrustStore = configureOptions.CustomTrustStore;
                         options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
@@ -668,11 +669,11 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 }
                 else
                 {
-                    services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
                 }
                 if (useCache)
                 {
-                    services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
+                    authBuilder.AddCertificateCache();
                 }
 
                 if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
