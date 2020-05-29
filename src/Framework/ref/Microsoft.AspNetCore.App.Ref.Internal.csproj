@@ -10,5 +10,5 @@
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
   </PropertyGroup>
 
-    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
