@@ -146,9 +146,8 @@ param(
 
     [switch]$NoBuildRepoTasks,
 
-    # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
-    # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
-    # MSBuild for .NET Core
+    # Disable pre-build of C++ code in x64 (default) and x86 builds. Affects -All and -Projects handling and causes
+    # -BuildInstallers and -BuildNative to be ignored.
     [switch]$ForceCoreMsbuild,
 
     # Diagnostics
@@ -187,10 +186,6 @@ if ($DumpProcesses -or $CI) {
 }
 
 # Project selection
-if ($All) {
-    $MSBuildArguments += '/p:BuildAllProjects=true'
-}
-
 if ($Projects) {
     if (![System.IO.Path]::IsPathRooted($Projects))
     {
@@ -227,19 +222,7 @@ if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
     }
 }
 
-if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
-if ($BuildManaged) { $MSBuildArguments += "/p:BuildManaged=true" }
-if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
-if ($BuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=true" }
-if ($BuildJava) { $MSBuildArguments += "/p:BuildJava=true" }
-
 if ($NoBuildDeps) { $MSBuildArguments += "/p:BuildProjectReferences=false" }
-
-if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false" }
-if ($NoBuildManaged) { $MSBuildArguments += "/p:BuildManaged=false" }
-if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false" }
-if ($NoBuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=false" }
-if ($NoBuildJava) { $MSBuildArguments += "/p:BuildJava=false" }
 
 $RunBuild = if ($NoBuild) { $false } else { $true }
 
@@ -275,6 +258,30 @@ if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
     $ToolsetBuildArguments += $runtimeFeedArg
     $ToolsetBuildArguments += $runtimeFeedKeyArg
 }
+
+# Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
+[string[]]$dotnetBuildArguments = $MSBuildArguments
+if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true'; $BuildNative = $true }
+
+if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
+if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
+if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false"; $BuildNative = $false }
+if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true"}
+
+if ($NoBuildJava) { $dotnetBuildArguments += "/p:BuildJava=false"; $BuildJava = $false }
+if ($BuildJava) { $dotnetBuildArguments += "/p:BuildJava=true" }
+if ($NoBuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=false"; $BuildManaged = $false }
+if ($BuildManaged) { $dotnetBuildArguments += "/p:BuildManaged=true" }
+if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=false"; $BuildNodeJS = $false }
+if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
+
+# Don't bother with two builds if just one will build everything. Ignore super-weird cases like
+# "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS".
+$ForceCoreMsbuild = $ForceCoreMsbuild -or -not ($BuildInstallers -or $BuildNative) -or `
+    $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase)
+$performDotnetBuild = $ForceCoreMsbuild -or $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
+    ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
+    ($Projects -and -not ($BuildInstallers -or $BuildNative))
 
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
@@ -343,9 +350,8 @@ $env:MSBUILDDISABLENODEREUSE=1
 # Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
 $warnAsError = $false
 
-if ($ForceCoreMsbuild) {
-    $msbuildEngine = 'dotnet'
-}
+# Use `dotnet msbuild` by default
+$msbuildEngine = 'dotnet'
 
 # Ensure passing neither -bl nor -nobl on CI avoids errors in tools.ps1. This is needed because both parameters are
 # $false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
@@ -367,7 +373,16 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 if ($BinaryLog) {
     $bl = GetMSBuildBinaryLogCommandLineArgument($MSBuildArguments)
     if (-not $bl) {
-        $MSBuildArguments += "/bl:" + (Join-Path $LogDir "Build.binlog")
+        $dotnetBuildArguments += "/bl:" + (Join-Path $LogDir "Build.binlog")
+        $MSBuildArguments += "/bl:" + (Join-Path $LogDir "Build.native.binlog")
+        $ToolsetBuildArguments += "/bl:" + (Join-Path $LogDir "Build.repotasks.binlog")
+    } else {
+        # Use a different binary log path when running desktop msbuild if doing both builds.
+        if (-not $ForceCoreMsbuild -and $performDotnetBuild) {
+            $MSBuildArguments += [System.IO.Path]::ChangeExtension($bl, "native.binlog")
+        }
+
+        $ToolsetBuildArguments += [System.IO.Path]::ChangeExtension($bl, "repotasks.binlog")
     }
 } elseif ($CI) {
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
@@ -394,6 +409,8 @@ try {
     }
 
     if (-not $NoBuildRepoTasks) {
+        Write-Host
+
         MSBuild $toolsetBuildProj `
             /p:RepoRoot=$RepoRoot `
             /p:Projects=$EngRoot\tools\RepoTasks\RepoTasks.csproj `
@@ -404,9 +421,21 @@ try {
             @ToolsetBuildArguments
     }
 
-    MSBuild $toolsetBuildProj `
-        /p:RepoRoot=$RepoRoot `
-        @MSBuildArguments
+    if (-not $ForceCoreMsbuild) {
+        Write-Host
+        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+        $msbuildEngine = 'vs'
+
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments
+    }
+
+    if ($performDotnetBuild) {
+        Write-Host
+        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+        $msbuildEngine = 'dotnet'
+
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @dotnetBuildArguments
+    }
 }
 catch {
     Write-Host $_.ScriptStackTrace
