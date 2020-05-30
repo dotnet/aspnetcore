@@ -3,7 +3,7 @@ param(
 )
 
 $ErrorActionPreference = 'stop'
-$excludeCIBinarylog = true
+$excludeCIBinarylog = $true
 $msbuildEngine = 'dotnet'
 $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 

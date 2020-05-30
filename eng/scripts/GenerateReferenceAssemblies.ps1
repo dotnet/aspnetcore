@@ -14,7 +14,7 @@ try {
   Remove-Item variable:global:_ToolsetBuildProj -ErrorAction Ignore
   Remove-Item variable:global:_MSBuildExe -ErrorAction Ignore
 
-  $excludeCIBinarylog = true
+  $excludeCIBinarylog = $true
   $msbuildEngine = 'dotnet'
   & "$repoRoot\eng\common\msbuild.ps1" -ci:$ci "$repoRoot/eng/CodeGen.proj" /t:GenerateReferenceSources
 } finally {
