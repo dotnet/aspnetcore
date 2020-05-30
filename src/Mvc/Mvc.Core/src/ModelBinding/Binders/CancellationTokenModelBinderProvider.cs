@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class CancellationTokenModelBinderProvider : IModelBinderProvider
     {
+        private CancellationTokenModelBinder _modelBinder;
+
         /// <inheritdoc />
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (context.Metadata.ModelType == typeof(CancellationToken))
             {
-                return new CancellationTokenModelBinder();
+                return _modelBinder ??= new CancellationTokenModelBinder();
             }
 
             return null;

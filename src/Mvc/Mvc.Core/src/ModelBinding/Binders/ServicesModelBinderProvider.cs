@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class ServicesModelBinderProvider : IModelBinderProvider
     {
+        private ServicesModelBinder _modelBinder;
+
         /// <inheritdoc />
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.BindingInfo.BindingSource != null &&
                 context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Services))
             {
-                return new ServicesModelBinder();
+                return _modelBinder ??= new ServicesModelBinder();
             }
 
             return null;
