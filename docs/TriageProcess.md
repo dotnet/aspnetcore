@@ -1,0 +1,50 @@
+Managing a popular GitHub repo with a small team is not an easy task. It requires a good balance between creating new features while handling many investigations and bug fixes associated with existing ones.
+
+During the last couple of years the amount of incoming issues has been constanly growing. While this is a sign of a healthy framework and ecosystem surrounding it, it's becoming harder to react to all those issues.
+To be able to keep up with ever-evolving expectations, we're introducing a set of rules to help us better handling the incoming issues going forward.
+
+## Goals
+The goals of these rules are listed below in priority order:
+- Make it easy to make triage decisions for each issue filed in this repository
+- Be able to easily prioritize issues for each milestone
+- Set proper expectations with customers regarding how issues are going to be handled
+
+## Triage Process
+The feature teams should be able look through every single issue filed against this repository and be able to make a quick call regarding the nature of the issue.
+We will first categorize the issues and further handle these depending on the category the issue is in. The subsections below reprsent these categories and the rules we apply for them during our triage meeting.
+
+### Feature requests
+As soon as we identify an issue represents an ask for a new feature, we will label the issue with the `enhancement` label.
+Most of the time, we will automatically move these issues into the `Next Sprint Planning` milestone for further review during the [next sprint planning meeting]().
+If we think the feature request is not aligned with our goals, we may choose to close it immediately.
+In some situations, however, we may choose to collect more feedback before acting on the issue. In these situations we will move the issue in the `Backlog` so that we can review it during our [release planning meeting]().
+
+### Bug reports
+If it's immediately clear, that the issue is related to a bug in the framework, we will apply the `bug` label to the issue.
+
+At this point, we will try to make a call regarding it's impact and severity. If the issue is critical, we may choose to include it in our current milestone for immediate handling or potentially patching.
+If the bug is relatively high impact, we will move the issue into the `Next Sprint Planning` milestone to review during our [next sprint planning]() meeting.
+If the impact is unclear or the is a very corner case scenario, we may move it to the `Backlog` milestone to further evaluate the impact by reviewing customer upvotes / comments at a later time.
+
+### Investigations
+In many situations it's not immediately clear whether a specific issue repoted is a bug or not. To be certain, the team will need to spend time to investigate it before making a call regarding the faith of the issue. In these situations we will apply the `investigate` label to the issue.
+In many situations, these issues turn out to be a result of some kind of misconfiguration in the user code.
+In some rare situations, however, these turn out to be caused by very impactful issues. So we will make a call during the triage whether we need to immediately investigate certain issues or not.
+If not, we will move the investigation to the `Next Sprint Planning` to review during the [next sprint planning meeting]().
+
+### Documentation requests
+Some issues turn out to indicate user confusion around how to configure different aspects of the framework.
+When we determine such isssues, which impact many customers, we will mark these with the `Docs` label and move them into the `Next Sprint Planning` milestone to handle at a later time. The goal here will be to fill in the gaps or clarify our documentation, so that customers can be successful by using the guidance provided in the documentation.
+
+## Milestone Planning process
+Our milestones are usually a month old.
+Before each milestone we have one or more planning meetings, where we look through all the accumulated issues in the `Next Sprint Planning` milestone and choose the most important and impactful ones to handle during the next milestone. This will be a mixture of feature requests, bug fixes, documentation issues as well as some investigations.
+
+Note, that we will investigate only issues, which have accumulated more than certain number of upvotes and/or comments, which will indicate that there is some wider impact associated with it.
+Investigations, which accumulate no more than 5 upvotes and/or comments by different users during a period of a month will be automatically closed. The reason is that the impact is very scoped and potentially something is wrong in the user code.
+
+For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means, is that they will not be looked at again up untile the next major release planning.
+
+## Process Visualization
+If you're a type of person who likes to see things visualized, the following diagram summarizes the processes detailed above:
+![image](https://user-images.githubusercontent.com/34246760/83341925-a03ae180-a29d-11ea-82db-e215f4860c19.png)
