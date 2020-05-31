@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Creates a Func of (string path, int start, int length) => destination
         // Not using PathSegment here because we don't want to mess with visibility checks and
         // generating IL without it is easier.
-        public static Func<string, int, int, int> Create(
+        public static JumpTableDelegate Create(
             int defaultDestination,
             int exitDestination,
             (string text, int destination)[] entries,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var method = new DynamicMethod(
                 "GetDestination",
                 typeof(int),
-                new[] { typeof(string), typeof(int), typeof(int), });
+                new[] { typeof(ReadOnlySpan<char>) });
 
             GenerateMethodBody(method.GetILGenerator(), defaultDestination, exitDestination, entries, vectorize);
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             SaveAssembly(method.GetILGenerator(), defaultDestination, exitDestination, entries, vectorize);
 #endif
 
-            return (Func<string, int, int, int>)method.CreateDelegate(typeof(Func<string, int, int, int>));
+            return method.CreateDelegate<JumpTableDelegate>();
         }
 
         // Internal for testing
@@ -79,27 +79,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var methods = Methods.Instance;
 
             // Initializing top-level locals - this is similar to...
-            // ReadOnlySpan<char> span = arg0.AsSpan(arg1, arg2);
-            // ref byte p = ref Unsafe.As<char, byte>(MemoryMarshal.GetReference<char>(span))
+            // var length = span.Length;
+            il.Emit(OpCodes.Ldarga_S, 0);
+            il.Emit(OpCodes.Call, methods.SpanLength);
+            il.Emit(OpCodes.Stloc, locals.Length);
 
-            // arg0.AsSpan(arg1, arg2)
+            // ref byte p = ref Unsafe.As<char, byte>(MemoryMarshal.GetReference<char>(arg0))
+
+            // MemoryMarshal.GetReference<char>(arg0)
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Ldarg_2);
-            il.Emit(OpCodes.Call, methods.AsSpan);
-
-            // ReadOnlySpan<char> = ...
-            il.Emit(OpCodes.Stloc, locals.Span);
-
-            // MemoryMarshal.GetReference<char>(span)
-            il.Emit(OpCodes.Ldloc, locals.Span);
             il.Emit(OpCodes.Call, methods.GetReference);
 
             // Unsafe.As<char, byte>(...)
             il.Emit(OpCodes.Call, methods.As);
 
             // ref byte p = ...
-            il.Emit(OpCodes.Stloc_0, locals.P);
+            il.Emit(OpCodes.Stloc, locals.P);
 
             var groups = entries.GroupBy(e => e.text.Length).ToArray();
             for (var i = 0; i < groups.Length; i++)
@@ -109,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Similar to 'if (length != X) { ... }
                 var inside = il.DefineLabel();
                 var next = il.DefineLabel();
-                il.Emit(OpCodes.Ldarg_2);
+                il.Emit(OpCodes.Ldloc, locals.Length);
                 il.Emit(OpCodes.Ldc_I4, group.Key);
                 il.Emit(OpCodes.Beq, inside);
                 il.Emit(OpCodes.Br, next);
@@ -408,7 +403,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 MethodAttributes.Public | MethodAttributes.Static,
                 CallingConventions.Standard,
                 typeof(int),
-                new [] { typeof(string), typeof(int), typeof(int), };
+                new [] { typeof(ReadOnlySpan<char>) };
 
             GenerateMethodBody(method.GetILGenerator(), defaultDestination, exitDestination, entries, vectorize);
 
@@ -422,7 +417,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public Locals(ILGenerator il, bool vectorize)
             {
                 P = il.DeclareLocal(typeof(byte).MakeByRefType());
-                Span = il.DeclareLocal(typeof(ReadOnlySpan<char>));
+                Length = il.DeclareLocal(typeof(int));
 
                 UInt16Value = il.DeclareLocal(typeof(ushort));
 
@@ -460,9 +455,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public LocalBuilder P { get; }
 
             /// <summary>
-            /// Holds the relevant portion of the path as a Span[byte].
+            /// Holds the length of the Span
             /// </summary>
-            public LocalBuilder Span { get; }
+            public LocalBuilder Length { get; }
         }
 
         private class Labels
@@ -486,6 +481,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             private Methods()
             {
+                SpanLength = typeof(Span<char>).GetProperty(nameof(Span<char>.Length)).GetGetMethod();
+
                 // Can't use GetMethod because the parameter is a generic method parameters.
                 Add = typeof(Unsafe)
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -577,6 +574,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             /// <see cref="MemoryExtensions.AsSpan(string, int, int)"/>
             /// </summary>
             public MethodInfo AsSpan { get; }
+
+
+            public MethodInfo SpanLength { get; }
 
             /// <summary>
             /// <see cref="MemoryMarshal.GetReference{T}(ReadOnlySpan{T})"/> - GetReference[char]

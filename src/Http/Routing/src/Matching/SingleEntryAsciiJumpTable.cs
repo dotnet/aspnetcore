@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _destination = destination;
         }
 
-        public unsafe override int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(ReadOnlySpan<char> path)
         {
-            var length = segment.Length;
+            var length = path.Length;
             if (length == 0)
             {
                 return _exitDestination;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return _defaultDestination;
             }
 
-            var a = path.AsSpan(segment.Start, length);
+            var a = path;
             var b = text.AsSpan();
 
             return Ascii.AsciiIgnoreCaseEquals(a, b, length) ? _destination : _defaultDestination;

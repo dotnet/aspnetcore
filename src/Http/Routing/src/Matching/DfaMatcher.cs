@@ -206,7 +206,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < segments.Length; i++)
             {
-                destination = states[destination].PathTransitions.GetDestination(path, segments[i]);
+                var segment = segments[i];
+                destination = states[destination].PathTransitions.GetDestination(path.AsSpan(segment.Start, segment.Length));
             }
 
             // Process an arbitrary number of policy-based decisions

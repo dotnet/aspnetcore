@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (segment is null)
             {
                 // Treat "no segment" as high priority. it won't effect the algorithm, but we need to define a sort-order.
-                return 0; 
+                return 0;
             }
 
             return RoutePrecedence.ComputeInboundPrecedenceDigit(endpoint.RoutePattern, segment);
@@ -661,37 +661,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>(),
                     Array.Empty<KeyValuePair<string, IRouteConstraint>>());
             }
-        }
-
-        private int[] GetGroupLengths(DfaNode node)
-        {
-            var nodeMatches = node.Matches;
-            if (nodeMatches == null || nodeMatches.Count == 0)
-            {
-                return Array.Empty<int>();
-            }
-
-            var groups = new List<int>();
-
-            var length = 1;
-            var exemplar = nodeMatches[0];
-
-            for (var i = 1; i < nodeMatches.Count; i++)
-            {
-                if (!_comparer.Equals(exemplar, nodeMatches[i]))
-                {
-                    groups.Add(length);
-                    length = 0;
-
-                    exemplar = nodeMatches[i];
-                }
-
-                length++;
-            }
-
-            groups.Add(length);
-
-            return groups.ToArray();
         }
 
         private static bool HasAdditionalRequiredSegments(RouteEndpoint endpoint, int depth)

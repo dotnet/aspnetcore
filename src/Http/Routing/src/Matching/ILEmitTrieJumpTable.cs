@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Will be replaced at runtime by the generated code.
         //
         // Internal for testing
-        internal Func<string, PathSegment, int> _getDestination;
+        internal JumpTableDelegate _getDestination;
 
         public ILEmitTrieJumpTable(
             int defaultDestination,
@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _getDestination = FallbackGetDestination;
         }
 
-        public override int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(ReadOnlySpan<char> path)
         {
-            return _getDestination(path, segment);
+            return _getDestination(path);
         }
         
         // Used when we haven't yet initialized the IL trie. We defer compilation of the IL for startup
         // performance.
-        private int FallbackGetDestination(string path, PathSegment segment)
+        private int FallbackGetDestination(ReadOnlySpan<char> path)
         {
             if (path.Length == 0)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // We only hit this code path if the IL delegate is still initializing.
             LazyInitializer.EnsureInitialized(ref _task, ref _initializing, ref _lock, InitializeILDelegateAsync);
 
-            return _fallback.GetDestination(path, segment);
+            return _fallback.GetDestination(path);
         }
 
         // Internal for testing
@@ -82,17 +82,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
         internal void InitializeILDelegate()
         {
             var generated = ILEmitTrieFactory.Create(_defaultDestination, _exitDestination, _entries, _vectorize);
-            _getDestination = (string path, PathSegment segment) =>
+            _getDestination = (ReadOnlySpan<char> path) =>
             {
-                if (segment.Length == 0)
+                if (path.Length == 0)
                 {
                     return _exitDestination;
                 }
 
-                var result = generated(path, segment.Start, segment.Length);
+                var result = generated(path);
                 if (result == ILEmitTrieFactory.NotAscii)
                 {
-                    result = _fallback.GetDestination(path, segment);
+                    result = _fallback.GetDestination(path);
                 }
 
                 return result;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _entries = entries;
         }
 
-        public override int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(ReadOnlySpan<char> path)
         {
-            if (segment.Length == 0)
+            if (path.Length == 0)
             {
                 return _exitDestination;
             }
@@ -34,14 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < entries.Length; i++)
             {
                 var text = entries[i].text;
-                if (segment.Length == text.Length &&
-                    string.Compare(
-                        path,
-                        segment.Start,
-                        text,
-                        0,
-                        segment.Length,
-                        StringComparison.OrdinalIgnoreCase) == 0)
+                if (path.Length == text.Length && path.Equals(text, StringComparison.OrdinalIgnoreCase))
                 {
                     return entries[i].destination;
                 }

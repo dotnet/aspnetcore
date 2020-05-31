@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segment = new PathSegment(start, length);
 
             // Act
-            var result = table.GetDestination(path, segment);
+            var result = table.GetDestination(path.AsSpan(segment.Start, segment.Length));
 
             // Assert
             Assert.Equal(1, result);
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segment = new PathSegment(start, length);
 
             // Act
-            var result = table.GetDestination(path, segment);
+            var result = table.GetDestination(path.AsSpan(segment.Start, segment.Length));
 
             // Assert
             Assert.Equal(1, result);
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var segment = new PathSegment(start, length);
 
             // Act
-            var result = table.GetDestination(path, segment);
+            var result = table.GetDestination(path.AsSpan(segment.Start, segment.Length));
 
             // Assert
             Assert.Equal(0, result);

@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _table.GetDestination(strings[i], segments[i]);
+                destination = _table.GetDestination(strings[i].AsSpan(segments[i].Start, segments[i].Length));
             }
 
             return destination;

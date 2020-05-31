@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _default.GetDestination(strings[i], segments[i]);
+                destination = _default.GetDestination(strings[i].AsSpan(segments[i].Start, segments[i].Length));
             }
 
             return destination;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _ascii.GetDestination(strings[i], segments[i]);
+                destination = _ascii.GetDestination(strings[i].AsSpan(segments[i].Start, segments[i].Length));
             }
 
             return destination;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _trie.GetDestination(strings[i], segments[i]);
+                destination = _trie.GetDestination(strings[i].AsSpan(segments[i].Start, segments[i].Length));
             }
 
             return destination;
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                destination = _vectorTrie.GetDestination(strings[i], segments[i]);
+                destination = _vectorTrie.GetDestination(strings[i].AsSpan(segments[i].Start, segments[i].Length));
             }
 
             return destination;

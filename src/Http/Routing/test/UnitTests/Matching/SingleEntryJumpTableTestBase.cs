@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var table = CreateJumpTable(0, 1, "text", 2);
 
             // Act
-            var result = table.GetDestination("ignored", new PathSegment(0, 0));
+            var result = table.GetDestination("ignored".AsSpan(0, 0));
 
             // Assert
             Assert.Equal(1, result);
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var table = CreateJumpTable(0, 1, "text", 2);
 
             // Act
-            var result = table.GetDestination("text", new PathSegment(1, 2));
+            var result = table.GetDestination("text".AsSpan(1, 2));
 
             // Assert
             Assert.Equal(0, result);
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var table = CreateJumpTable(0, 1, "text", 2);
 
             // Act
-            var result = table.GetDestination("some-text", new PathSegment(5, 4));
+            var result = table.GetDestination("some-text".AsSpan(5, 4));
 
             // Assert
             Assert.Equal(2, result);
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var table = CreateJumpTable(0, 1, "text", 2);
 
             // Act
-            var result = table.GetDestination("some-tExt", new PathSegment(5, 4));
+            var result = table.GetDestination("some-tExt".AsSpan(5, 4));
 
             // Assert
             Assert.Equal(2, result);

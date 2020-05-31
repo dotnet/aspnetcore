@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -14,9 +16,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _exitDestination = exitDestination;
         }
 
-        public override int GetDestination(string path, PathSegment segment)
+        public override int GetDestination(ReadOnlySpan<char> path)
         {
-            return segment.Length == 0 ? _exitDestination : _defaultDestination;
+            return path.Length == 0 ? _exitDestination : _defaultDestination;
         }
 
         public override string DebuggerToString()
