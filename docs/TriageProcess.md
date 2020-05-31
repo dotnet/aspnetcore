@@ -43,7 +43,7 @@ Before each milestone we have one or more planning meetings, where we look throu
 Note, that we will investigate only issues, which have accumulated more than certain number of upvotes and/or comments, which will indicate that there is some wider impact associated with it.
 Investigations, which accumulate no more than 5 upvotes and/or comments by different users during a period of a month will be automatically closed. The reason is that the impact is very scoped and potentially something is wrong in the user code.
 
-For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means, is that they will not be looked at again up untile the next major release planning.
+For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means, is that they will not be looked at again up until the next major release planning.
 
 ## Process Visualization
 If you're a type of person who likes to see things visualized, the following diagram summarizes the processes detailed above:
