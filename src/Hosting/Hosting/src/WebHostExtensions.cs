@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Hosting
             await waitForStop.Task;
 
             // WebHost will use its default ShutdownTimeout if none is specified.
-            await host.StopAsync();
+            await host.StopAsync(token);
         }
     }
 }
