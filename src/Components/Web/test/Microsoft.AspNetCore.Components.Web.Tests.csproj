@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
 </Project>

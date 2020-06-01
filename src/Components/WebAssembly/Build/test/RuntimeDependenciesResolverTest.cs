@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
