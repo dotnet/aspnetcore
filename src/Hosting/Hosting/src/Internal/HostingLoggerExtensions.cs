@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string activityId)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScope(new HostingLogScope(httpContext));
         }
