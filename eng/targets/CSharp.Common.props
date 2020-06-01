@@ -42,6 +42,7 @@
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
     <Reference Include="NETStandard.Library" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
