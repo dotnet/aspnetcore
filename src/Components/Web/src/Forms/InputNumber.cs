@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputNumber<TValue> : InputBase<TValue>
     {
-        private static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
+        private readonly static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 
         static InputNumber()
         {
