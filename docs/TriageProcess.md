@@ -1,6 +1,6 @@
 Managing a popular GitHub repo with a small team is not an easy task. It requires a good balance between creating new features while handling many investigations and bug fixes associated with existing ones.
 
-During the last couple of years the amount of incoming issues has been constanly growing. While this is a sign of a healthy framework and ecosystem surrounding it, it's becoming harder to react to all those issues.
+During the last couple of years the amount of incoming issues has been constantly growing. While this is a sign of a healthy framework and ecosystem surrounding it, it's becoming harder to react to all those issues.
 To be able to keep up with ever-evolving expectations, we're introducing a set of rules to help us better handling the incoming issues going forward.
 
 ## Goals
