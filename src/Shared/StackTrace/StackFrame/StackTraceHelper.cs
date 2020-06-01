@@ -29,12 +29,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
             var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
             var stackFrames = stackTrace.GetFrames();
 
-            if (stackFrames == null)
-            {
-                error = default;
-                return frames;
-            }
-
             List<Exception> exceptions = null;
 
             for (var i = 0; i < stackFrames.Length; i++)
@@ -57,12 +51,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 };
 
                 frames.Add(stackFrame);
-            }
-
-            if (exceptions != null)
-            {
-                error = new AggregateException(exceptions);
-                return frames;
             }
 
             error = default;
@@ -118,21 +106,18 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 {
                     prefix = "out";
                 }
-                else if (parameterType != null && parameterType.IsByRef)
+                else if (parameterType.IsByRef)
                 {
                     prefix = "ref";
                 }
 
                 var parameterTypeString = "?";
-                if (parameterType != null)
+                if (parameterType.IsByRef)
                 {
-                    if (parameterType.IsByRef)
-                    {
-                        parameterType = parameterType.GetElementType();
-                    }
-
-                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
+                    parameterType = parameterType.GetElementType();
                 }
+
+                parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
 
                 return new ParameterDisplayInfo
                 {
@@ -205,18 +190,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
             }
 
             var methods = parentType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-            if (methods == null)
-            {
-                return false;
-            }
 
             foreach (var candidateMethod in methods)
             {
                 var attributes = candidateMethod.GetCustomAttributes<StateMachineAttribute>();
-                if (attributes == null)
-                {
-                    continue;
-                }
 
                 foreach (var asma in attributes)
                 {
