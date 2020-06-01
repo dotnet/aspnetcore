@@ -42,8 +42,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
-  <!-- Do not override if SkipTestBuild=true, as we actually want the empty targets that would be set up from the arcade
-       sdk -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true' and '$(SkipTestBuild)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
