@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return _exitDestination;
             }
 
-            if (path.Length == _text.Length && path.Equals(_text, StringComparison.OrdinalIgnoreCase))
+            if (path.Equals(_text, StringComparison.OrdinalIgnoreCase))
             {
                 return _destination;
             }

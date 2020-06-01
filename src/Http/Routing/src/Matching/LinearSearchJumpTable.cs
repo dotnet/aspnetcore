@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < entries.Length; i++)
             {
                 var text = entries[i].text;
-                if (path.Length == text.Length && path.Equals(text, StringComparison.OrdinalIgnoreCase))
+                if (path.Equals(text, StringComparison.OrdinalIgnoreCase))
                 {
                     return entries[i].destination;
                 }
