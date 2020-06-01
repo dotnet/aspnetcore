@@ -37,7 +37,7 @@ Some issues turn out to indicate user confusion around how to configure differen
 When we determine such isssues, which impact many customers, we will mark these with the `Docs` label and move them into the `Next Sprint Planning` milestone to handle at a later time. The goal here will be to fill in the gaps or clarify our documentation, so that customers can be successful by using the guidance provided in the documentation.
 
 ## Milestone Planning process
-Our milestones are usually a month old.
+Our milestones are usually a month long.
 Before each milestone we have one or more planning meetings, where we look through all the accumulated issues in the `Next Sprint Planning` milestone and choose the most important and impactful ones to handle during the next milestone. This will be a mixture of feature requests, bug fixes, documentation issues as well as some investigations.
 
 Note, that we will investigate only issues, which have accumulated more than certain number of upvotes and/or comments, which will indicate that there is some wider impact associated with it.
