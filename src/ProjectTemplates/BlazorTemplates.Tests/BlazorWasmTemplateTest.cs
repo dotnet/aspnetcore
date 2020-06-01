@@ -250,7 +250,7 @@ namespace Templates.Test
             TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
-        [Fact]
+        [ConditionalFact]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
