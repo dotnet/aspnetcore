@@ -34,6 +34,7 @@ namespace A.Internal.Namespace
 
         [Theory]
         [MemberData(nameof(PublicMemberDefinitions))]
+        [QuarantinedTest]
         public async Task PublicExposureOfPubternalTypeProducesPUB0001(string member)
         {
             var code = GetSourceFromNamespaceDeclaration($@"
