@@ -250,10 +250,21 @@ namespace Templates.Test
             TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
+        [Fact]
+        // LocalDB doesn't work on non Windows platforms
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
+        {
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(true);
+        }
+
+        [Fact]
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
+        {
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(false);
+        }
+
+        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
 
