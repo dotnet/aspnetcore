@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Extensions.Localization.Internal;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.Localization
     /// <remarks>This type is thread-safe.</remarks>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private readonly ConcurrentDictionary<string, object> _missingManifestCache = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object?> _missingManifestCache = new ConcurrentDictionary<string, object?>();
         private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly IResourceStringProvider _resourceStringProvider;
@@ -171,7 +172,7 @@ namespace Microsoft.Extensions.Localization
                 ? GetResourceNamesFromCultureHierarchy(culture)
                 : _resourceStringProvider.GetAllResourceStrings(culture, true);
 
-            foreach (var name in resourceNames)
+            foreach (var name in resourceNames ?? Enumerable.Empty<string>())
             {
                 var value = GetStringSafely(name, culture);
                 yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _resourceBaseName);
@@ -185,7 +186,7 @@ namespace Microsoft.Extensions.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get the string for.</param>
         /// <returns>The resource string, or <c>null</c> if none was found.</returns>
-        protected string GetStringSafely(string name, CultureInfo culture)
+        protected string? GetStringSafely(string name, CultureInfo? culture)
         {
             if (name == null)
             {

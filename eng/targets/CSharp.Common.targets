@@ -28,6 +28,17 @@
     </ItemGroup>
   </Target>
 
+  <Choose>
+    <When Condition="'$(Nullable)' != '' AND ('$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+        <PropertyGroup>
+          <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
+        </PropertyGroup>
+        <ItemGroup>
+          <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+        </ItemGroup>
+    </When>
+  </Choose>
+
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
 

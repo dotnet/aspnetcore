@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <RootNamespace>LocalizationTest.Abc</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="NewFolder\**" />
