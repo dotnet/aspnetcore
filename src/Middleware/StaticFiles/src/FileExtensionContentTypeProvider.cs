@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".fla", "application/octet-stream" },
                 { ".flr", "x-world/x-vrml" },
                 { ".flv", "video/x-flv" },
+                { ".geojson", "application/geo+json" },
                 { ".gif", "image/gif" },
                 { ".gtar", "application/x-gtar" },
                 { ".gz", "application/x-gzip" },
