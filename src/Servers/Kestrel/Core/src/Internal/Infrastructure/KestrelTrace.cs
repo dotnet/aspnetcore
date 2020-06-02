@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private static readonly Action<ILogger, string, Exception> _http2MaxConcurrentStreamsReached =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, nameof(Http2MaxConcurrentStreamsReached)),
-                @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent streams allowed.");
+                @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
 
         protected readonly ILogger _logger;
 
