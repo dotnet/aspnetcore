@@ -975,7 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
                     // and that the client is likely waiting for existing streams to be completed before it can continue.
-                    Log.Http2ReachedMaxConcurrentStreams(_context.ConnectionId);
+                    Log.Http2MaxConcurrentStreamsReached(_context.ConnectionId);
                 }
                 else if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
                 {

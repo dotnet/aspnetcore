@@ -36,16 +36,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _connection.ServerSettings.MaxConcurrentStreams = 2;
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            Assert.Equal(0, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2ReachedMaxConcurrentStreams"));
+            Assert.Equal(0, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // Log message because we've reached the stream limit
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2ReachedMaxConcurrentStreams"));
+            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             // This stream will error because it exceeds max concurrent streams
             await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
             await WaitForStreamErrorAsync(5, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
-            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2ReachedMaxConcurrentStreams"));
+            Assert.Equal(1, TestApplicationErrorLogger.Messages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
             await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
         }

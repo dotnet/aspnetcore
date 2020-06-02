@@ -55,6 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId) { }
         public void Http2FrameReceived(string connectionId, Http2Frame frame) { }
         public void Http2FrameSending(string connectionId, Http2Frame frame) { }
-        public void Http2ReachedMaxConcurrentStreams(string connectionId) { }
+        public void Http2MaxConcurrentStreamsReached(string connectionId) { }
     }
 }

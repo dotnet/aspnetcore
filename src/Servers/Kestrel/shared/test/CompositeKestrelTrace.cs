@@ -230,10 +230,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http2FrameSending(connectionId, frame);
         }
 
-        public void Http2ReachedMaxConcurrentStreams(string connectionId)
+        public void Http2MaxConcurrentStreamsReached(string connectionId)
         {
-            _trace1.Http2ReachedMaxConcurrentStreams(connectionId);
-            _trace2.Http2ReachedMaxConcurrentStreams(connectionId);
+            _trace1.Http2MaxConcurrentStreamsReached(connectionId);
+            _trace2.Http2MaxConcurrentStreamsReached(connectionId);
         }
     }
 }
