@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".dib", "image/bmp" },
                 { ".dir", "application/x-director" },
                 { ".disco", "text/xml" },
-                { ".dll", "application/vnd.microsoft.portable-executable" },
                 { ".dlm", "text/dlm" },
                 { ".doc", "application/msword" },
                 { ".docm", "application/vnd.ms-word.document.macroEnabled.12" },
