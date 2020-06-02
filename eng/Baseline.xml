@@ -26,12 +26,6 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.AzureAppServices.SiteExtension" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="3.1.4" />
-  <Package Id="Microsoft.AspNetCore.Blazor" Version="3.2.0-preview1.20073.1" />
-  <Package Id="Microsoft.AspNetCore.Blazor.Build" Version="3.2.0-preview1.20073.1" />
-  <Package Id="Microsoft.AspNetCore.Blazor.DevServer" Version="3.2.0-preview1.20073.1" />
-  <Package Id="Microsoft.AspNetCore.Blazor.HttpClient" Version="3.2.0-preview1.20073.1" />
-  <Package Id="Microsoft.AspNetCore.Blazor.Server" Version="3.2.0-preview1.20073.1" />
-  <Package Id="Microsoft.AspNetCore.Blazor.Templates" Version="3.2.0-preview1.20073.1" />
   <Package Id="Microsoft.AspNetCore.Components" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Components.Analyzers" Version="3.1.4" />
   <Package Id="Microsoft.AspNetCore.Components.Authorization" Version="3.1.4" />
