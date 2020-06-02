@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Http.Json
     public static class HttpRequestJsonExtensions
     {
         /// <summary>
-        /// Read from the request and deserialize the request's content to the specified type.
-        /// If the request content-type is not a known JSON type then an error will be thrown.
+        /// Read JSON from the request and deserialize to the specified type.
+        /// If the request's content-type is not a known JSON type then an error will be thrown.
         /// </summary>
         /// <typeparam name="TValue">The type of object to read.</typeparam>
         /// <param name="request">The request to read from.</param>
@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Http.Json
         }
 
         /// <summary>
-        /// Read from the request and deserialize the request's content to the specified type.
-        /// If the request content-type is not a known JSON type then an error will be thrown.
+        /// Read JSON from the request and deserialize to the specified type.
+        /// If the request's content-type is not a known JSON type then an error will be thrown.
         /// </summary>
         /// <typeparam name="TValue">The type of object to read.</typeparam>
         /// <param name="request">The request to read from.</param>
@@ -75,8 +75,8 @@ namespace Microsoft.AspNetCore.Http.Json
         }
 
         /// <summary>
-        /// Read from the request and deserialize the request's content to the specified type.
-        /// If the request content-type is not a known JSON type then an error will be thrown.
+        /// Read JSON from the request and deserialize to the specified type.
+        /// If the request's content-type is not a known JSON type then an error will be thrown.
         /// </summary>
         /// <param name="request">The request to read from.</param>
         /// <param name="type">The type of object to read.</param>
@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.Http.Json
         }
 
         /// <summary>
-        /// Read from the request and deserialize the request's content to the specified type.
-        /// If the request content-type is not a known JSON type then an error will be thrown.
+        /// Read JSON from the request and deserialize to the specified type.
+        /// If the request's content-type is not a known JSON type then an error will be thrown.
         /// </summary>
         /// <param name="request">The request to read from.</param>
         /// <param name="type">The type of object to read.</param>
