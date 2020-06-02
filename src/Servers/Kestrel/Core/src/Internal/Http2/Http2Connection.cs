@@ -971,7 +971,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
-                if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
+                if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
+                {
+                    // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
+                    // and that the client is likely waiting for existing streams to be completed before it can continue.
+                    Log.Http2MaxConcurrentStreamsReached(_context.ConnectionId);
+                }
+                else if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
                 {
                     // The protocol default stream limit is infinite so the client can exceed our limit at the start of the connection.
                     // Refused streams can be retried, by which time the client must have received our settings frame with our limit information.
