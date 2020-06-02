@@ -229,5 +229,11 @@ namespace Microsoft.AspNetCore.Testing
             _trace1.Http2FrameSending(connectionId, frame);
             _trace2.Http2FrameSending(connectionId, frame);
         }
+
+        public void Http2ReachedMaxConcurrentStreams(string connectionId)
+        {
+            _trace1.Http2ReachedMaxConcurrentStreams(connectionId);
+            _trace2.Http2ReachedMaxConcurrentStreams(connectionId);
+        }
     }
 }
