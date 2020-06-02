@@ -38,7 +38,7 @@
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(NativeContent.Identity)" PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
     </ItemGroup>
   </Target>
