@@ -279,11 +279,11 @@ namespace Templates.Test
                 Assert.Contains(".db", serverProjectFileContents);
             }
 
-            var appSettings = ReadFile(serverProject.TemplateOutputDir, "appSettings.json");
+            var appSettings = ReadFile(serverProject.TemplateOutputDir, "appsettings.json");
             var element = JsonSerializer.Deserialize<JsonElement>(appSettings);
             var clientsProperty = element.GetProperty("IdentityServer").EnumerateObject().Single().Value.EnumerateObject().Single();
             var replacedSection = element.GetRawText().Replace(clientsProperty.Name, serverProject.ProjectName.Replace(".Server", ".Client"));
-            var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appSettings.json");
+            var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appsettings.json");
             File.WriteAllText(appSettingsPath, replacedSection);
 
             var publishResult = await serverProject.RunDotNetPublishAsync();
