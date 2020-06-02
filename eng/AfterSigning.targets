@@ -4,6 +4,7 @@
     <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
     <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
     <InstallersOutputPath>$(ArtifactsDir)\installers\</InstallersOutputPath>
+    <_SuppressSdkImports>false</_SuppressSdkImports>
   </PropertyGroup>
 
   <Target Name="PopulateGenerateChecksumItems"
