@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 

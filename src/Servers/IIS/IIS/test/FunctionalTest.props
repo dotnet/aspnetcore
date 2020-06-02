@@ -5,8 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-
     <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
