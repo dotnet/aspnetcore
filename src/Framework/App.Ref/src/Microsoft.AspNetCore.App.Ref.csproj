@@ -6,6 +6,8 @@
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <!-- This is typically based on whether the project sits in a folder named `ref`, which this one does not - but we want it to resolve references like a ref project -->
+    <IsReferenceAssemblyProject>true</IsReferenceAssemblyProject>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
     <!-- This is a reference package and does not include any dependencies. -->
