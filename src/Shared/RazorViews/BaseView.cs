@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.RazorViews
             Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
             await Output.FlushAsync();
-            Output.DisposeAsync();
+            await Output.DisposeAsync();
             buffer.Seek(0, SeekOrigin.Begin);
             await buffer.CopyToAsync(stream);
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.RazorViews
             Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
             await Output.FlushAsync();
-            Output.DisposeAsync();
+            await Output.DisposeAsync();
             buffer.Seek(0, SeekOrigin.Begin);
             await buffer.CopyToAsync(Response.Body);
         }
