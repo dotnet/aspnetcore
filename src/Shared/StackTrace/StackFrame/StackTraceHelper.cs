@@ -10,12 +10,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Internal;
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackTraceHelper
     {
-        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException error)
+        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
         {
             var frames = new List<StackFrameInfo>();
 
@@ -29,7 +30,13 @@ namespace Microsoft.Extensions.StackTrace.Sources
             var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
             var stackFrames = stackTrace.GetFrames();
 
-            List<Exception> exceptions = null;
+            if (stackFrames == null)
+            {
+                error = default;
+                return frames;
+            }
+
+            List<Exception>? exceptions = null;
 
             for (var i = 0; i < stackFrames.Length; i++)
             {
@@ -53,11 +60,17 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 frames.Add(stackFrame);
             }
 
+            if (exceptions != null)
+            {
+                error = new AggregateException(exceptions);
+                return frames;
+            }
+
             error = default;
             return frames;
         }
 
-        internal static MethodDisplayInfo GetMethodDisplayString(MethodBase method)
+        internal static MethodDisplayInfo? GetMethodDisplayString(MethodBase? method)
         {
             // Special case: no method available
             if (method == null)
@@ -106,18 +119,21 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 {
                     prefix = "out";
                 }
-                else if (parameterType.IsByRef)
+                else if (parameterType != null && parameterType.IsByRef)
                 {
                     prefix = "ref";
                 }
 
                 var parameterTypeString = "?";
-                if (parameterType.IsByRef)
+                if (parameterType != null)
                 {
-                    parameterType = parameterType.GetElementType();
-                }
+                    if (parameterType.IsByRef)
+                    {
+                        parameterType = parameterType.GetElementType();
+                    }
 
-                parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
+                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
+                }
 
                 return new ParameterDisplayInfo
                 {
@@ -130,7 +146,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return methodDisplayInfo;
         }
 
-        private static bool ShowInStackTrace(MethodBase method)
+        private static bool ShowInStackTrace(MethodBase? method)
         {
             Debug.Assert(method != null);
 
@@ -176,7 +192,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return true;
         }
 
-        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type declaringType)
+        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type? declaringType)
         {
             Debug.Assert(method != null);
             Debug.Assert(method.DeclaringType != null);
@@ -190,10 +206,18 @@ namespace Microsoft.Extensions.StackTrace.Sources
             }
 
             var methods = parentType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            if (methods == null)
+            {
+                return false;
+            }
 
             foreach (var candidateMethod in methods)
             {
                 var attributes = candidateMethod.GetCustomAttributes<StateMachineAttribute>();
+                if (attributes == null)
+                {
+                    continue;
+                }
 
                 foreach (var asma in attributes)
                 {
