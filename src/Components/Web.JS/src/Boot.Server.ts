@@ -1,4 +1,4 @@
-import '@microsoft/dotnet-js-interop';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import './GlobalExports';
 import * as signalR from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
