@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class CancellationTokenModelBinderProvider : IModelBinderProvider
     {
-        private CancellationTokenModelBinder _modelBinder;
+        // CancellationTokenModelBinder does not have any state. Re-use the same instance for binding.
+
+        private readonly CancellationTokenModelBinder _modelBinder = new CancellationTokenModelBinder();
 
         /// <inheritdoc />
         public IModelBinder GetBinder(ModelBinderProviderContext context)
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (context.Metadata.ModelType == typeof(CancellationToken))
             {
-                return _modelBinder ??= new CancellationTokenModelBinder();
+                return _modelBinder;
             }
 
             return null;
