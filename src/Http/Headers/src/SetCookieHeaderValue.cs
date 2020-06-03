@@ -306,22 +306,22 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<SetCookieHeaderValue> ParseList(IList<string> inputs)
+        public static IList<SetCookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }

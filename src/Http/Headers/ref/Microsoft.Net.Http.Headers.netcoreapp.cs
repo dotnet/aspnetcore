@@ -38,7 +38,7 @@ namespace Microsoft.Net.Http.Headers
         public override int GetHashCode() { throw null; }
         public static Microsoft.Net.Http.Headers.CacheControlHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
         public override string ToString() { throw null; }
-        public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.CacheControlHeaderValue? parsedValue) { throw null; }
+        public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.CacheControlHeaderValue? parsedValue) { throw null; }
     }
     public partial class ContentDispositionHeaderValue
     {
@@ -91,12 +91,12 @@ namespace Microsoft.Net.Http.Headers
         public override bool Equals(object? obj) { throw null; }
         public override int GetHashCode() { throw null; }
         public static Microsoft.Net.Http.Headers.CookieHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue> ParseList(System.Collections.Generic.IList<string> inputs) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue> ParseStrictList(System.Collections.Generic.IList<string> inputs) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue> ParseList(System.Collections.Generic.IList<string>? inputs) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue> ParseStrictList(System.Collections.Generic.IList<string>? inputs) { throw null; }
         public override string ToString() { throw null; }
         public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.CookieHeaderValue? parsedValue) { throw null; }
-        public static bool TryParseList(System.Collections.Generic.IList<string> inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>? parsedValues) { throw null; }
-        public static bool TryParseStrictList(System.Collections.Generic.IList<string> inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseStrictList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>? parsedValues) { throw null; }
     }
     public partial class EntityTagHeaderValue
     {
@@ -252,7 +252,7 @@ namespace Microsoft.Net.Http.Headers
         public override string ToString() { throw null; }
         public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.MediaTypeHeaderValue parsedValue) { throw null; }
         public static bool TryParseList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>? parsedValues) { throw null; }
-        public static bool TryParseStrictList(System.Collections.Generic.IList<string> inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseStrictList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>? parsedValues) { throw null; }
     }
     public partial class MediaTypeHeaderValueComparer : System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>
     {
@@ -274,13 +274,13 @@ namespace Microsoft.Net.Http.Headers
         public override int GetHashCode() { throw null; }
         public Microsoft.Extensions.Primitives.StringSegment GetUnescapedValue() { throw null; }
         public static Microsoft.Net.Http.Headers.NameValueHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue> ParseList(System.Collections.Generic.IList<string> input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue> ParseStrictList(System.Collections.Generic.IList<string> input) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue> ParseList(System.Collections.Generic.IList<string>? input) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue> ParseStrictList(System.Collections.Generic.IList<string>? input) { throw null; }
         public void SetAndEscapeValue(Microsoft.Extensions.Primitives.StringSegment value) { }
         public override string ToString() { throw null; }
         public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.NameValueHeaderValue? parsedValue) { throw null; }
-        public static bool TryParseList(System.Collections.Generic.IList<string> input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>? parsedValues) { throw null; }
-        public static bool TryParseStrictList(System.Collections.Generic.IList<string> input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseList(System.Collections.Generic.IList<string>? input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseStrictList(System.Collections.Generic.IList<string>? input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>? parsedValues) { throw null; }
     }
     public partial class RangeConditionHeaderValue
     {
@@ -340,12 +340,12 @@ namespace Microsoft.Net.Http.Headers
         public override bool Equals(object? obj) { throw null; }
         public override int GetHashCode() { throw null; }
         public static Microsoft.Net.Http.Headers.SetCookieHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue> ParseList(System.Collections.Generic.IList<string> inputs) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue> ParseStrictList(System.Collections.Generic.IList<string> inputs) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue> ParseList(System.Collections.Generic.IList<string>? inputs) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue> ParseStrictList(System.Collections.Generic.IList<string>? inputs) { throw null; }
         public override string ToString() { throw null; }
         public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.SetCookieHeaderValue? parsedValue) { throw null; }
-        public static bool TryParseList(System.Collections.Generic.IList<string> inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>? parsedValues) { throw null; }
-        public static bool TryParseStrictList(System.Collections.Generic.IList<string> inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseStrictList(System.Collections.Generic.IList<string>? inputs, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>? parsedValues) { throw null; }
     }
     public partial class StringWithQualityHeaderValue
     {
@@ -356,12 +356,12 @@ namespace Microsoft.Net.Http.Headers
         public override bool Equals(object? obj) { throw null; }
         public override int GetHashCode() { throw null; }
         public static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue Parse(Microsoft.Extensions.Primitives.StringSegment input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue> ParseList(System.Collections.Generic.IList<string> input) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue> ParseStrictList(System.Collections.Generic.IList<string> input) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue> ParseList(System.Collections.Generic.IList<string>? input) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue> ParseStrictList(System.Collections.Generic.IList<string>? input) { throw null; }
         public override string ToString() { throw null; }
         public static bool TryParse(Microsoft.Extensions.Primitives.StringSegment input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue parsedValue) { throw null; }
-        public static bool TryParseList(System.Collections.Generic.IList<string> input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>? parsedValues) { throw null; }
-        public static bool TryParseStrictList(System.Collections.Generic.IList<string> input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseList(System.Collections.Generic.IList<string>? input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>? parsedValues) { throw null; }
+        public static bool TryParseStrictList(System.Collections.Generic.IList<string>? input, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>? parsedValues) { throw null; }
     }
     public partial class StringWithQualityHeaderValueComparer : System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>
     {

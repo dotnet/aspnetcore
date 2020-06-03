@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -325,7 +326,7 @@ namespace Microsoft.Net.Http.Headers
 
         public static CacheControlHeaderValue Parse(StringSegment input)
         {
-            int index = 0;
+            var index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
             var result = Parser.ParseValue(input, ref index);
             if (result == null)
@@ -335,9 +336,9 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static bool TryParse(StringSegment input, out CacheControlHeaderValue? parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CacheControlHeaderValue? parsedValue)
         {
-            int index = 0;
+            var index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
             if (Parser.TryParseValue(input, ref index, out parsedValue) && parsedValue != null)
             {

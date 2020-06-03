@@ -87,34 +87,34 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, [NotNullWhen(true)]out CookieHeaderValue? parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<CookieHeaderValue> ParseList(IList<string> inputs)
+        public static IList<CookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<CookieHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<CookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, [NotNullWhen(true)]out IList<CookieHeaderValue>? parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, [NotNullWhen(true)]out IList<CookieHeaderValue>? parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)]out CookieHeaderValue? parsedValue)
+        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
         {
             Contract.Requires(offset >= 0);
 
@@ -159,7 +159,6 @@ namespace Microsoft.Net.Http.Headers
         //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
         internal static StringSegment GetCookieValue(StringSegment input, ref int offset)
         {
-            Contract.Requires(input != null);
             Contract.Requires(offset >= 0);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - offset)));
 

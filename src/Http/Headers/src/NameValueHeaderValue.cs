@@ -178,22 +178,22 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<NameValueHeaderValue> ParseList(IList<string> input)
+        public static IList<NameValueHeaderValue> ParseList(IList<string>? input)
         {
             return MultipleValueParser.ParseValues(input);
         }
 
-        public static IList<NameValueHeaderValue> ParseStrictList(IList<string> input)
+        public static IList<NameValueHeaderValue> ParseStrictList(IList<string>? input)
         {
             return MultipleValueParser.ParseStrictValues(input);
         }
 
-        public static bool TryParseList(IList<string> input, [NotNullWhen(true)] out IList<NameValueHeaderValue>? parsedValues)
+        public static bool TryParseList(IList<string>? input, [NotNullWhen(true)] out IList<NameValueHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> input, [NotNullWhen(true)] out IList<NameValueHeaderValue>? parsedValues)
+        public static bool TryParseStrictList(IList<string>? input, [NotNullWhen(true)] out IList<NameValueHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
@@ -379,8 +379,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static int GetValueLength(StringSegment input, int startIndex)
         {
-            Contract.Requires(input != null);
-
             if (startIndex >= input.Length)
             {
                 return 0;

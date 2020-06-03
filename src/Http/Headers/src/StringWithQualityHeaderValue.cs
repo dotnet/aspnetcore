@@ -116,22 +116,22 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<StringWithQualityHeaderValue> ParseList(IList<string> input)
+        public static IList<StringWithQualityHeaderValue> ParseList(IList<string>? input)
         {
             return MultipleValueParser.ParseValues(input);
         }
 
-        public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string> input)
+        public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string>? input)
         {
             return MultipleValueParser.ParseStrictValues(input);
         }
 
-        public static bool TryParseList(IList<string> input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
+        public static bool TryParseList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
+        public static bool TryParseStrictList(IList<string>? input, [NotNullWhen(true)] out IList<StringWithQualityHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
