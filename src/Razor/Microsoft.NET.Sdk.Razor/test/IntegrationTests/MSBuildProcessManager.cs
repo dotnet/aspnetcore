@@ -50,7 +50,31 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 processStartInfo.EnvironmentVariables["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "true";
             }
 
-            var processResult = await RunProcessCoreAsync(processStartInfo, timeout);
+            ProcessResult processResult;
+            try
+            {
+                processResult = await RunProcessCoreAsync(processStartInfo, timeout);
+            }
+            catch (TimeoutException ex)
+            {
+                // Copy the binlog to the artifacts directory if executing MSBuild throws.
+                // This would help diagnosing failures on the CI.
+                var binaryLogFile = Path.Combine(project.ProjectFilePath, "msbuild.binlog");
+
+                var artifactsLogDir = Assembly.GetExecutingAssembly()
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(ama => ama.Key == "ArtifactsLogDir")?.Value;
+
+                if (!string.IsNullOrEmpty(artifactsLogDir) && File.Exists(binaryLogFile))
+                {
+                    var targetPath = Path.Combine(artifactsLogDir, Path.GetFileNameWithoutExtension(project.ProjectFilePath) + "." + Path.GetRandomFileName() + ".binlog");
+                    File.Copy(binaryLogFile, targetPath);
+
+                    throw new TimeoutException(ex.Message + $"{Environment.NewLine}Captured binlog at {targetPath}");
+                }
+
+                throw;
+            }
 
             return new MSBuildResult(project, processResult.FileName, processResult.Arguments, processResult.ExitCode, processResult.Output);
         }
