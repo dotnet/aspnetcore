@@ -43,9 +43,14 @@ namespace Microsoft.AspNetCore.Authentication
             var tokenNames = new List<string>();
             foreach (var token in tokens)
             {
+                if (token.Name is null)
+                {
+                    throw new ArgumentNullException(nameof(tokens), "Token name cannot be null.");
+                }
+
                 // REVIEW: should probably check that there are no ; in the token name and throw or encode
                 tokenNames.Add(token.Name);
-                properties.Items[TokenKeyPrefix+token.Name] = token.Value;
+                properties.Items[TokenKeyPrefix + token.Name] = token.Value;
             }
             if (tokenNames.Count > 0)
             {
@@ -59,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <param name="tokenName">The token name.</param>
         /// <returns>The token value.</returns>
-        public static string GetTokenValue(this AuthenticationProperties properties, string tokenName)
+        public static string? GetTokenValue(this AuthenticationProperties properties, string tokenName)
         {
             if (properties == null)
             {
@@ -109,9 +114,9 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var tokens = new List<AuthenticationToken>();
-            if (properties.Items.ContainsKey(TokenNamesKey))
+            if (properties.Items.TryGetValue(TokenNamesKey, out var value) && !string.IsNullOrEmpty(value))
             {
-                var tokenNames = properties.Items[TokenNamesKey].Split(';');
+                var tokenNames = value.Split(';');
                 foreach (var name in tokenNames)
                 {
                     var token = properties.GetTokenValue(name);
@@ -132,7 +137,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
-        public static Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
+        public static Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName)
             => auth.GetTokenAsync(context, scheme: null, tokenName: tokenName);
 
         /// <summary>
@@ -143,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
-        public static async Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string scheme, string tokenName)
+        public static async Task<string?> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string? scheme, string tokenName)
         {
             if (auth == null)
             {
