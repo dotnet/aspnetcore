@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public virtual async Task Building_Project()
         {
             using (CreateTestProject())
