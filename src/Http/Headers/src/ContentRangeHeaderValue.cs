@@ -180,7 +180,7 @@ namespace Microsoft.Net.Http.Headers
             return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out ContentRangeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentRangeHeaderValue parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue!);

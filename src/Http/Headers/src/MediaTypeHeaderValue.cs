@@ -481,7 +481,7 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="input">The <see cref="StringSegment"/> with the media type. The media type constructed here must not have an y</param>
         /// <param name="parsedValue">The parsed <see cref="MediaTypeHeaderValue"/></param>
         /// <returns>True if the value was successfully parsed.</returns>
-        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out MediaTypeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out MediaTypeHeaderValue? parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);

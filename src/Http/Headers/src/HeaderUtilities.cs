@@ -47,7 +47,7 @@ namespace Microsoft.Net.Http.Headers
                 // Remove quality parameter
                 if (qualityParameter != null)
                 {
-                    parameters!.Remove(qualityParameter);
+                    parameters.Remove(qualityParameter);
                 }
             }
         }

@@ -155,7 +155,7 @@ namespace Microsoft.Net.Http.Headers
             return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out EntityTagHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out EntityTagHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);

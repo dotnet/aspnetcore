@@ -110,11 +110,10 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var sizeParameter = NameValueHeaderValue.Find(_parameters, SizeString);
-                long value;
                 if (sizeParameter != null)
                 {
                     var sizeString = sizeParameter.Value;
-                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out value))
+                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out var value))
                     {
                         return value;
                     }
@@ -142,8 +141,8 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
-                    _parameters!.Add(new NameValueHeaderValue(SizeString, sizeString));
+                    var sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
+                    Parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
         }

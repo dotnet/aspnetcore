@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
@@ -14,7 +13,7 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
-        public override bool TryParseValue(StringSegment value, ref int index, [MaybeNull] out CookieHeaderValue? parsedValue)
+        public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue? parsedValue)
         {
             parsedValue = null;
 
@@ -44,8 +43,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            CookieHeaderValue? result = null;
-            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out result))
+            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out var result))
             {
                 return false;
             }
