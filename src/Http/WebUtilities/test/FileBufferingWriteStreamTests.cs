@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(new byte[] { 1, 2, 3, 4, 5, }, fileBytes);
 
             Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
 
             Assert.Equal(input.Length, bufferingStream.Length);
 
