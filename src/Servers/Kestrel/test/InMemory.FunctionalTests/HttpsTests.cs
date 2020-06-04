@@ -366,7 +366,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate("no_extensions.pfx"));
+                    listenOptions.UseHttps(TestResources.GetTestCertificate("no_extensions.pfx"), httpsOptions =>
+                    {
+                        httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
+                    });
                 }))
             {
                 using (var connection = server.CreateConnection())
