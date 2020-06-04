@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
         private readonly object _sync = new object();
-        private MultiplexedConnectionContext _multiplexedContext;
+        private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
@@ -148,11 +148,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Tick()
         {
-            if (_aborted)
+            lock (_protocolSelectionLock)
             {
-                // It's safe to check for timeouts on a dead connection,
-                // but try not to in order to avoid extraneous logs.
-                return;
+                if (_aborted)
+                {
+                    // It's safe to check for timeouts on a dead connection,
+                    // but try not to in order to avoid extraneous logs.
+                    return;
+                }
             }
 
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
@@ -225,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         RemoteEndPoint = streamContext.RemoteEndPoint as IPEndPoint
                     };
 
-                    if (!quicStreamFeature.CanWrite)
+                    if (quicStreamFeature != null && !quicStreamFeature.CanWrite)
                     {
                         // Unidirectional stream
                         var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
