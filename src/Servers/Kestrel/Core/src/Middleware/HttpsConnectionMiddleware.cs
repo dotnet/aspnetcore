@@ -50,12 +50,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
                 {
                     throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
                 }
             }
-
+            
             _next = next;
             // capture the certificate now so it can't be switched after validation
             _serverCertificate = options.ServerCertificate;
