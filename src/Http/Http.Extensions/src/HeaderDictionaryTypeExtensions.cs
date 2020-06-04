@@ -224,13 +224,13 @@ namespace Microsoft.AspNetCore.Http
                 .FirstOrDefault(methodInfo =>
                 {
                     if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal)
-                        && methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
+                        && methodInfo.ReturnParameter.ParameterType == typeof(bool))
                     {
                         var methodParams = methodInfo.GetParameters();
                         return methodParams.Length == 2
-                            && methodParams[0].ParameterType.Equals(typeof(string))
+                            && methodParams[0].ParameterType == typeof(string)
                             && methodParams[1].IsOut
-                            && methodParams[1].ParameterType.Equals(type.MakeByRefType());
+                            && methodParams[1].ParameterType == type.MakeByRefType();
                     }
                     return false;
                 });
@@ -258,13 +258,13 @@ namespace Microsoft.AspNetCore.Http
                 .FirstOrDefault(methodInfo =>
                 {
                     if (string.Equals("TryParseList", methodInfo.Name, StringComparison.Ordinal)
-                        && methodInfo.ReturnParameter.ParameterType.Equals(typeof(Boolean)))
+                        && methodInfo.ReturnParameter.ParameterType == typeof(Boolean))
                     {
                         var methodParams = methodInfo.GetParameters();
                         return methodParams.Length == 2
-                            && methodParams[0].ParameterType.Equals(typeof(IList<string>))
+                            && methodParams[0].ParameterType == typeof(IList<string>)
                             && methodParams[1].IsOut
-                            && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
+                            && methodParams[1].ParameterType == typeof(IList<T>).MakeByRefType();
                     }
                     return false;
                 });
