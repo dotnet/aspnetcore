@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Certificate.Sample
+namespace Certificate.Optional.Sample
 {
     public class Startup
     {
@@ -19,12 +19,12 @@ namespace Certificate.Sample
                 {
                     options.Events = new CertificateAuthenticationEvents()
                     {
-                        // If there is no certificate we must be on Host1 that does not require one. Redirect to Host2 to prompt for a certificate.
+                        // If there is no certificate we must be on HostWithoutCert that does not require one. Redirect to HostWithCert to prompt for a certificate.
                         OnChallenge = context =>
                         {
                             var request = context.Request;
                             var redirect = UriHelper.BuildAbsolute("https",
-                                new HostString(Program.Host2, context.HttpContext.Connection.LocalPort),
+                                new HostString(Program.HostWithCert, context.HttpContext.Connection.LocalPort),
                                 request.PathBase, request.Path, request.QueryString);
                             context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
                             context.HandleResponse(); // Don't do the default behavior that would send a 403 response.
