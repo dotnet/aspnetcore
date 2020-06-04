@@ -9,12 +9,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private IWebHost _host;
+        private IHost _host;
         private IHostApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
         private readonly IDisposable _extraDisposable;
@@ -91,15 +91,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
             var url = "http://127.0.0.1:0";
 
-            _host = new WebHostBuilder()
-                .ConfigureLogging(builder => builder
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureWebHost(configure =>
+                {
+                    configure
+                    .ConfigureLogging(builder => builder
                     .SetMinimumLevel(LogLevel.Trace)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
-                .UseStartup(typeof(TStartup))
-                .UseKestrel()
-                .UseUrls(url)
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .Build();
+                    .UseStartup(typeof(TStartup))
+                    .UseKestrel()
+                    .UseUrls(url)
+                    .UseContentRoot(Directory.GetCurrentDirectory());
+                }).Build();
 
             _logger.LogInformation("Starting test server...");
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -116,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logger.LogInformation("Test Server started");
 
             // Get the URL from the server
-            _url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
+            _url = _host.Services.GetService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.Single();
 
             _lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
             _lifetime.ApplicationStopped.Register(() =>
@@ -146,10 +149,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public override void Dispose()
         {
-            _extraDisposable?.Dispose();
-            _logger.LogInformation("Shutting down test server");
-            _host.Dispose();
-            _loggerFactory.Dispose();
+            try
+            {
+                _extraDisposable?.Dispose();
+                _logger.LogInformation("Start shutting down test server");
+            }
+            finally
+            {
+                _host.Dispose();
+                _loggerFactory.Dispose();
+            }
         }
 
         private class ForwardingLoggerProvider : ILoggerProvider

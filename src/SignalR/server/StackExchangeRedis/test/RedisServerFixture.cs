@@ -44,6 +44,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
         public async Task InitializeAsync()
         {
+            if (Docker.Default == null)
+            {
+                return;
+            }
+
             FirstServer = await StartServer();
             SecondServer = await StartServer();
         }

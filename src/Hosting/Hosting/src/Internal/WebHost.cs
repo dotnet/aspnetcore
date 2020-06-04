@@ -27,6 +27,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    [Obsolete]
     internal class WebHost : IWebHost, IAsyncDisposable
     {
         private static readonly string DeprecatedServerUrlsKey = "server.urls";
