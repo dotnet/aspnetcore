@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -752,7 +753,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // the new size.
                 _frameWriter.UpdateMaxHeaderTableSize(Math.Min(_clientSettings.HeaderTableSize, (uint)Limits.Http2.HeaderTableSize));
 
-                return ackTask.AsTask();
+                return ackTask.GetAsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
@@ -785,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).AsTask();
+            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).GetAsTask();
         }
 
         private Task ProcessGoAwayFrameAsync()
