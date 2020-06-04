@@ -16,6 +16,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly TokenizerView<TTokenizer> _tokenizer;
         private SyntaxListBuilder<SyntaxToken>? _tokenBuilder;
 
+        // Following four high traffic methods cached as using method groups would cause allocation on every invocation.
+        protected static readonly Func<SyntaxToken, bool> IsSpacingToken = (token) =>
+        {
+            return token.Kind == SyntaxKind.Whitespace;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingNewLines = (token) =>
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.NewLine;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingComments = (token) =>
+        {
+            return IsSpacingToken(token) || token.Kind == SyntaxKind.CSharpComment;
+        };
+
+        protected static readonly Func<SyntaxToken, bool> IsSpacingTokenIncludingNewLinesAndComments = (token) =>
+        {
+            return IsSpacingTokenIncludingNewLines(token) || token.Kind == SyntaxKind.CSharpComment;
+        };
+        
         protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer> language, ParserContext context)
             : base(context)
         {
