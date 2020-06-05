@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 var streamError = error as ConnectionAbortedException
                     ?? new ConnectionAbortedException("The stream has completed.", error);
 
-                Input.Complete();
+                await Input.CompleteAsync();
 
                 await RequestBodyPipe.Writer.CompleteAsync();
 
