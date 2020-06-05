@@ -499,6 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
         {

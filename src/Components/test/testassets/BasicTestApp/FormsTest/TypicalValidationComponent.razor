@@ -2,14 +2,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
-    @if (UseExperimentalValidator)
-    {
-        <ObjectGraphDataAnnotationsValidator />
-    }
-    else
-    {
     <DataAnnotationsValidator />
-    }
 
     <p class="name">
         Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />

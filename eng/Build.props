@@ -25,8 +25,7 @@
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Blazor\Build\testassets\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\BlazorWasm.ProjectTemplates\content\**\*.csproj;
+                      $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
@@ -85,14 +84,12 @@
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
       </ItemGroup>
 
-      <ItemGroup>
-        <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
-                        Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)">
-          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x64'">Platform=x64</AdditionalProperties>
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
-        </NativeProjects>
+      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
+      </ItemGroup>
 
+      <ItemGroup>
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
@@ -166,6 +163,7 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
@@ -202,6 +200,7 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"

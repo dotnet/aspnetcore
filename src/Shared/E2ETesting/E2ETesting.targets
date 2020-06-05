@@ -127,6 +127,14 @@
         <_Parameter2>$(SeleniumProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
+    <MakeDir Directories="$(SauceConnectProcessTrackingFolder)" />
+    <ItemGroup>
+      <AssemblyAttribute
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.SauceConnect.ProcessTracking</_Parameter1>
+        <_Parameter2>$(SauceConnectProcessTrackingFolder)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
   </Target>
 
   <Target Name="_EnsureSeleniumScreenShotsFolder" BeforeTargets="Build">

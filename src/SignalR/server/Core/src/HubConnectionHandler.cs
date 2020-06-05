@@ -64,22 +64,37 @@ namespace Microsoft.AspNetCore.SignalR
             _userIdProvider = userIdProvider;
 
             _enableDetailedErrors = false;
+
+            List<IHubFilter> hubFilters = null;
             if (_hubOptions.UserHasSetValues)
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+
+                if (_hubOptions.HubFilters != null)
+                {
+                    hubFilters = new List<IHubFilter>();
+                    hubFilters.AddRange(_hubOptions.HubFilters);
+                }
             }
             else
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+
+                if (_globalHubOptions.HubFilters != null)
+                {
+                    hubFilters = new List<IHubFilter>();
+                    hubFilters.AddRange(_globalHubOptions.HubFilters);
+                }
             }
 
             _dispatcher = new DefaultHubDispatcher<THub>(
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
                 _enableDetailedErrors,
-                new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
+                new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
+                hubFilters);
         }
 
         /// <inheritdoc />

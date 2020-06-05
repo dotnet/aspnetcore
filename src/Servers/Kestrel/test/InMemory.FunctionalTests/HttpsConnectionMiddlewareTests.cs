@@ -362,12 +362,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task DoesNotSupportTls10()
+        public async Task Tls10CanBeDisabled()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.UseHttps(options =>
                 {
+                    options.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
                     options.ServerCertificate = _x509Certificate2;
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                     options.AllowAnyClientCertificate();

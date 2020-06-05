@@ -124,7 +124,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
 
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and (-not $globalJsonHasRuntimes) -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
-    $dotnetCmd = Get-Command 'dotnet.exe' -ErrorAction SilentlyContinue
+    $dotnetExecutable = GetExecutableFileName 'dotnet'
+    $dotnetCmd = Get-Command $dotnetExecutable -ErrorAction SilentlyContinue
+
     if ($dotnetCmd -ne $null) {
       $env:DOTNET_INSTALL_DIR = Split-Path $dotnetCmd.Path -Parent
     }
@@ -283,6 +285,10 @@ function InstallDotNet([string] $dotnetRoot,
 # Throws on failure.
 #
 function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements = $null) {
+  if (-not (IsWindowsPlatform)) {
+    throw "Cannot initialize Visual Studio on non-Windows"
+  }
+
   if (Test-Path variable:global:_MSBuildExe) {
     return $global:_MSBuildExe
   }
@@ -387,6 +393,10 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 # or $null if no instance meeting the requirements is found on the machine.
 #
 function LocateVisualStudio([object]$vsRequirements = $null){
+  if (-not (IsWindowsPlatform)) {
+    throw "Cannot run vswhere on non-Windows platforms."
+  }
+
   if (Get-Member -InputObject $GlobalJson.tools -Name 'vswhere') {
     $vswhereVersion = $GlobalJson.tools.vswhere
   } else {
@@ -452,7 +462,8 @@ function InitializeBuildTool() {
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "/global.json must specify 'tools.dotnet'."
       ExitWithExitCode 1
     }
-    $buildTool = @{ Path = Join-Path $dotnetRoot 'dotnet.exe'; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
+    $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -664,6 +675,19 @@ function GetMSBuildBinaryLogCommandLineArgument($arguments) {
   }
 
   return $null
+}
+
+function GetExecutableFileName($baseName) {
+  if (IsWindowsPlatform) {
+    return "$baseName.exe"
+  }
+  else {
+    return $baseName
+  }
+}
+
+function IsWindowsPlatform() {
+  return [environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
 }
 
 . $PSScriptRoot\pipeline-logging-functions.ps1

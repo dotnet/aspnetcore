@@ -86,7 +86,8 @@
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
         @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
+        @(Reference->WithMetadataValue('IsSharedSource', 'true'));
+        @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.

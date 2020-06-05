@@ -197,7 +197,11 @@ namespace Microsoft.AspNetCore.Internal
             var exited = Exited.Wait(timeSpan.Value);
             if (!exited)
             {
-                _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                lock (_testOutputLock)
+                {
+                    _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                }
+
                 _process.Dispose();
             }
             else if (assertSuccess && _process.ExitCode != 0)
@@ -227,13 +231,16 @@ namespace Microsoft.AspNetCore.Internal
                 _process.KillTree();
             }
 
-            _process.CancelOutputRead();
-            _process.CancelErrorRead();
+            if (_process != null)
+            {
+                _process.CancelOutputRead();
+                _process.CancelErrorRead();
 
-            _process.ErrorDataReceived -= OnErrorData;
-            _process.OutputDataReceived -= OnOutputData;
-            _process.Exited -= OnProcessExited;
-            _process.Dispose();
+                _process.ErrorDataReceived -= OnErrorData;
+                _process.OutputDataReceived -= OnOutputData;
+                _process.Exited -= OnProcessExited;
+                _process.Dispose();
+            }
         }
     }
 }

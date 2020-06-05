@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,6 +34,7 @@ namespace A.Internal.Namespace
 
         [Theory]
         [MemberData(nameof(PublicMemberDefinitions))]
+        [QuarantinedTest]
         public async Task PublicExposureOfPubternalTypeProducesPUB0001(string member)
         {
             var code = GetSourceFromNamespaceDeclaration($@"
@@ -127,6 +129,7 @@ namespace A
         [Theory]
         [MemberData(nameof(PrivateMemberDefinitions))]
         [MemberData(nameof(PublicMemberDefinitions))]
+        [QuarantinedTest]
         public async Task DefinitionOfPubternalCrossAssemblyProducesPUB0002(string member)
         {
             var code = TestSource.Read($@"

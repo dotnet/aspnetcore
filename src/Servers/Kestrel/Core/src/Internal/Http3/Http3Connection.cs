@@ -31,13 +31,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private long _highestOpenedStreamId; // TODO lock to access
         private volatile bool _haveSentGoAway;
-        private object _sync = new object();
+        private readonly object _sync = new object();
         private MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
         private bool _aborted;
-        private object _protocolSelectionLock = new object();
+        private readonly object _protocolSelectionLock = new object();
 
         public Http3Connection(Http3ConnectionContext context)
         {

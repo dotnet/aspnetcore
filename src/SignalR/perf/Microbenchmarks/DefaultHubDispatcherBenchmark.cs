@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 serviceScopeFactory,
                 new HubContext<TestHub>(new DefaultHubLifetimeManager<TestHub>(NullLogger<DefaultHubLifetimeManager<TestHub>>.Instance)),
                 enableDetailedErrors: false,
-                new Logger<DefaultHubDispatcher<TestHub>>(NullLoggerFactory.Instance));
+                new Logger<DefaultHubDispatcher<TestHub>>(NullLoggerFactory.Instance),
+                hubFilters: null);
 
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
             var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport);

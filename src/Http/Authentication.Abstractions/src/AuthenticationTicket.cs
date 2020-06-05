@@ -52,5 +52,20 @@ namespace Microsoft.AspNetCore.Authentication
         /// Additional state values for the authentication session.
         /// </summary>
         public AuthenticationProperties Properties { get; private set; }
+
+        /// <summary>
+        /// Returns a copy of the ticket.
+        /// Note: the claims principal will be cloned by calling Clone() on each of the Identities.
+        /// </summary>
+        /// <returns>A copy of the ticket</returns>
+        public AuthenticationTicket Clone()
+        {
+            var principal = new ClaimsPrincipal();
+            foreach (var identity in Principal.Identities)
+            {
+                principal.AddIdentity(identity.Clone());
+            }
+            return new AuthenticationTicket(principal, Properties.Clone(), AuthenticationScheme);
+        }
     }
 }

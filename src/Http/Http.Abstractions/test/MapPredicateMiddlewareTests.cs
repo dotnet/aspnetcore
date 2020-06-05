@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         private static Task Success(HttpContext context)
         {
             context.Response.StatusCode = 200;
-            return Task.FromResult<object>(null);
+            return Task.FromResult<object>(null!);
         }
 
         private static void UseSuccess(IApplicationBuilder app)
@@ -52,12 +51,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             var builder = new ApplicationBuilder(serviceProvider: null);
             var noMiddleware = new ApplicationBuilder(serviceProvider: null).Build();
             var noOptions = new MapWhenOptions();
-            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(null, UseNotImplemented));
-            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(NotImplementedPredicate, configuration: null));
-            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
-            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
-            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null, noOptions));
-            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null));
+            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(null!, UseNotImplemented));
+            Assert.Throws<ArgumentNullException>(() => builder.MapWhen(NotImplementedPredicate, configuration: null!));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null!, noOptions));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null!));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(null!, noOptions));
+            Assert.Throws<ArgumentNullException>(() => new MapWhenMiddleware(noMiddleware, null!));
         }
 
         [Fact]

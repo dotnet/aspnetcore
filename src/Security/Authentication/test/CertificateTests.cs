@@ -473,6 +473,82 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task VerifyValidationResultCanBeCached(bool cache)
+        {
+            const string Expected = "John Doe";
+            var validationCount = 0;
+
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    Events = new CertificateAuthenticationEvents
+                    {
+                        OnCertificateValidated = context =>
+                        {
+                            validationCount++;
+
+                            // Make sure we get the validated principal
+                            Assert.NotNull(context.Principal);
+
+                            var claims = new[]
+                            {
+                                new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                                new Claim("ValidationCount", validationCount.ToString(), ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                            };
+
+                            context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                            context.Success();
+                            return Task.CompletedTask;
+                        }
+                    }
+                },
+                Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            XElement responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+            Assert.NotNull(responseAsXml);
+            var name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(name);
+            Assert.Equal(Expected, name.First().Value);
+            var count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+            Assert.Single(count);
+            Assert.Equal("1", count.First().Value);
+
+            // Second request should not trigger validation if caching
+            response = await server.CreateClient().GetAsync("https://example.com/");
+            responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(name);
+            Assert.Equal(Expected, name.First().Value);
+            count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+            Assert.Single(count);
+            var expected = cache ? "1" : "2"; 
+            Assert.Equal(expected, count.First().Value);
+        }
+
         [Fact]
         public async Task VerifyValidationEventPrincipalIsPropogated()
         {
@@ -526,7 +602,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null,
             bool wireUpHeaderMiddleware = false,
-            string headerName = "")
+            string headerName = "",
+            bool useCache = false)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -575,9 +652,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 })
             .ConfigureServices(services =>
             {
+                AuthenticationBuilder authBuilder;
                 if (configureOptions != null)
                 {
-                    services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
+                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
                         options.CustomTrustStore = configureOptions.CustomTrustStore;
                         options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
@@ -591,7 +669,11 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 }
                 else
                 {
-                    services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                }
+                if (useCache)
+                {
+                    authBuilder.AddCertificateCache();
                 }
 
                 if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))

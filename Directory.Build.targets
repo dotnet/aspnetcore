@@ -5,6 +5,16 @@
     <!-- Analyzer package are needed in source build for WebSDK -->
     <ExcludeFromSourceBuild
         Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsReferenceAssemblyProject)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+        
+    <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
+     suppress all targets for TestProjects using ExcludeFromBuild. -->
+    <ExcludeFromBuild Condition="'$(SkipTestBuild)' == 'true' and 
+        ('$(IsTestProject)' == 'true' or
+         '$(IsUnitTestProject)' == 'true' or
+         '$(IsTestAssetProject)' == 'true' or
+         '$(IsBenchmarkProject)' == 'true' or 
+         '$(IsSampleProject)' == 'true' or
+         '$(IsSpecificationTestProject)' == 'true')">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">

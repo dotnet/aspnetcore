@@ -1,0 +1,1 @@
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPageWithNoLeadingPageDirective.cshtml(2,1): Error RZ3906: The '@page' directive must precede all other elements defined in a Razor file.

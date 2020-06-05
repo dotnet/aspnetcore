@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .WithAllHostingModels();
 
         [ConditionalTheory]
+        [QuarantinedTest]
         [MemberData(nameof(TestVariants))]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsNoClientCert_NoClientCert(TestVariant variant)
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22319")]
         [MemberData(nameof(TestVariants))]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)

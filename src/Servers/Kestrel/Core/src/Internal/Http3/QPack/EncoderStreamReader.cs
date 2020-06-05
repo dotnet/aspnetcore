@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         {
             try
             {
-                return _s ? H3StaticTable.Instance[index] : _dynamicTable[index];
+                return _s ? H3StaticTable.GetHeaderFieldAt(index) : _dynamicTable[index];
             }
             catch (IndexOutOfRangeException ex)
             {

@@ -37,6 +37,7 @@
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "7.16.0",
+    "nan": "^2.14.1",
     "typescript": "3.6.4"
   },
   "scripts": {

@@ -35,7 +35,8 @@ namespace Certificate.Sample
                             return Task.CompletedTask;
                         }
                     };
-                });
+                // Adding a ICertificateValidationCache will result in certificate auth caching the results, the default implementation uses a memory cache
+                }).AddCertificateCache();
 
             services.AddAuthorization();
         }

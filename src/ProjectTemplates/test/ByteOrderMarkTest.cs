@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -72,6 +73,8 @@ namespace Templates.Test
             var path = Path.Combine(projectName, "content");
             var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
 
+            bool nonBOMFilesPresent = false;
+
             foreach (var directory in directories)
             {
                 var files = (IEnumerable<string>)Directory.GetFiles(directory, "*.cshtml", SearchOption.AllDirectories);
@@ -86,11 +89,15 @@ namespace Templates.Test
 
                     // Check for UTF8 BOM 0xEF,0xBB,0xBF
                     var expectedBytes = Encoding.UTF8.GetPreamble();
-                    Assert.True(
-                        bytes[0] == expectedBytes[0] && bytes[1] == expectedBytes[1] && bytes[2] == expectedBytes[2],
-                        $"File {filePath} doesn't contains UTF-8 BOM characters.");
+                    if (bytes[0] != expectedBytes[0] || bytes[1] != expectedBytes[1] || bytes[2] != expectedBytes[2])
+                    {
+                        _output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
+                        nonBOMFilesPresent = true;
+                    }
                 }
             }
+
+            Assert.False(nonBOMFilesPresent);
         }
     }
 }

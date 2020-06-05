@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
 </Project>

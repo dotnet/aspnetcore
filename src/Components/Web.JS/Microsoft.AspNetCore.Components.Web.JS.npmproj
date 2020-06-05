@@ -26,8 +26,6 @@
       Private="false" />
   </ItemGroup>
 
-  <Target Name="GetTargetPath" />
-
   <!-- Workaround strange issues with something calling these targets. -->
   <Target Name="GetTargetFramework" />
   <Target Name="GetCopyToPublishDirectoryItems" />
