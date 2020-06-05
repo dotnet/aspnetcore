@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -31,9 +32,9 @@ namespace Microsoft.Net.Http.Headers
         private const string ExpiresDateFormat = "r";
 
         private static readonly HttpHeaderParser<SetCookieHeaderValue> SingleValueParser
-            = new GenericHeaderParser<SetCookieHeaderValue>(false, GetSetCookieLength);
+            = new GenericHeaderParser<SetCookieHeaderValue>(false, GetSetCookieLength!);
         private static readonly HttpHeaderParser<SetCookieHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<SetCookieHeaderValue>(true, GetSetCookieLength);
+            = new GenericHeaderParser<SetCookieHeaderValue>(true, GetSetCookieLength!);
 
         private StringSegment _name;
         private StringSegment _value;
@@ -103,8 +104,8 @@ namespace Microsoft.Net.Http.Headers
         {
             var length = _name.Length + EqualsToken.Length + _value.Length;
 
-            string maxAge = null;
-            string sameSite = null;
+            string? maxAge = null;
+            string? sameSite = null;
 
             if (Expires.HasValue)
             {
@@ -296,37 +297,37 @@ namespace Microsoft.Net.Http.Headers
         public static SetCookieHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out SetCookieHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out SetCookieHeaderValue? parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<SetCookieHeaderValue> ParseList(IList<string> inputs)
+        public static IList<SetCookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<SetCookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         // name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={Strict|Lax|None}; httponly
-        private static int GetSetCookieLength(StringSegment input, int startIndex, out SetCookieHeaderValue parsedValue)
+        private static int GetSetCookieLength(StringSegment input, int startIndex, out SetCookieHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
             var offset = startIndex;
@@ -537,7 +538,7 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as SetCookieHeaderValue;
 

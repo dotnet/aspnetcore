@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="key">The key of the route value.</param>
         /// <returns>The corresponding route value, or null.</returns>
-        public static object GetRouteValue(this HttpContext httpContext, string key)
+        public static object? GetRouteValue(this HttpContext httpContext, string key)
         {
             if (httpContext == null)
             {

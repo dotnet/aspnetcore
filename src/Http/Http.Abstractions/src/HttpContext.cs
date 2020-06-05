@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets a key/value collection that can be used to share data within the scope of this request.
         /// </summary>
-        public abstract IDictionary<object, object> Items { get; set; }
+        public abstract IDictionary<object, object?> Items { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IServiceProvider"/> that provides access to the request's service container.
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the object used to manage user session data for this request.
         /// </summary>
-        public abstract ISession Session { get; set; }
+        public abstract ISession? Session { get; set; }
 
         /// <summary>
         /// Aborts the connection underlying this request.

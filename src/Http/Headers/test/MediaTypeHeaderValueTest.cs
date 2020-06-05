@@ -40,8 +40,8 @@ namespace Microsoft.Net.Http.Headers
             AssertFormatException("text/plain;charset=utf-8"); // ctor takes only media-type name, no parameters
         }
 
-        public static TheoryData<string, string, string> MediaTypesWithSuffixes =>
-                 new TheoryData<string, string, string>
+        public static TheoryData<string, string, string?> MediaTypesWithSuffixes =>
+                 new TheoryData<string, string, string?>
                  {
                      // See https://tools.ietf.org/html/rfc6838#section-4.2 for allowed names spec
                      { "application/json", "json", null },
@@ -124,7 +124,7 @@ namespace Microsoft.Net.Http.Headers
         public void Parameters_AddNull_Throw()
         {
             var mediaType = new MediaTypeHeaderValue("text/plain");
-            Assert.Throws<ArgumentNullException>(() => mediaType.Parameters.Add(null));
+            Assert.Throws<ArgumentNullException>(() => mediaType.Parameters.Add(null!));
         }
 
         [Fact]
@@ -381,7 +381,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(mediaType1.Equals(mediaType2), "No params vs. charset.");
             Assert.False(mediaType2.Equals(mediaType1), "charset vs. no params.");
             Assert.False(mediaType1.Equals(null), "No params vs. <null>.");
-            Assert.False(mediaType1.Equals(mediaType3), "No params vs. custom param.");
+            Assert.False(mediaType1!.Equals(mediaType3), "No params vs. custom param.");
             Assert.False(mediaType2.Equals(mediaType3), "charset vs. custom param.");
             Assert.True(mediaType1.Equals(mediaType4), "Different casing.");
             Assert.True(mediaType2.Equals(mediaType5), "Different casing in charset.");
@@ -536,8 +536,7 @@ namespace Microsoft.Net.Http.Headers
         [Fact]
         public void TryParseList_NullOrEmptyArray_ReturnsFalse()
         {
-            IList<MediaTypeHeaderValue> results;
-            Assert.False(MediaTypeHeaderValue.TryParseList(null, out results));
+            Assert.False(MediaTypeHeaderValue.TryParseList(null, out var results));
             Assert.False(MediaTypeHeaderValue.TryParseList(new string[0], out results));
             Assert.False(MediaTypeHeaderValue.TryParseList(new string[] { "" }, out results));
         }
@@ -582,8 +581,7 @@ namespace Microsoft.Net.Http.Headers
         public void TryParseList_SetOfValidValueStrings_ReturnsTrue()
         {
             var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -601,8 +599,7 @@ namespace Microsoft.Net.Http.Headers
         public void TryParseStrictList_SetOfValidValueStrings_ReturnsTrue()
         {
             var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseStrictList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -659,8 +656,7 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "application/xml;q=0 4"
             };
-            IList<MediaTypeHeaderValue> results;
-            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -684,8 +680,7 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "application/xml;q=0 4"
             };
-            IList<MediaTypeHeaderValue> results;
-            Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out var results));
         }
 
         [Theory]
@@ -817,28 +812,26 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(expected, result);
         }
 
-        private void CheckValidParse(string input, MediaTypeHeaderValue expectedResult)
+        private void CheckValidParse(string? input, MediaTypeHeaderValue expectedResult)
         {
             var result = MediaTypeHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => MediaTypeHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, MediaTypeHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, MediaTypeHeaderValue expectedResult)
         {
-            MediaTypeHeaderValue result = null;
-            Assert.True(MediaTypeHeaderValue.TryParse(input, out result));
+            Assert.True(MediaTypeHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            MediaTypeHeaderValue result = null;
-            Assert.False(MediaTypeHeaderValue.TryParse(input, out result));
+            Assert.False(MediaTypeHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

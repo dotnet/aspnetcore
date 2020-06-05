@@ -54,25 +54,25 @@ namespace Microsoft.AspNetCore.Connections
             Application = application;
         }
 
-        public override string ConnectionId { get; set; }
+        public override string? ConnectionId { get; set; }
 
         public override IFeatureCollection Features { get; }
 
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
 
-        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+        public override IDictionary<object, object?>? Items { get; set; } = new ConnectionItems();
 
-        public IDuplexPipe Application { get; set; }
+        public IDuplexPipe? Application { get; set; }
 
-        public override IDuplexPipe Transport { get; set; }
+        public override IDuplexPipe? Transport { get; set; }
 
         public override CancellationToken ConnectionClosed { get; set; }
-        public override EndPoint LocalEndPoint { get; set; }
-        public override EndPoint RemoteEndPoint { get; set; }
+        public override EndPoint? LocalEndPoint { get; set; }
+        public override EndPoint? RemoteEndPoint { get; set; }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
         }
 
         public override ValueTask DisposeAsync()
