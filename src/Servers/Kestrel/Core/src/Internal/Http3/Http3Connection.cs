@@ -148,15 +148,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Tick()
         {
-            lock (_protocolSelectionLock)
-            {
-                if (_aborted)
-                {
-                    // It's safe to check for timeouts on a dead connection,
-                    // but try not to in order to avoid extraneous logs.
-                    return;
-                }
-            }
+
+           if (_aborted)
+           {
+               // It's safe to check for timeouts on a dead connection,
+               // but try not to in order to avoid extraneous logs.
+               return;
+           }
+            
 
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
             var now = _systemClock.UtcNowUnsynchronized;
