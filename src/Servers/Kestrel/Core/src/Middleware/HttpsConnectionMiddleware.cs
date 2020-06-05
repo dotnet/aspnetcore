@@ -252,6 +252,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
+            _logger.LogDebug(3, CoreStrings.HttpsConnectionEstablished, context.ConnectionId, sslStream.SslProtocol);
+
             var originalTransport = context.Transport;
 
             try
