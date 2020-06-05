@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// <remarks>
         /// All top-level elements in the repository.
         /// </remarks>
-        IReadOnlyCollection<XElement> GetAllElements();
+        IReadOnlyCollection<XElement?> GetAllElements();
 
         /// <summary>
         /// Adds a top-level XML element to the repository.

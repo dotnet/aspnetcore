@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        public virtual IReadOnlyCollection<XElement> GetAllElements()
+        public virtual IReadOnlyCollection<XElement?> GetAllElements()
         {
             using (var scope = _services.CreateScope())
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
 
                 // Put logger in a local such that `this` isn't captured.
                 var logger = _logger;
-                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, logger)).ToList().AsReadOnly();
+                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml!, logger)).ToList().AsReadOnly();
             }
         }
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
         }
 
-        private static XElement TryParseKeyXml(string xml, ILogger logger)
+        private static XElement? TryParseKeyXml(string xml, ILogger logger)
         {
             try
             {

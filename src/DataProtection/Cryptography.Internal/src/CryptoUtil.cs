@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Cryptography
     {
         // This isn't a typical Debug.Assert; the check is always performed, even in retail builds.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Assert(bool condition, string message)
+        public static void Assert([DoesNotReturnIf(false)] bool condition, string message)
         {
             if (!condition)
             {
