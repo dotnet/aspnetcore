@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                _requestBodyPipe.Writer.Complete(error);
+                await _requestBodyPipe.Writer.CompleteAsync(error);
             }
         }
 
