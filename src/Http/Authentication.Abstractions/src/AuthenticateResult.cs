@@ -47,6 +47,28 @@ namespace Microsoft.AspNetCore.Authentication
         public bool None { get; protected set; }
 
         /// <summary>
+        /// Create a new deep copy of the result
+        /// </summary>
+        /// <returns>A copy of the result</returns>
+        public AuthenticateResult Clone()
+        {
+            if (None)
+            {
+                return NoResult();
+            }
+            if (Failure != null)
+            {
+                return Fail(Failure, Properties.Clone());
+            }
+            if (Succeeded)
+            {
+                return Success(Ticket.Clone());
+            }
+            // This shouldn't happen
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Indicates that authentication was successful.
         /// </summary>
         /// <param name="ticket">The ticket representing the authentication result.</param>

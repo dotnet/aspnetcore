@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Authentication
         public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public bool Succeeded { get { throw null; } }
         public Microsoft.AspNetCore.Authentication.AuthenticationTicket Ticket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticateResult Clone() { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(System.Exception failure) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(System.Exception failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         public static Microsoft.AspNetCore.Authentication.AuthenticateResult Fail(string failureMessage) { throw null; }
@@ -69,6 +70,7 @@ namespace Microsoft.AspNetCore.Authentication
         public System.Collections.Generic.IDictionary<string, string> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IDictionary<string, object> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string RedirectUri { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Clone() { throw null; }
         protected bool? GetBool(string key) { throw null; }
         protected System.DateTimeOffset? GetDateTimeOffset(string key) { throw null; }
         public T GetParameter<T>(string key) { throw null; }
@@ -100,6 +102,7 @@ namespace Microsoft.AspNetCore.Authentication
         public string AuthenticationScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationTicket Clone() { throw null; }
     }
     public partial class AuthenticationToken
     {
