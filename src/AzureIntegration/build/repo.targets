@@ -12,7 +12,7 @@
       <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\$(SiteExtensionArch)\</SiteExtensionWorkingDirectory>
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
-      <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-dev/</SiteExtensionFeed>
+      <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json</SiteExtensionFeed>
   </PropertyGroup>
 
   <Target Name="_AddTestRuntimes">

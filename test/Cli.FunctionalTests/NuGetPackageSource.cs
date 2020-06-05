@@ -23,7 +23,7 @@ namespace Cli.FunctionalTests
         public static NuGetPackageSource DotNetCore { get; } = new NuGetPackageSource
         {
             Name = nameof(DotNetCore),
-            SourceArgumentLazy = new Lazy<string>("--source https://dotnet.myget.org/F/dotnet-core/api/v3/index.json"),
+            SourceArgumentLazy = new Lazy<string>("--source https://dotnetmygetlegacy.blob.core.windows.net/dotnet-core/index.json"),
         };
 
         public static NuGetPackageSource EnvironmentVariable { get; } = new NuGetPackageSource

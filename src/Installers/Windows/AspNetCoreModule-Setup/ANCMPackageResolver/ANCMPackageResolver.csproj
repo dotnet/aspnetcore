@@ -19,7 +19,7 @@
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://api.nuget.org/v3/index.json;
-      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      https://dotnetmygetlegacy.blob.core.windows.net/dotnet-core/index.json;
     </RestoreSources>
   </PropertyGroup>
 
