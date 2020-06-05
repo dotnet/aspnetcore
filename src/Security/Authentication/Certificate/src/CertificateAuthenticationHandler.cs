@@ -130,11 +130,19 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
         }
 
-        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            var authenticationChallengedContext = new CertificateChallengeContext(Context, Scheme, Options, properties);
+            await Events.Challenge(authenticationChallengedContext);
+
+            if (authenticationChallengedContext.Handled)
+            {
+                return;
+            }
+
             // Certificate authentication takes place at the connection level. We can't prompt once we're in
             // user code, so the best thing to do is Forbid, not Challenge.
-            return HandleForbiddenAsync(properties);
+            await HandleForbiddenAsync(properties);
         }
 
         private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
