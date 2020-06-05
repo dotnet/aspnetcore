@@ -119,7 +119,7 @@
     <BaselinePackageVersion>2.2.10</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.2.10, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Core' ">
