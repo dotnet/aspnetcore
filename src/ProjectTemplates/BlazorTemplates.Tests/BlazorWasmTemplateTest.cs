@@ -250,10 +250,21 @@ namespace Templates.Test
             TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
+        [ConditionalFact]
+        // LocalDB doesn't work on non Windows platforms
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
+        {
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(true);
+        }
+
+        [Fact]
+        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
+        {
+            return BlazorWasmHostedTemplate_IndividualAuth_Works(false);
+        }
+
+        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
 
@@ -268,11 +279,11 @@ namespace Templates.Test
                 Assert.Contains(".db", serverProjectFileContents);
             }
 
-            var appSettings = ReadFile(serverProject.TemplateOutputDir, "appSettings.json");
+            var appSettings = ReadFile(serverProject.TemplateOutputDir, "appsettings.json");
             var element = JsonSerializer.Deserialize<JsonElement>(appSettings);
             var clientsProperty = element.GetProperty("IdentityServer").EnumerateObject().Single().Value.EnumerateObject().Single();
             var replacedSection = element.GetRawText().Replace(clientsProperty.Name, serverProject.ProjectName.Replace(".Server", ".Client"));
-            var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appSettings.json");
+            var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appsettings.json");
             File.WriteAllText(appSettingsPath, replacedSection);
 
             var publishResult = await serverProject.RunDotNetPublishAsync();

@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         return null;
                     }
 
-                    AcceptWhile(IsSpacingToken(includeNewLines: true));
+                    AcceptWhile(IsSpacingTokenIncludingNewLines);
                     builder.Add(OutputAsMarkupLiteral());
 
                     if (At(SyntaxKind.OpenAngle))
@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         var bookmark = CurrentStart.AbsoluteIndex;
 
                         // Skip whitespace
-                        ReadWhile(IsSpacingToken(includeNewLines: true));
+                        ReadWhile(IsSpacingTokenIncludingNewLines);
 
                         // Open Angle
                         if (At(SyntaxKind.OpenAngle) && NextIs(SyntaxKind.ForwardSlash))
@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 SyntaxToken forwardSlashToken = null;
                 SyntaxToken closeAngleToken = null;
 
-                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                AcceptWhile(IsSpacingToken);
                 miscAttributeContentBuilder.Add(OutputAsMarkupLiteral());
 
                 if (At(SyntaxKind.CloseAngle) ||
@@ -1442,7 +1442,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ParseDoubleTransition(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
-            AcceptWhile(IsSpacingToken(includeNewLines: true));
+            AcceptWhile(IsSpacingTokenIncludingNewLines);
             builder.Add(OutputAsMarkupLiteral());
 
             // First transition
@@ -1463,7 +1463,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // We don't want to write it to output.
                 Context.NullGenerateWhitespaceAndNewLine = false;
                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                AcceptWhile(IsSpacingToken);
                 if (At(SyntaxKind.NewLine))
                 {
                     AcceptAndMoveNext();
@@ -1549,7 +1549,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // We don't want to write it to output.
                 Context.NullGenerateWhitespaceAndNewLine = false;
                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                AcceptWhile(IsSpacingToken);
                 if (At(SyntaxKind.NewLine))
                 {
                     AcceptAndMoveNext();
@@ -1596,7 +1596,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 (At(SyntaxKind.NewLine) ||
                 (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.NewLine))))
             {
-                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                AcceptWhile(IsSpacingToken);
                 AcceptAndMoveNext();
                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                 builder.Add(OutputAsMarkupEphemeralLiteral());
@@ -1611,7 +1611,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // We don't want to write it to output.
                 Context.NullGenerateWhitespaceAndNewLine = false;
                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                AcceptWhile(IsSpacingToken);
                 if (At(SyntaxKind.NewLine))
                 {
                     AcceptAndMoveNext();
@@ -1620,7 +1620,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 builder.Add(OutputAsMarkupEphemeralLiteral());
             }
 
-            AcceptWhile(IsSpacingToken(includeNewLines: true));
+            AcceptWhile(IsSpacingTokenIncludingNewLines);
         }
 
         private bool ScriptTagExpectsHtml(MarkupStartTagSyntax tagBlock)
@@ -2109,11 +2109,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return false;
-        }
-
-        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines)
-        {
-            return token => token.Kind == SyntaxKind.Whitespace || (includeNewLines && token.Kind == SyntaxKind.NewLine);
         }
 
         internal static bool IsHyphen(SyntaxToken token)

@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.Localization
         /// For the type "Sample.Controllers.Home" if there's a resourceRelativePath return
         /// "Sample.Resourcepath.Controllers.Home" if there isn't one then it would return "Sample.Controllers.Home".
         /// </remarks>
-        protected virtual string GetResourcePrefix(TypeInfo typeInfo, string baseNamespace, string resourcesRelativePath)
+        protected virtual string GetResourcePrefix(TypeInfo typeInfo, string? baseNamespace, string? resourcesRelativePath)
         {
             if (typeInfo == null)
             {
@@ -92,6 +92,11 @@ namespace Microsoft.Extensions.Localization
             if (string.IsNullOrEmpty(baseNamespace))
             {
                 throw new ArgumentNullException(nameof(baseNamespace));
+            }
+
+            if (string.IsNullOrEmpty(typeInfo.FullName))
+            {
+                throw new ArgumentException(Resources.FormatLocalization_TypeMustHaveTypeName(typeInfo));
             }
 
             if (string.IsNullOrEmpty(resourcesRelativePath))
@@ -219,7 +224,7 @@ namespace Microsoft.Extensions.Localization
         /// <param name="assembly">The assembly to get a <see cref="ResourceLocationAttribute"/> from.</param>
         /// <returns>The <see cref="ResourceLocationAttribute"/> associated with the given <see cref="Assembly"/>.</returns>
         /// <remarks>This method is protected and virtual for testing purposes only.</remarks>
-        protected virtual ResourceLocationAttribute GetResourceLocationAttribute(Assembly assembly)
+        protected virtual ResourceLocationAttribute? GetResourceLocationAttribute(Assembly assembly)
         {
             return assembly.GetCustomAttribute<ResourceLocationAttribute>();
         }
@@ -228,17 +233,21 @@ namespace Microsoft.Extensions.Localization
         /// <param name="assembly">The assembly to get a <see cref="RootNamespaceAttribute"/> from.</param>
         /// <returns>The <see cref="RootNamespaceAttribute"/> associated with the given <see cref="Assembly"/>.</returns>
         /// <remarks>This method is protected and virtual for testing purposes only.</remarks>
-        protected virtual RootNamespaceAttribute GetRootNamespaceAttribute(Assembly assembly)
+        protected virtual RootNamespaceAttribute? GetRootNamespaceAttribute(Assembly assembly)
         {
             return assembly.GetCustomAttribute<RootNamespaceAttribute>();
         }
 
-        private string GetRootNamespace(Assembly assembly)
+        private string? GetRootNamespace(Assembly assembly)
         {
             var rootNamespaceAttribute = GetRootNamespaceAttribute(assembly);
 
-            return rootNamespaceAttribute?.RootNamespace ??
-                new AssemblyName(assembly.FullName).Name;
+            if (rootNamespaceAttribute != null)
+            {
+                return rootNamespaceAttribute.RootNamespace;
+            }
+
+            return assembly.GetName().Name;
         }
 
         private string GetResourcePath(Assembly assembly)
@@ -256,7 +265,7 @@ namespace Microsoft.Extensions.Localization
             return resourceLocation;
         }
 
-        private static string TrimPrefix(string name, string prefix)
+        private static string? TrimPrefix(string name, string prefix)
         {
             if (name.StartsWith(prefix, StringComparison.Ordinal))
             {
