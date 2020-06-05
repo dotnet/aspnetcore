@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -63,8 +61,9 @@ namespace Microsoft.AspNetCore.Authentication
             var properties = new AuthenticationProperties();
 
             var actor = new ClaimsIdentity("actor");
+            actor.Label = "Famous";
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(), properties, "Hello");
-            ticket.Principal.AddIdentity(new ClaimsIdentity("misc") { Actor = actor });
+            ticket.Principal.AddIdentity(new ClaimsIdentity("misc") { Actor = actor, Label = "Top" });
 
             using (var stream = new MemoryStream())
             using (var writer = new BinaryWriter(stream))
@@ -75,10 +74,12 @@ namespace Microsoft.AspNetCore.Authentication
                 var readTicket = serializer.Read(reader);
                 Assert.Single(readTicket.Principal.Identities);
                 Assert.Equal("misc", readTicket.Principal.Identity.AuthenticationType);
+                Assert.Equal("Top", readTicket.Principal.Identities.First().Label);
 
-                var identity = (ClaimsIdentity) readTicket.Principal.Identity;
+                var identity = (ClaimsIdentity)readTicket.Principal.Identity;
                 Assert.NotNull(identity.Actor);
                 Assert.Equal("actor", identity.Actor.AuthenticationType);
+                Assert.Equal("Famous", identity.Actor.Label);
             }
         }
 
@@ -99,7 +100,9 @@ namespace Microsoft.AspNetCore.Authentication
             claim.Properties.Add("property-2", null);
 
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(), properties, "Hello");
-            ticket.Principal.AddIdentity(new ClaimsIdentity(new[] { claim }, "misc"));
+            var id = new ClaimsIdentity(new[] { claim }, "misc");
+            id.Label = "Label";
+            ticket.Principal.AddIdentity(id);
 
             using (var stream = new MemoryStream())
             using (var writer = new BinaryWriter(stream))
@@ -110,6 +113,7 @@ namespace Microsoft.AspNetCore.Authentication
                 var readTicket = serializer.Read(reader);
                 Assert.Single(readTicket.Principal.Identities);
                 Assert.Equal("misc", readTicket.Principal.Identity.AuthenticationType);
+                Assert.Equal("Label", readTicket.Principal.Identities.First().Label);
 
                 var readClaim = readTicket.Principal.FindFirst("type");
                 Assert.NotNull(claim);

@@ -112,6 +112,16 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 writer.Write(false);
             }
+
+            if (identity.Label != null)
+            {
+                writer.Write(true);
+                writer.Write(identity.Label);
+            }
+            else
+            {
+                writer.Write(false);
+            }
         }
 
         protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
@@ -211,6 +221,13 @@ namespace Microsoft.AspNetCore.Authentication
             if (reader.ReadBoolean())
             {
                 identity.Actor = ReadIdentity(reader);
+            }
+             
+            // Determine whether the identity
+            // has a label.
+            if (reader.ReadBoolean())
+            {
+                identity.Label = reader.ReadString();
             }
 
             return identity;
