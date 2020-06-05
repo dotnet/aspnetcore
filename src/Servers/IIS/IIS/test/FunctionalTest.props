@@ -8,7 +8,7 @@
     <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="BuildAssets" AfterTargets="Build">
+  <Target Name="BuildAssets" AfterTargets="Build" Condition="'$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
       <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
     </MSBuild>

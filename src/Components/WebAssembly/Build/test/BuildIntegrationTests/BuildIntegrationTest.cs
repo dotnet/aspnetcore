@@ -4,6 +4,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
 
@@ -203,6 +204,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange

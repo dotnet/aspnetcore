@@ -10,12 +10,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Internal;
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackTraceHelper
     {
-        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException error)
+        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
         {
             var frames = new List<StackFrameInfo>();
 
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return frames;
             }
 
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
 
             for (var i = 0; i < stackFrames.Length; i++)
             {
@@ -69,7 +70,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return frames;
         }
 
-        internal static MethodDisplayInfo GetMethodDisplayString(MethodBase method)
+        internal static MethodDisplayInfo? GetMethodDisplayString(MethodBase? method)
         {
             // Special case: no method available
             if (method == null)
@@ -145,7 +146,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return methodDisplayInfo;
         }
 
-        private static bool ShowInStackTrace(MethodBase method)
+        private static bool ShowInStackTrace(MethodBase? method)
         {
             Debug.Assert(method != null);
 
@@ -191,7 +192,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return true;
         }
 
-        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type declaringType)
+        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type? declaringType)
         {
             Debug.Assert(method != null);
             Debug.Assert(method.DeclaringType != null);

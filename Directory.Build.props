@@ -36,6 +36,42 @@
     <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
     <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
+  
+  <!-- Disable logging of some task parameters or metadata to reduce binlog size.
+       Reenable logging of any particular item by changing the value of the property below to 'false'
+       The format is as follows:
+       DisableLogTaskParameter_[task name]_[parameter name] - Disable logging of a particular parameter
+       DisableLogTaskParameterItemMetadata_[task name]_[parameter name] - Disable logging of item metadata of the parameter
+  -->
+  <PropertyGroup>
+    <TrimTaskParameters Condition=" '$(TrimTaskParameters)' == '' ">true</TrimTaskParameters>
+    <!-- ItemsToHash is used for incremental building and hashes input properties to a file
+         This is not generally useful for day-to-day build debugging. -->
+    <DisableLogTaskParameter_Hash_ItemsToHash>$(TrimTaskParameters)</DisableLogTaskParameter_Hash_ItemsToHash>
+    
+    <!-- JoinItems takes input ItemGroups. The output ItemGroup is logged. -->
+    <DisableLogTaskParameter_JoinItems_Right>$(TrimTaskParameters)</DisableLogTaskParameter_JoinItems_Right>
+    <DisableLogTaskParameter_JoinItems_Left>$(TrimTaskParameters)</DisableLogTaskParameter_JoinItems_Left>
+    
+    <!-- ConvertToAbsolutePaths - The output parameter (AbsolutePaths) is interesting
+         while the input Path is not generally useful. The output itemgroup's metadata
+         is not altered by the task. -->
+    <DisableLogTaskParameter_ConvertToAbsolutePath_Paths>$(TrimTaskParameters)</DisableLogTaskParameter_ConvertToAbsolutePath_Paths>
+    <DisableLogTaskParameterItemMetadata_ConvertToAbsolutePath_Paths>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_ConvertToAbsolutePath_Paths>
+    
+    <!-- The standard msbuild Copy task does not use Metadata and thus the input/outputs
+         item metadata is not relevant -->
+     <DisableLogTaskParameterItemMetadata_Copy_SourceFiles>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Copy_SourceFiles>
+     <DisableLogTaskParameterItemMetadata_Copy_DestinationFiles>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Copy_DestinationFiles>
+     
+     <!-- Reference metadata for GenerateDepsFile, Csc, RAR, etc. are sometimes useful, but extraordinarily large
+          when building against a shared framework where the number of input assemblies is very large.
+          Avoid logging these by default. -->
+     <DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferenceAssemblies>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferenceAssemblies>
+     <DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferencePaths>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferencePaths>
+     <DisableLogTaskParameterItemMetadata_ResolveAssemblyReference_Assemblies>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_ResolveAssemblyReference_Assemblies>
+     <DisableLogTaskParameterItemMetadata_Csc_References>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Csc_References>
+  </PropertyGroup>
 
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />

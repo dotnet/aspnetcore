@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 #nullable enable
@@ -20,11 +21,22 @@ namespace Ignitor
             }
         }
 
+        public static string Serialize(Node node)
+        {
+            using (var writer = new StringWriter())
+            {
+                var serializer = new Serializer(writer);
+                serializer.Serialize(node);
+                return writer.ToString();
+            }
+        }
+
         private class Serializer
         {
             private readonly TextWriter _writer;
             private int _depth;
             private bool _atStartOfLine;
+            private HashSet<Node> _visited = new HashSet<Node>();
 
             public Serializer(TextWriter writer)
             {
@@ -35,14 +47,25 @@ namespace Ignitor
             {
                 foreach (var kvp in hive.Components)
                 {
-                    SerializeComponent(kvp.Key, kvp.Value);
+                    Serialize(kvp.Value);
                 }
             }
 
-            private void Serialize(Node node)
+            public void Serialize(Node node)
             {
+                if (!_visited.Add(node))
+                {
+                    // This is a child component of a previously seen component. Don't repeat it
+                    return;
+                }
+
                 switch (node)
                 {
+                    case ComponentNode componentNode:
+                        {
+                            SerializeComponent(componentNode);
+                            break;
+                        }
                     case ElementNode elementNode:
                         {
                             SerializeElement(elementNode);
@@ -155,10 +178,10 @@ namespace Ignitor
                 }
             }
 
-            private void SerializeComponent(int id, ComponentNode component)
+            private void SerializeComponent(ComponentNode component)
             {
                 Write("[Component ( ");
-                Write(id.ToString());
+                Write(component.ComponentId.ToString());
                 WriteLine(" )]");
                 _depth++;
                 SerializeChildren(component);
