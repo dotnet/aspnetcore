@@ -43,6 +43,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 .SetSize(1).SetSlidingExpiration(_options.CacheEntryExpiration).SetAbsoluteExpiration(certificate.NotAfter));
 
         private string ComputeKey(X509Certificate2 certificate)
-            => $"{certificate.GetCertHashString(HashAlgorithmName.SHA256)}";
+            => certificate.GetCertHashString(HashAlgorithmName.SHA256);
     }
 }
