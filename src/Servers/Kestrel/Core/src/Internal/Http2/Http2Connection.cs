@@ -1077,7 +1077,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         void IRequestProcessor.Tick(DateTimeOffset now)
         {
-            _keepAlive.Tick(now);
+            _keepAlive?.Tick(now);
             Input.CancelPendingRead();
         }
 
