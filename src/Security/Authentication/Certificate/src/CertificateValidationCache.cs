@@ -39,7 +39,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <param name="certificate">The certificate.</param>
         /// <param name="result">the <see cref="AuthenticateResult"/></param>
         public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
-            => _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(_options.CacheEntryExpiration));
+            => _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions()
+                .SetSize(1).SetSlidingExpiration(_options.CacheEntryExpiration).SetAbsoluteExpiration(certificate.NotAfter));
 
         private string ComputeKey(X509Certificate2 certificate)
             => $"{certificate.GetCertHashString(HashAlgorithmName.SHA256)}";

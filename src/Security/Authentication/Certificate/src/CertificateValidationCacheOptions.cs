@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     {
         /// <summary>
         /// The expiration that should be used for entries in the MemoryCache, defaults to 2 minutes.
+        /// This is a sliding expiration that will extend each time the certificate is used, so long as the certificate is valid (see X509Certificate2.NotAfter).
         /// </summary>
         public TimeSpan CacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(2);
 
