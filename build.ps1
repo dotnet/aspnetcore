@@ -54,7 +54,8 @@ You can also use -NoBuildManaged to suppress this project type.
 
 .PARAMETER BuildNative
 Build native projects (C++).
-You can also use -NoBuildNative to suppress this project type.
+This is the default for x64 and x86 builds but useful when you want to build _only_ native projects.
+You can use -NoBuildNative to suppress this project type.
 
 .PARAMETER BuildNodeJS
 Build NodeJS projects (TypeScript, JS).
@@ -89,7 +90,20 @@ Key for feed that can be used when downloading .NET runtimes
 .EXAMPLE
 Building both native and managed projects.
 
+    build.ps1
+
+or
+
+    build.ps1 -BuildManaged
+
+or
+
     build.ps1 -BuildManaged -BuildNative
+
+.EXAMPLE
+Build only native projects.
+
+    build.ps1 -BuildNative
 
 .EXAMPLE
 Building a subfolder of code.
@@ -146,10 +160,6 @@ param(
 
     [switch]$NoBuildRepoTasks,
 
-    # Disable pre-build of C++ code in x64 (default) and x86 builds. Affects -All and -Projects handling and causes
-    # -BuildInstallers and -BuildNative to be ignored.
-    [switch]$ForceCoreMsbuild,
-
     # Diagnostics
     [Alias('bl')]
     [switch]$BinaryLog,
@@ -191,15 +201,12 @@ if ($Projects) {
     {
         $Projects = Join-Path (Get-Location) $Projects
     }
-    $MSBuildArguments += "/p:ProjectToBuild=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
 elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
-    Write-Warning "No default group of projects was specified, so building the 'managed' and its dependent subsets of projects. Run ``build.cmd -help`` for more details."
+    Write-Warning "No default group of projects was specified, so building the managed and native projects and their dependencies. Run ``build.cmd -help`` for more details."
 
-    # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
-    # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
-
+    # The goal of this is to pick a sensible default for `build.cmd` with zero arguments.
     $BuildManaged = $true
 }
 
@@ -261,10 +268,21 @@ if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = $MSBuildArguments
-if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true'; $BuildNative = $true }
+if ($All) { $dotnetBuildArguments += '/p:BuildAllProjects=true' }
+if ($Projects) {
+    if ($BuildNative) {
+        $MSBuildArguments += "/p:ProjectToBuild=$Projects"
+    } else {
+        $dotnetBuildArguments += "/p:ProjectToBuild=$Projects"
+    }
+}
 
 if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
+
+# Build native projects by default unless -NoBuildNative was specified.
+$specifiedBuildNative = $BuildNative
+$BuildNative = $true
 if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false"; $BuildNative = $false }
 if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true"}
 
@@ -276,12 +294,13 @@ if ($NoBuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=false"; $BuildNod
 if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
 
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
-# "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS".
-$ForceCoreMsbuild = $ForceCoreMsbuild -or -not ($BuildInstallers -or $BuildNative) -or `
-    $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase)
-$performDotnetBuild = $ForceCoreMsbuild -or $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
+# "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
+# managed and native projects.
+$performDesktopBuild = ($BuildInstallers -or $BuildNative) -and `
+    -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase)
+$performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
-    ($Projects -and -not ($BuildInstallers -or $BuildNative))
+    ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
 
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
@@ -378,7 +397,7 @@ if ($BinaryLog) {
         $ToolsetBuildArguments += "/bl:" + (Join-Path $LogDir "Build.repotasks.binlog")
     } else {
         # Use a different binary log path when running desktop msbuild if doing both builds.
-        if (-not $ForceCoreMsbuild -and $performDotnetBuild) {
+        if ($performDesktopBuild -and $performDotnetBuild) {
             $MSBuildArguments += [System.IO.Path]::ChangeExtension($bl, "native.binlog")
         }
 
@@ -421,7 +440,7 @@ try {
             @ToolsetBuildArguments
     }
 
-    if (-not $ForceCoreMsbuild) {
+    if ($performDesktopBuild) {
         Write-Host
         Remove-Item variable:global:_BuildTool -ErrorAction Ignore
         $msbuildEngine = 'vs'
