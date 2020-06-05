@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
         private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
+        private readonly Http2ConnectionKeepAlive _keepAlive;
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -105,6 +106,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
             _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
+
+            if (http2Limits.KeepAlivePingInterval != null && http2Limits.KeepAlivePingInterval != Timeout.InfiniteTimeSpan)
+            {
+                _keepAlive = new Http2ConnectionKeepAlive(
+                    http2Limits.KeepAlivePingInterval.GetValueOrDefault(),
+                    http2Limits.KeepAlivePingTimeout,
+                    context.ServiceContext.SystemClock);
+            }
 
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
@@ -208,6 +217,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceeded their drain timeouts.
                     UpdateCompletedStreams();
+
+                    if (_keepAlive != null)
+                    {
+                        var state = _keepAlive.ProcessKeepAlive(!result.IsCanceled);
+                        if (state == KeepAliveState.SendPing)
+                        {
+                            await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2ConnectionKeepAlive.PingPayload);
+                        }
+                        else if (state == KeepAliveState.Timeout)
+                        {
+                            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.CANCEL);
+                        }
+                    }
 
                     try
                     {
@@ -783,6 +805,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (_incomingFrame.PingAck)
             {
                 // TODO: verify that payload is equal to the outgoing PING frame
+                _keepAlive?.PingAckReceived();
                 return Task.CompletedTask;
             }
 
@@ -1054,6 +1077,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         void IRequestProcessor.Tick(DateTimeOffset now)
         {
+            _keepAlive.Tick(now);
             Input.CancelPendingRead();
         }
 

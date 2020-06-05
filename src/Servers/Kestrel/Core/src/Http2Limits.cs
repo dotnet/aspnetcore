@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
         private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
         private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
+        private TimeSpan? _keepAlivePingInterval;
+        private TimeSpan _keepAlivePingTimeout = TimeSpan.FromSeconds(20);
 
         /// <summary>
         /// Limits the number of concurrent request streams per HTTP/2 connection. Excess streams will be refused.
@@ -139,6 +142,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
 
                 _initialStreamWindowSize = value;
+            }
+        }
+
+        public TimeSpan? KeepAlivePingInterval
+        {
+            get => _keepAlivePingInterval;
+            set
+            {
+                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                }
+
+                _keepAlivePingInterval = value;
+            }
+        }
+
+        public TimeSpan KeepAlivePingTimeout
+        {
+            get => _keepAlivePingTimeout;
+            set
+            {
+                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                }
+
+                _keepAlivePingTimeout = value;
             }
         }
     }
