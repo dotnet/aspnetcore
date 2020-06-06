@@ -42,7 +42,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
-  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true' and '$(SkipTestBuild)' != 'true'">
+  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" />
@@ -50,7 +50,7 @@
     <Copy SourceFiles="build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
   </Target>
 
-  <Target Name="Build" Condition="'$(SkipTestBuild)' != 'true'">
+  <Target Name="Build">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
     <Exec Command="./gradlew $(GradleOptions) compileJava" />
   </Target>
