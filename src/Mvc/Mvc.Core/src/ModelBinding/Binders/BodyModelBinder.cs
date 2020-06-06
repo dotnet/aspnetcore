@@ -80,16 +80,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(readerFactory));
             }
 
-            _formatters = formatters;
-            _readerFactory = readerFactory.CreateReader;
-
             if (loggerFactory != null)
             {
-                _logger = loggerFactory.CreateLogger<BodyModelBinder>();
+                _logger = loggerFactory?.CreateLogger<BodyModelBinder>();
             }
 
             _options = options;
+            _formatters = formatters;
+            _readerFactory = readerFactory.CreateReader;
         }
+
+        internal bool AllowEmptyInputInBodyModelBinding { get; set; }
 
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
@@ -116,15 +117,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var httpContext = bindingContext.HttpContext;
 
-            var allowEmptyInputInModelBinding = _options?.AllowEmptyInputInBodyModelBinding == true;
-
             var formatterContext = new InputFormatterContext(
                 httpContext,
                 modelBindingKey,
                 bindingContext.ModelState,
                 bindingContext.ModelMetadata,
                 _readerFactory,
-                allowEmptyInputInModelBinding);
+                AllowEmptyInputInBodyModelBinding);
 
             var formatter = (IInputFormatter)null;
             for (var i = 0; i < _formatters.Count; i++)

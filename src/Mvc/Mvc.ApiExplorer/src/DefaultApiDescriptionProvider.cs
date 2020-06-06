@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             ProcessRouteParameters(context);
 
             // Set IsRequired=true
-            ProcessIsRequired(context);
+            ProcessIsRequired(context, _mvcOptions);
 
             // Set DefaultValue
             ProcessParameterDefaultValue(context);
@@ -273,13 +273,13 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
-        internal static void ProcessIsRequired(ApiParameterContext context)
+        internal static void ProcessIsRequired(ApiParameterContext context, MvcOptions mvcOptions)
         {
             foreach (var parameter in context.Results)
             {
                 if (parameter.Source == BindingSource.Body)
                 {
-                    parameter.IsRequired = true;
+                    parameter.IsRequired = !(parameter.BindingInfo?.AllowEmptyInputInBodyModelBinding ?? mvcOptions.AllowEmptyInputInBodyModelBinding);
                 }
 
                 if (parameter.ModelMetadata != null && parameter.ModelMetadata.IsBindingRequired)
@@ -466,6 +466,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             public string PropertyName { get; set; }
 
+            public BindingInfo BindingInfo { get; set; }
+
             public static ApiParameterDescriptionContext GetContext(
                 ModelMetadata metadata,
                 BindingInfo bindingInfo,
@@ -478,6 +480,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     BinderModelName = bindingInfo?.BinderModelName,
                     BindingSource = bindingInfo?.BindingSource,
                     PropertyName = propertyName ?? metadata.Name,
+                    BindingInfo = bindingInfo,
                 };
             }
         }
@@ -607,6 +610,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Source = source,
                     Type = bindingContext.ModelMetadata.ModelType,
                     ParameterDescriptor = Parameter,
+                    BindingInfo = bindingContext.BindingInfo
                 };
             }
 

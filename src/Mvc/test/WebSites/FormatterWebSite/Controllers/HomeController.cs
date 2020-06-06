@@ -34,5 +34,13 @@ namespace FormatterWebSite.Controllers
                 SampleIntInDerived = 50
             };
         }
+
+        [HttpPost]
+        public IActionResult DefaultBody([FromBody] DummyClass dummy) 
+            => ModelState.IsValid ? Ok() : ValidationProblem();
+
+        [HttpPost]
+        public IActionResult OptionalBody([FromBody(AllowEmptyInputInBodyModelBinding = true)] DummyClass dummy)
+            => ModelState.IsValid ? Ok() : ValidationProblem();
     }
 }

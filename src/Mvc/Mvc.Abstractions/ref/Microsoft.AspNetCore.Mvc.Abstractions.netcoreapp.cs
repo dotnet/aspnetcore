@@ -160,6 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public partial class ApiParameterDescription
     {
         public ApiParameterDescription() { }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo BindingInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public object DefaultValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsRequired { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata ModelMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -459,6 +460,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         public BindingInfo() { }
         public BindingInfo(Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo other) { }
+        public bool? AllowEmptyInputInBodyModelBinding { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string BinderModelName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Type BinderType { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }

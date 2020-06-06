@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             BinderType = other.BinderType;
             PropertyFilterProvider = other.PropertyFilterProvider;
             RequestPredicate = other.RequestPredicate;
+            AllowEmptyInputInBodyModelBinding = other.AllowEmptyInputInBodyModelBinding;
         }
 
         /// <summary>
@@ -86,6 +87,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// from the current request.
         /// </summary>
         public Func<ActionContext, bool> RequestPredicate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag which decides whether body model binding should treat empty
+        /// input as valid.
+        /// </summary>
+        public bool? AllowEmptyInputInBodyModelBinding { get; set; }
 
         /// <summary>
         /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -156,6 +163,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 if (requestPredicateProvider.RequestPredicate != null)
                 {
                     bindingInfo.RequestPredicate = requestPredicateProvider.RequestPredicate;
+                    break;
+                }
+            }
+
+            foreach (var allowEmptyInputInModelBinding in attributes.OfType<IAllowEmptyInputInBodyModelBinding>())
+            {
+                isBindingInfoPresent = true;
+                if (allowEmptyInputInModelBinding.AllowEmptyInputInBodyModelBinding != null)
+                {
+                    bindingInfo.AllowEmptyInputInBodyModelBinding = allowEmptyInputInModelBinding.AllowEmptyInputInBodyModelBinding;
                     break;
                 }
             }
@@ -234,6 +251,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 isBindingInfoPresent = true;
                 PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
             }
+
+            // There isn't a ModelMetadata feature to configure AllowEmptyInputInBodyModelBinding, 
+            // so nothing to infer from it.
 
             return isBindingInfoPresent;
         }

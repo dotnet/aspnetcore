@@ -1,12 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IList<IInputFormatter> _formatters;
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly MvcOptions _options;
+        private readonly MvcOptions? _options;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinderProvider"/>.
@@ -26,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
         /// <param name="readerFactory">The <see cref="IHttpRequestStreamReaderFactory"/>.</param>
         public BodyModelBinderProvider(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
-            : this(formatters, readerFactory, loggerFactory: null)
+            : this(formatters, readerFactory, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IList<IInputFormatter> formatters,
             IHttpRequestStreamReaderFactory readerFactory,
             ILoggerFactory loggerFactory,
-            MvcOptions options)
+            MvcOptions? options)
         {
             if (formatters == null)
             {
@@ -71,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -89,7 +92,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         typeof(IInputFormatter).FullName));
                 }
 
-                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options);
+                var allowEmptyInputInBodyModelBinding =
+                    context?.BindingInfo.AllowEmptyInputInBodyModelBinding
+                    ?? _options?.AllowEmptyInputInBodyModelBinding
+                    ?? false;
+
+                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options)
+                {
+                    AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBinding,
+                };
             }
 
             return null;
