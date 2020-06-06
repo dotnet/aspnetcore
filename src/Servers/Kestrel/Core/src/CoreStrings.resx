@@ -608,7 +608,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorKeepAliveTimeout" xml:space="preserve">
     <value>Timeout while waiting for a keep alive ping acknowledgement.</value>
   </data>
-  <data name="ArgumentTimeSpanGreaterThan" xml:space="preserve">
-    <value>A TimeSpan value greater than {value} is required.</value>
+  <data name="ArgumentTimeSpanGreaterOrEqual" xml:space="preserve">
+    <value>A TimeSpan value greater than or equal to {value} is required.</value>
   </data>
 </root>

@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// doesn't see any activity after this interval elapses. This property is used together with
         /// <see cref="KeepAlivePingTimeout"/> to close inactive connections.
         /// <para>
-        /// Value must be greater than 1 second. Set to <c>null</c> or <see cref="Timeout.InfiniteTimeSpan"/> to disable
+        /// Interval must be greater than or equal to 1 second. Set to <c>null</c> or <see cref="Timeout.InfiniteTimeSpan"/> to disable
         /// the keep alive ping interval. Defaults to <c>null</c>.
         /// </para>
         /// </summary>
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterThan(MinimumKeepAliveInterval));
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(MinimumKeepAliveInterval));
                 }
 
                 _keepAlivePingInterval = value;
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// the configured <see cref="KeepAlivePingInterval"/> value. The server will close the connection if it
         /// doesn't receive an acknowledgement of the keep alive ping within the timeout.
         /// <para>
-        /// Value must be greater than 1 second. Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the keep
+        /// Timeout must be greater than or equal to 1 second. Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the keep
         /// alive ping timeout. Defaults to 20 seconds.
         /// </para>
         /// </summary>
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterThan(MinimumKeepAliveInterval));
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(MinimumKeepAliveInterval));
                 }
 
                 _keepAlivePingTimeout = value;
