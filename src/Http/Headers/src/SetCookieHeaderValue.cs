@@ -416,7 +416,8 @@ namespace Microsoft.Net.Http.Headers
                     {
                         return 0;
                     }
-                    var dateString = ReadToSemicolonOrEnd(input, ref offset, false);
+                    // We don't want to include comma, becouse date may contain it (eg. Sun, 06 Nov...)
+                    var dateString = ReadToSemicolonOrEnd(input, ref offset, includeComma: false);
                     DateTimeOffset expirationDate;
                     if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))
                     {
