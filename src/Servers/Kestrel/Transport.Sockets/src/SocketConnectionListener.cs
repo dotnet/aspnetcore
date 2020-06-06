@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket _listenSocket;
         private int _schedulerIndex;
         private readonly SocketTransportOptions _options;
+        private SafeSocketHandle _socketHandle;
 
         public EndPoint EndPoint { get; private set; }
 
@@ -62,24 +63,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
-            // Check if EndPoint is a FileHandleEndpoint before attempting to access EndPoint.AddressFamily
-            // since that will throw an NotImplementedException.
-            if (EndPoint is FileHandleEndPoint)
-            {
-                throw new NotSupportedException(SocketsStrings.FileHandleEndPointNotSupported);
-            }
-
             Socket listenSocket;
 
-            // Unix domain sockets are unspecified
-            var protocolType = EndPoint is UnixDomainSocketEndPoint ? ProtocolType.Unspecified : ProtocolType.Tcp;
-
-            listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, protocolType);
-
-            // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-            if (EndPoint is IPEndPoint ip && ip.Address == IPAddress.IPv6Any)
+            switch (EndPoint)
             {
-                listenSocket.DualMode = true;
+                case FileHandleEndPoint fileHandle:
+                    _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: fileHandle.OwnsHandle);
+                    listenSocket = new Socket(_socketHandle);
+                    break;
+                case UnixDomainSocketEndPoint unix:
+                    listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    break;
+                case IPEndPoint ip:
+                    listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                    // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
+                    if (ip.Address == IPAddress.IPv6Any)
+                    {
+                        listenSocket.DualMode = true;
+                    }
+                    break;
+                default:
+                    listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    break;
             }
 
             try
@@ -147,6 +153,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public ValueTask DisposeAsync()
         {
+            _socketHandle?.Dispose();
+
             _listenSocket?.Dispose();
             // Dispose the memory pool
             _memoryPool.Dispose();

@@ -99,9 +99,10 @@ namespace Microsoft.AspNetCore.Connections
     }
     public partial class FileHandleEndPoint : System.Net.EndPoint
     {
-        public FileHandleEndPoint(ulong fileHandle, Microsoft.AspNetCore.Connections.FileHandleType fileHandleType) { }
+        public FileHandleEndPoint(ulong fileHandle, Microsoft.AspNetCore.Connections.FileHandleType fileHandleType, bool ownsHandle = true) { }
         public ulong FileHandle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Connections.FileHandleType FileHandleType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool OwnsHandle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public enum FileHandleType
     {
