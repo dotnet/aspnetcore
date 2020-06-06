@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
         private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
-        private readonly Http2ConnectionKeepAlive _keepAlive;
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -67,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _isClosed;
 
         // Internal for testing
+        internal readonly Http2KeepAlive _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal Http2StreamStack StreamPool;
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (http2Limits.KeepAlivePingInterval != null && http2Limits.KeepAlivePingInterval != Timeout.InfiniteTimeSpan)
             {
-                _keepAlive = new Http2ConnectionKeepAlive(
+                _keepAlive = new Http2KeepAlive(
                     http2Limits.KeepAlivePingInterval.GetValueOrDefault(),
                     http2Limits.KeepAlivePingTimeout,
                     context.ServiceContext.SystemClock);
@@ -223,7 +223,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         var state = _keepAlive.ProcessKeepAlive(!result.IsCanceled);
                         if (state == KeepAliveState.SendPing)
                         {
-                            await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2ConnectionKeepAlive.PingPayload);
+                            await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
+                            _keepAlive.PingSent();
                         }
                         else if (state == KeepAliveState.Timeout)
                         {

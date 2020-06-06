@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class Http2Limits
     {
+        private static readonly TimeSpan MinimumKeepAliveInterval = TimeSpan.FromSeconds(1);
+
         private int _maxStreamsPerConnection = 100;
         private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
         private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
@@ -145,28 +147,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the keep alive ping interval. The server will send a keep alive ping to the client if it
+        /// doesn't see any activity after this interval elapses. This property is used together with
+        /// <see cref="KeepAlivePingTimeout"/> to close inactive connections.
+        /// <para>
+        /// Value must be greater than 1 second. Set to <c>null</c> or <see cref="Timeout.InfiniteTimeSpan"/> to disable
+        /// the keep alive ping interval. Defaults to <c>null</c>.
+        /// </para>
+        /// </summary>
         public TimeSpan? KeepAlivePingInterval
         {
             get => _keepAlivePingInterval;
             set
             {
-                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterThan(MinimumKeepAliveInterval));
                 }
 
                 _keepAlivePingInterval = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets the keep alive ping timeout. Keep alive pings are sent when a period of inactivity exceeds
+        /// the configured <see cref="KeepAlivePingInterval"/> value. The server will close the connection if it
+        /// doesn't receive an acknowledgement of the keep alive ping within the timeout.
+        /// <para>
+        /// Value must be greater than 1 second. Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the keep
+        /// alive ping timeout. Defaults to 20 seconds.
+        /// </para>
+        /// </summary>
         public TimeSpan KeepAlivePingTimeout
         {
             get => _keepAlivePingTimeout;
             set
             {
-                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterThan(MinimumKeepAliveInterval));
                 }
 
                 _keepAlivePingTimeout = value;

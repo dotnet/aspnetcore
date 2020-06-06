@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                                .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
         }
 
-        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3)
+        protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
         {
             if (_connection == null)
             {
@@ -473,10 +473,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: 0,
                 withStreamId: 0);
 
-            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
-                withLength: 4,
-                withFlags: 0,
-                withStreamId: 0);
+            if (expectedWindowUpdate)
+            {
+                await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                    withLength: 4,
+                    withFlags: 0,
+                    withStreamId: 0);
+            }
 
             await ExpectAsync(Http2FrameType.SETTINGS,
                 withLength: 0,
