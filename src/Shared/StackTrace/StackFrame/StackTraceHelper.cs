@@ -132,7 +132,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         parameterType = parameterType.GetElementType();
                     }
 
-                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
+                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType!, fullName: false, includeGenericParameterNames: true);
                 }
 
                 return new ParameterDisplayInfo

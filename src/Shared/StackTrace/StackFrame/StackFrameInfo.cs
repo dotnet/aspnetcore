@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
@@ -9,10 +10,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
     {
         public int LineNumber { get; set; }
 
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
 
-        public StackFrame StackFrame { get; set; }
+        public StackFrame? StackFrame { get; set; }
 
-        public MethodDisplayInfo MethodDisplayInfo { get; set; }
+        public MethodDisplayInfo? MethodDisplayInfo { get; set; }
     }
 }
