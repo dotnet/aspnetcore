@@ -99,7 +99,7 @@ namespace Microsoft.Net.Http.Headers
 
         public bool HttpOnly { get; set; }
 
-        public List<StringSegment> Extensions { get; set; }
+        public IList<StringSegment> Extensions { get; } = new List<StringSegment>();
 
         // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
         public override string ToString()
@@ -157,12 +157,9 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            if (Extensions != null)
+            foreach (var extension in Extensions)
             {
-                foreach (var extension in Extensions)
-                {
-                    length += SeparatorToken.Length + extension.Length;
-                }
+                length += SeparatorToken.Length + extension.Length;
             }
 
             return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
@@ -215,12 +212,9 @@ namespace Microsoft.Net.Http.Headers
                     AppendSegment(ref span, HttpOnlyToken, null);
                 }
 
-                if (Extensions != null)
+                foreach (var extension in Extensions)
                 {
-                    foreach (var extension in Extensions)
-                    {
-                        AppendSegment(ref span, extension, null);
-                    }
+                    AppendSegment(ref span, extension, null);
                 }
             });
         }
@@ -300,12 +294,9 @@ namespace Microsoft.Net.Http.Headers
                 AppendSegment(builder, HttpOnlyToken, null);
             }
 
-            if (Extensions != null)
+            foreach (var extension in Extensions)
             {
-                foreach (var extension in Extensions)
-                {
-                    AppendSegment(builder, extension, null);
-                }
+                AppendSegment(builder, extension, null);
             }
         }
 
@@ -425,7 +416,7 @@ namespace Microsoft.Net.Http.Headers
                     {
                         return 0;
                     }
-                    var dateString = ReadToSemicolonOrEnd(input, ref offset);
+                    var dateString = ReadToSemicolonOrEnd(input, ref offset, false);
                     DateTimeOffset expirationDate;
                     if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))
                     {
@@ -527,10 +518,6 @@ namespace Microsoft.Net.Http.Headers
                 {
                     var tokenStart = offset - itemLength;
                     ReadToSemicolonOrEnd(input, ref offset, includeComma: true);
-
-                    if (result.Extensions == null)
-                        result.Extensions = new List<StringSegment>();
-
                     result.Extensions.Add(input.Subsegment(tokenStart, offset - tokenStart));
                 }
             }
@@ -550,20 +537,24 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset, bool includeComma = false)
+        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset, bool includeComma = true)
         {
             var end = input.IndexOf(';', offset);
             if (end < 0)
             {
                 // Also valid end of cookie
                 if (includeComma)
+                {
                     end = input.IndexOf(',', offset);
+                }
             }
             else if (includeComma)
             {
                 var commaPosition = input.IndexOf(',', offset);
                 if (commaPosition >= 0 && commaPosition < end)
+                {
                     end = commaPosition;
+                }
             }
 
             if (end < 0)
@@ -611,12 +602,9 @@ namespace Microsoft.Net.Http.Headers
                 ^ SameSite.GetHashCode()
                 ^ HttpOnly.GetHashCode();
 
-            if (Extensions != null)
+            foreach (var extension in Extensions)
             {
-                foreach (var extension in Extensions)
-                {
-                    hash ^= extension.GetHashCode();
-                }
+                hash ^= extension.GetHashCode();
             }
 
             return hash;
