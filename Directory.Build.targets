@@ -8,7 +8,7 @@
 
     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
      suppress all targets for TestProjects using ExcludeFromBuild. -->
-    <ExcludeFromBuild Condition="'$(IsPackable)' == 'false' and
+    <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
         '$(SkipTestBuild)' == 'true' and
         ('$(IsTestProject)' == 'true' or
          '$(IsUnitTestProject)' == 'true' or
