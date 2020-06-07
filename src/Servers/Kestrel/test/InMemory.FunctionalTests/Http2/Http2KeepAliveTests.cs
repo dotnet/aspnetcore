@@ -242,6 +242,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 // Don't consume any request data
                 await tcs.Task;
+                // Send headers
+                await c.Request.Body.FlushAsync();
             }, expectedWindowUpdate: false).DefaultTimeout();
 
             DateTimeOffset now = new DateTimeOffset(1, TimeSpan.Zero);
@@ -273,7 +275,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Continue request delegate on server
             tcs.SetResult(null);
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1).DefaultTimeout();
+
+            // Server could send RST_STREAM
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true).DefaultTimeout();
         }
 
         [Fact]
@@ -289,6 +297,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 // Don't consume any request data
                 await tcs.Task;
+                // Send headers
+                await c.Request.Body.FlushAsync();
             }, expectedWindowUpdate: false).DefaultTimeout();
 
             DateTimeOffset now = new DateTimeOffset(1, TimeSpan.Zero);
@@ -329,7 +339,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1).DefaultTimeout();
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+            // Server could send RST_STREAM
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true).DefaultTimeout();
         }
     }
 }
