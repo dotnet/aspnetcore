@@ -398,10 +398,10 @@ if ($BinaryLog) {
     } else {
         # Use a different binary log path when running desktop msbuild if doing both builds.
         if ($performDesktopBuild -and $performDotnetBuild) {
-            $MSBuildArguments += [System.IO.Path]::ChangeExtension($bl, "native.binlog")
+            $MSBuildArguments += "/bl:" + [System.IO.Path]::ChangeExtension($bl, "native.binlog")
         }
 
-        $ToolsetBuildArguments += [System.IO.Path]::ChangeExtension($bl, "repotasks.binlog")
+        $ToolsetBuildArguments += "/bl:" + [System.IO.Path]::ChangeExtension($bl, "repotasks.binlog")
     }
 } elseif ($CI) {
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
