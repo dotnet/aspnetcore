@@ -14,7 +14,7 @@ The feature teams should be able look through every single issue filed against t
 We will first categorize the issues and further handle these depending on the category the issue is in. The subsections below reprsent these categories and the rules we apply for them during our triage meeting.
 
 ### Information Gathering
-In this phase we instruct the user on how to collect the appropriate diagnostics and see if they are able to address the issue with that additional information.  When we need user input we will mark the issue with `Needs Author Feedback` label. Issues in this phase may be closed automatically if we do not receive timely responses, they often do not provide enough information for us to investigate further.
+In this phase we instruct the user on how to collect the appropriate diagnostics and see if they are able to address the issue with that additional information.  When we need user input we will mark the issue with `Needs: Author Feedback` label. Issues in this phase may be closed automatically if we do not receive timely responses, they often do not provide enough information for us to investigate further.
 We'll try to respond quickly to such issues (within days). If a user has collected all of the relevant diagnostics and the issue is still not apparent, then we will consider it for investigation by the team.
 
 ### Feature requests
