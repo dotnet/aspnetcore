@@ -10,9 +10,6 @@ try {
   & "$repoRoot\build.ps1"  -ci:$ci -nobl -noBuildRepoTasks -noRestore -buildNative -configuration Debug
 
   Remove-Item variable:global:_BuildTool -ErrorAction Ignore
-  Remove-Item variable:global:_DotNetInstallDir -ErrorAction Ignore
-  Remove-Item variable:global:_ToolsetBuildProj -ErrorAction Ignore
-  Remove-Item variable:global:_MSBuildExe -ErrorAction Ignore
 
   $excludeCIBinarylog = $true
   $msbuildEngine = 'dotnet'
