@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         [Fact]
         public void Clone_Copies()
         {
-            var items = new Dictionary<string, string>
+            var items = new Dictionary<string, string?>
             {
                 ["foo"] = "bar",
             };
             var value = "value";
-            var parameters = new Dictionary<string, object>
+            var parameters = new Dictionary<string, object?>
             {
                 ["foo2"] = value,
             };
