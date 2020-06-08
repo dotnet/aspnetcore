@@ -61,8 +61,10 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
-            // Note that the resource will be null if there is no matched endpoint
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: endpoint);
+            // Note that the endpoint will be null if there is no matched endpoint
+            var authZContext = new AuthorizationMiddlewareContext { Context = context, Endpoint = endpoint };
+
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: authZContext);
 
             var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
             await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
