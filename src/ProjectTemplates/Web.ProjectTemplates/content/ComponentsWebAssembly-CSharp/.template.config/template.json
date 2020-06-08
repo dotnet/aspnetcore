@@ -20,6 +20,7 @@
     "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
   "identity": "Microsoft.Web.Blazor.Wasm.CSharp.5.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -221,12 +222,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.1",
-          "description": "Target netcoreapp3.1"
+          "choice": "net5.0",
+          "description": "Target net5.0"
         }
       ],
-      "replaces": "netcoreapp3.1",
-      "defaultValue": "netcoreapp3.1"
+      "replaces": "net5.0",
+      "defaultValue": "net5.0"
     },
     "HostIdentifier": {
       "type": "bind",
