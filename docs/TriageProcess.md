@@ -58,4 +58,4 @@ Issues, which we will think are candidates for the upcoming release, will be mov
 
 ## Process Visualization
 The following diagram summarizes the processes detailed above:
-![image](https://user-images.githubusercontent.com/34246760/83341925-a03ae180-a29d-11ea-82db-e215f4860c19.png)
+![image](https://user-images.githubusercontent.com/34246760/84076162-23d58c00-a98a-11ea-909d-6d17b91d4f84.png)
