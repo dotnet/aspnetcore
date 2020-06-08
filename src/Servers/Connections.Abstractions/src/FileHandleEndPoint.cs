@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Connections
             }
         }
 
-        public bool OwnsHandle { get; private set; }
+        public bool OwnsHandle { get; }
         public ulong FileHandle { get; }
         public FileHandleType FileHandleType { get; }
     }
