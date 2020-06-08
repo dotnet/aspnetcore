@@ -111,6 +111,8 @@
     </ItemGroup>
   </Target>
 
+  <!-- Workarounds to allow publishing to work when the RazorSDK is referenced as a project.  -->
   <Target Name="GetTargetPath" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
 
 </Project>
