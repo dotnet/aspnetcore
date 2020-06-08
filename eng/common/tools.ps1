@@ -293,8 +293,11 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
     return $global:_MSBuildExe
   }
 
+  $vsMinVersionReqdStr = '16.5'
+  $vsMinVersionReqd = [Version]::new($vsMinVersionReqdStr)
+
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
-  $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { '15.9' }
+  $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { $vsMinVersionReqdStr }
   $vsMinVersion = [Version]::new($vsMinVersionStr)
 
   # Try msbuild command available in the environment.
@@ -327,8 +330,18 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
     } else {
-      $vsMajorVersion = $vsMinVersion.Major
-      $xcopyMSBuildVersion = "$vsMajorVersion.$($vsMinVersion.Minor).0-alpha"
+      #if vs version provided in global.json is incompatible then use the default version for xcopy msbuild download
+      if($vsMinVersion -lt $vsMinVersionReqd){
+        Write-Host "Using xcopy-msbuild version of $vsMinVersionReqdStr.0-alpha since VS version $vsMinVersionStr provided in global.json is not compatible"
+        $vsMajorVersion = $vsMinVersionReqd.Major
+        $vsMinorVersion = $vsMinVersionReqd.Minor
+      }
+      else{
+        $vsMajorVersion = $vsMinVersion.Major
+        $vsMinorVersion = $vsMinVersion.Minor
+      }
+
+      $xcopyMSBuildVersion = "$vsMajorVersion.$vsMinorVersion.0-alpha"
     }
 
     $vsInstallDir = $null
