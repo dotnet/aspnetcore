@@ -8,7 +8,7 @@
       <ComponentsRoot>$(RepoRoot)src\Components\</ComponentsRoot>
       <BlazorBuildRoot>$(ComponentsRoot)WebAssembly\Build\src\</BlazorBuildRoot>
       <ReferenceBlazorBuildFromSourceProps Condition="'$(IsHelixJob)' != 'true'">$(BlazorBuildRoot)ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
-      <ReferenceBlazorBuildFromSourceProps Condition="'$(ReferenceBlazorBuildFromSourceProps)' == ''">..\..\ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
+      <ReferenceBlazorBuildFromSourceProps Condition="'$(ReferenceBlazorBuildFromSourceProps)' == ''">$(MSBuildThisFileDirectory)\..\src\ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
 
 
       <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/17308 -->
