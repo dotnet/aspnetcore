@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -19,18 +18,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
     internal class Http2KeepAlive
     {
+        // An empty ping payload
         internal static readonly ReadOnlySequence<byte> PingPayload = new ReadOnlySequence<byte>(new byte[8]);
 
-        private readonly TimeSpan _keepAliveInterval;
-        private readonly TimeSpan _keepAliveTimeout;
-        private readonly ISystemClock _systemClock;
         private readonly object _lock = new object();
-        private KeepAliveState _state;
+        private readonly TimeSpan _keepAliveInterval;
+        private readonly TimeSpan? _keepAliveTimeout;
+        private readonly ISystemClock _systemClock;
         private bool _bytesReceivedCurrentTick;
         private long _lastBytesReceivedTimestamp;
         private long _pingSentTimestamp;
 
-        public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan keepAliveTimeout, ISystemClock systemClock)
+        // Internal for testing
+        internal KeepAliveState _state;
+
+        public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan? keepAliveTimeout, ISystemClock systemClock)
         {
             _keepAliveInterval = keepAliveInterval;
             _keepAliveTimeout = keepAliveTimeout;
@@ -44,7 +46,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (dataReceived)
                 {
                     _bytesReceivedCurrentTick = true;
+
+                    // Any data received after the keep alive interval is exceeded
+                    // resets the state back to none.
+                    if (_state == KeepAliveState.PingSent)
+                    {
+                        _pingSentTimestamp = 0;
+                        _state = KeepAliveState.None;
+                    }
                 }
+
                 return _state;
             }
         }
@@ -54,19 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_lock)
             {
                 _state = KeepAliveState.PingSent;
-                _pingSentTimestamp = _systemClock.UtcNowTicks;
-            }
-        }
 
-        public void PingAckReceived()
-        {
-            lock (_lock)
-            {
-                if (_state == KeepAliveState.PingSent)
-                {
-                    _pingSentTimestamp = 0;
-                    _state = KeepAliveState.None;
-                }
+                // System clock only has 1 second of precision, so the clock could be up to 1 second in the past.
+                // To err on the side of caution, add a second to the clock when calculating the ping sent time.
+                _pingSentTimestamp = _systemClock.UtcNowTicks + TimeSpan.TicksPerSecond;
             }
         }
 
@@ -96,11 +98,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     case KeepAliveState.SendPing:
                         return;
                     case KeepAliveState.PingSent:
-                        if (_keepAliveTimeout != Timeout.InfiniteTimeSpan)
+                        if (_keepAliveTimeout != null)
                         {
-                            if (timestamp > (_pingSentTimestamp + _keepAliveTimeout.Ticks))
+                            if (timestamp > (_pingSentTimestamp + _keepAliveTimeout.GetValueOrDefault().Ticks))
                             {
-                                _pingSentTimestamp = 0;
                                 _state = KeepAliveState.Timeout;
                             }
                         }

@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
             _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
 
-            if (http2Limits.KeepAlivePingInterval != null && http2Limits.KeepAlivePingInterval != Timeout.InfiniteTimeSpan)
+            if (http2Limits.KeepAlivePingInterval != null)
             {
                 _keepAlive = new Http2KeepAlive(
                     http2Limits.KeepAlivePingInterval.GetValueOrDefault(),
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
                         else if (state == KeepAliveState.Timeout)
                         {
-                            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.CANCEL);
+                            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.NO_ERROR);
                         }
                     }
 
@@ -806,7 +806,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (_incomingFrame.PingAck)
             {
                 // TODO: verify that payload is equal to the outgoing PING frame
-                _keepAlive?.PingAckReceived();
                 return Task.CompletedTask;
             }
 

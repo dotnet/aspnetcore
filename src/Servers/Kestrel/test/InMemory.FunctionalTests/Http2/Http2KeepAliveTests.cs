@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2KeepAliveTests : Http2TestBase
     {
         [Fact]
-        public async Task KeepAlivePingInterval_Infinite_KeepAliveNotEnabled()
+        public async Task KeepAlivePingInterval_Null_KeepAliveNotEnabled()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = Timeout.InfiniteTimeSpan;
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = null;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task KeepAlivePingTimeout_Infinite_NoGoAway()
+        public async Task KeepAlivePingTimeout_Null_NoGoAway()
         {
             _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = Timeout.InfiniteTimeSpan;
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = null;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 2));
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 3));
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 20));
+
+            Assert.Equal(KeepAliveState.PingSent, _connection._keepAlive._state);
 
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false).DefaultTimeout();
         }
@@ -205,8 +207,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 2));
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 3));
             TriggerTick(now + TimeSpan.FromSeconds(1.1 * 4));
+            TriggerTick(now + TimeSpan.FromSeconds(1.1 * 5));
 
-            VerifyGoAway(await ReceiveFrameAsync().DefaultTimeout(), 0, Http2ErrorCode.CANCEL);
+            Assert.Equal(KeepAliveState.Timeout, _connection._keepAlive._state);
+
+            VerifyGoAway(await ReceiveFrameAsync().DefaultTimeout(), 0, Http2ErrorCode.NO_ERROR);
+        }
+
+        [Fact]
+        public async Task TimeoutExceeded_NonPingActivity_NoGoAway()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(3);
+
+            await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+
+            DateTimeOffset now = new DateTimeOffset(1, TimeSpan.Zero);
+
+            // Heartbeat
+            TriggerTick(now);
+
+            // Heartbeat that exceeds interval
+            TriggerTick(now + TimeSpan.FromSeconds(1.1));
+
+            Assert.Equal(KeepAliveState.PingSent, _connection._keepAlive._state);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.NONE,
+                withStreamId: 0).DefaultTimeout();
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
+            Assert.Equal(KeepAliveState.None, _connection._keepAlive._state);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
         }
 
         [Fact]
