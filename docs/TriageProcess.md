@@ -3,6 +3,8 @@ Managing a popular GitHub repo with a small team is not an easy task. It require
 During the last couple of years the amount of incoming issues has been constantly growing. While this is a sign of a healthy framework and ecosystem surrounding it, it's becoming harder to react to all those issues.
 To be able to keep up with ever-evolving expectations, we're introducing a set of rules to help us better handle the incoming issues going forward.
 
+**Note:** Customers that need help with **urgent investigations** should contact [Microsoft Support](https://dotnet.microsoft.com/platform/support).
+
 ## Goals
 The goals of these rules are listed below in priority order:
 - Make it easy to make triage decisions for each issue filed in this repository
