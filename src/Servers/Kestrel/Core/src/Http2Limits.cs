@@ -149,8 +149,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the keep alive ping interval. The server will send a keep alive ping to the client if it
-        /// doesn't see any activity after this interval elapses. This property is used together with
-        /// <see cref="KeepAlivePingTimeout"/> to close inactive connections.
+        /// doesn't receive any frames for this period of time. This property is used together with
+        /// <see cref="KeepAlivePingTimeout"/> to close broken connections.
         /// <para>
         /// Interval must be greater than or equal to 1 second. Set to <c>null</c> or <see cref="Timeout.InfiniteTimeSpan"/> to disable
         /// the keep alive ping interval. Defaults to <c>null</c>.
