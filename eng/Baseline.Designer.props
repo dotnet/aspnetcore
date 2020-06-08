@@ -682,7 +682,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[2.1.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.1, )" />
     <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Cors-->
