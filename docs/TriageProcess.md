@@ -33,7 +33,7 @@ If the bug is relatively high impact, we will move the issue into the `Next Spri
 If the impact is unclear or the is a very corner case scenario, we may move it to the `Backlog` milestone to further evaluate the impact by reviewing customer upvotes / comments at a later time.
 
 ### Investigations
-In many situations it's not immediately clear whether a specific issue repoted is a bug or not. To be certain, the team will need to spend time to investigate it before making a call regarding the faith of the issue. In these situations we will apply the `investigate` label to the issue.
+In many situations it's not immediately clear whether a specific issue reported is a bug or not. To be certain, the team will need to spend time to investigate it before making a call regarding the faith of the issue. In these situations we will apply the `investigate` label to the issue.
 In many situations, these issues turn out to be a result of some kind of misconfiguration in the user code.
 In some rare situations, however, these turn out to be caused by very impactful issues. So we will make a call during the triage whether we need to immediately investigate certain issues or not.
 If not, we will move the investigation to the `Next Sprint Planning` to review during the [next sprint planning meeting](#milestone-planning).
