@@ -61,17 +61,17 @@
       Targets="Build"
       Condition="'$(NoBuild)' != 'true'"
       ContinueOnError="true"  />
-    
+
     <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' != 'true'">
       <_ContinueOnError>true</_ContinueOnError>
       <_Retries>1</_Retries>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_ContinueOnError>false</_ContinueOnError>
       <_Retries>10</_Retries>
     </PropertyGroup>
-    
+
     <ItemGroup>
       <RazorToolsOutput Include="$(SdkOutputPath)temp\**\*.*" />
       <MvcRazorExtensionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
@@ -94,13 +94,11 @@
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
-    <Message Importance="High" Text="Prepared Razor SDK at $(SdkOutputPath)" />
-
-    <ItemGroup>
+    <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_PreparedRazorSdkFiles Include="$(SdkOutputPath)**\*.*" />
     </ItemGroup>
-
-    <Message Importance="High" Text="Prepared files:@(_PreparedRazorSdkFiles->'%0a%(Identity)')" />
+    <Message Importance="High" Text="Prepared Razor SDK at $(SdkOutputPath)" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
+    <Message Importance="High" Text="Prepared files:@(_PreparedRazorSdkFiles->'%0a%(Identity)')" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
   </Target>
 
   <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
@@ -112,4 +110,7 @@
       <NuspecProperty Include="outputPath=$(OutputPath)\sdk-output" />
     </ItemGroup>
   </Target>
+
+  <Target Name="GetTargetPath" />
+
 </Project>
