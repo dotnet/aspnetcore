@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     {
         internal static SyntaxToken Token(SyntaxKind kind, string content, params RazorDiagnostic[] diagnostics)
         {
-            if (kind == SyntaxKind.Whitespace && diagnostics.Length == 0)
+            if (SyntaxTokenCache.CanBeCached(kind, diagnostics))
             {
-                return WhitespaceTokenCache.GetToken(content);
+                return SyntaxTokenCache.GetCachedToken(kind, content);
             }
 
             return new SyntaxToken(kind, content, diagnostics);
