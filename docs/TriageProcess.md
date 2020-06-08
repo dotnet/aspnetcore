@@ -57,5 +57,5 @@ We will try to prioritize issues with most community requests / upvotes assuming
 Issues, which we will think are candidates for the upcoming release, will be moved to the `Next Sprint Planning` milestone.
 
 ## Process Visualization
-If you're a type of person who likes to see things visualized, the following diagram summarizes the processes detailed above:
+The following diagram summarizes the processes detailed above:
 ![image](https://user-images.githubusercontent.com/34246760/83341925-a03ae180-a29d-11ea-82db-e215f4860c19.png)
