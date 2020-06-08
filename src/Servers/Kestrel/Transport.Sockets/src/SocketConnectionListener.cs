@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -73,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     break;
                 case UnixDomainSocketEndPoint unix:
                     listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    BindSocket();
                     break;
                 case IPEndPoint ip:
                     listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -82,19 +82,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         listenSocket.DualMode = true;
                     }
+                    BindSocket();
                     break;
                 default:
                     listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    BindSocket();
                     break;
             }
 
-            try
+            void BindSocket()
             {
-                listenSocket.Bind(EndPoint);
-            }
-            catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
-            {
-                throw new AddressInUseException(e.Message, e);
+                try
+                {
+                    listenSocket.Bind(EndPoint);
+                }
+                catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+                {
+                    throw new AddressInUseException(e.Message, e);
+                }
             }
 
             EndPoint = listenSocket.LocalEndPoint;
@@ -153,9 +158,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public ValueTask DisposeAsync()
         {
+            _listenSocket?.Dispose();
+
             _socketHandle?.Dispose();
 
-            _listenSocket?.Dispose();
             // Dispose the memory pool
             _memoryPool.Dispose();
             return default;
