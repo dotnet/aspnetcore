@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 #if NETCOREAPP
 using System.Buffers;
@@ -353,7 +355,7 @@ namespace Microsoft.Extensions.Internal
 
             int bufferSize = GetArraySizeRequiredToEncode(input.Length);
 
-            char[] bufferToReturnToPool = null;
+            char[]? bufferToReturnToPool = null;
             Span<char> buffer = bufferSize <= 128
                 ? stackalloc char[bufferSize]
                 : bufferToReturnToPool = ArrayPool<char>.Shared.Rent(bufferSize);

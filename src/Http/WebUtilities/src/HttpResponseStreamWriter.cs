@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
         }
 
-        public override void Write(string value)
+        public override void Write(string? value)
         {
             if (_disposed)
             {
@@ -257,21 +258,20 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override Task WriteAsync(string value)
+        public override Task WriteAsync(string? value)
         {
             if (_disposed)
             {
                 return GetObjectDisposedTask();
             }
 
-            var count = value?.Length ?? 0;
-            if (count == 0)
+            if (string.IsNullOrEmpty(value))
             {
                 return Task.CompletedTask;
             }
 
             var remaining = _charBufferSize - _charBufferCount;
-            if (remaining >= count)
+            if (remaining >= value.Length)
             {
                 // Enough room in buffer, no need to go async
                 CopyToCharBuffer(value);
