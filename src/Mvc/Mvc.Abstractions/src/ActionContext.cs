@@ -31,15 +31,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="actionContext">The <see cref="ActionContext"/> to copy.</param>
         public ActionContext(ActionContext actionContext)
             : this(
-                actionContext.HttpContext,
-                actionContext.RouteData,
-                actionContext.ActionDescriptor,
-                actionContext.ModelState)
+                actionContext?.HttpContext,
+                actionContext?.RouteData,
+                actionContext?.ActionDescriptor,
+                actionContext?.ModelState)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
         }
 
         /// <summary>

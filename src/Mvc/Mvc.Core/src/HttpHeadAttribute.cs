@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Identifies an action that only supports the HTTP HEAD method.
+    /// Identifies an action that supports the HTTP HEAD method.
     /// </summary>
     public class HttpHeadAttribute : HttpMethodAttribute
     {

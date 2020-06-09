@@ -11,8 +11,22 @@ namespace Microsoft.AspNetCore.Http.Features
         public FeatureReferences(IFeatureCollection collection)
         {
             Collection = collection;
-            Cache = default(TCache);
+            Cache = default;
             Revision = collection.Revision;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Initalize(IFeatureCollection collection)
+        {
+            Revision = collection.Revision;
+            Collection = collection;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Initalize(IFeatureCollection collection, int revision)
+        {
+            Revision = revision;
+            Collection = collection;
         }
 
         public IFeatureCollection Collection { get; private set; }
@@ -51,7 +65,7 @@ namespace Microsoft.AspNetCore.Http.Features
             Func<TState, TFeature> factory) where TFeature : class
         {
             var flush = false;
-            var revision = Collection.Revision;
+            var revision = Collection?.Revision ?? ContextDisposed();
             if (Revision != revision)
             {
                 // Clear cached value to force call to UpdateCached
@@ -69,7 +83,7 @@ namespace Microsoft.AspNetCore.Http.Features
             if (flush)
             {
                 // Collection detected as changed, clear cache
-                Cache = default(TCache);
+                Cache = default;
             }
 
             cached = Collection.Get<TFeature>();
@@ -84,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
             else if (flush)
             {
-                // Cache was cleared, but item retrived from current Collection for version
+                // Cache was cleared, but item retrieved from current Collection for version
                 // so use passed in revision rather than making another virtual call
                 Revision = revision;
             }
@@ -94,5 +108,16 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory)
             where TFeature : class => Fetch(ref cached, Collection, factory);
+
+        private static int ContextDisposed()
+        {
+            ThrowContextDisposed();
+            return 0;
+        }
+
+        private static void ThrowContextDisposed()
+        {
+            throw new ObjectDisposedException(nameof(Collection), nameof(IFeatureCollection) + " has been disposed.");
+        }
     }
 }

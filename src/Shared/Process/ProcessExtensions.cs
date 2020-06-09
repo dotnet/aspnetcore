@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,85 +15,94 @@ namespace Microsoft.Extensions.Internal
         private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
-        public static void KillTree(this Process process)
-        {
-            process.KillTree(_defaultTimeout);
-        }
+        public static void KillTree(this Process process) => process.KillTree(_defaultTimeout);
 
         public static void KillTree(this Process process, TimeSpan timeout)
         {
-            string stdout;
+            var pid = process.Id;
             if (_isWindows)
             {
                 RunProcessAndWaitForExit(
                     "taskkill",
-                    $"/T /F /PID {process.Id}",
+                    $"/T /F /PID {pid}",
                     timeout,
-                    out stdout);
+                    out var _);
             }
             else
             {
                 var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
+                GetAllChildIdsUnix(pid, children, timeout);
                 foreach (var childId in children)
                 {
                     KillProcessUnix(childId, timeout);
                 }
-                KillProcessUnix(process.Id, timeout);
+                KillProcessUnix(pid, timeout);
             }
         }
 
         private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
         {
-            string stdout;
-            var exitCode = RunProcessAndWaitForExit(
-                "pgrep",
-                $"-P {parentId}",
-                timeout,
-                out stdout);
-
-            if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
+            try
             {
-                using (var reader = new StringReader(stdout))
-                {
-                    while (true)
-                    {
-                        var text = reader.ReadLine();
-                        if (text == null)
-                        {
-                            return;
-                        }
+                RunProcessAndWaitForExit(
+                    "pgrep",
+                    $"-P {parentId}",
+                    timeout,
+                    out var stdout);
 
-                        int id;
-                        if (int.TryParse(text, out id))
+                if (!string.IsNullOrEmpty(stdout))
+                {
+                    using (var reader = new StringReader(stdout))
+                    {
+                        while (true)
                         {
-                            children.Add(id);
-                            // Recursively get the children
-                            GetAllChildIdsUnix(id, children, timeout);
+                            var text = reader.ReadLine();
+                            if (text == null)
+                            {
+                                return;
+                            }
+
+                            if (int.TryParse(text, out var id))
+                            {
+                                children.Add(id);
+                                // Recursively get the children
+                                GetAllChildIdsUnix(id, children, timeout);
+                            }
                         }
                     }
                 }
+            }
+            catch (Win32Exception ex) when (ex.Message.Contains("No such file or directory"))
+            {
+                // This probably means that pgrep isn't installed. Nothing to be done?
             }
         }
 
         private static void KillProcessUnix(int processId, TimeSpan timeout)
         {
-            string stdout;
-            RunProcessAndWaitForExit(
-                "kill",
-                $"-TERM {processId}",
-                timeout,
-                out stdout);
+            try
+            {
+                RunProcessAndWaitForExit(
+                    "kill",
+                    $"-TERM {processId}",
+                    timeout,
+                    out var stdout);
+            }
+            catch (Win32Exception ex) when (ex.Message.Contains("No such file or directory"))
+            {
+                // This probably means that the process is already dead
+            }
         }
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+        private static void RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
             };
 
             var process = Process.Start(startInfo);
@@ -106,8 +116,6 @@ namespace Microsoft.Extensions.Internal
             {
                 process.Kill();
             }
-
-            return process.ExitCode;
         }
     }
 }

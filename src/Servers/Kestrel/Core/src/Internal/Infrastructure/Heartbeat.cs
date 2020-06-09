@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class Heartbeat : IDisposable
+    internal class Heartbeat : IDisposable
     {
         public static readonly TimeSpan Interval = TimeSpan.FromSeconds(1);
 
@@ -19,22 +19,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private Timer _timer;
         private int _executingOnHeartbeat;
 
-        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace): this(callbacks, systemClock, debugger, trace, Interval)
-        {
-
-        }
-
-        internal Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace, TimeSpan interval)
+        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
             _callbacks = callbacks;
             _systemClock = systemClock;
             _debugger = debugger;
             _trace = trace;
-            _interval = interval;
+            _interval = Interval;
         }
 
         public void Start()
         {
+            OnHeartbeat();
             _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
         }
 

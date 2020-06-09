@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
@@ -66,9 +66,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundIfSendFileThrows()
         {
-            var mockSendFile = new Mock<IHttpSendFileFeature>();
+            var mockSendFile = new Mock<IHttpResponseBodyFeature>();
             mockSendFile.Setup(m => m.SendFileAsync(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new FileNotFoundException());
+            mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -101,9 +102,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest("TestDocument.txt").GetAsync();
 
                 var last = fileInfo.LastModified;
-                var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
+                var trimmed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
 
-                Assert.Equal(response.Content.Headers.LastModified.Value, trimed);
+                Assert.Equal(response.Content.Headers.LastModified.Value, trimmed);
             }
         }
 

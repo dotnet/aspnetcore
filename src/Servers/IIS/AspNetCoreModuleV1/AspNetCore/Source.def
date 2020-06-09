@@ -1,4 +1,0 @@
-LIBRARY aspnetcore
-
-EXPORTS
-    RegisterModule

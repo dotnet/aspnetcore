@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvException : Exception
+    internal class UvException : Exception
     {
         public UvException(string message, int statusCode) : base(message)
         {

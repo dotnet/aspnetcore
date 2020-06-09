@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -148,16 +146,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Directory.CreateDirectory(WorkFolder);
 
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
-
-            var restoreSources = GetMetadata("TestSettings:RestoreSources");
-            var frameworkVersion = GetMetadata("TestSettings:RuntimeFrameworkVersion");
-
-            var dbTargets = new XDocument(
-                new XElement("Project",
-                    new XElement("PropertyGroup",
-                        new XElement("RuntimeFrameworkVersion", frameworkVersion),
-                        new XElement("RestoreSources", restoreSources))));
-            dbTargets.Save(Path.Combine(WorkFolder, "Directory.Build.targets"));
+            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
         }
 
         private string GetMetadata(string key)

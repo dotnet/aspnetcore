@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -14,7 +15,18 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     public class KnownRouteValueConstraint : IRouteConstraint
     {
+        private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private RouteValuesCollection _cachedValuesCollection;
+
+        public KnownRouteValueConstraint(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
+        {
+            if (actionDescriptorCollectionProvider == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptorCollectionProvider));
+            }
+
+            _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
+        }
 
         public bool Match(
             HttpContext httpContext,
@@ -23,16 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -43,13 +45,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object obj;
-            if (values.TryGetValue(routeKey, out obj))
+            if (values.TryGetValue(routeKey, out var obj))
             {
-                var value = obj as string;
+                var value = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 if (value != null)
                 {
-                    var allValues = GetAndCacheAllMatchingValues(routeKey, httpContext);
+                    var actionDescriptors = GetAndValidateActionDescriptors(httpContext);
+
+                    var allValues = GetAndCacheAllMatchingValues(routeKey, actionDescriptors);
                     foreach (var existingValue in allValues)
                     {
                         if (string.Equals(value, existingValue, StringComparison.OrdinalIgnoreCase))
@@ -63,9 +66,36 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return false;
         }
 
-        private string[] GetAndCacheAllMatchingValues(string routeKey, HttpContext httpContext)
+        private ActionDescriptorCollection GetAndValidateActionDescriptors(HttpContext httpContext)
         {
-            var actionDescriptors = GetAndValidateActionDescriptorCollection(httpContext);
+            var actionDescriptorsProvider = _actionDescriptorCollectionProvider;
+
+            if (actionDescriptorsProvider == null)
+            {
+                // Only validate that HttpContext was passed to constraint if it is needed
+                if (httpContext == null)
+                {
+                    throw new ArgumentNullException(nameof(httpContext));
+                }
+
+                var services = httpContext.RequestServices;
+                actionDescriptorsProvider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
+            }
+
+            var actionDescriptors = actionDescriptorsProvider.ActionDescriptors;
+            if (actionDescriptors == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(IActionDescriptorCollectionProvider.ActionDescriptors),
+                        actionDescriptorsProvider.GetType()));
+            }
+
+            return actionDescriptors;
+        }
+
+        private string[] GetAndCacheAllMatchingValues(string routeKey, ActionDescriptorCollection actionDescriptors)
+        {
             var version = actionDescriptors.Version;
             var valuesCollection = _cachedValuesCollection;
 
@@ -77,8 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     var action = actionDescriptors.Items[i];
 
-                    string value;
-                    if (action.RouteValues.TryGetValue(routeKey, out value) &&
+                    if (action.RouteValues.TryGetValue(routeKey, out var value) &&
                         !string.IsNullOrEmpty(value))
                     {
                         values.Add(value);
@@ -90,22 +119,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             return _cachedValuesCollection.Items;
-        }
-
-        private static ActionDescriptorCollection GetAndValidateActionDescriptorCollection(HttpContext httpContext)
-        {
-            var services = httpContext.RequestServices;
-            var provider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
-            var descriptors = provider.ActionDescriptors;
-
-            if (descriptors == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatPropertyOfTypeCannotBeNull("ActionDescriptors",
-                                                               provider.GetType()));
-            }
-
-            return descriptors;
         }
 
         private class RouteValuesCollection

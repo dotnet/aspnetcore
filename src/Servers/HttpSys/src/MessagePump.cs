@@ -112,13 +112,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Listener.Options.UrlPrefixes.Add(value);
                 }
             }
-            else
+            else if (Listener.RequestQueue.Created)
             {
                 LogHelper.LogDebug(_logger, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
                 _serverAddresses.Addresses.Add(Constants.DefaultServerAddress);
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
+            // else // Attaching to an existing queue, don't add a default.
 
             // Can't call Start twice
             Contract.Assert(_application == null);
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     try
                     {
                         await _application.ProcessRequestAsync(context).SupressContext();
-                        await featureContext.OnResponseStart();
+                        await featureContext.CompleteAsync();
                     }
                     finally
                     {
@@ -224,6 +225,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
+                        requestContext.Response.Headers.IsReadOnly = false;
                         requestContext.Response.Headers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }

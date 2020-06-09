@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <PackageType>AzureSiteExtension</PackageType>
+    <ContentTargetFolders>content</ContentTargetFolders>
+
+    <Title>ASP.NET Core $(AspNetCoreMajorMinorVersion) ($(TargetArchitecture)) Runtime </Title>
+    <Description>This site extension installs Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
+    <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageId>AspNetCoreRuntime.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
+    <IsShippingPackage>true</IsShippingPackage>
+    <NoSemVer20>true</NoSemVer20>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="applicationHost.xdt" />
+    <Content Include="scmApplicationHost.xdt" />
+    <Content Include="install.cmd" />
+    <Content Include="$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
+    <!-- Make sure redist folder is built and ready -->
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
+
+  </ItemGroup>
+
+  <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="%(NativeContent.Identity)" PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" />
+  <Target Name="CreateManifestResourceNames" />
+
+</Project>

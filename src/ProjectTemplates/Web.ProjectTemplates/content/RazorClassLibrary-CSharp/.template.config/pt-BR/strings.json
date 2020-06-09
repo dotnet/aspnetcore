@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Biblioteca de Classes Razor",
+    "description": "Um modelo de projeto para criar uma biblioteca de classes Razor.",
+    "parameter.SupportPagesAndViews.name": "Páginas e exibições do _suporte"
+  }
+}

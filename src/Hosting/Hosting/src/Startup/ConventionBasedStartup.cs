@@ -5,12 +5,11 @@ using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConventionBasedStartup : IStartup
+    internal class ConventionBasedStartup : IStartup
     {
         private readonly StartupMethods _methods;
 

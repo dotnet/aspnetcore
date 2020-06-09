@@ -41,8 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
 
             ModelMetadata metadata;
-            if (optionsAccessor.Value.AllowValidatingTopLevelNodes &&
-                modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase &&
+            if (modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase &&
                 parameterInfo != null)
             {
                 metadata = modelMetadataProviderBase.GetMetadataForParameter(parameterInfo);

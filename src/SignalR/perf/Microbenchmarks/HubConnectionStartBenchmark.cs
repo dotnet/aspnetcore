@@ -40,19 +40,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var hubConnectionBuilder = new HubConnectionBuilder();
-            var delegateConnectionFactory = new DelegateConnectionFactory(format =>
+            var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
             {
                 var connection = new DefaultConnectionContext();
                 // prevents keep alive time being activated
                 connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
                 connection.Transport = _pipe;
-                return Task.FromResult<ConnectionContext>(connection);
-            },
-            connection =>
-            {
-                connection.Transport.Output.Complete();
-                connection.Transport.Input.Complete();
-                return Task.CompletedTask;
+                return new ValueTask<ConnectionContext>(connection);
             });
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 

@@ -54,7 +54,7 @@ namespace Microsoft.Net.Http.Headers
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append(_unit);
+            sb.Append(_unit.AsSpan());
             sb.Append('=');
 
             var first = true;

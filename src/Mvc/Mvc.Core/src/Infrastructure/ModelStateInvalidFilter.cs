@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -15,12 +15,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ModelStateInvalidFilter : IActionFilter, IOrderedFilter
     {
+        internal const int FilterOrder = -2000;
+
         private readonly ApiBehaviorOptions _apiBehaviorOptions;
         private readonly ILogger _logger;
 
         public ModelStateInvalidFilter(ApiBehaviorOptions apiBehaviorOptions, ILogger logger)
         {
             _apiBehaviorOptions = apiBehaviorOptions ?? throw new ArgumentNullException(nameof(apiBehaviorOptions));
+            if (!_apiBehaviorOptions.SuppressModelStateInvalidFilter && _apiBehaviorOptions.InvalidModelStateResponseFactory == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    typeof(ApiBehaviorOptions),
+                    nameof(ApiBehaviorOptions.InvalidModelStateResponseFactory)));
+            }
+
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -39,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Look at <see cref="IOrderedFilter.Order"/> for more detailed info.
         /// </para>
         /// </remarks>
-        public int Order => -2000;
+        public int Order => FilterOrder;
 
         /// <inheritdoc />
         public bool IsReusable => true;

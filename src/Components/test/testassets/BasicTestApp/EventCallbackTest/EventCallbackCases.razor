@@ -1,0 +1,42 @@
+@*
+    Test cases for using EventCallback with various delegate scenarios that used to be troublesome.
+
+    Currently these cases are **VERBOSE** because we haven't yet landed the compiler support for EventCallback.
+    This will be cleaned up soon, and all of the explicit calls to EventCallback.Factory will go away.
+*@
+<div>
+    <p>Clicking any of these buttons should cause the count to go up by one!</p>
+    <p id="render_count">Render Count: @(++renderCount)</p>
+</div>
+<div id="capturing_lambda">
+    <h3>Passing Capturing Lambda to Button</h3>
+    <InnerButton OnClick="@(() => { GC.KeepAlive(this); })" Text="Capturing Lambda" />
+</div>
+<div id="unbound_lambda">
+    <h3>Passing Unbound Lambda to Button</h3>
+    <InnerButton OnClick="@(() => { })" Text="Unbound Lambda" />
+</div>
+<div id="unbound_lambda_nested">
+    <h3>Passing Unbound Lambda to Nested Button</h3>
+    <MiddleButton OnClick="@(() => { })" Text="Unbound Lambda Nested" />
+</div>
+<div id="unbound_lambda_strongly_typed">
+    <h3>Passing Capturing Lambda to Strongly Typed Button</h3>
+    <StronglyTypedButton OnClick="@(() => { GC.KeepAlive(this); })" Text="Unbound Lambda Strongly-Typed" />
+</div>
+<div id="unbound_lambda_child_content">
+    <h3>Passing Child Content</h3>
+    <TemplatedControl>
+        <button @onclick="@(() => { })">Unbound Lambda Child Content</button>
+    </TemplatedControl>
+</div>
+<div id="unbound_lambda_bind_to_component">
+    <h3>Passing Child Content</h3>
+    <ButtonComponent @bind-Count="buttonComponentCount" Text="Unbound Lambda Bind-To-Component" />
+</div>
+
+@code {
+    int renderCount;
+
+    int buttonComponentCount  = 1; // Avoid CS0649
+}

@@ -3,16 +3,13 @@ using System.Globalization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Components;
 using MusicStore.Mocks.Common;
@@ -25,7 +22,7 @@ namespace MusicStore
     {
         private readonly Platform _platform;
 
-        public StartupOpenIdConnectTesting(IHostingEnvironment env)
+        public StartupOpenIdConnectTesting(IWebHostEnvironment env)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
@@ -36,25 +33,20 @@ namespace MusicStore
 
             Configuration = builder.Build();
             _platform = new Platform();
+            Env = env;
         }
 
         public IConfiguration Configuration { get; private set; }
+        public IWebHostEnvironment Env { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             // Add EF services to the services container
-            if (_platform.UseInMemoryStore)
-            {
-                services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase("Scratch"));
-            }
-            else
-            {
-                services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
-            }
+            // Add EF services to the services container
+            services.AddDbContext<MusicStoreContext>(options =>
+                options.UseSqlite("Data Source=MusicStore.db"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -66,7 +58,7 @@ namespace MusicStore
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
-                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler(Env);
                 options.StringDataFormat = new CustomStringDataFormat();
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
@@ -139,25 +131,31 @@ namespace MusicStore
             // Add static files to the request pipeline
             app.UseStaticFiles();
 
-            // Add authentication to the request pipeline
+            // Add the endpoint routing matcher middleware to the request pipeline
+            app.UseRouting();
+
+            // Add cookie-based authentication to the request pipeline
             app.UseAuthentication();
 
-            // Add MVC to the request pipeline
-            app.UseMvc(routes =>
+            // Add the authorization middleware to the request pipeline
+            app.UseAuthorization();
+
+            // Add endpoints to the request pipeline
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "areaRoute",
-                    template: "{area:exists}/{controller}/{action}",
+                    pattern: "{area:exists}/{controller}/{action}",
                     defaults: new { action = "Index" });
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
+                    pattern: "{controller}/{action}/{id?}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "api",
-                    template: "{controller}/{id?}");
+                    pattern: "{controller}/{id?}");
             });
 
             //Populates the MusicStore sample data

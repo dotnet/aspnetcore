@@ -74,13 +74,13 @@ namespace Microsoft.AspNetCore.Builder
                     throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName, InvokeAsyncMethodName, middleware));
                 }
 
-                var methodinfo = invokeMethods[0];
-                if (!typeof(Task).IsAssignableFrom(methodinfo.ReturnType))
+                var methodInfo = invokeMethods[0];
+                if (!typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
                 {
                     throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNonTaskReturnType(InvokeMethodName, InvokeAsyncMethodName, nameof(Task)));
                 }
 
-                var parameters = methodinfo.GetParameters();
+                var parameters = methodInfo.GetParameters();
                 if (parameters.Length == 0 || parameters[0].ParameterType != typeof(HttpContext))
                 {
                     throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName, InvokeAsyncMethodName, nameof(HttpContext)));
@@ -92,10 +92,10 @@ namespace Microsoft.AspNetCore.Builder
                 var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, ctorArgs);
                 if (parameters.Length == 1)
                 {
-                    return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
+                    return (RequestDelegate)methodInfo.CreateDelegate(typeof(RequestDelegate), instance);
                 }
 
-                var factory = Compile<object>(methodinfo, parameters);
+                var factory = Compile<object>(methodInfo, parameters);
 
                 return context =>
                 {
@@ -142,13 +142,13 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
+        private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
         {
             // If we call something like
             //
             // public class Middleware
             // {
-            //    public Task Invoke(HttpContext context, ILoggerFactory loggeryFactory)
+            //    public Task Invoke(HttpContext context, ILoggerFactory loggerFactory)
             //    {
             //
             //    }
@@ -158,14 +158,14 @@ namespace Microsoft.AspNetCore.Builder
             // We'll end up with something like this:
             //   Generic version:
             //
-            //   Task Invoke(Middleware instance, HttpContext httpContext, IServiceprovider provider)
+            //   Task Invoke(Middleware instance, HttpContext httpContext, IServiceProvider provider)
             //   {
             //      return instance.Invoke(httpContext, (ILoggerFactory)UseMiddlewareExtensions.GetService(provider, typeof(ILoggerFactory));
             //   }
 
             //   Non generic version:
             //
-            //   Task Invoke(object instance, HttpContext httpContext, IServiceprovider provider)
+            //   Task Invoke(object instance, HttpContext httpContext, IServiceProvider provider)
             //   {
             //      return ((Middleware)instance).Invoke(httpContext, (ILoggerFactory)UseMiddlewareExtensions.GetService(provider, typeof(ILoggerFactory));
             //   }
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     providerArg,
                     Expression.Constant(parameterType, typeof(Type)),
-                    Expression.Constant(methodinfo.DeclaringType, typeof(Type))
+                    Expression.Constant(methodInfo.DeclaringType, typeof(Type))
                 };
 
                 var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);
@@ -198,12 +198,12 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             Expression middlewareInstanceArg = instanceArg;
-            if (methodinfo.DeclaringType != typeof(T))
+            if (methodInfo.DeclaringType != typeof(T))
             {
-                middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodinfo.DeclaringType);
+                middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodInfo.DeclaringType);
             }
 
-            var body = Expression.Call(middlewareInstanceArg, methodinfo, methodArguments);
+            var body = Expression.Call(middlewareInstanceArg, methodInfo, methodArguments);
 
             var lambda = Expression.Lambda<Func<T, HttpContext, IServiceProvider, Task>>(body, instanceArg, httpContextArg, providerArg);
 

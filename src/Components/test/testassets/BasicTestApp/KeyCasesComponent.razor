@@ -1,0 +1,73 @@
+@using System.Text.Json
+<div class="key-cases">
+    <div class="model">
+        <p>Model</p>
+        <textarea @bind="modelJson" id="key-model"></textarea>
+        <button @onclick="Update">Update</button>
+    </div>
+    <div class="render-output">
+        <p>Output</p>
+        <CascadingValue Value="@renderContext" IsFixed="true">
+            <KeyCasesTreeNode Data="@parsedRootNode" />
+        </CascadingValue>
+    </div>
+</div>
+
+<style type="text/css">
+    .key-cases { display: flex; }
+    .key-cases > * { padding: 1rem; border: 1px solid silver; }
+    .key-cases .model { width: 22rem; display: flex; flex-direction: column; }
+    .key-cases .render-output { flex-grow: 1; }
+    .key-cases textarea { height: 24rem; margin: 1rem 0; }
+    .key-cases .children { margin-left: 0.35rem; border-left: 1px solid silver; margin-bottom: 0.3rem; }
+    .key-cases p { margin-top: 0; }
+    .key-cases .node .node::before { content: '–'; color: silver; float: left; margin-right: 0.3rem; }
+    .key-cases .node .node .children { margin-left: 1.1rem; }
+</style>
+
+@code {
+    string modelJson = @"{
+  ""label"": ""root"",
+  ""children"": [
+    {
+      ""key"": ""a"",
+      ""label"": ""A"",
+      ""children"": [
+        { ""key"": ""a1"", ""label"": ""A1"" },
+        { ""key"": ""a2"", ""label"": ""A2"" },
+        { ""key"": ""a3"", ""label"": ""A3"" }
+      ]
+    },
+    {
+      ""key"": ""b"",
+      ""label"": ""B"",
+      ""children"": [
+        { ""key"": ""b1"", ""label"": ""B1"" },
+        { ""key"": ""b2"", ""label"": ""B2"" },
+        { ""key"": ""b3"", ""label"": ""B3"" }
+      ]
+    }
+  ]
+}";
+
+    KeyCasesTreeNode.Node parsedRootNode;
+    RenderContext renderContext = new RenderContext();
+
+    protected override void OnInitialized()
+    {
+        Update();
+    }
+
+    void Update()
+    {
+        renderContext.UpdateCount++;
+        parsedRootNode = JsonSerializer.Deserialize<KeyCasesTreeNode.Node>(modelJson, TestJsonSerializerOptionsProvider.Options);
+    }
+
+    public class RenderContext
+    {
+        // This is so the descendants can detect and display whether they are
+        // newly-instantiated on any given render
+        public int UpdateCount { get; set; }
+    }
+}

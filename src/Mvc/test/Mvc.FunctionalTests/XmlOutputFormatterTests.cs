@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
                 "<SampleInt>10</SampleInt></DummyClass>",
                 await response.Content.ReadAsStringAsync());
+            Assert.Equal(167, response.Content.Headers.ContentLength);
         }
 
         [Fact]
@@ -61,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "<DummyClass xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                 "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><SampleInt>10</SampleInt></DummyClass>",
                 await response.Content.ReadAsStringAsync());
+            Assert.Equal(149, response.Content.Headers.ContentLength);
         }
 
         [ConditionalFact]

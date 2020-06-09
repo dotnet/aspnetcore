@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,19 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieBuilder
     {
+        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
+        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
+        internal static bool SuppressSameSiteNone;
+
         private string _name;
+
+        static CookieBuilder()
+        {
+            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
+            {
+                SuppressSameSiteNone = enabled;
+            }
+        }
 
         /// <summary>
         /// The name of the cookie.
@@ -49,12 +61,12 @@ namespace Microsoft.AspNetCore.Http
         public virtual bool HttpOnly { get; set; }
 
         /// <summary>
-        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Lax"/>
+        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <remarks>
         /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Lax;
+        public virtual SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : SameSiteMode.Unspecified;
 
         /// <summary>
         /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.
@@ -107,7 +119,7 @@ namespace Microsoft.AspNetCore.Http
                 Domain = Domain,
                 IsEssential = IsEssential,
                 Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
-                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.Value) : default(DateTimeOffset?)
+                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.GetValueOrDefault()) : default(DateTimeOffset?)
             };
         }
     }

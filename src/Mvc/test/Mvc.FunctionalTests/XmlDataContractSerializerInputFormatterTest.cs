@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // Verifies that the model state has errors related to body model validation.
         [Fact]
-        public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
+        public async Task DataMissingForReferenceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange
             var input = "<Store xmlns=\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite\"" +

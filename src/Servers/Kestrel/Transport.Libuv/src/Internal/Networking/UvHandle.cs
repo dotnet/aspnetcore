@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public abstract class UvHandle : UvMemory
+    internal abstract class UvHandle : UvMemory
     {
         private static readonly LibuvFunctions.uv_close_cb _destroyMemory = (handle) => DestroyMemory(handle);
         private Action<Action<IntPtr>, IntPtr> _queueCloseHandle;

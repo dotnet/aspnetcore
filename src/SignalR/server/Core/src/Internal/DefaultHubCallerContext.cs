@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     /// <summary>
     /// A context for accessing information about the hub caller from their connection.
     /// </summary>
-    public class DefaultHubCallerContext : HubCallerContext
+    internal class DefaultHubCallerContext : HubCallerContext
     {
         private readonly HubConnectionContext _connection;
 

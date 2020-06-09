@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Exclude the TestFiles directory from default wildcards -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embed test files so they can be referenced in tests -->
+    <EmbeddedResource Include="TestFiles\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(GenerateBaselines)'=='true'">
+    <DefineConstants>GENERATE_BASELINES;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Build" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.AspNetCore.Components" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
+  </ItemGroup>
+
+  <!-- A bit of msbuild magic to support reference resolver tests -->
+  <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
+    <ItemGroup>
+      <_BclDirectory Include="$(MonoBaseClassLibraryPath)" />
+      <_BclDirectory Include="$(MonoBaseClassLibraryFacadesPath)" />
+      <_BclDirectory Include="$(MonoWasmFrameworkPath)" />
+    </ItemGroup>
+
+    <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+    <WriteLinesToFile Lines="@(_BclDirectory)" File="$(TargetDir)bclLocations.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+  </Target>
+
+</Project>

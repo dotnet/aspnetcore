@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,13 +9,15 @@ using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
     /// <summary>
     /// Describes options used to configure an <see cref="INodeServices"/> instance.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class NodeServicesOptions
     {
         internal const string TimeoutConfigPropertyName = nameof(InvocationTimeoutMilliseconds);
@@ -35,7 +40,7 @@ namespace Microsoft.AspNetCore.NodeServices
             InvocationTimeoutMilliseconds = DefaultInvocationTimeoutMilliseconds;
             WatchFileExtensions = (string[])DefaultWatchFileExtensions.Clone();
 
-            var hostEnv = serviceProvider.GetService<IHostingEnvironment>();
+            var hostEnv = serviceProvider.GetService<IWebHostEnvironment>();
             if (hostEnv != null)
             {
                 // In an ASP.NET environment, we can use the IHostingEnvironment data to auto-populate a few
@@ -48,7 +53,7 @@ namespace Microsoft.AspNetCore.NodeServices
                 ProjectPath = Directory.GetCurrentDirectory();
             }
 
-            var applicationLifetime = serviceProvider.GetService<IApplicationLifetime>();
+            var applicationLifetime = serviceProvider.GetService<IHostApplicationLifetime>();
             if (applicationLifetime != null)
             {
                 ApplicationStoppingToken = applicationLifetime.ApplicationStopping;
@@ -58,8 +63,7 @@ namespace Microsoft.AspNetCore.NodeServices
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             NodeInstanceOutputLogger = loggerFactory != null
                 ? loggerFactory.CreateLogger(LogCategoryName)
-                : new ConsoleLogger(LogCategoryName, null, false);
-
+                : NullLogger.Instance;
             // By default, we use this package's built-in out-of-process-via-HTTP hosting/transport
             this.UseHttpHosting();
         }

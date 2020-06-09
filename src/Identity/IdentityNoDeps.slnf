@@ -1,0 +1,24 @@
+{
+  "solution": {
+    "path": "Identity.sln",
+    "projects": [
+      "ApiAuthorization.IdentityServer\\samples\\ApiAuthSample\\ApiAuthSample.csproj",
+      "ApiAuthorization.IdentityServer\\src\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj",
+      "ApiAuthorization.IdentityServer\\test\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj",
+      "Core\\src\\Microsoft.AspNetCore.Identity.csproj",
+      "EntityFrameworkCore\\src\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj",
+      "EntityFrameworkCore\\test\\EF.InMemory.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj",
+      "EntityFrameworkCore\\test\\EF.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj",
+      "Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
+      "Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
+      "Specification.Tests\\src\\Microsoft.AspNetCore.Identity.Specification.Tests.csproj",
+      "UI\\src\\Microsoft.AspNetCore.Identity.UI.csproj",
+      "samples\\IdentitySample.DefaultUI\\IdentitySample.DefaultUI.csproj",
+      "samples\\IdentitySample.Mvc\\IdentitySample.Mvc.csproj",
+      "test\\Identity.FunctionalTests\\Microsoft.AspNetCore.Identity.FunctionalTests.csproj",
+      "test\\Identity.Test\\Microsoft.AspNetCore.Identity.Test.csproj",
+      "test\\InMemory.Test\\Microsoft.AspNetCore.Identity.InMemory.Test.csproj",
+      "testassets\\Identity.DefaultUI.WebSite\\Identity.DefaultUI.WebSite.csproj"
+    ]
+  }
+}

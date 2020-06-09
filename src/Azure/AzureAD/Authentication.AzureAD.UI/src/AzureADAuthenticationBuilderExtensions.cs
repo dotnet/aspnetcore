@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -58,9 +58,11 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddJwtBearerSchemeMapping(scheme, jwtBearerScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>());
 
-            builder.Services.TryAddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AzureADOptions>, AzureADOptionsValidation>());
+
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JwtBearerOptions>, AzureADJwtBearerOptionsConfiguration>());
 
             builder.Services.Configure(scheme, configureOptions);
             builder.AddJwtBearer(jwtBearerScheme, o => { });
@@ -113,11 +115,13 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddOpenIDCookieSchemeMappings(scheme, openIdConnectScheme, cookieScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>());
 
-            builder.Services.TryAddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsConfiguration>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AzureADOptions>, AzureADOptionsValidation>());
 
-            builder.Services.TryAddSingleton<IConfigureOptions<CookieAuthenticationOptions>, CookieOptionsConfiguration>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenIdConnectOptions>, AzureADOpenIdConnectOptionsConfiguration>());
+
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CookieAuthenticationOptions>, AzureADCookieOptionsConfiguration>());
 
             builder.Services.Configure(scheme, configureOptions);
 
@@ -192,7 +196,6 @@ namespace Microsoft.AspNetCore.Authentication
             var additionalParts = GetAdditionalParts();
             var mvcBuilder = services
                 .AddMvc()
-                .AddRazorPagesOptions(o => o.AllowAreas = true)
                 .ConfigureApplicationPartManager(apm =>
                 {
                     foreach (var part in additionalParts)

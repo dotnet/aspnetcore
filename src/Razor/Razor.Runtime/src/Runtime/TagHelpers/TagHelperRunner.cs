@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the
         /// <paramref name="executionContext"/>'s <see cref="ITagHelper"/>s.</returns>
-        public async Task RunAsync(TagHelperExecutionContext executionContext)
+        public Task RunAsync(TagHelperExecutionContext executionContext)
         {
             if (executionContext == null)
             {
@@ -28,19 +28,40 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             var tagHelperContext = executionContext.Context;
+            var tagHelpers = executionContext.TagHelpers;
+            OrderTagHelpers(tagHelpers);
 
-            OrderTagHelpers(executionContext.TagHelpers);
-
-            for (var i = 0; i < executionContext.TagHelpers.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var count = tagHelpers.Count;
+            for (var i = 0; i < count; i++)
             {
-                executionContext.TagHelpers[i].Init(tagHelperContext);
+                tagHelpers[i].Init(tagHelperContext);
             }
 
             var tagHelperOutput = executionContext.Output;
 
-            for (var i = 0; i < executionContext.TagHelpers.Count; i++)
+            for (var i = 0; i < count; i++)
             {
-                await executionContext.TagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
+                var task = tagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
+                if (!task.IsCompletedSuccessfully)
+                {
+                    return Awaited(task, executionContext, i + 1, count);
+                }
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(Task task, TagHelperExecutionContext executionContext, int i, int count)
+            {
+                await task;
+
+                var tagHelpers = executionContext.TagHelpers;
+                var tagHelperOutput = executionContext.Output;
+                var tagHelperContext = executionContext.Context;
+                for (; i < count; i++)
+                {
+                    await tagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
+                }
             }
         }
 
@@ -48,14 +69,16 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         {
             // Using bubble-sort here due to its simplicity. It'd be an extreme corner case to ever have more than 3 or
             // 4 tag helpers simultaneously.
-            ITagHelper temp = null;
-            for (var i = 0; i < tagHelpers.Count; i++)
+
+            // Read interface .Count once rather than per iteration
+            var count = tagHelpers.Count;
+            for (var i = 0; i < count; i++)
             {
-                for (var j = i + 1; j < tagHelpers.Count; j++)
+                for (var j = i + 1; j < count; j++)
                 {
                     if (tagHelpers[j].Order < tagHelpers[i].Order)
                     {
-                        temp = tagHelpers[i];
+                        var temp = tagHelpers[i];
                         tagHelpers[i] = tagHelpers[j];
                         tagHelpers[j] = temp;
                     }

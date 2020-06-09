@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,26 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\AzureAD.WebSite.deps.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+    <!-- Drop a dummy sln to specify content root location -->
+    <WriteLinesToFile
+        File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>
+    <WriteLinesToFile
+        File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>
+  </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>

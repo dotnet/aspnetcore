@@ -15,9 +15,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         private TimeSpan? _preflightMaxAge;
 
         /// <summary>
+        /// Gets or sets a value that determines if the current request is a CORS-preflight request.
+        /// </summary>
+        public bool IsPreflightRequest { get; set; }
+
+        /// <summary>
         /// Gets or sets the allowed origin.
         /// </summary>
         public string AllowedOrigin { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if the origin is allowed.
+        /// When <c>false</c>, no CORS headers should be sent.
+        /// </summary>
+        public bool IsOriginAllowed { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the resource supports user credentials.

@@ -12,7 +12,7 @@ namespace FilesWebSite.Controllers
     public class UploadFilesController : Controller
     {
         [HttpPost("UploadFiles")]
-        public async Task<IActionResult> Post(User user)
+        public async Task<object> Post(User user)
         {
             var resultUser = new
             {
@@ -21,11 +21,11 @@ namespace FilesWebSite.Controllers
                 Biography = await user.ReadBiography()
             };
 
-            return Json(resultUser);
+            return resultUser;
         }
 
         [HttpPost("UploadProductSpecs")]
-        public IActionResult ProductSpecs(Product product)
+        public object ProductSpecs(Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -38,7 +38,7 @@ namespace FilesWebSite.Controllers
                 files.Add(keyValuePair.Key, keyValuePair.Value?.Select(formFile => formFile?.FileName).ToList());
             }
 
-            return Json(new { Name = product.Name, Specs = files });
+            return new { Name = product.Name, Specs = files };
         }
     }
 }

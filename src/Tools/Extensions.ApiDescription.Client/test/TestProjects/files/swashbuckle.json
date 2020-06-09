@@ -1,0 +1,155 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "and so is version",
+        "title": "title is required"
+    },
+    "paths": {
+        "/api/Values/matches": {
+            "post": {
+                "tags": [
+                    "Values"
+                ],
+                "operationId": "ApiValuesMatchesPost",
+                "consumes": [
+                    "application/json-patch+json",
+                    "application/json",
+                    "text/json",
+                    "application/*+json",
+                    "application/xml",
+                    "text/xml",
+                    "application/*+xml"
+                ],
+                "produces": [
+                    "text/plain",
+                    "application/json",
+                    "text/json",
+                    "application/xml",
+                    "text/xml"
+                ],
+                "parameters": [
+                    {
+                        "name": "possibilities",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "uniqueItems": false,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "comparisonType",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32",
+                        "enum": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "uniqueItems": false,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/Values": {
+            "get": {
+                "tags": [
+                    "Values"
+                ],
+                "operationId": "ApiValuesGet",
+                "consumes": [],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "uniqueItems": false,
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Values"
+                ],
+                "operationId": "ApiValuesPost",
+                "consumes": [
+                    "application/xml"
+                ],
+                "produces": [],
+                "parameters": [
+                    {
+                        "name": "value",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/Values/too": {
+            "get": {
+                "tags": [
+                    "Values"
+                ],
+                "operationId": "ApiValuesTooGet",
+                "consumes": [],
+                "produces": [
+                    "application/xml"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Model"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Model": {
+            "type": "object",
+            "properties": {
+                "userName": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
