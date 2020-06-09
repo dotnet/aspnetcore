@@ -48,7 +48,8 @@
     <Content Include="_._" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="LayoutDependencies" BeforeTargets="Build">
+  <Target Name="LayoutDependencies" BeforeTargets="Build"
+    Condition="'$(RebuildDependencies)' == 'true' OR !Exists('$(SdkOutputPath)\tools\netcoreapp3.0\rzc.dll')">
     <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
     <MSBuild
       Projects="..\..\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj"
