@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
-    <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
     <OutputType>exe</OutputType>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
