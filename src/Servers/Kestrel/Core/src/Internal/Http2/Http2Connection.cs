@@ -218,24 +218,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceeded their drain timeouts.
                     UpdateCompletedStreams();
 
-                    if (_keepAlive != null)
-                    {
-                        var state = _keepAlive.ProcessKeepAlive(!result.IsCanceled);
-                        if (state == KeepAliveState.SendPing)
-                        {
-                            await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
-                            _keepAlive.PingSent();
-                        }
-                        else if (state == KeepAliveState.Timeout)
-                        {
-                            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.NO_ERROR);
-                        }
-                    }
-
                     try
                     {
+                        bool frameReceived = false;
                         while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
+                            frameReceived = true;
                             Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                             await ProcessFrameAsync(application, framePayload);
                         }
@@ -243,6 +231,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (result.IsCompleted)
                         {
                             return;
+                        }
+
+                        if (_keepAlive != null)
+                        {
+                            var state = _keepAlive.ProcessKeepAlive(frameReceived);
+                            if (state == KeepAliveState.SendPing)
+                            {
+                                await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
+                                _keepAlive.PingSent();
+                            }
+                            else if (state == KeepAliveState.Timeout)
+                            {
+                                // There isn't a good error code to return with the GOAWAY.
+                                // NO_ERROR isn't a good choice because it indicates the connection is gracefully shutting down.
+                                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR);
+                            }
                         }
                     }
                     catch (Http2StreamErrorException ex)

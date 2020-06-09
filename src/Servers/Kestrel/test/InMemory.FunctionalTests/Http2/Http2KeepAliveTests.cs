@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(KeepAliveState.Timeout, _connection._keepAlive._state);
 
-            VerifyGoAway(await ReceiveFrameAsync().DefaultTimeout(), 0, Http2ErrorCode.NO_ERROR);
+            VerifyGoAway(await ReceiveFrameAsync().DefaultTimeout(), 0, Http2ErrorCode.INTERNAL_ERROR);
         }
 
         [Fact]
@@ -239,6 +239,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
             Assert.Equal(KeepAliveState.None, _connection._keepAlive._state);
 
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1).DefaultTimeout();
+
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
         }
 
@@ -255,6 +260,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TriggerTick(now);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1).DefaultTimeout();
 
             // Heartbeat that exceeds interval
             TriggerTick(now + TimeSpan.FromSeconds(1.1));

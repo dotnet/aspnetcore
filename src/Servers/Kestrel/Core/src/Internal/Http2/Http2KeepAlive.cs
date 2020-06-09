@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly TimeSpan _keepAliveInterval;
         private readonly TimeSpan? _keepAliveTimeout;
         private readonly ISystemClock _systemClock;
-        private bool _bytesReceivedCurrentTick;
-        private long _lastBytesReceivedTimestamp;
+        private bool _frameReceivedCurrentTick;
+        private long _lastFrameReceivedTimestamp;
         private long _pingSentTimestamp;
 
         // Internal for testing
@@ -39,16 +39,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _systemClock = systemClock;
         }
 
-        internal KeepAliveState ProcessKeepAlive(bool dataReceived)
+        internal KeepAliveState ProcessKeepAlive(bool frameReceived)
         {
             lock (_lock)
             {
-                if (dataReceived)
+                if (frameReceived)
                 {
-                    _bytesReceivedCurrentTick = true;
+                    _frameReceivedCurrentTick = true;
 
-                    // Any data received after the keep alive interval is exceeded
-                    // resets the state back to none.
+                    // Any frame received after the keep alive interval is exceeded resets the state back to none.
                     if (_state == KeepAliveState.PingSent)
                     {
                         _pingSentTimestamp = 0;
@@ -78,19 +77,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_lock)
             {
-                // Bytes were received since the last tick.
-                // Update a timestamp of when bytes were last received.
-                if (_bytesReceivedCurrentTick)
+                // Frame was received since the last tick.
+                // Update a timestamp of when frame was last received.
+                if (_frameReceivedCurrentTick)
                 {
-                    _lastBytesReceivedTimestamp = timestamp;
-                    _bytesReceivedCurrentTick = false;
+                    _lastFrameReceivedTimestamp = timestamp;
+                    _frameReceivedCurrentTick = false;
                 }
 
                 switch (_state)
                 {
                     case KeepAliveState.None:
-                        // Check whether keep alive interval has passed since last bytes received
-                        if (timestamp > (_lastBytesReceivedTimestamp + _keepAliveInterval.Ticks))
+                        // Check whether keep alive interval has passed since last frame received
+                        if (timestamp > (_lastFrameReceivedTimestamp + _keepAliveInterval.Ticks))
                         {
                             _state = KeepAliveState.SendPing;
                         }
