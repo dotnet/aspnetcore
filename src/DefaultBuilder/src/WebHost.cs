@@ -221,6 +221,15 @@ namespace Microsoft.AspNetCore
                     StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment, ctx.Configuration);
                 }
             });
+            builder.ConfigureLogging(loggingBuilder =>
+            {
+                loggingBuilder.Configure(options =>
+                {
+                    options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId
+                                                        | ActivityTrackingOptions.TraceId
+                                                        | ActivityTrackingOptions.ParentId;
+                });
+            });
             builder.UseKestrel((builderContext, options) =>
             {
                 options.Configure(builderContext.Configuration.GetSection("Kestrel"));
