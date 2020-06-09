@@ -18,10 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public class JsonOutputFormatter : TextOutputFormatter
     {
         private readonly IArrayPool<char> _charPool;
-
-        // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
-        // the serializer and invalidate it when the settings change.
-        private JsonSerializer _serializer;
+        private JsonSerializerSettings _serializerSettings;
 
         /// <summary>
         /// Initializes a new <see cref="JsonOutputFormatter"/> instance.
@@ -121,12 +118,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
         protected virtual JsonSerializer CreateJsonSerializer()
         {
-            if (_serializer == null)
+            if (_serializerSettings == null)
             {
-                _serializer = JsonSerializer.Create(SerializerSettings);
+                _serializerSettings = ShallowCopy(SerializerSettings);
             }
 
-            return _serializer;
+            return JsonSerializer.Create(_serializerSettings);
         }
 
         /// <inheritdoc />
@@ -152,6 +149,44 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // write).
                 await writer.FlushAsync();
             }
+        }
+
+        private static JsonSerializerSettings ShallowCopy(JsonSerializerSettings settings)
+        {
+            var copiedSettings = new JsonSerializerSettings
+            {
+                FloatParseHandling = settings.FloatParseHandling,
+                FloatFormatHandling = settings.FloatFormatHandling,
+                DateParseHandling = settings.DateParseHandling,
+                DateTimeZoneHandling = settings.DateTimeZoneHandling,
+                DateFormatHandling = settings.DateFormatHandling,
+                Formatting = settings.Formatting,
+                MaxDepth = settings.MaxDepth,
+                DateFormatString = settings.DateFormatString,
+                Context = settings.Context,
+                Error = settings.Error,
+                SerializationBinder = settings.SerializationBinder,
+                TraceWriter = settings.TraceWriter,
+                Culture = settings.Culture,
+                ReferenceResolverProvider = settings.ReferenceResolverProvider,
+                EqualityComparer = settings.EqualityComparer,
+                ContractResolver = settings.ContractResolver,
+                ConstructorHandling = settings.ConstructorHandling,
+                TypeNameAssemblyFormatHandling = settings.TypeNameAssemblyFormatHandling,
+                MetadataPropertyHandling = settings.MetadataPropertyHandling,
+                TypeNameHandling = settings.TypeNameHandling,
+                PreserveReferencesHandling = settings.PreserveReferencesHandling,
+                Converters = settings.Converters,
+                DefaultValueHandling = settings.DefaultValueHandling,
+                NullValueHandling = settings.NullValueHandling,
+                ObjectCreationHandling = settings.ObjectCreationHandling,
+                MissingMemberHandling = settings.MissingMemberHandling,
+                ReferenceLoopHandling = settings.ReferenceLoopHandling,
+                CheckAdditionalContent = settings.CheckAdditionalContent,
+                StringEscapeHandling = settings.StringEscapeHandling,
+            };
+
+            return copiedSettings;
         }
     }
 }
