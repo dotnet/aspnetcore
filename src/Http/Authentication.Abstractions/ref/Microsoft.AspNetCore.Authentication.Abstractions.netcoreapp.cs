@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Authentication
     }
     public static partial class AuthenticationHttpContextExtensions
     {
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult?> AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult?> AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext context, string? scheme) { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(this Microsoft.AspNetCore.Http.HttpContext context, string? scheme) { throw null; }
         public static System.Threading.Tasks.Task ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
         public static System.Threading.Tasks.Task ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { throw null; }
         public static System.Threading.Tasks.Task ChallengeAsync(this Microsoft.AspNetCore.Http.HttpContext context, string scheme) { throw null; }
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Authentication
     }
     public partial interface IAuthenticationService
     {
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult?> AuthenticateAsync(Microsoft.AspNetCore.Http.HttpContext context, string? scheme);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(Microsoft.AspNetCore.Http.HttpContext context, string? scheme);
         System.Threading.Tasks.Task ChallengeAsync(Microsoft.AspNetCore.Http.HttpContext context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties);
         System.Threading.Tasks.Task ForbidAsync(Microsoft.AspNetCore.Http.HttpContext context, string? scheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties);
         System.Threading.Tasks.Task SignInAsync(Microsoft.AspNetCore.Http.HttpContext context, string? scheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties);

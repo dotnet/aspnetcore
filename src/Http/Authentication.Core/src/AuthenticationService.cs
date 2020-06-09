@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public virtual async Task<AuthenticateResult?> AuthenticateAsync(HttpContext context, string? scheme)
+        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
         {
             if (scheme == null)
             {
@@ -78,7 +78,8 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var result = await handler.AuthenticateAsync();
-            if (result != null && result.Succeeded)
+
+            if (result.Succeeded)
             {
                 var principal = result.Principal!;
                 var doTransform = true;
