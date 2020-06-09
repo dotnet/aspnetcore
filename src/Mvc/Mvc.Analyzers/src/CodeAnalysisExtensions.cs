@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis
             return false;
         }
 
-        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol typeSymbol)
+        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
         {
             while (typeSymbol != null)
             {

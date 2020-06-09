@@ -116,13 +116,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void OnStaticIndexedHeader(int index)
         {
-            var knownHeader = H3StaticTable.Instance[index];
+            var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
             OnHeader(knownHeader.Name, knownHeader.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
-            var knownHeader = H3StaticTable.Instance[index];
+            var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
             OnHeader(knownHeader.Name, value);
         }
 

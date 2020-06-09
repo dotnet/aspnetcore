@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
         internal const string InvokeMethodName = "Invoke";
         internal const string InvokeAsyncMethodName = "InvokeAsync";
 
-        private static readonly MethodInfo GetServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo GetServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         /// <summary>
         /// Adds a middleware type to the application's request pipeline.
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 return async context =>
                 {
-                    var middlewareFactory = (IMiddlewareFactory)context.RequestServices.GetService(typeof(IMiddlewareFactory));
+                    var middlewareFactory = (IMiddlewareFactory?)context.RequestServices.GetService(typeof(IMiddlewareFactory));
                     if (middlewareFactory == null)
                     {
                         // No middleware factory
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             Expression middlewareInstanceArg = instanceArg;
-            if (methodInfo.DeclaringType != typeof(T))
+            if (methodInfo.DeclaringType != null && methodInfo.DeclaringType != typeof(T))
             {
                 middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodInfo.DeclaringType);
             }

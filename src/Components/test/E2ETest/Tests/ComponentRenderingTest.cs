@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -329,8 +330,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var showPromptButton = appElement.FindElements(By.TagName("button")).First();
             showPromptButton.Click();
 
-            var modal = new WebDriverWait(Browser, TimeSpan.FromSeconds(3))
-                .Until(SwitchToAlert);
+            var modal = Browser.Exists(() => Browser.SwitchTo().Alert(), TimeSpan.FromSeconds(3));
             modal.SendKeys("Some value from test");
             modal.Accept();
             var promptResult = appElement.FindElement(By.TagName("strong"));
@@ -645,18 +645,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 return completeLIs.Count == 2
                     && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
             });
-        }
-
-        static IAlert SwitchToAlert(IWebDriver driver)
-        {
-            try
-            {
-                return driver.SwitchTo().Alert();
-            }
-            catch (NoAlertPresentException)
-            {
-                return null;
-            }
         }
     }
 }

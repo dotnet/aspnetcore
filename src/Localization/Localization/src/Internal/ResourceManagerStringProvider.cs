@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Localization.Internal
             return resourceStreamName;
         }
 
-        public IList<string> GetAllResourceStrings(CultureInfo culture, bool throwOnMissing)
+        public IList<string>? GetAllResourceStrings(CultureInfo culture, bool throwOnMissing)
         {
             var cacheKey = GetResourceCacheKey(culture);
 
@@ -72,9 +72,12 @@ namespace Microsoft.Extensions.Localization.Internal
                 }
 
                 var names = new List<string>();
-                foreach (DictionaryEntry entry in resourceSet)
+                foreach (DictionaryEntry? entry in resourceSet)
                 {
-                    names.Add((string)entry.Key);
+                    if (entry?.Key is string key)
+                    {
+                        names.Add(key);
+                    }
                 }
 
                 return names;

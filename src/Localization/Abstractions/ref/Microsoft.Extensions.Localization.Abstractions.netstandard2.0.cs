@@ -21,10 +21,10 @@ namespace Microsoft.Extensions.Localization
     {
         public LocalizedString(string name, string value) { }
         public LocalizedString(string name, string value, bool resourceNotFound) { }
-        public LocalizedString(string name, string value, bool resourceNotFound, string searchedLocation) { }
+        public LocalizedString(string name, string value, bool resourceNotFound, string? searchedLocation) { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool ResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public string SearchedLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string? SearchedLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static implicit operator string (Microsoft.Extensions.Localization.LocalizedString localizedString) { throw null; }
         public override string ToString() { throw null; }

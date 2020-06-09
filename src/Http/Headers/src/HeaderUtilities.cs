@@ -19,8 +19,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static void SetQuality(IList<NameValueHeaderValue> parameters, double? value)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (value.HasValue)
             {
@@ -41,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    parameters.Add(new NameValueHeaderValue(QualityName, qualityString));
+                    parameters!.Add(new NameValueHeaderValue(QualityName, qualityString));
                 }
             }
             else
@@ -56,8 +54,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (qualityParameter != null)
             {
@@ -85,12 +81,12 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y)
         {
             return AreEqualCollections(x, y, null);
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y, IEqualityComparer<T> comparer)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y, IEqualityComparer<T>? comparer)
         {
             if (x == null)
             {
@@ -157,7 +153,6 @@ namespace Microsoft.Net.Http.Headers
             bool skipEmptyValues,
             out bool separatorFound)
         {
-            Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.
 
             separatorFound = false;

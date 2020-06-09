@@ -6,12 +6,12 @@ namespace Microsoft.AspNetCore.Http
     public partial class CookieOptions
     {
         public CookieOptions() { }
-        public string Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.DateTimeOffset? Expires { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsEssential { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.SameSiteMode SameSite { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool Secure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Http
     public partial class WebSocketAcceptContext
     {
         public WebSocketAcceptContext() { }
-        public virtual string SubProtocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual string? SubProtocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Http.Features
@@ -102,9 +102,10 @@ namespace Microsoft.AspNetCore.Http.Features
         public FeatureCollection() { }
         public FeatureCollection(Microsoft.AspNetCore.Http.Features.IFeatureCollection defaults) { }
         public bool IsReadOnly { get { throw null; } }
-        public object this[System.Type key] { get { throw null; } set { } }
+        public object? this[System.Type key] { get { throw null; } set { } }
         public virtual int Revision { get { throw null; } }
         public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>> GetEnumerator() { throw null; }
+        [return: System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         public TFeature Get<TFeature>() { throw null; }
         public void Set<TFeature>(TFeature instance) { }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
@@ -114,12 +115,14 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         private object _dummy;
         private int _dummyPrimitive;
+        [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
+        [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         public TCache Cache;
         public FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection) { throw null; }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Collection { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public int Revision { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public TFeature Fetch<TFeature>(ref TFeature cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection, TFeature> factory) where TFeature : class { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public TFeature Fetch<TFeature, TState>(ref TFeature cached, TState state, System.Func<TState, TFeature> factory) where TFeature : class { throw null; }
+        public TFeature Fetch<TFeature>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection, TFeature> factory) where TFeature : class { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public TFeature Fetch<TFeature, TState>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, TState state, System.Func<TState, TFeature> factory) where TFeature : class { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection, int revision) { }
     }
@@ -129,6 +132,7 @@ namespace Microsoft.AspNetCore.Http.Features
         private T _feature;
         private int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T> Default;
+        [return: System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         public T Fetch(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { throw null; }
         public T Update(Microsoft.AspNetCore.Http.Features.IFeatureCollection features, T feature) { throw null; }
     }
@@ -141,7 +145,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IFeatureCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         bool IsReadOnly { get; }
-        object this[System.Type key] { get; set; }
+        object? this[System.Type key] { get; set; }
         int Revision { get; }
         TFeature Get<TFeature>();
         void Set<TFeature>(TFeature instance);

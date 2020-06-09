@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 
+ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup for nodejs
@@ -11,7 +12,7 @@ RUN apt-get update \
     nodejs \
     git
 
-ARG gitBranch=blazor-wasm
+ARG gitBranch=master
 
 WORKDIR /src
 ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit

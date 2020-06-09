@@ -6,9 +6,9 @@ namespace Microsoft.AspNetCore.Builder
     public abstract partial class EndpointBuilder
     {
         protected EndpointBuilder() { }
-        public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IList<object> Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.RequestDelegate? RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public abstract Microsoft.AspNetCore.Http.Endpoint Build();
     }
     public partial interface IApplicationBuilder
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
     public partial class MapOptions
     {
         public MapOptions() { }
-        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.RequestDelegate? Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.PathString PathMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMatchedPathSegment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
@@ -79,8 +79,8 @@ namespace Microsoft.AspNetCore.Builder.Extensions
     public partial class MapWhenOptions
     {
         public MapWhenOptions() { }
-        public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public System.Func<Microsoft.AspNetCore.Http.HttpContext, bool> Predicate { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Http.RequestDelegate? Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Http.HttpContext, bool>? Predicate { get { throw null; } set { } }
     }
     public partial class UsePathBaseMiddleware
     {
@@ -119,13 +119,13 @@ namespace Microsoft.AspNetCore.Http
     public partial class CookieBuilder
     {
         public CookieBuilder() { }
-        public virtual string Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual string? Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.TimeSpan? Expiration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual bool IsEssential { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual string Name { get { throw null; } set { } }
-        public virtual string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual string? Name { get { throw null; } set { } }
+        public virtual string? Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual Microsoft.AspNetCore.Http.SameSiteMode SameSite { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual Microsoft.AspNetCore.Http.CookieSecurePolicy SecurePolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
@@ -143,12 +143,12 @@ namespace Microsoft.AspNetCore.Http
         public string DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public override string ToString() { throw null; }
+        public override string? ToString() { throw null; }
     }
     public static partial class EndpointHttpContextExtensions
     {
-        public static Microsoft.AspNetCore.Http.Endpoint GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
-        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
+        public static Microsoft.AspNetCore.Http.Endpoint? GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint? endpoint) { }
     }
     public sealed partial class EndpointMetadataCollection : System.Collections.Generic.IEnumerable<object>, System.Collections.Generic.IReadOnlyCollection<object>, System.Collections.Generic.IReadOnlyList<object>, System.Collections.IEnumerable
     {
@@ -158,16 +158,16 @@ namespace Microsoft.AspNetCore.Http
         public int Count { get { throw null; } }
         public object this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator GetEnumerator() { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public T GetMetadata<T>() where T : class { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public T? GetMetadata<T>() where T : class { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IReadOnlyList<T> GetOrderedMetadata<T>() where T : class { throw null; }
-        System.Collections.Generic.IEnumerator<object> System.Collections.Generic.IEnumerable<System.Object>.GetEnumerator() { throw null; }
+        System.Collections.Generic.IEnumerator<object> System.Collections.Generic.IEnumerable<object>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<object>, System.Collections.IEnumerator, System.IDisposable
+        public partial struct Enumerator : System.Collections.Generic.IEnumerator<object?>, System.Collections.IEnumerator, System.IDisposable
         {
             private object _dummy;
             private int _dummyPrimitive;
-            public object Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+            public object? Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
             public void Dispose() { }
             public bool MoveNext() { throw null; }
             public void Reset() { }
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Http
         public bool HasValue { get { throw null; } }
         public string Value { get { throw null; } }
         public bool Equals(Microsoft.AspNetCore.Http.FragmentString other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
+        public override bool Equals(object? obj) { throw null; }
         public static Microsoft.AspNetCore.Http.FragmentString FromUriComponent(string uriComponent) { throw null; }
         public static Microsoft.AspNetCore.Http.FragmentString FromUriComponent(System.Uri uri) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Http
         public int? Port { get { throw null; } }
         public string Value { get { throw null; } }
         public bool Equals(Microsoft.AspNetCore.Http.HostString other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
+        public override bool Equals(object? obj) { throw null; }
         public static Microsoft.AspNetCore.Http.HostString FromUriComponent(string uriComponent) { throw null; }
         public static Microsoft.AspNetCore.Http.HostString FromUriComponent(System.Uri uri) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -226,12 +226,12 @@ namespace Microsoft.AspNetCore.Http
         protected HttpContext() { }
         public abstract Microsoft.AspNetCore.Http.ConnectionInfo Connection { get; }
         public abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get; }
-        public abstract System.Collections.Generic.IDictionary<object, object> Items { get; set; }
+        public abstract System.Collections.Generic.IDictionary<object, object?> Items { get; set; }
         public abstract Microsoft.AspNetCore.Http.HttpRequest Request { get; }
         public abstract System.Threading.CancellationToken RequestAborted { get; set; }
         public abstract System.IServiceProvider RequestServices { get; set; }
         public abstract Microsoft.AspNetCore.Http.HttpResponse Response { get; }
-        public abstract Microsoft.AspNetCore.Http.ISession Session { get; set; }
+        public abstract Microsoft.AspNetCore.Http.ISession? Session { get; set; }
         public abstract string TraceIdentifier { get; set; }
         public abstract System.Security.Claims.ClaimsPrincipal User { get; set; }
         public abstract Microsoft.AspNetCore.Http.WebSocketManager WebSockets { get; }
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Http
     }
     public partial interface IMiddlewareFactory
     {
-        Microsoft.AspNetCore.Http.IMiddleware Create(System.Type middlewareType);
+        Microsoft.AspNetCore.Http.IMiddleware? Create(System.Type middlewareType);
         void Release(Microsoft.AspNetCore.Http.IMiddleware middleware);
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -348,14 +348,14 @@ namespace Microsoft.AspNetCore.Http
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.PathString Empty;
-        public PathString(string value) { throw null; }
+        public PathString(string? value) { throw null; }
         public bool HasValue { get { throw null; } }
-        public string Value { get { throw null; } }
+        public string? Value { get { throw null; } }
         public Microsoft.AspNetCore.Http.PathString Add(Microsoft.AspNetCore.Http.PathString other) { throw null; }
         public string Add(Microsoft.AspNetCore.Http.QueryString other) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Http.PathString other) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) { throw null; }
-        public override bool Equals(object obj) { throw null; }
+        public override bool Equals(object? obj) { throw null; }
         public static Microsoft.AspNetCore.Http.PathString FromUriComponent(string uriComponent) { throw null; }
         public static Microsoft.AspNetCore.Http.PathString FromUriComponent(System.Uri uri) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Http
         public static string operator +(string left, Microsoft.AspNetCore.Http.PathString right) { throw null; }
         public static bool operator ==(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.PathString right) { throw null; }
         public static implicit operator string (Microsoft.AspNetCore.Http.PathString path) { throw null; }
-        public static implicit operator Microsoft.AspNetCore.Http.PathString (string s) { throw null; }
+        public static implicit operator Microsoft.AspNetCore.Http.PathString (string? s) { throw null; }
         public static bool operator !=(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.PathString right) { throw null; }
         public bool StartsWithSegments(Microsoft.AspNetCore.Http.PathString other) { throw null; }
         public bool StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, out Microsoft.AspNetCore.Http.PathString remaining) { throw null; }
@@ -382,16 +382,16 @@ namespace Microsoft.AspNetCore.Http
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Http.QueryString Empty;
-        public QueryString(string value) { throw null; }
+        public QueryString(string? value) { throw null; }
         public bool HasValue { get { throw null; } }
-        public string Value { get { throw null; } }
+        public string? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.QueryString Add(Microsoft.AspNetCore.Http.QueryString other) { throw null; }
         public Microsoft.AspNetCore.Http.QueryString Add(string name, string value) { throw null; }
         public static Microsoft.AspNetCore.Http.QueryString Create(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> parameters) { throw null; }
-        public static Microsoft.AspNetCore.Http.QueryString Create(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> parameters) { throw null; }
+        public static Microsoft.AspNetCore.Http.QueryString Create(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string?>> parameters) { throw null; }
         public static Microsoft.AspNetCore.Http.QueryString Create(string name, string value) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Http.QueryString other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
+        public override bool Equals(object? obj) { throw null; }
         public static Microsoft.AspNetCore.Http.QueryString FromUriComponent(string uriComponent) { throw null; }
         public static Microsoft.AspNetCore.Http.QueryString FromUriComponent(System.Uri uri) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -489,14 +489,14 @@ namespace Microsoft.AspNetCore.Http
         public abstract bool IsWebSocketRequest { get; }
         public abstract System.Collections.Generic.IList<string> WebSocketRequestedProtocols { get; }
         public virtual System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync() { throw null; }
-        public abstract System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync(string subProtocol);
+        public abstract System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync(string? subProtocol);
     }
 }
 namespace Microsoft.AspNetCore.Http.Features
 {
     public partial interface IEndpointFeature
     {
-        Microsoft.AspNetCore.Http.Endpoint Endpoint { get; set; }
+        Microsoft.AspNetCore.Http.Endpoint? Endpoint { get; set; }
     }
     public partial interface IRouteValuesFeature
     {
@@ -505,40 +505,40 @@ namespace Microsoft.AspNetCore.Http.Features
 }
 namespace Microsoft.AspNetCore.Routing
 {
-    public partial class RouteValueDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IDictionary<string, object>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyDictionary<string, object>, System.Collections.IEnumerable
+    public partial class RouteValueDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IDictionary<string, object?>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IReadOnlyDictionary<string, object?>, System.Collections.IEnumerable
     {
         public RouteValueDictionary() { }
-        public RouteValueDictionary(object values) { }
+        public RouteValueDictionary(object? values) { }
         public System.Collections.Generic.IEqualityComparer<string> Comparer { get { throw null; } }
         public int Count { get { throw null; } }
-        public object this[string key] { get { throw null; } set { } }
+        public object? this[string key] { get { throw null; } set { } }
         public System.Collections.Generic.ICollection<string> Keys { get { throw null; } }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.IsReadOnly { get { throw null; } }
-        System.Collections.Generic.IEnumerable<string> System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>.Keys { get { throw null; } }
-        System.Collections.Generic.IEnumerable<object> System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>.Values { get { throw null; } }
-        public System.Collections.Generic.ICollection<object> Values { get { throw null; } }
-        public void Add(string key, object value) { }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>.IsReadOnly { get { throw null; } }
+        System.Collections.Generic.IEnumerable<string> System.Collections.Generic.IReadOnlyDictionary<string, object?>.Keys { get { throw null; } }
+        System.Collections.Generic.IEnumerable<object?> System.Collections.Generic.IReadOnlyDictionary<string, object?>.Values { get { throw null; } }
+        public System.Collections.Generic.ICollection<object?> Values { get { throw null; } }
+        public void Add(string key, object? value) { }
         public void Clear() { }
         public bool ContainsKey(string key) { throw null; }
         public static Microsoft.AspNetCore.Routing.RouteValueDictionary FromArray(System.Collections.Generic.KeyValuePair<string, object>[] items) { throw null; }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator GetEnumerator() { throw null; }
         public bool Remove(string key) { throw null; }
-        public bool Remove(string key, out object value) { throw null; }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Add(System.Collections.Generic.KeyValuePair<string, object> item) { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Contains(System.Collections.Generic.KeyValuePair<string, object> item) { throw null; }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.CopyTo(System.Collections.Generic.KeyValuePair<string, object>[] array, int arrayIndex) { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Remove(System.Collections.Generic.KeyValuePair<string, object> item) { throw null; }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.GetEnumerator() { throw null; }
+        public bool Remove(string key, out object? value) { throw null; }
+        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>.Add(System.Collections.Generic.KeyValuePair<string, object?> item) { }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>.Contains(System.Collections.Generic.KeyValuePair<string, object?> item) { throw null; }
+        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>.CopyTo(System.Collections.Generic.KeyValuePair<string, object>[] array, int arrayIndex) { }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>.Remove(System.Collections.Generic.KeyValuePair<string, object?> item) { throw null; }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object?>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         public bool TryAdd(string key, object value) { throw null; }
-        public bool TryGetValue(string key, out object value) { throw null; }
+        public bool TryGetValue(string key, out object? value) { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.IEnumerator, System.IDisposable
+        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerator, System.IDisposable
         {
             private object _dummy;
             private int _dummyPrimitive;
             public Enumerator(Microsoft.AspNetCore.Routing.RouteValueDictionary dictionary) { throw null; }
-            public System.Collections.Generic.KeyValuePair<string, object> Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+            public System.Collections.Generic.KeyValuePair<string, object?> Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
             public void Dispose() { }
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public bool MoveNext() { throw null; }

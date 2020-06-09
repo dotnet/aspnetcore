@@ -9,14 +9,14 @@ import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { discoverComponents, CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
-import { resolveOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
+import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 
 let renderingFailed = false;
 let started = false;
 
-async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
+async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
@@ -72,7 +72,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 }
 
-async function initializeConnection(options: BlazorOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
+async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 

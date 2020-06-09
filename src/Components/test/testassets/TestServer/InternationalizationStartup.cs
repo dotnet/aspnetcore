@@ -36,8 +36,8 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
+                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
                 app.UseRequestLocalization(options =>
                 {

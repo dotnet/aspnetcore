@@ -537,8 +537,8 @@ namespace Microsoft.AspNetCore.Components
             return ConvertToNullableBoolCore(obj, culture, out value);
         }
 
-        internal static BindParser<bool> ConvertToBool = ConvertToBoolCore;
-        internal static BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
+        internal readonly static BindParser<bool> ConvertToBool = ConvertToBoolCore;
+        internal readonly static BindParser<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
 
         private static bool ConvertToBoolCore(object obj, CultureInfo culture, out bool value)
         {

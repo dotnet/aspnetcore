@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using Microsoft.AspNetCore.E2ETesting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
@@ -22,7 +23,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         public ServerFixture()
         {
             _rootUriInitializer = new Lazy<Uri>(() =>
-                new Uri(StartAndGetRootUri()));
+            {
+                var uri = new Uri(StartAndGetRootUri());
+                if (E2ETestOptions.Instance.SauceTest)
+                {
+                    uri = new UriBuilder(uri.Scheme, E2ETestOptions.Instance.Sauce.HostName, uri.Port).Uri;
+                }
+
+                return uri;
+            });
         }
 
         public abstract void Dispose();
@@ -38,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                     m => m.Value);
         }
 
-        protected static string FindSampleOrTestSitePath(string projectName)
+        public static string FindSampleOrTestSitePath(string projectName)
         {
             var projects = _projects.Value;
             if (projects.TryGetValue(projectName, out var dir))
