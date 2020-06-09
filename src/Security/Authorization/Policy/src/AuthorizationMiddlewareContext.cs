@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Authorization
 {
     public class AuthorizationMiddlewareContext
     {
-        public HttpContext Context { get; set; }
-        public Endpoint Endpoint { get; set; }
+        public HttpContext HttpContext { get; set; }
     }
 }

@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authorization
             }
 
             // Note that the endpoint will be null if there is no matched endpoint
-            var authZContext = new AuthorizationMiddlewareContext { Context = context, Endpoint = endpoint };
+            var authZContext = new AuthorizationMiddlewareContext { HttpContext = context };
 
             var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: authZContext);
 
