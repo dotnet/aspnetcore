@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Authorization
     }
     public partial interface IAuthorizeData
     {
-        string AuthenticationSchemes { get; set; }
-        string Policy { get; set; }
-        string Roles { get; set; }
+        string? AuthenticationSchemes { get; set; }
+        string? Policy { get; set; }
+        string? Roles { get; set; }
     }
 }

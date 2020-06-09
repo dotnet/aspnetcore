@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public virtual bool IsKnownTokenType(SyntaxToken token, KnownTokenType type)
         {
-            return token != null && Equals(token.Kind, GetKnownTokenType(type));
+            return token != null && (token.Kind == GetKnownTokenType(type));
         }
 
         public virtual Tuple<SyntaxToken, SyntaxToken> SplitToken(SyntaxToken token, int splitAt, SyntaxKind leftType)
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public virtual bool KnowsTokenType(KnownTokenType type)
         {
-            return type == KnownTokenType.Unknown || !Equals(GetKnownTokenType(type), GetKnownTokenType(KnownTokenType.Unknown));
+            return type == KnownTokenType.Unknown || (GetKnownTokenType(type) != GetKnownTokenType(KnownTokenType.Unknown));
         }
 
         protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, RazorDiagnostic[] errors);

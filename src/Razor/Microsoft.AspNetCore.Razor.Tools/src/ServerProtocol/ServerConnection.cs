@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         /// <summary>
         /// Gets the value of the temporary path for the current environment assuming the working directory
-        /// is <paramref name="workingDir"/>.  This function must emulate <see cref="Path.GetTempPath"/> as 
+        /// is <paramref name="workingDir"/>.  This function must emulate <see cref="Path.GetTempPath"/> as
         /// closely as possible.
         /// </summary>
         public static string GetTempPath(string workingDir)
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 var responseTask = ServerResponse.ReadAsync(client.Stream, serverCts.Token);
                 var monitorTask = client.WaitForDisconnectAsync(serverCts.Token);
-                await Task.WhenAny(responseTask, monitorTask).ConfigureAwait(false);
+                await Task.WhenAny(new[] { responseTask, monitorTask }).ConfigureAwait(false);
 
                 ServerLogger.Log("End reading response");
 

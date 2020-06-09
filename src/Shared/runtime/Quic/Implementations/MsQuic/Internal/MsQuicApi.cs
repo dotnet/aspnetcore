@@ -223,7 +223,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         public async ValueTask<MsQuicSecurityConfig?> CreateSecurityConfig(X509Certificate certificate, string? certFilePath, string? privateKeyFilePath)
         {
             MsQuicSecurityConfig? secConfig = null;
-            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             uint secConfigCreateStatus = MsQuicStatusCodes.InternalError;
             uint createConfigStatus;
             IntPtr unmanagedAddr = IntPtr.Zero;
@@ -283,7 +283,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
                 {
                     secConfig = new MsQuicSecurityConfig(this, securityConfig);
                     secConfigCreateStatus = status;
-                    tcs.SetResult(null);
+                    tcs.SetResult();
                 }
 
                 await tcs.Task.ConfigureAwait(false);

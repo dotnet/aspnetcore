@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             context.Response.StatusCode = 200;
             context.Items["test.PathBase"] = context.Request.PathBase.Value;
             context.Items["test.Path"] = context.Request.Path.Value;
-            return Task.FromResult<object>(null);
+            return Task.FromResult<object?>(null);
         }
 
         private static void UseSuccess(IApplicationBuilder app)
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             var builder = new ApplicationBuilder(serviceProvider: null);
             var noMiddleware = new ApplicationBuilder(serviceProvider: null).Build();
             var noOptions = new MapOptions();
-            Assert.Throws<ArgumentNullException>(() => builder.Map("/foo", configuration: null));
-            Assert.Throws<ArgumentNullException>(() => new MapMiddleware(noMiddleware, null));
+            Assert.Throws<ArgumentNullException>(() => builder.Map("/foo", configuration: null!));
+            Assert.Throws<ArgumentNullException>(() => new MapMiddleware(noMiddleware, null!));
         }
 
         [Theory]
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(basePath + requestPath.Substring(0, matchPath.Length), (string)context.Items["test.PathBase"]);
+            Assert.Equal(basePath + requestPath.Substring(0, matchPath.Length), (string)context.Items["test.PathBase"]!);
             Assert.Equal(requestPath.Substring(matchPath.Length), context.Items["test.Path"]);
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(basePath, (string)context.Items["test.PathBase"]);
+            Assert.Equal(basePath, (string)context.Items["test.PathBase"]!);
             Assert.Equal(requestPath, context.Items["test.Path"]);
         }
 

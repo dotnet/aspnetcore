@@ -37,7 +37,7 @@ namespace System.Buffers
             if (_disposed)
                 return;
 
-            _array = null;
+            _array = null!;
             _disposed = true;
         }
     }

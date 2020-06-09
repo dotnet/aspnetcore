@@ -3,15 +3,16 @@
 
 namespace Microsoft.AspNetCore.Html
 {
+    [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public partial class HtmlContentBuilder : Microsoft.AspNetCore.Html.IHtmlContent, Microsoft.AspNetCore.Html.IHtmlContentBuilder, Microsoft.AspNetCore.Html.IHtmlContentContainer
     {
         public HtmlContentBuilder() { }
         public HtmlContentBuilder(System.Collections.Generic.IList<object> entries) { }
         public HtmlContentBuilder(int capacity) { }
         public int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Html.IHtmlContentBuilder Append(string unencoded) { throw null; }
-        public Microsoft.AspNetCore.Html.IHtmlContentBuilder AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent htmlContent) { throw null; }
-        public Microsoft.AspNetCore.Html.IHtmlContentBuilder AppendHtml(string encoded) { throw null; }
+        public Microsoft.AspNetCore.Html.IHtmlContentBuilder Append(string? unencoded) { throw null; }
+        public Microsoft.AspNetCore.Html.IHtmlContentBuilder AppendHtml(Microsoft.AspNetCore.Html.IHtmlContent? htmlContent) { throw null; }
+        public Microsoft.AspNetCore.Html.IHtmlContentBuilder AppendHtml(string? encoded) { throw null; }
         public Microsoft.AspNetCore.Html.IHtmlContentBuilder Clear() { throw null; }
         public void CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) { }
         public void MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) { }
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Html
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public partial class HtmlFormattableString : Microsoft.AspNetCore.Html.IHtmlContent
     {
-        public HtmlFormattableString(System.IFormatProvider formatProvider, string format, params object[] args) { }
+        public HtmlFormattableString(System.IFormatProvider? formatProvider, string format, params object[] args) { }
         public HtmlFormattableString(string format, params object[] args) { }
         public void WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) { }
     }
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.Html
     {
         public static readonly Microsoft.AspNetCore.Html.HtmlString Empty;
         public static readonly Microsoft.AspNetCore.Html.HtmlString NewLine;
-        public HtmlString(string value) { }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public HtmlString(string? value) { }
+        public string? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string ToString() { throw null; }
         public void WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) { }
     }

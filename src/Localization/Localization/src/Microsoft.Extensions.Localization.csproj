@@ -10,6 +10,7 @@
     <PackageTags>localization</PackageTags>
     <IsPackable>true</IsPackable>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

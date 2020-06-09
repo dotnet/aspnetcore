@@ -328,14 +328,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             return charsRead;
         }
 
-        public override async Task<string> ReadLineAsync()
+        public override async Task<string?> ReadLineAsync()
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
-            StringBuilder sb = null;
+            StringBuilder? sb = null;
             var consumeLineFeed = false;
 
             while (true)
@@ -365,14 +365,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         // immediately followed by a line feed. The resulting string does not
         // contain the terminating carriage return and/or line feed. The returned
         // value is null if the end of the input stream has been reached.
-        public override string ReadLine()
+        public override string? ReadLine()
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
-            StringBuilder sb = null;
+            StringBuilder? sb = null;
             var consumeLineFeed = false;
 
             while (true)
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private ReadLineStepResult ReadLineStep(ref StringBuilder sb, ref bool consumeLineFeed)
+        private ReadLineStepResult ReadLineStep(ref StringBuilder? sb, ref bool consumeLineFeed)
         {
             const char carriageReturn = '\r';
             const char lineFeed = '\n';
@@ -549,14 +549,14 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             public static ReadLineStepResult FromResult(string value) => new ReadLineStepResult(true, value);
 
-            private ReadLineStepResult(bool completed, string result)
+            private ReadLineStepResult(bool completed, string? result)
             {
                 Completed = completed;
                 Result = result;
             }
 
             public bool Completed { get; }
-            public string Result { get; }
+            public string? Result { get; }
         }
     }
 }

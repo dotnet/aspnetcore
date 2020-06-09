@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Localization
 {
     public partial interface IResourceNamesCache
     {
-        System.Collections.Generic.IList<string> GetOrAdd(string name, System.Func<string, System.Collections.Generic.IList<string>> valueFactory);
+        System.Collections.Generic.IList<string>? GetOrAdd(string name, System.Func<string, System.Collections.Generic.IList<string>?> valueFactory);
     }
     public partial class LocalizationOptions
     {
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Localization
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
         public virtual System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
         protected System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures, System.Globalization.CultureInfo culture) { throw null; }
-        protected string GetStringSafely(string name, System.Globalization.CultureInfo culture) { throw null; }
+        protected string? GetStringSafely(string name, System.Globalization.CultureInfo? culture) { throw null; }
     }
     public partial class ResourceManagerStringLocalizerFactory : Microsoft.Extensions.Localization.IStringLocalizerFactory
     {
@@ -43,17 +43,17 @@ namespace Microsoft.Extensions.Localization
         public Microsoft.Extensions.Localization.IStringLocalizer Create(string baseName, string location) { throw null; }
         public Microsoft.Extensions.Localization.IStringLocalizer Create(System.Type resourceSource) { throw null; }
         protected virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer CreateResourceManagerStringLocalizer(System.Reflection.Assembly assembly, string baseName) { throw null; }
-        protected virtual Microsoft.Extensions.Localization.ResourceLocationAttribute GetResourceLocationAttribute(System.Reflection.Assembly assembly) { throw null; }
+        protected virtual Microsoft.Extensions.Localization.ResourceLocationAttribute? GetResourceLocationAttribute(System.Reflection.Assembly assembly) { throw null; }
         protected virtual string GetResourcePrefix(System.Reflection.TypeInfo typeInfo) { throw null; }
-        protected virtual string GetResourcePrefix(System.Reflection.TypeInfo typeInfo, string baseNamespace, string resourcesRelativePath) { throw null; }
+        protected virtual string GetResourcePrefix(System.Reflection.TypeInfo typeInfo, string? baseNamespace, string? resourcesRelativePath) { throw null; }
         protected virtual string GetResourcePrefix(string baseResourceName, string baseNamespace) { throw null; }
         protected virtual string GetResourcePrefix(string location, string baseName, string resourceLocation) { throw null; }
-        protected virtual Microsoft.Extensions.Localization.RootNamespaceAttribute GetRootNamespaceAttribute(System.Reflection.Assembly assembly) { throw null; }
+        protected virtual Microsoft.Extensions.Localization.RootNamespaceAttribute? GetRootNamespaceAttribute(System.Reflection.Assembly assembly) { throw null; }
     }
     public partial class ResourceNamesCache : Microsoft.Extensions.Localization.IResourceNamesCache
     {
         public ResourceNamesCache() { }
-        public System.Collections.Generic.IList<string> GetOrAdd(string name, System.Func<string, System.Collections.Generic.IList<string>> valueFactory) { throw null; }
+        public System.Collections.Generic.IList<string>? GetOrAdd(string name, System.Func<string, System.Collections.Generic.IList<string>?> valueFactory) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=false)]
     public partial class RootNamespaceAttribute : System.Attribute
@@ -69,15 +69,15 @@ namespace Microsoft.Extensions.Localization.Internal
         public AssemblyWrapper(System.Reflection.Assembly assembly) { }
         public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual string FullName { get { throw null; } }
-        public virtual System.IO.Stream GetManifestResourceStream(string name) { throw null; }
+        public virtual System.IO.Stream? GetManifestResourceStream(string name) { throw null; }
     }
     public partial interface IResourceStringProvider
     {
-        System.Collections.Generic.IList<string> GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing);
+        System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing);
     }
     public partial class ResourceManagerStringProvider : Microsoft.Extensions.Localization.Internal.IResourceStringProvider
     {
         public ResourceManagerStringProvider(Microsoft.Extensions.Localization.IResourceNamesCache resourceCache, System.Resources.ResourceManager resourceManager, System.Reflection.Assembly assembly, string baseName) { }
-        public System.Collections.Generic.IList<string> GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing) { throw null; }
+        public System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing) { throw null; }
     }
 }
