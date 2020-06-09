@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         private static readonly Action<ILogger, Exception?> _failedToDeserialzeTokens;
         private static readonly Action<ILogger, string, Exception?> _validationFailed;
         private static readonly Action<ILogger, Exception?> _validated;
-        private static readonly Action<ILogger, string, Exception?> _missingCookieToken;
+        private static readonly Action<ILogger, string?, Exception?> _missingCookieToken;
         private static readonly Action<ILogger, string, string?, Exception?> _missingRequestToken;
         private static readonly Action<ILogger, Exception?> _newCookieToken;
         private static readonly Action<ILogger, Exception?> _reusedCookieToken;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 LogLevel.Debug,
                 new EventId(2, "Validated"),
                 "Antiforgery successfully validated a request.");
-            _missingCookieToken = LoggerMessage.Define<string>(
+            _missingCookieToken = LoggerMessage.Define<string?>(
                 LogLevel.Warning,
                 new EventId(3, "MissingCookieToken"),
                 "The required antiforgery cookie '{CookieName}' is not present.");
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             _validated(logger, null);
         }
 
-        public static void MissingCookieToken(this ILogger logger, string cookieName)
+        public static void MissingCookieToken(this ILogger logger, string? cookieName)
         {
             _missingCookieToken(logger, cookieName, null);
         }

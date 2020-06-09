@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             Debug.Assert(httpContext != null);
 
-            var requestCookie = httpContext.Request.Cookies[_options.Cookie.Name];
+            var requestCookie = httpContext.Request.Cookies[_options.Cookie.Name!];
             if (string.IsNullOrEmpty(requestCookie))
             {
                 // unable to find the cookie.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             Debug.Assert(httpContext != null);
 
-            var cookieToken = httpContext.Request.Cookies[_options.Cookie.Name];
+            var cookieToken = httpContext.Request.Cookies[_options.Cookie.Name!];
 
             // We want to delay reading the form as much as possible, for example in case of large file uploads,
             // request token could be part of the header.
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 }
             }
 
-            httpContext.Response.Cookies.Append(_options.Cookie.Name, token, options);
+            httpContext.Response.Cookies.Append(_options.Cookie.Name!, token, options);
         }
     }
 }
