@@ -29,6 +29,6 @@
         IsImplicitlyDefined="true" />
     </ItemGroup>
 
-    <Import Project="$(MSBuildThisFileDirectory)\..\Sdk.props" Condition="'$(IsHelixJob)' == 'true'" />
+    <Import Project="$(MSBuildThisFileDirectory)\Sdk.props" Condition="'$(IsHelixJob)' == 'true'" />
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Sdk\Sdk.props" Condition="'$(IsHelixJob)' != 'true'" />
 </Project>
