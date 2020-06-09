@@ -75,14 +75,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void ProvidesDiagnosticIfInvokingWipedMethod()
-        {
-            Browser.FindElement(By.CssSelector("#invokeWipedMethod button")).Click();
-
-            Assert.Contains("System.NotImplementedException: Cannot invoke method because it was wiped. See stack trace for details.", GetValue(Browser, "invokeWipedMethodStackTrace"));
-        }
-
-        [Fact]
         public void CanCallJavaScriptFromDotNet()
         {
             SetValue(Browser, "callJsEvalExpression", "getUserAgentString()");
@@ -145,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Browser.FindElement(By.CssSelector("#getRuntimeInformation button")).Click();
             Assert.Equal(
-                "OSDescription: 'web'; OSArchitecture: 'X86'; IsOSPlatform(WEBASSEMBLY): 'True'",
+                "OSDescription: 'web'; OSArchitecture: 'X86'; IsOSPlatform(BROWSER): 'True'",
                 GetValue(Browser, "getRuntimeInformationResult"));
         }
 

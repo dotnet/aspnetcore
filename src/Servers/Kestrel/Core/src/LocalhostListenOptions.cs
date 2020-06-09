@@ -73,7 +73,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 KestrelServerOptions = KestrelServerOptions,
                 Protocols = Protocols,
-                IsTls = IsTls
+                IsTls = IsTls,
+                EndpointConfig = EndpointConfig
             };
 
             options._middleware.AddRange(_middleware);

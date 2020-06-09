@@ -4,6 +4,7 @@
 import { HttpResponse } from "../src/HttpClient";
 import { TransferFormat } from "../src/ITransport";
 import { LongPollingTransport } from "../src/LongPollingTransport";
+import { getUserAgentHeader } from "../src/Utils";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
@@ -23,7 +24,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(200);
                     } else {
                         // Turn 'onabort' into a promise.
-                        const abort = new Promise((resolve, reject) => {
+                        const abort = new Promise((resolve) => {
                             if (r.abortSignal!.aborted) {
                                 resolve();
                             } else {
@@ -39,7 +40,7 @@ describe("LongPollingTransport", () => {
                     }
                 })
                 .on("DELETE", () => new HttpResponse(202));
-            const transport = new LongPollingTransport(client, undefined, logger, false);
+            const transport = new LongPollingTransport(client, undefined, logger, false, true, {});
 
             await transport.connect("http://example.com", TransferFormat.Text);
             const stopPromise = transport.stop();
@@ -63,7 +64,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(204);
                     }
                 });
-            const transport = new LongPollingTransport(client, undefined, logger, false);
+            const transport = new LongPollingTransport(client, undefined, logger, false, true, {});
 
             const stopPromise = makeClosedPromise(transport);
 
@@ -81,7 +82,7 @@ describe("LongPollingTransport", () => {
             const pollingPromiseSource = new PromiseSource();
             const deleteSyncPoint = new SyncPoint();
             const httpClient = new TestHttpClient()
-                .on("GET", async (r) => {
+                .on("GET", async () => {
                     if (firstPoll) {
                         firstPoll = false;
                         return new HttpResponse(200);
@@ -90,13 +91,13 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(204);
                     }
                 })
-                .on("DELETE", async (r) => {
+                .on("DELETE", async () => {
                     deleteSent = true;
                     await deleteSyncPoint.waitToContinue();
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false);
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, {});
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -118,6 +119,111 @@ describe("LongPollingTransport", () => {
 
             // Wait for stop to complete
             await stopPromise;
+        });
+    });
+
+    it("user agent header set on sends and polls", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            let firstPollUserAgent = "";
+            let secondPollUserAgent = "";
+            let deleteUserAgent = "";
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        firstPollUserAgent = r.headers![`User-Agent`];
+                        return new HttpResponse(200);
+                    } else {
+                        secondPollUserAgent = r.headers![`User-Agent`];
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("DELETE", async (r) => {
+                    deleteUserAgent = r.headers![`User-Agent`];
+                    return new HttpResponse(202);
+                });
+
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, {});
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+
+            const [, value] = getUserAgentHeader();
+            expect(firstPollUserAgent).toEqual(value);
+            expect(deleteUserAgent).toEqual(value);
+            expect(secondPollUserAgent).toEqual(value);
+        });
+    });
+
+    it("overwrites library headers with user headers", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            let firstPoll = true;
+            let firstPollUserAgent = "";
+            let firstUserHeader = "";
+            let secondPollUserAgent = "";
+            let secondUserHeader = "";
+            let deleteUserAgent = "";
+            let deleteUserHeader = "";
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("POST", async (r) => {
+                    expect(r.content).toEqual({ message: "hello" });
+                    expect(r.headers).toEqual(headers);
+                    expect(r.method).toEqual("POST");
+                    expect(r.url).toEqual("http://tempuri.org");
+                })
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        firstPollUserAgent = r.headers!["User-Agent"];
+                        firstUserHeader = r.headers!["X-HEADER"];
+                        return new HttpResponse(200);
+                    } else {
+                        secondPollUserAgent = r.headers!["User-Agent"];
+                        secondUserHeader = r.headers!["X-HEADER"];
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("DELETE", async (r) => {
+                    deleteUserAgent = r.headers!["User-Agent"];
+                    deleteUserHeader = r.headers!["X-HEADER"];
+                    return new HttpResponse(202);
+                });
+
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true, headers);
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            await transport.send({ message: "hello" });
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+
+            expect(firstPollUserAgent).toEqual("Custom Agent");
+            expect(deleteUserAgent).toEqual("Custom Agent");
+            expect(secondPollUserAgent).toEqual("Custom Agent");
+            expect(firstUserHeader).toEqual("VALUE");
+            expect(secondUserHeader).toEqual("VALUE");
+            expect(deleteUserHeader).toEqual("VALUE");
         });
     });
 });

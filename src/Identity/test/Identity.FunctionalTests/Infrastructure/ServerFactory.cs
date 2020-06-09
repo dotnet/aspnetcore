@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         private void UpdateStaticAssets(IWebHostBuilder builder)
         {
-            var manifestPath = Path.GetDirectoryName(new Uri(typeof(ServerFactory<,>).Assembly.CodeBase).LocalPath);
+            var manifestPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
             builder.ConfigureAppConfiguration((ctx, cb) =>
             {
                 if (ctx.HostingEnvironment.WebRootFileProvider is CompositeFileProvider composite)

@@ -1310,7 +1310,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         [Fact]
         public void CreateValidationMetadata_InfersRequiredAttribute_BaseTypeIsNullable_PropertyIsNotNull()
         {
-            // Tests the scenario listed in https://github.com/aspnet/AspNetCore/issues/14812
+            // Tests the scenario listed in https://github.com/dotnet/aspnetcore/issues/14812
             // Arrange
             var provider = CreateProvider();
 

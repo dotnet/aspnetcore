@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void GetsKnownMethod(byte[] methodData, int intExpectedMethod, int expectedLength, bool expectedResult)
         {
             var expectedMethod = (HttpMethod)intExpectedMethod;
-            var data = new Span<byte>(methodData);
+            var data = new ReadOnlySpan<byte>(methodData);
 
             var result = data.GetKnownMethod(out var method, out var length);
 

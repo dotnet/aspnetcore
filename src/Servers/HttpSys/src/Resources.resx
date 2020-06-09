@@ -117,6 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Exception_AccessDenied" xml:space="preserve">
+    <value>The prefix '{0}' is not registered. Please run the following command as Administrator to register this prefix:
+netsh http add urlacl url={0} user={1}
+See "Preregister URL prefixes on the server" on https://go.microsoft.com/fwlink/?linkid=2127065 for more information.</value>
+  </data>
   <data name="Exception_ArrayTooSmall" xml:space="preserve">
     <value>The destination array is too small.</value>
   </data>
@@ -148,6 +153,6 @@
     <value>The given IAsyncResult does not match this opperation.</value>
   </data>
   <data name="Warning_ExceptionInOnResponseCompletedAction" xml:space="preserve">
-    <value>An exception occured while running an action registered with {0}.</value>
+    <value>An exception occurred while running an action registered with {0}.</value>
   </data>
 </root>

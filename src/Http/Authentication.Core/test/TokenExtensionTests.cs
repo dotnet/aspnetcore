@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class TokenExtensionTests
     {
@@ -170,12 +170,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), props, "simple")));
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }

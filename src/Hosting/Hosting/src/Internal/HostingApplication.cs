@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
             public HttpContext HttpContext { get; set; }
             public IDisposable Scope { get; set; }
             public Activity Activity { get; set; }
+            internal HostingRequestStartingLog StartLog { get; set; }
 
             public long StartTimestamp { get; set; }
             internal bool HasDiagnosticListener { get; set; }
@@ -133,6 +134,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 Scope = null;
                 Activity = null;
+                StartLog = null;
 
                 StartTimestamp = 0;
                 HasDiagnosticListener = false;

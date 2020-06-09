@@ -140,6 +140,28 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void WithOrigins_ThrowsIfArgumentNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = null;
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentArrayContainsNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = new string[] { null };
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
         public void AllowAnyOrigin_AllowsAny()
         {
             // Arrange

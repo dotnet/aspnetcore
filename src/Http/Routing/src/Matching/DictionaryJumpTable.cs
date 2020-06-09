@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var builder = new StringBuilder();
             builder.Append("{ ");
 
-            builder.Append(string.Join(", ", _dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
+            builder.AppendJoin(", ", _dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
             builder.Append("$+: ");
             builder.Append(_defaultDestination);

@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
             var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
-            // Act/Assert: Initally, it's valid and unmodified
+            // Act/Assert: Initially, it's valid and unmodified
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
             Assert.Equal("valid", inputComponent.CssClass); //  no Class was specified
 

@@ -138,6 +138,8 @@ namespace Microsoft.AspNetCore.Analyzers
                 throw new ArgumentNullException(nameof(symbol));
             }
 
+            // UseSignalR has been removed in 5.0, but we should probably still check for it in this analyzer in case the user
+            // installs it into a pre-5.0 app.
             if (string.Equals(symbol.Name, SymbolNames.SignalRAppBuilderExtensions.UseSignalRMethodName, StringComparison.Ordinal) ||
                 string.Equals(symbol.Name, SymbolNames.HubEndpointRouteBuilderExtensions.MapHubMethodName, StringComparison.Ordinal) ||
                 string.Equals(symbol.Name, SymbolNames.ComponentEndpointRouteBuilderExtensions.MapBlazorHubMethodName, StringComparison.Ordinal))

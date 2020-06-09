@@ -84,13 +84,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
-        internal HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
-            : this(id, null, logger)
-        {
-            Transport = transport;
-            Application = application;
-        }
-
         public CancellationTokenSource Cancellation { get; set; }
 
         public HttpTransportType TransportType { get; set; }

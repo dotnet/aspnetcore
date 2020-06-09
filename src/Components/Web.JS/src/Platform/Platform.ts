@@ -1,12 +1,9 @@
+import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
+
 export interface Platform {
-  start(loadAssemblyUrls: string[]): Promise<void>;
+  start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
 
-  callEntryPoint(assemblyName: string, entrypointMethod: string, args: (System_Object | null)[]);
-  findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle;
-  callMethod(method: MethodHandle, target: System_Object | null, args: (System_Object | null)[]): System_Object;
-
-  toJavaScriptString(dotNetString: System_String): string;
-  toDotNetString(javaScriptString: string): System_String;
+  callEntryPoint(assemblyName: string): void;
 
   toUint8Array(array: System_Array<any>): Uint8Array;
 
@@ -19,7 +16,7 @@ export interface Platform {
   readUint64Field(baseAddress: Pointer, fieldOffset?: number): number;
   readFloatField(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
-  readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
+  readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 }
 

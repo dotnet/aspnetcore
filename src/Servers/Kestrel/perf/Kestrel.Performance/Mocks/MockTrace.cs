@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void ApplicationError(string connectionId, string requestId, Exception ex) { }
         public IDisposable BeginScope<TState>(TState state) => null;
         public void ConnectionAccepted(string connectionId) { }
-        public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
+        public void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex) { }
         public void ConnectionDisconnect(string connectionId) { }
         public void ConnectionError(string connectionId, Exception ex) { }
         public void ConnectionHeadResponseBodyWrite(string connectionId, long count) { }
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void NotAllConnectionsAborted() { }
         public void NotAllConnectionsClosedGracefully() { }
         public void RequestProcessingError(string connectionId, Exception ex) { }
-        public void HeartbeatSlow(TimeSpan interval, DateTimeOffset now) { }
+        public void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now) { }
         public void ApplicationNeverCompleted(string connectionId) { }
         public void RequestBodyStart(string connectionId, string traceIdentifier) { }
         public void RequestBodyDone(string connectionId, string traceIdentifier) { }
@@ -56,5 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId) { }
         public void Http2FrameReceived(string connectionId, Http2Frame frame) { }
         public void Http2FrameSending(string connectionId, Http2Frame frame) { }
+        public void Http2MaxConcurrentStreamsReached(string connectionId) { }
     }
 }

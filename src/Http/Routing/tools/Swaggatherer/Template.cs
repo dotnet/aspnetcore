@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,7 +49,7 @@ namespace Swaggatherer
 
                 if (entry.Method != null)
                 {
-                    setupRequestsLines.Add($"            Requests[{i}].Request.Method = \"{entries[i].Method.ToUpperInvariant()}\";");
+                    setupRequestsLines.Add($"            Requests[{i}].Request.Method = HttpMethods.GetCanonicalizedValue({entries[i].Method});");
                 }
 
                 setupRequestsLines.Add($"            Requests[{i}].Request.Path = \"{entries[i].RequestUrl}\";");

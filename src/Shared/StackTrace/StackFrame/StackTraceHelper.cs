@@ -10,65 +10,67 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Internal;
+#nullable enable
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackTraceHelper
     {
-        public static IList<StackFrameInfo> GetFrames(Exception exception)
+        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
         {
             var frames = new List<StackFrameInfo>();
 
             if (exception == null)
             {
+                error = default;
                 return frames;
             }
 
-            using (var portablePdbReader = new PortablePdbReader())
+            var needFileInfo = true;
+            var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
+            var stackFrames = stackTrace.GetFrames();
+
+            if (stackFrames == null)
             {
-                var needFileInfo = true;
-                var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
-                var stackFrames = stackTrace.GetFrames();
-
-                if (stackFrames == null)
-                {
-                    return frames;
-                }
-
-                for (var i = 0; i < stackFrames.Length; i++)
-                {
-                    var frame = stackFrames[i];
-                    var method = frame.GetMethod();
-
-                    // Always show last stackFrame
-                    if (!ShowInStackTrace(method) && i < stackFrames.Length - 1)
-                    {
-                        continue;
-                    }
-
-                    var stackFrame = new StackFrameInfo
-                    {
-                        StackFrame = frame,
-                        FilePath = frame.GetFileName(),
-                        LineNumber = frame.GetFileLineNumber(),
-                        MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
-                    };
-
-                    if (string.IsNullOrEmpty(stackFrame.FilePath))
-                    {
-                        // .NET Framework and older versions of mono don't support portable PDBs
-                        // so we read it manually to get file name and line information
-                        portablePdbReader.PopulateStackFrame(stackFrame, method, frame.GetILOffset());
-                    }
-
-                    frames.Add(stackFrame);
-                }
-
+                error = default;
                 return frames;
             }
+
+            List<Exception>? exceptions = null;
+
+            for (var i = 0; i < stackFrames.Length; i++)
+            {
+                var frame = stackFrames[i];
+                var method = frame.GetMethod();
+
+                // Always show last stackFrame
+                if (!ShowInStackTrace(method) && i < stackFrames.Length - 1)
+                {
+                    continue;
+                }
+
+                var stackFrame = new StackFrameInfo
+                {
+                    StackFrame = frame,
+                    FilePath = frame.GetFileName(),
+                    LineNumber = frame.GetFileLineNumber(),
+                    MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
+                };
+
+                frames.Add(stackFrame);
+            }
+
+            if (exceptions != null)
+            {
+                error = new AggregateException(exceptions);
+                return frames;
+            }
+
+            error = default;
+            return frames;
         }
 
-        internal static MethodDisplayInfo GetMethodDisplayString(MethodBase method)
+        internal static MethodDisplayInfo? GetMethodDisplayString(MethodBase? method)
         {
             // Special case: no method available
             if (method == null)
@@ -130,7 +132,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         parameterType = parameterType.GetElementType();
                     }
 
-                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
+                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType!, fullName: false, includeGenericParameterNames: true);
                 }
 
                 return new ParameterDisplayInfo
@@ -144,7 +146,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return methodDisplayInfo;
         }
 
-        private static bool ShowInStackTrace(MethodBase method)
+        private static bool ShowInStackTrace(MethodBase? method)
         {
             Debug.Assert(method != null);
 
@@ -190,7 +192,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return true;
         }
 
-        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type declaringType)
+        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type? declaringType)
         {
             Debug.Assert(method != null);
             Debug.Assert(method.DeclaringType != null);

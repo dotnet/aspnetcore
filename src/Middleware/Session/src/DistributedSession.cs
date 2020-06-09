@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Session
 {
     public class DistributedSession : ISession
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         private const int IdByteCount = 16;
 
         private const byte SerializationRevision = 2;
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Session
                 if (IsAvailable && _sessionIdBytes == null)
                 {
                     _sessionIdBytes = new byte[IdByteCount];
-                    CryptoRandom.GetBytes(_sessionIdBytes);
+                    RandomNumberGenerator.Fill(_sessionIdBytes);
                 }
                 return _sessionIdBytes;
             }

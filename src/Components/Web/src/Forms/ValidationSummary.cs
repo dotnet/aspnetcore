@@ -92,11 +92,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private void HandleValidationStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
-        {
-            StateHasChanged();
-        }
-
         protected virtual void Dispose(bool disposing)
         {
         }

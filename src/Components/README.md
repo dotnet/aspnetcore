@@ -8,7 +8,7 @@ Blazor is a component based web UI framework. Blazor apps can run client-side in
 
 Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies.
 
-[![Gitter](https://badges.gitter.im/aspnet/Blazor.svg)](https://gitter.im/aspnet/Blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/aspnet/blazor.svg)](https://gitter.im/aspnet/blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 You can learn more about Blazor at https://blazor.net.
 

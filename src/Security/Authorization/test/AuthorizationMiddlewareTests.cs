@@ -5,9 +5,9 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.False(next.Called);
         }
-
+        
         [Fact]
         public async Task HasEndpointWithoutAuth_AnonymousUser_Allows()
         {
@@ -135,6 +135,27 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(authenticationService.ChallengeCalled);
         }
 
+        [Fact]
+        public async Task HasEndpointWithAuth_ChallengesAuthenticationSchemes()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+            var authenticationService = new TestAuthenticationService();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(endpoint: CreateEndpoint(new AuthorizeAttribute() { AuthenticationSchemes = "whatever"}), authenticationService: authenticationService);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            Assert.False(next.Called);
+            Assert.True(authenticationService.ChallengeCalled);
+        }
+        
         [Fact]
         public async Task HasEndpointWithAuth_AnonymousUser_ChallengePerScheme()
         {
@@ -428,6 +449,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             authenticationService = authenticationService ?? Mock.Of<IAuthenticationService>();
 
             serviceCollection.AddSingleton(authenticationService);
+            serviceCollection.AddTransient<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
             serviceCollection.AddOptions();
             serviceCollection.AddLogging();
             serviceCollection.AddAuthorization();

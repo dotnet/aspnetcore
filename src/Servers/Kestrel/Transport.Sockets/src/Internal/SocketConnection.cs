@@ -33,13 +33,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private Task _processingTask;
         private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool _connectionClosed;
+        private readonly bool _waitForData;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler scheduler,
                                   ISocketsTrace trace,
                                   long? maxReadBufferSize = null,
-                                  long? maxWriteBufferSize = null)
+                                  long? maxWriteBufferSize = null,
+                                  bool waitForData = true)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -48,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _socket = socket;
             MemoryPool = memoryPool;
             _trace = trace;
+            _waitForData = waitForData;
 
             LocalEndPoint = _socket.LocalEndPoint;
             RemoteEndPoint = _socket.RemoteEndPoint;
@@ -186,8 +189,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             var input = Input;
             while (true)
             {
-                // Wait for data before allocating a buffer.
-                await _receiver.WaitForDataAsync();
+                if (_waitForData)
+                {
+                    // Wait for data before allocating a buffer.
+                    await _receiver.WaitForDataAsync();
+                }
 
                 // Ensure we have some reasonable amount of buffer space
                 var buffer = input.GetMemory(MinAllocBufferSize);

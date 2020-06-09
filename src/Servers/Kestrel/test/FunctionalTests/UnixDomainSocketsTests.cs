@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -96,7 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var read = 0;
                         while (read < data.Length)
                         {
-                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            var bytesReceived = await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0) break;
                         }
 
                         Assert.Equal(data, buffer);
@@ -105,6 +109,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Wait for the server to complete the loop because of the FIN
                     await serverConnectionCompletedTcs.Task.DefaultTimeout();
 
+                    await host.StopAsync().DefaultTimeout();
+                }
+            }
+            finally
+            {
+                Delete(path);
+            }
+        }
+
+#if LIBUV
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
+#else
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
+#endif
+        [ConditionalFact]
+        [CollectDump]
+        public async Task TestUnixDomainSocketWithUrl()
+        {
+            var path = Path.GetTempFileName();
+            var url = $"http://unix:/{path}";
+
+            Delete(path);
+
+            try
+            {
+                var hostBuilder = TransportSelector.GetWebHostBuilder()
+                    .UseUrls(url)
+                    .UseKestrel()
+                    .ConfigureServices(AddTestLogging)
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Hello World");
+                        });
+                    });
+
+                using (var host = hostBuilder.Build())
+                {
+                    await host.StartAsync().DefaultTimeout();
+
+                    // https://github.com/dotnet/corefx/issues/5999
+                    // .NET Core HttpClient does not support unix sockets, it's difficult to parse raw response data. below is a little hacky way.
+                    using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+                    {
+                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path)).DefaultTimeout();
+
+                        var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\nConnection: close\r\n\r\n");
+                        await socket.SendAsync(httpRequest, SocketFlags.None).DefaultTimeout();
+
+                        var readBuffer = new byte[512];
+                        var read = 0;
+                        while (true)
+                        {
+                            var bytesReceived = await socket.ReceiveAsync(readBuffer.AsMemory(read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0) break;
+                        }
+
+                        var httpResponse = Encoding.ASCII.GetString(readBuffer, 0, read);
+                        int httpStatusStart = httpResponse.IndexOf(' ') + 1;
+                        int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
+
+                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart));
+                        Assert.Equal(httpStatus, StatusCodes.Status200OK);
+
+                    }
                     await host.StopAsync().DefaultTimeout();
                 }
             }

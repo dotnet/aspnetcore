@@ -1,0 +1,15 @@
+<Project TreatAsLocalProperty="_FileProviderTaskFolder;_FileProviderTaskAssembly">
+  <PropertyGroup>
+    <GenerateEmbeddedFilesManifest Condition="'$(GenerateEmbeddedFilesManifest)' == ''">false</GenerateEmbeddedFilesManifest>
+    <EmbeddedFilesManifestFileName Condition="'$(EmbeddedFilesManifestFileName)' == ''">Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_FileProviderTaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask
+    AssemblyFile="$(_FileProviderTaskAssembly)"
+    TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
+
+</Project>

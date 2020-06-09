@@ -19,14 +19,12 @@ namespace Microsoft.Net.Http.Headers
 
         internal static void SetQuality(IList<NameValueHeaderValue> parameters, double? value)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (value.HasValue)
             {
                 // Note that even if we check the value here, we can't prevent a user from adding an invalid quality
                 // value using Parameters.Add(). Even if we would prevent the user from adding an invalid value
-                // using Parameters.Add() he could always add invalid values using HttpHeaders.AddWithoutValidation().
+                // using Parameters.Add() they could always add invalid values using HttpHeaders.AddWithoutValidation().
                 // So this check is really for convenience to show users that they're trying to add an invalid
                 // value.
                 if ((value < 0) || (value > 1))
@@ -41,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    parameters.Add(new NameValueHeaderValue(QualityName, qualityString));
+                    parameters!.Add(new NameValueHeaderValue(QualityName, qualityString));
                 }
             }
             else
@@ -56,8 +54,6 @@ namespace Microsoft.Net.Http.Headers
 
         internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
         {
-            Contract.Requires(parameters != null);
-
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (qualityParameter != null)
             {
@@ -85,12 +81,12 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y)
         {
             return AreEqualCollections(x, y, null);
         }
 
-        internal static bool AreEqualCollections<T>(ICollection<T> x, ICollection<T> y, IEqualityComparer<T> comparer)
+        internal static bool AreEqualCollections<T>(ICollection<T>? x, ICollection<T>? y, IEqualityComparer<T>? comparer)
         {
             if (x == null)
             {
@@ -157,7 +153,6 @@ namespace Microsoft.Net.Http.Headers
             bool skipEmptyValues,
             out bool separatorFound)
         {
-            Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.
 
             separatorFound = false;
@@ -230,8 +225,8 @@ namespace Microsoft.Net.Http.Headers
         /// any value originally supplied in result will be overwritten.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
-        /// <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
+        /// <see langword="false" />.
         /// </returns>
         // e.g. { "headerValue=10, targetHeaderValue=30" }
         public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
@@ -286,8 +281,8 @@ namespace Microsoft.Net.Http.Headers
         /// The target cache control directives to look for.
         /// </param>
         /// <returns>
-        /// <code>true</code> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
-        /// otherwise, <code>false</code>.
+        /// <see langword="true" /> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
+        /// otherwise, <see langword="false" />.
         /// </returns>
         public static bool ContainsCacheDirective(StringValues cacheControlDirectives, string targetDirectives)
         {
@@ -367,7 +362,7 @@ namespace Microsoft.Net.Http.Headers
         /// greater than Int64.MaxValue. This parameter is passed uninitialized; any value originally supplied in
         /// result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
@@ -418,7 +413,7 @@ namespace Microsoft.Net.Http.Headers
         /// represents a number greater than Int64.MaxValue. This parameter is passed uninitialized; any value
         /// originally supplied in result will be overwritten.
         /// </param>
-        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
@@ -560,6 +555,11 @@ namespace Microsoft.Net.Http.Headers
             if (value < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value to be formatted must be non-negative.");
+            }
+
+            if (value == 0)
+            {
+                return "0";
             }
 
             var position = _int64MaxStringLength;

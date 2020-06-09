@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
+            RouteValueDictionary? ambientValues = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default);
+            LinkOptions? options = default);
 
         /// <summary>
         /// Generates a URI with an absolute path based on the provided values.
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing
             RouteValueDictionary values,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default);
+            LinkOptions? options = default);
 
         /// <summary>
         /// Generates an absolute URI based on the provided values and <see cref="HttpContext"/>.
@@ -106,12 +106,12 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
-            string scheme = default,
+            RouteValueDictionary? ambientValues = default,
+            string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default);
+            LinkOptions? options = default);
 
         /// <summary>
         /// Generates an absolute URI based on the provided values.
@@ -146,6 +146,6 @@ namespace Microsoft.AspNetCore.Routing
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default);
+            LinkOptions? options = default);
     }
 }

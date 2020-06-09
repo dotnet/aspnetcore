@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var provider = new StaticWebAssetsFileProvider(
                 "_cont",
-                Path.GetDirectoryName(new Uri(typeof(StaticWebAssetsFileProviderTests).Assembly.CodeBase).LocalPath));
+                Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
 
             // Act
             var file = provider.GetFileInfo("/_content/Microsoft.AspNetCore.TestHost.StaticWebAssets.xml");
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var provider = new StaticWebAssetsFileProvider(
                 "_content",
-                Path.GetDirectoryName(new Uri(typeof(StaticWebAssetsFileProviderTests).Assembly.CodeBase).LocalPath));
+                Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
 
             // Act
             var file = provider.GetFileInfo("/_CONTENT/Microsoft.AspNetCore.Hosting.StaticWebAssets.xml");
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var provider = new StaticWebAssetsFileProvider(
                 "_content",
-                Path.GetDirectoryName(new Uri(typeof(StaticWebAssetsFileProviderTests).Assembly.CodeBase).LocalPath));
+                Path.GetDirectoryName(typeof(StaticWebAssetsFileProviderTests).Assembly.Location));
 
             // Act
             var directory = provider.GetDirectoryContents("/_CONTENT");

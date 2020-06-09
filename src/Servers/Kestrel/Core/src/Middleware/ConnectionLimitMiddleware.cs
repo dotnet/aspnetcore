@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -8,33 +9,32 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConnectionLimitMiddleware
+    internal class ConnectionLimitMiddleware<T> where T : BaseConnectionContext
     {
-        private readonly ConnectionDelegate _next;
+        private readonly Func<T, Task> _next;
         private readonly ResourceCounter _concurrentConnectionCounter;
         private readonly IKestrelTrace _trace;
 
-        public ConnectionLimitMiddleware(ConnectionDelegate next, long connectionLimit, IKestrelTrace trace)
+        public ConnectionLimitMiddleware(Func<T, Task> next, long connectionLimit, IKestrelTrace trace)
             : this(next, ResourceCounter.Quota(connectionLimit), trace)
         {
         }
 
         // For Testing
-        internal ConnectionLimitMiddleware(ConnectionDelegate next, ResourceCounter concurrentConnectionCounter, IKestrelTrace trace)
+        internal ConnectionLimitMiddleware(Func<T, Task> next, ResourceCounter concurrentConnectionCounter, IKestrelTrace trace)
         {
             _next = next;
             _concurrentConnectionCounter = concurrentConnectionCounter;
             _trace = trace;
         }
 
-        public async Task OnConnectionAsync(ConnectionContext connection)
+        public async Task OnConnectionAsync(T connection)
         {
             if (!_concurrentConnectionCounter.TryLockOne())
             {
                 KestrelEventSource.Log.ConnectionRejected(connection.ConnectionId);
                 _trace.ConnectionRejected(connection.ConnectionId);
-                connection.Transport.Input.Complete();
-                connection.Transport.Output.Complete();
+                await connection.DisposeAsync();
                 return;
             }
 
