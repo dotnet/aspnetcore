@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public int InitialConnectionWindowSize { get { throw null; } set { } }
         public int InitialStreamWindowSize { get { throw null; } set { } }
         public System.TimeSpan? KeepAlivePingInterval { get { throw null; } set { } }
-        public System.TimeSpan KeepAlivePingTimeout { get { throw null; } set { } }
+        public System.TimeSpan? KeepAlivePingTimeout { get { throw null; } set { } }
         public int MaxFrameSize { get { throw null; } set { } }
         public int MaxRequestHeaderFieldSize { get { throw null; } set { } }
         public int MaxStreamsPerConnection { get { throw null; } set { } }
