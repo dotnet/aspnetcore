@@ -306,10 +306,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
                     await Options.SessionStore.RenewAsync(_sessionKey, ticket);
                 }
-                else
-                {
-                    await Options.SessionStore.RemoveAsync(_sessionKey);
-                }
+
                 _sessionKey = await Options.SessionStore.StoreAsync(ticket);
                 var principal = new ClaimsPrincipal(
                     new ClaimsIdentity(
