@@ -140,7 +140,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     return AuthenticateResult.Fail("SessionId missing");
                 }
-                ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
+                // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
+                ticket = await Options.SessionStore.RetrieveAsync(claim.Value);
                 if (ticket == null)
                 {
                     return AuthenticateResult.Fail("Identity missing in session store");
