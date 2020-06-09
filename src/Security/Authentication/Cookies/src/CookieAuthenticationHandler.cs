@@ -140,12 +140,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     return AuthenticateResult.Fail("SessionId missing");
                 }
-                _sessionKey = claim.Value;
                 ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
                 if (ticket == null)
                 {
                     return AuthenticateResult.Fail("Identity missing in session store");
                 }
+                _sessionKey = claim.Value;
             }
 
             var currentUtc = Clock.UtcNow;
@@ -304,22 +304,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 if (_sessionKey != null)
                 {
                     // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
-                    var oldTicket = await Options.SessionStore.RetrieveAsync(_sessionKey);
-                    if (oldTicket == null)
-                    {
-                        await Options.SessionStore.RemoveAsync(_sessionKey);
-                        _sessionKey = await Options.SessionStore.StoreAsync(ticket);
-                    }
-                    else
-                    {
-                        await Options.SessionStore.RenewAsync(_sessionKey, ticket);
-                    }
-
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
                 }
                 else
                 {
-                    _sessionKey = await Options.SessionStore.StoreAsync(ticket);
+                    await Options.SessionStore.RemoveAsync(_sessionKey);
                 }
+                _sessionKey = await Options.SessionStore.StoreAsync(ticket);
                 var principal = new ClaimsPrincipal(
                     new ClaimsIdentity(
                         new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
