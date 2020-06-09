@@ -77,7 +77,8 @@ namespace Microsoft.AspNetCore.Authentication
                 throw await CreateMissingHandlerException(scheme);
             }
 
-            var result = await handler.AuthenticateAsync();
+            // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
+            var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
 
             if (result.Succeeded)
             {
