@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var executedConfigure = false;
             var builder = Host.CreateDefaultBuilder();
 
-            builder.ConfigureWebHost(configure =>
+            builder.ConfigureWebHost(webHostBuilder =>
             {
-                configure
+                webHostBuilder
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {

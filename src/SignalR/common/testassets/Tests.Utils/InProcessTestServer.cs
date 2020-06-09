@@ -92,9 +92,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var url = "http://127.0.0.1:0";
 
             _host = Host.CreateDefaultBuilder()
-                .ConfigureWebHost(configure =>
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configure
+                    webHostBuilder
                     .ConfigureLogging(builder => builder
                     .SetMinimumLevel(LogLevel.Trace)
                     .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))

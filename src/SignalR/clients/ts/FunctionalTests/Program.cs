@@ -30,9 +30,9 @@ namespace FunctionalTests
             }
 
             var hostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureWebHost(configure =>
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configure
+                    webHostBuilder
                     .ConfigureLogging(factory =>
                     {
                         factory.AddConsole(options =>

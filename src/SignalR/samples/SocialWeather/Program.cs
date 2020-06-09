@@ -14,9 +14,10 @@ namespace SocialWeather
         public static Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(configure =>
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configure.UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
+                    webHostBuilder
+                    .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                     .ConfigureLogging(factory =>
                     {
                         factory.AddConsole();

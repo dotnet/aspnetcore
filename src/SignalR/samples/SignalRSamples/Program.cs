@@ -22,9 +22,9 @@ namespace SignalRSamples
                 .Build();
 
             var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(configure =>
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configure
+                    webHostBuilder
                     .UseConfiguration(config)
                     .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                     .ConfigureLogging((c, factory) =>

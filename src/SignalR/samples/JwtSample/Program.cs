@@ -14,9 +14,9 @@ namespace JwtSample
         public static Task Main(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(configure =>
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configure
+                    webHostBuilder
                     .ConfigureLogging(factory =>
                     {
                         factory.AddConsole();
