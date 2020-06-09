@@ -329,6 +329,7 @@ namespace Microsoft.Net.Http.Headers
         public SetCookieHeaderValue(Microsoft.Extensions.Primitives.StringSegment name, Microsoft.Extensions.Primitives.StringSegment value) { }
         public Microsoft.Extensions.Primitives.StringSegment Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.DateTimeOffset? Expires { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment> Extensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.Extensions.Primitives.StringSegment Name { get { throw null; } set { } }

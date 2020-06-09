@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -99,6 +100,8 @@ namespace Microsoft.Net.Http.Headers
 
         public bool HttpOnly { get; set; }
 
+        public IList<StringSegment> Extensions { get; } = new List<StringSegment>();
+
         // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
         public override string ToString()
         {
@@ -155,6 +158,11 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
+            foreach (var extension in Extensions)
+            {
+                length += SeparatorToken.Length + extension.Length;
+            }
+
             return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
             {
                 var (headerValue, maxAgeValue, sameSite) = tuple;
@@ -203,6 +211,11 @@ namespace Microsoft.Net.Http.Headers
                 if (headerValue.HttpOnly)
                 {
                     AppendSegment(ref span, HttpOnlyToken, null);
+                }
+
+                foreach (var extension in Extensions)
+                {
+                    AppendSegment(ref span, extension, null);
                 }
             });
         }
@@ -280,6 +293,11 @@ namespace Microsoft.Net.Http.Headers
             if (HttpOnly)
             {
                 AppendSegment(builder, HttpOnlyToken, null);
+            }
+
+            foreach (var extension in Extensions)
+            {
+                AppendSegment(builder, extension, null);
             }
         }
 
@@ -399,7 +417,8 @@ namespace Microsoft.Net.Http.Headers
                     {
                         return 0;
                     }
-                    var dateString = ReadToSemicolonOrEnd(input, ref offset);
+                    // We don't want to include comma, becouse date may contain it (eg. Sun, 06 Nov...)
+                    var dateString = ReadToSemicolonOrEnd(input, ref offset, includeComma: false);
                     DateTimeOffset expirationDate;
                     if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))
                     {
@@ -499,13 +518,9 @@ namespace Microsoft.Net.Http.Headers
                 // extension-av = <any CHAR except CTLs or ";">
                 else
                 {
-                    // TODO: skiping it for now to avoid parsing failure? Store it in a list?
-                    // = (no spaces)
-                    if (!ReadEqualsSign(input, ref offset))
-                    {
-                        return 0;
-                    }
-                    ReadToSemicolonOrEnd(input, ref offset);
+                    var tokenStart = offset - itemLength;
+                    ReadToSemicolonOrEnd(input, ref offset, includeComma: true);
+                    result.Extensions.Add(input.Subsegment(tokenStart, offset - tokenStart));
                 }
             }
 
@@ -524,14 +539,32 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset)
+        private static StringSegment ReadToSemicolonOrEnd(StringSegment input, ref int offset, bool includeComma = true)
         {
             var end = input.IndexOf(';', offset);
+            if (end < 0)
+            {
+                // Also valid end of cookie
+                if (includeComma)
+                {
+                    end = input.IndexOf(',', offset);
+                }
+            }
+            else if (includeComma)
+            {
+                var commaPosition = input.IndexOf(',', offset);
+                if (commaPosition >= 0 && commaPosition < end)
+                {
+                    end = commaPosition;
+                }
+            }
+
             if (end < 0)
             {
                 // Remainder of the string
                 end = input.Length;
             }
+
             var itemLength = end - offset;
             var result = input.Subsegment(offset, itemLength);
             offset += itemLength;
@@ -555,12 +588,13 @@ namespace Microsoft.Net.Http.Headers
                 && StringSegment.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase)
                 && Secure == other.Secure
                 && SameSite == other.SameSite
-                && HttpOnly == other.HttpOnly;
+                && HttpOnly == other.HttpOnly
+                && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
         {
-            return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
+            var hash = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name)
                 ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value)
                 ^ (Expires.HasValue ? Expires.GetHashCode() : 0)
                 ^ (MaxAge.HasValue ? MaxAge.GetHashCode() : 0)
@@ -569,6 +603,13 @@ namespace Microsoft.Net.Http.Headers
                 ^ Secure.GetHashCode()
                 ^ SameSite.GetHashCode()
                 ^ HttpOnly.GetHashCode();
+
+            foreach (var extension in Extensions)
+            {
+                hash ^= extension.GetHashCode();
+            }
+
+            return hash;
         }
     }
 }
