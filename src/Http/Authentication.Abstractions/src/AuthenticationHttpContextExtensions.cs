@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The <see cref="AuthenticateResult"/>.</returns>
-        public static Task<AuthenticateResult?> AuthenticateAsync(this HttpContext context) =>
+        public static Task<AuthenticateResult> AuthenticateAsync(this HttpContext context) =>
             context.AuthenticateAsync(scheme: null);
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The <see cref="AuthenticateResult"/>.</returns>
-        public static Task<AuthenticateResult?> AuthenticateAsync(this HttpContext context, string? scheme) =>
+        public static Task<AuthenticateResult> AuthenticateAsync(this HttpContext context, string? scheme) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().AuthenticateAsync(context, scheme);
 
         /// <summary>

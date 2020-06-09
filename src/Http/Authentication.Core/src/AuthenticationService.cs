@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public virtual async Task<AuthenticateResult?> AuthenticateAsync(HttpContext context, string? scheme)
+        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
         {
             if (scheme == null)
             {
@@ -77,8 +77,10 @@ namespace Microsoft.AspNetCore.Authentication
                 throw await CreateMissingHandlerException(scheme);
             }
 
-            var result = await handler.AuthenticateAsync();
-            if (result != null && result.Succeeded)
+            // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
+            var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
+
+            if (result.Succeeded)
             {
                 var principal = result.Principal!;
                 var doTransform = true;

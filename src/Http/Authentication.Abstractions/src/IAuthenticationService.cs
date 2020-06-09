@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        Task<AuthenticateResult?> AuthenticateAsync(HttpContext context, string? scheme);
+        Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme);
 
         /// <summary>
         /// Challenge the specified authentication scheme.
