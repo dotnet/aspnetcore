@@ -606,7 +606,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>Connection "{connectionId}" established using the following protocol: {protocol}</value>
   </data>
   <data name="Http2ErrorKeepAliveTimeout" xml:space="preserve">
-    <value>Timeout while waiting for a keep alive ping acknowledgement.</value>
+    <value>Timeout while waiting for connection activity after a keep alive ping.</value>
   </data>
   <data name="ArgumentTimeSpanGreaterOrEqual" xml:space="preserve">
     <value>A TimeSpan value greater than or equal to {value} is required.</value>
