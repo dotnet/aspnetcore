@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Authorization
     public partial class AuthorizationMiddlewareContext
     {
         public AuthorizationMiddlewareContext() { }
-        public Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface IAuthorizationMiddlewareResultHandler
     {
