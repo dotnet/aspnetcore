@@ -26,7 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
     <!-- Make sure redist folder is built and ready -->
-    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
