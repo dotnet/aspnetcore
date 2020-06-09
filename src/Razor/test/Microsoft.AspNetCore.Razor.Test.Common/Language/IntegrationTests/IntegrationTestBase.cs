@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
         }
 
-        protected CSharpSyntaxTree AddCSharpSyntaxTree(string text, string filePath = null)
+        protected CSharpSyntaxTree AddCSharpSyntaxTree(string text, string? filePath = null)
         {
             var syntaxTree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions, path: filePath);
             CSharpSyntaxTrees.Add(syntaxTree);
@@ -164,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return projectItem;
         }
 
-        protected RazorProjectItem CreateProjectItemFromFile(string filePath = null, string fileKind = null)
+        protected RazorProjectItem CreateProjectItemFromFile(string? filePath = null, string? fileKind = null)
         {
             if (FileName == null)
             {
@@ -297,14 +299,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return compilation;
         }
 
-        protected RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder> configure = null)
+        protected RazorProjectEngine CreateProjectEngine(Action<RazorProjectEngineBuilder>? configure = null)
         {
             var compilation = CreateCompilation();
             var references = compilation.References.Concat(new[] { compilation.ToMetadataReference(), }).ToArray();
             return CreateProjectEngine(Configuration, references, configure);
         }
 
-        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references, Action<RazorProjectEngineBuilder> configure)
+        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references, Action<RazorProjectEngineBuilder>? configure)
         {
             return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {

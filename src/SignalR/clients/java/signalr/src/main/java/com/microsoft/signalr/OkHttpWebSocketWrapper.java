@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private WebSocketOnClosedCallback onClose;
     private CompletableSubject startSubject = CompletableSubject.create();
     private CompletableSubject closeSubject = CompletableSubject.create();
+    private final ReentrantLock closeLock = new ReentrantLock();
 
     private final Logger logger = LoggerFactory.getLogger(OkHttpWebSocketWrapper.class);
 
@@ -87,14 +89,29 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             onClose.invoke(code, reason);
-            closeSubject.onComplete();
+            try {
+                closeLock.lock();
+                closeSubject.onComplete();
+            }
+            finally {
+                closeLock.unlock();
+            }
             checkStartFailure();
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("WebSocket closed from an error: {}.", t.getMessage());
-            closeSubject.onError(new RuntimeException(t));
+
+            try {
+                closeLock.lock();
+                if (!closeSubject.hasComplete()) {
+                    closeSubject.onError(new RuntimeException(t));
+                }
+            }
+            finally {
+                closeLock.unlock();
+            }
             onClose.invoke(null, t.getMessage());
             checkStartFailure();
         }

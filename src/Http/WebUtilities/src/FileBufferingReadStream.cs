@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<byte> _bytePool;
         private readonly int _memoryThreshold;
         private readonly long? _bufferLimit;
-        private string _tempFileDirectory;
-        private readonly Func<string> _tempFileDirectoryAccessor;
-        private string _tempFileName;
+        private string? _tempFileDirectory;
+        private readonly Func<string>? _tempFileDirectoryAccessor;
+        private string? _tempFileName;
 
         private Stream _buffer;
-        private byte[] _rentedBuffer;
+        private byte[]? _rentedBuffer;
         private bool _inMemory = true;
         private bool _completelyBuffered;
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             get { return _inMemory; }
         }
 
-        public string TempFileName
+        public string? TempFileName
         {
             get { return _tempFileName; }
         }

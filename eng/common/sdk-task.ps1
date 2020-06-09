@@ -65,8 +65,13 @@ try {
     if( -not ($GlobalJson.tools.PSObject.Properties.Name -match "xcopy-msbuild" )) {
       $GlobalJson.tools | Add-Member -Name "xcopy-msbuild" -Value "16.5.0-alpha" -MemberType NoteProperty
     }
+    if ($GlobalJson.tools."xcopy-msbuild".Trim() -ine "none") {
+        $xcopyMSBuildToolsFolder = InitializeXCopyMSBuild $GlobalJson.tools."xcopy-msbuild" -install $true
+    }
+    if ($xcopyMSBuildToolsFolder -eq $null) {
+      throw 'Unable to get xcopy downloadable version of msbuild'
+    }
 
-    $xcopyMSBuildToolsFolder = InitializeXCopyMSBuild $GlobalJson.tools."xcopy-msbuild" -install $true
     $global:_MSBuildExe = "$($xcopyMSBuildToolsFolder)\MSBuild\Current\Bin\MSBuild.exe"
   }
 

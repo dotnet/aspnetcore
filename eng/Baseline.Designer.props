@@ -150,45 +150,6 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[3.1.4, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Mono.WebAssembly.Interop" Version="[3.2.0-preview1.20073.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Web" Version="[3.1.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor.Build-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Build' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Build' AND '$(TargetFramework)' == 'any' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="[3.2.0-preview1.20067.1, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor.DevServer-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.DevServer' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor.HttpClient-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.HttpClient' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.HttpClient' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="System.Text.Json" Version="[4.7.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor.Server-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Server' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Server' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Mono.Cecil" Version="[0.10.1, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Blazor.Templates-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Blazor.Templates' ">
-    <BaselinePackageVersion>3.2.0-preview1.20073.1</BaselinePackageVersion>
-  </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' ">
     <BaselinePackageVersion>3.1.4</BaselinePackageVersion>

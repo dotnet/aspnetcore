@@ -1151,8 +1151,9 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 It.IsAny<IValueProvider>(),
                 It.IsAny<ParameterDescriptor>(),
                 It.IsAny<ModelMetadata>(),
+                null,
                 null))
-                .Returns((ActionContext context, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor descriptor, ModelMetadata metadata, object v) =>
+                .Returns((ActionContext context, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor descriptor, ModelMetadata metadata, object v, object c) =>
                 {
                     ModelBindingResult result;
                     if (descriptor.Name == "accountId")
@@ -1172,7 +1173,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                         result = ModelBindingResult.Failed();
                     }
 
-                    return Task.FromResult(result);
+                    return new ValueTask<ModelBindingResult>(result);
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);

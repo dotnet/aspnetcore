@@ -65,7 +65,10 @@
 
     <ItemGroup>
       <!-- LB.csproj package content is bundled into this one. -->
-      <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
+      <!-- The x64 & x86 SiteExtension packages have identical deps.json files - we only include the x64 files to avoid build warnings -->
+      <ContentFilesToPack 
+          Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" 
+          Exclude="$(NugetPackageRoot)\Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.x86\**\Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json"/>
 
       <!-- Temporarily skip the common files -->
       <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />

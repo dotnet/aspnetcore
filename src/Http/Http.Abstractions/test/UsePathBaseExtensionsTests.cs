@@ -145,8 +145,9 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             await builder.Build().Invoke(requestContext);
 
             // Assert path and pathBase are split after middleware
-            Assert.Equal(expectedPath, ((PathString)requestContext.Items["test.Path"]).Value);
-            Assert.Equal(expectedPathBase, ((PathString)requestContext.Items["test.PathBase"]).Value);
+            Assert.Equal(expectedPath, ((PathString?)requestContext.Items["test.Path"])!.Value.Value);
+            Assert.Equal(expectedPathBase, ((PathString?)requestContext.Items["test.PathBase"])!.Value.Value);
+
             // Assert path and pathBase are reset after request
             Assert.Equal(pathBase, requestContext.Request.PathBase.Value);
             Assert.Equal(requestPath, requestContext.Request.Path.Value);
