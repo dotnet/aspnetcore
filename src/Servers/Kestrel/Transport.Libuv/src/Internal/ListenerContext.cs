@@ -165,6 +165,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             var fileHandleEndPoint = (FileHandleEndPoint)EndPoint;
 
+            // Libuv always owns the handle
+            if (!fileHandleEndPoint.OwnsHandle)
+            {
+                throw new NotSupportedException("Libuv must own the handle to the file descriptor.");
+            }
+
             switch (fileHandleEndPoint.FileHandleType)
             {
                 case FileHandleType.Auto:
