@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2KeepAliveTests : Http2TestBase
     {
         [Fact]
-        public async Task KeepAlivePingInterval_Null_KeepAliveNotEnabled()
+        public async Task KeepAlivePingInterval_InfiniteTimeSpan_KeepAliveNotEnabled()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = null;
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = Timeout.InfiniteTimeSpan;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task KeepAlivePingTimeout_Null_NoGoAway()
+        public async Task KeepAlivePingTimeout_InfiniteTimeSpan_NoGoAway()
         {
             _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = null;
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = Timeout.InfiniteTimeSpan;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal static readonly ReadOnlySequence<byte> PingPayload = new ReadOnlySequence<byte>(new byte[8]);
 
         private readonly TimeSpan _keepAliveInterval;
-        private readonly TimeSpan? _keepAliveTimeout;
+        private readonly TimeSpan _keepAliveTimeout;
         private readonly ISystemClock _systemClock;
         private long _lastFrameReceivedTimestamp;
         private long _pingSentTimestamp;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Internal for testing
         internal KeepAliveState _state;
 
-        public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan? keepAliveTimeout, ISystemClock systemClock)
+        public Http2KeepAlive(TimeSpan keepAliveInterval, TimeSpan keepAliveTimeout, ISystemClock systemClock)
         {
             _keepAliveInterval = keepAliveInterval;
             _keepAliveTimeout = keepAliveTimeout;
@@ -74,9 +75,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
                         break;
                     case KeepAliveState.PingSent:
-                        if (_keepAliveTimeout != null)
+                        if (_keepAliveTimeout != TimeSpan.MaxValue)
                         {
-                            if (timestamp > (_pingSentTimestamp + _keepAliveTimeout.GetValueOrDefault().Ticks))
+                            if (timestamp > (_pingSentTimestamp + _keepAliveTimeout.Ticks))
                             {
                                 _state = KeepAliveState.Timeout;
                             }
