@@ -17,15 +17,15 @@ namespace Templates.Test.SpaTemplateTest
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task ReactTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactnoauth", "react", useLocalDb: false, usesAuth: false);
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task ReactTemplate_IndividualAuth_NetCore()
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task ReactTemplate_IndividualAuth_NetCore_LocalDb()
             => SpaTemplateImplAsync("reactindividualuld", "react", useLocalDb: true, usesAuth: true);
     }

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -26,13 +27,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
             var sampleSitePath = FindSampleOrTestSitePath(SampleSiteName);
 
+            var host = "127.0.0.1";
+            if (E2ETestOptions.Instance.SauceTest)
+            {
+                host = E2ETestOptions.Instance.Sauce.HostName;
+            }
+
             return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder => webHostBuilder
                     .UseKestrel()
                     .UseContentRoot(sampleSitePath)
                     .UseWebRoot(string.Empty)
                     .UseStartup<StaticSiteStartup>()
-                    .UseUrls("http://127.0.0.1:0"))
+                    .UseUrls($"http://{host}:0"))
                 .Build();
         }
 

@@ -15,15 +15,15 @@ namespace Templates.Test.SpaTemplateTest
         public AngularTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output)
             : base(projectFactory, browserFixture, output) { }
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task AngularTemplate_Works()
             => SpaTemplateImplAsync("angularnoauth", "angular", useLocalDb: false, usesAuth: false);
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task AngularTemplate_IndividualAuth_Works()
             => SpaTemplateImplAsync("angularindividual", "angular", useLocalDb: false, usesAuth: true);
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task AngularTemplate_IndividualAuth_Works_LocalDb()
             => SpaTemplateImplAsync("angularindividualuld", "angular", useLocalDb: true, usesAuth: true);
     }

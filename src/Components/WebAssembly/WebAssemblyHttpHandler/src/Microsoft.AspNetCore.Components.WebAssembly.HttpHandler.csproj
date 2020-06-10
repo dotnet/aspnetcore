@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <AssemblyName>System.Net.Http.WebAssemblyHttpHandler</AssemblyName>
+    <AssemblyVersion>0.2.2.0</AssemblyVersion>
+    <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
+    <StrongNameKeyId>Open</StrongNameKeyId>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="OutputPath=$(OutputPath)" />
+  </ItemGroup>
+
+</Project>

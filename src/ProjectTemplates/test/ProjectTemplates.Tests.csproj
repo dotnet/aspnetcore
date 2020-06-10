@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../ComponentsWebAssembly.ProjectTemplates/Microsoft.AspNetCore.Components.WebAssembly.Templates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
@@ -57,6 +58,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
       <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Test.DefaultTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
@@ -81,7 +86,7 @@
         <_Parameter1>ArtifactsLogDir</_Parameter1>
         <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log'))</_Parameter2>
       </AssemblyAttribute>
-      
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
         <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>

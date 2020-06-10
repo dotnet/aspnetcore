@@ -21,13 +21,10 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public const string DefaultFramework = "netcoreapp3.1";
-
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
 
-        public static string ArtifactsLogDir => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "ArtifactsLogDir")?.Value;
+        public static string ArtifactsLogDir => GetAssemblyMetadata("ArtifactsLogDir");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -35,14 +32,16 @@ namespace Templates.Test.Helpers
         public string ProjectArguments { get; set; }
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
-        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", DefaultFramework);
-        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", DefaultFramework, "publish");
+        public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
+
+        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
+        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
 
         private string TemplateServerDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Server");
         private string TemplateClientDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Client");
-        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", DefaultFramework);
-        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", DefaultFramework, "publish");
-        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", DefaultFramework, "publish");
+        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", TargetFramework);
+        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", TargetFramework, "publish");
+        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", TargetFramework, "publish");
 
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
@@ -110,7 +109,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -121,7 +120,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl:publish.binlog /nr:false {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -132,7 +131,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -143,7 +142,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug /bl /nr:false {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -165,39 +164,6 @@ namespace Templates.Test.Helpers
             return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, published: false);
         }
 
-        internal AspNetProcess StartBuiltClientAsync(AspNetProcess serverProcess)
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
-            };
-
-            var projectDll = Path.Combine(TemplateClientDebugDir, $"{ProjectName}.Client.dll {serverProcess.ListeningUri.Port}");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: false);
-        }
-
-        internal AspNetProcess StartPublishedServerAsync()
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_URLS"] = _urls,
-            };
-
-            var projectDll = $"{ProjectName}.Server.dll";
-            return new AspNetProcess(Output, TemplateServerReleaseDir, projectDll, environment);
-        }
-
-        internal AspNetProcess StartPublishedClientAsync()
-        {
-            var environment = new Dictionary<string, string>
-            {
-                ["ASPNETCORE_URLS"] = _urls,
-            };
-
-            var projectDll = $"{ProjectName}.Client.dll";
-            return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
-        }
-
         internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true)
         {
             var environment = new Dictionary<string, string>
@@ -210,8 +176,34 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
+            var launchSettingsJson = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
+            if (File.Exists(launchSettingsJson))
+            {
+                // When executing "dotnet run", the launch urls specified in the app's launchSettings.json have higher precedence
+                // than ambient environment variables. When present, we have to edit this file to allow the application to pick random ports.
+
+                var original = File.ReadAllText(launchSettingsJson);
+                var updated = original.Replace(
+                    "\"applicationUrl\": \"https://localhost:5001;http://localhost:5000\"",
+                    $"\"applicationUrl\": \"{_urls}\"");
+
+                if (updated == original)
+                {
+                    Output.WriteLine("applicationUrl is not specified in launchSettings.json");
+                }
+                else
+                {
+                    Output.WriteLine("Updating applicationUrl in launchSettings.json");
+                    File.WriteAllText(launchSettingsJson, updated);
+                }
+            }
+            else
+            {
+                Output.WriteLine("No launchSettings.json found to update.");
+            }
+
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
@@ -226,7 +218,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = $"{ProjectName}.dll";
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri);
         }
 
         internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)
@@ -516,13 +508,36 @@ namespace Templates.Test.Helpers
         {
             if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
             {
-                var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
-                Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
-                var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
-                File.Move(sourceFile, destination);
+                var build = Path.Combine(TemplateOutputDir, "msbuild.binlog");
+                var publish = Path.Combine(TemplateOutputDir, "publish.binlog");
+                Assert.True(File.Exists(build) || File.Exists(publish), $"Log for '{ProjectName}' not found in '{build}'.");
+                if (File.Exists(build))
+                {
+                    var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
+                    File.Move(build, destination);
+                }
+
+                if (File.Exists(publish))
+                {
+                    var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".publish.binlog");
+                    File.Move(publish, destination);
+                }
             }
         }
 
         public override string ToString() => $"{ProjectName}: {TemplateOutputDir}";
+
+        private static string GetAssemblyMetadata(string key)
+        {
+            var attribute = typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == key);
+
+            if (attribute is null)
+            {
+                throw new ArgumentException($"AssemblyMetadataAttribute with key {key} was not found.");
+            }
+
+            return attribute.Value;
+        }
     }
 }

@@ -36,7 +36,7 @@ namespace Templates.Test.Helpers
             string workingDirectory,
             string dllPath,
             IDictionary<string, string> environmentVariables,
-            bool published = true,
+            bool published,
             bool hasListeningUri = true)
         {
             _output = output;
@@ -51,17 +51,22 @@ namespace Templates.Test.Helpers
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            var now = DateTimeOffset.Now;
-            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            EnsureDevelopmentCertificates();
 
             output.WriteLine("Running ASP.NET application...");
 
-            var arguments = published ? $"exec {dllPath}" : "run";
+            var arguments = published ? $"exec {dllPath}" : "run --no-build";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
             if (hasListeningUri)
             {
                 ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
             }
+        }
+
+        internal static void EnsureDevelopmentCertificates()
+        {
+            var now = DateTimeOffset.Now;
+            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
         }
 
         public void VisitInBrowser(IWebDriver driver)
@@ -235,9 +240,16 @@ namespace Templates.Test.Helpers
             return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
         }
 
+        internal Task<HttpResponseMessage> SendRequest(Func<HttpRequestMessage> requestFactory)
+        {
+            return RequestWithRetries(client => client.SendAsync(requestFactory()), _httpClient);
+        }
+
+
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var response = await RequestWithRetries(client => {
+            var response = await RequestWithRetries(client =>
+            {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     new Uri(ListeningUri, requestUrl));

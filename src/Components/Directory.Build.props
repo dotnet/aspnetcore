@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageTags>aspnetcore;components</PackageTags>
 
     <ComponentsSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ComponentsSharedSourceRoot>

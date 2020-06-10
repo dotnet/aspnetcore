@@ -16,7 +16,7 @@ namespace Templates.Test.SpaTemplateTest
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Skipping SPA tests in 3.1")]
         public Task ReactReduxTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactredux", "reactredux", useLocalDb: false, usesAuth: false);
     }
