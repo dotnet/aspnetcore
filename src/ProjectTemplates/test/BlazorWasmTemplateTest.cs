@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -58,7 +59,7 @@ namespace Templates.Test
 
             await BuildAndRunTest(project.ProjectName, project);
 
-            using var serveProcess = RunPublishedStandaloneBlazorProject(project);
+            RunPublishedStandaloneBlazorProject(project);
         }
 
         [Fact]
@@ -133,13 +134,7 @@ namespace Templates.Test
 
             ValidatePublishedServiceWorker(project);
 
-            using (var serverProcess = RunPublishedStandaloneBlazorProject(project))
-            {
-                // We want to use this form to ensure that it gets disposed right after the test.
-            }
-
-            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
-            var listeningUri = "https://localhost:8080";
+            var listeningUri = RunPublishedStandaloneBlazorProject(project);
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
@@ -326,7 +321,7 @@ namespace Templates.Test
             // for that, we use the common microsoft tenant.
             await BuildAndRunTest(project.ProjectName, project, usesAuth: false);
 
-            using var serveProcess = RunPublishedStandaloneBlazorProject(project);
+            RunPublishedStandaloneBlazorProject(project);
         }
 
         public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
@@ -551,20 +546,47 @@ namespace Templates.Test
         }
 
 
-        private ProcessEx RunPublishedStandaloneBlazorProject(Project project)
+        private string RunPublishedStandaloneBlazorProject(Project project)
         {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
             AspNetProcess.EnsureDevelopmentCertificates();
 
             Output.WriteLine("Running dotnet serve on published output...");
-            var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S");
+            using (var serveProcess = ProcessEx.Run(Output, publishDir, DotNetMuxer.MuxerPathOrDefault(), "serve -S --port 0"))
+            {
+                var listeningUri = ResolveListeningUrl(serveProcess);
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                Browser.Navigate().GoToUrl(listeningUri);
 
-            // Todo: Use dynamic port assignment: https://github.com/natemcmaster/dotnet-serve/pull/40/files
-            var listeningUri = "https://localhost:8080";
-            Output.WriteLine($"Opening browser at {listeningUri}...");
-            Browser.Navigate().GoToUrl(listeningUri);
-            TestBasicNavigation(project.ProjectName);
-            return serveProcess;
+                TestBasicNavigation(project.ProjectName);
+
+                return listeningUri;
+            }
+        }
+
+        private static string ResolveListeningUrl(ProcessEx process)
+        {
+            var buffer = new List<string>();
+            try
+            {
+                foreach (var line in process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            throw new InvalidOperationException(@$"Couldn't find listening url:
+{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
         }
     }
 }
