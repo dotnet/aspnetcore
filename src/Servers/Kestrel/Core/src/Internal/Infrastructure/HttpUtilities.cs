@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
-            useLatin1 ? GetLatin1StringNonNullCharacters(span) : GetAsciiOrUTF8StringNonNullCharacters(span);
+            useLatin1 ? span.GetLatin1StringNonNullCharacters() : span.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
         {
