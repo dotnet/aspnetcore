@@ -37,15 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _systemClock = systemClock;
         }
 
-        public void PingSent()
-        {
-            _state = KeepAliveState.PingSent;
-
-            // System clock only has 1 second of precision, so the clock could be up to 1 second in the past.
-            // To err on the side of caution, add a second to the clock when calculating the ping sent time.
-            _pingSentTimestamp = _systemClock.UtcNowTicks + TimeSpan.TicksPerSecond;
-        }
-
         public KeepAliveState ProcessKeepAlive(bool frameReceived)
         {
             var timestamp = _systemClock.UtcNowTicks;
@@ -71,7 +62,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         // Check whether keep alive interval has passed since last frame received
                         if (timestamp > (_lastFrameReceivedTimestamp + _keepAliveInterval.Ticks))
                         {
-                            _state = KeepAliveState.SendPing;
+                            // Ping will be sent immeditely after this method finishes.
+                            // Set the status directly to ping sent and set the timestamp
+                            _state = KeepAliveState.PingSent;
+                            // System clock only has 1 second of precision, so the clock could be up to 1 second in the past.
+                            // To err on the side of caution, add a second to the clock when calculating the ping sent time.
+                            _pingSentTimestamp = _systemClock.UtcNowTicks + TimeSpan.TicksPerSecond;
+
+                            // Indicate that the ping needs to be sent. This is only returned once
+                            return KeepAliveState.SendPing;
                         }
                         break;
                     case KeepAliveState.PingSent:

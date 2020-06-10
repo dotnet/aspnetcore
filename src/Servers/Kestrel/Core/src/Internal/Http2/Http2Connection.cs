@@ -239,7 +239,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             if (state == KeepAliveState.SendPing)
                             {
                                 await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
-                                _keepAlive.PingSent();
                             }
                             else if (state == KeepAliveState.Timeout)
                             {
