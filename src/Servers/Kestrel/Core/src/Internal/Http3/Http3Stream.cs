@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                         if (result.IsCompleted)
                         {
-                            OnEndStreamReceived();
+                            await OnEndStreamReceived();
                             return;
                         }
                     }
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 try
                 {
-                    _frameWriter.Complete();
+                    await _frameWriter.CompleteAsync();
                 }
                 catch
                 {
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private void OnEndStreamReceived()
+        private async Task OnEndStreamReceived()
         {
             if (InputRemaining.HasValue)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             OnTrailersComplete();
-            RequestBodyPipe.Writer.Complete();
+            await RequestBodyPipe.Writer.CompleteAsync();
         }
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
