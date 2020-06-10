@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Builder
         public string AuthenticationDisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool AutomaticAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public long? MaxRequestBodySize { get { throw null; } set { } }
+        public bool Latin1RequestHeaders { get { throw null; } set { } }
     }
 }
 namespace Microsoft.AspNetCore.Hosting

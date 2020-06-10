@@ -65,5 +65,10 @@ namespace Microsoft.AspNetCore.Builder
                 _maxRequestBodySize = value;
             }
         }
+
+        /// <summary>
+        /// Treat request headers as Latin-1 or ISO/IEC 8859-1 instead of UTF-8.
+        /// </summary>
+        public bool Latin1RequestHeaders { get; set; } = false;
     }
 }

@@ -145,9 +145,9 @@ namespace TestSite
                     }
 
                     return 0;
+#if !FORWARDCOMPAT
                 case "ThrowInStartupGenericHost":
                     {
-#if !FORWARDCOMPAT
                         var host = new HostBuilder().ConfigureWebHost((c) =>
                         {
                             c.ConfigureLogging((_, factory) =>
@@ -158,12 +158,32 @@ namespace TestSite
                             .UseIIS()
                             .UseStartup<ThrowingStartup>();
                         });
-                                   
+
 
                         host.Build().Run();
-#endif
                     }
                     return 0;
+                case "AddLatin1":
+                    {
+                        var host = new HostBuilder().ConfigureWebHost((c) =>
+                        {
+                            c.ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .ConfigureServices(services =>
+                            {
+                                services.Configure<IISServerOptions>(options => options.Latin1RequestHeaders = true);
+                            })
+                            .UseIIS()
+                            .UseStartup<Startup>();
+                        });
+
+                        host.Build().Run();
+                        return 0;
+                    }
+#endif
                 default:
                     return StartServer();
 
