@@ -267,6 +267,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _completed = true;
         }
 
+        public override Task CompleteAsync(Exception exception)
+        {
+            _context.ReportApplicationError(exception);
+            _completed = true;
+            return Task.CompletedTask;
+        }
+
         public override void CancelPendingRead()
         {
             Interlocked.Exchange(ref _userCanceled, 1);
@@ -275,8 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override Task OnStopAsync()
         {
-            Complete(null);
-            return Task.CompletedTask;
+            return CompleteAsync(null);
         }
 
         [StackTraceHidden]
