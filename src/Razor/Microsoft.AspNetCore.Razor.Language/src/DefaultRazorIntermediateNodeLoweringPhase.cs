@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.Value?.GetContent() ?? string.Empty,
+                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.GetContent(),
+                    ContentFactory = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        ContentGetter = () => node.GetContent(),
+                        ContentFactory = () => node.GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -845,7 +845,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.GetContent(),
+                    ContentFactory = () => node.GetContent(),
                     Kind = TokenKind.Html,
                     Source = source,
                 });
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => item.GetContent(),
+                    ContentFactory = () => item.GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -1329,7 +1329,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.Value?.GetContent() ?? string.Empty,
+                    ContentFactory = () => node.Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -1350,7 +1350,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        ContentGetter = () => node.GetContent() ?? string.Empty,
+                        ContentFactory = () => node.GetContent() ?? string.Empty,
                         Kind = TokenKind.Html,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -1407,7 +1407,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         new IntermediateTokenWithDeferredContentAllocation()
                         {
-                            ContentGetter = () => node.GetContent(),
+                            ContentFactory = () => node.GetContent(),
                             Kind = TokenKind.Html,
                             Source = source,
                         }
@@ -1576,7 +1576,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.GetContent(),
+                    ContentFactory = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -1602,7 +1602,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        ContentGetter = () => node.GetContent(),
+                        ContentFactory = () => node.GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -2043,7 +2043,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 node.Children.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => item.GetContent(),
+                    ContentFactory = () => item.GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -2181,7 +2181,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    ContentGetter = () => node.GetContent(),
+                    ContentFactory = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });

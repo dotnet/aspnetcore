@@ -4,16 +4,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     internal class IntermediateTokenWithDeferredContentAllocation : IntermediateToken
     {
-        public Func<string> ContentGetter { get; set; }
+        public Func<string> ContentFactory { get; set; }
 
         public override string Content
         {
             get
             {
-                if (base.Content == null && ContentGetter != null)
+                if (base.Content == null && ContentFactory != null)
                 {
-                    Content = ContentGetter();
-                    ContentGetter = null;
+                    Content = ContentFactory();
+                    ContentFactory = null;
                 }
 
                 return base.Content;
