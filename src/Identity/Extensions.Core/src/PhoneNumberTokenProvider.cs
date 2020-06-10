@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Identity
 
             var phoneNumber = await manager.GetPhoneNumberAsync(user);
 
-            return $"{PhoneNumber}:{purpose}:{phoneNumber}";
+            return $"PhoneNumber:{purpose}:{phoneNumber}";
         }
     }
 }
