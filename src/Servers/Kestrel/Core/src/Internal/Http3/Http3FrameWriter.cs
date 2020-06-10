@@ -313,6 +313,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
+        public async Task CompleteAsync()
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                _completed = true;
+            }
+            await _outputWriter.CompleteAsync();
+        }
+
         public void Abort(ConnectionAbortedException error)
         {
             lock (_writeLock)
