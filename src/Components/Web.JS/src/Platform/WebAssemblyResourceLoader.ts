@@ -85,7 +85,13 @@ export class WebAssemblyResourceLoader {
     const cacheKey = toAbsoluteUri(`${url}.${contentHash}`);
     this.usedCacheKeys[cacheKey] = true;
 
-    const cachedResponse = await cache.match(cacheKey);
+    let cachedResponse: Response | undefined;
+    try {
+      cachedResponse = await cache.match(cacheKey);
+    } catch {
+      // Be tolerant to failures reading from the cache.
+    }
+
     if (cachedResponse) {
       // It's in the cache.
       const responseBytes = parseInt(cachedResponse.headers.get('content-length') || '0');
@@ -136,12 +142,16 @@ export class WebAssemblyResourceLoader {
 
     // Add to cache as a custom response object so we can track extra data such as responseBytes
     // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
-    await cache.put(cacheKey, new Response(responseData, {
-      headers: {
-        'content-type': response.headers.get('content-type') || '',
-        'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
-      }
-    }));
+    try {
+      await cache.put(cacheKey, new Response(responseData, {
+        headers: {
+          'content-type': response.headers.get('content-type') || '',
+          'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
+        }
+      }));
+    } catch {
+      // Be tolerant to errors writing to the cache.
+    }
   }
 }
 
