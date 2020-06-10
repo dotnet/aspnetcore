@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             var userId = await manager.GetUserIdAsync(user);
 
-            return $"{Totp}:{purpose}:{userId}";
+            return $"Totp:{purpose}:{userId}";
         }
 
         /// <summary>
