@@ -5,11 +5,11 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class IntermediateToken : IntermediateNode
+    public class IntermediateToken : IntermediateNode
     {
         public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
-        public string Content { get; set; }
+        public virtual string Content { get; set; }
 
         public bool IsCSharp => Kind == TokenKind.CSharp;
 

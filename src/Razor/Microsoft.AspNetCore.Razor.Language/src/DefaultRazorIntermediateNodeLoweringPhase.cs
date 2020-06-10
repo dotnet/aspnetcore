@@ -583,9 +583,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
                 });
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.Value?.GetContent() ?? string.Empty,
+                    ContentGetter = () => node.Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -715,9 +715,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.GetContent(),
+                    ContentGetter = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -741,9 +741,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _builder.Push(statementNode);
                     }
 
-                    _builder.Add(new IntermediateToken()
+                    _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        Content = node.GetContent(),
+                        ContentGetter = () => node.GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -843,9 +843,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 };
                 _builder.Push(contentNode);
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.GetContent(),
+                    ContentGetter = () => node.GetContent(),
                     Kind = TokenKind.Html,
                     Source = source,
                 });
@@ -1090,9 +1090,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             private void Combine(HtmlContentIntermediateNode node, SyntaxNode item)
             {
-                node.Children.Add(new IntermediateToken()
+                node.Children.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = item.GetContent(),
+                    ContentGetter = () => item.GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -1327,9 +1327,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
                 });
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.Value?.GetContent() ?? string.Empty,
+                    ContentGetter = () => node.Value?.GetContent() ?? string.Empty,
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(node.Value)
                 });
@@ -1348,9 +1348,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         Source = BuildSourceSpanFromNode(node),
                     });
 
-                    _builder.Add(new IntermediateToken()
+                    _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        Content = node.GetContent() ?? string.Empty,
+                        ContentGetter = () => node.GetContent() ?? string.Empty,
                         Kind = TokenKind.Html,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -1405,9 +1405,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = source,
                     Children =
                     {
-                        new IntermediateToken()
+                        new IntermediateTokenWithDeferredContentAllocation()
                         {
-                            Content = node.GetContent(),
+                            ContentGetter = () => node.GetContent(),
                             Kind = TokenKind.Html,
                             Source = source,
                         }
@@ -1574,9 +1574,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.GetContent(),
+                    ContentGetter = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
@@ -1600,9 +1600,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _builder.Push(statementNode);
                     }
 
-                    _builder.Add(new IntermediateToken()
+                    _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                     {
-                        Content = node.GetContent(),
+                        ContentGetter = () => node.GetContent(),
                         Kind = TokenKind.CSharp,
                         Source = BuildSourceSpanFromNode(node),
                     });
@@ -2041,9 +2041,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             private void Combine(HtmlContentIntermediateNode node, SyntaxNode item)
             {
-                node.Children.Add(new IntermediateToken()
+                node.Children.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = item.GetContent(),
+                    ContentGetter = () => item.GetContent(),
                     Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(item),
                 });
@@ -2179,9 +2179,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                _builder.Add(new IntermediateToken()
+                _builder.Add(new IntermediateTokenWithDeferredContentAllocation()
                 {
-                    Content = node.GetContent(),
+                    ContentGetter = () => node.GetContent(),
                     Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(node),
                 });
