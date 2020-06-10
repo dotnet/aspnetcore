@@ -155,9 +155,7 @@ namespace Microsoft.AspNetCore
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
-#pragma warning disable CS0612 // Type or member is obsolete
             var builder = new WebHostBuilder();
-#pragma warning restore CS0612 // Type or member is obsolete
 
             if (string.IsNullOrEmpty(builder.GetSetting(WebHostDefaults.ContentRootKey)))
             {

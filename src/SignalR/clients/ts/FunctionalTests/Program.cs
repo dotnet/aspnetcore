@@ -87,7 +87,7 @@ namespace FunctionalTests
                     if (!string.IsNullOrEmpty(url))
                     {
                         Console.WriteLine($"Forcing URL to: {url}");
-                        configure.UseUrls(url);
+                        webHostBuilder.UseUrls(url);
                     }
                 });
 

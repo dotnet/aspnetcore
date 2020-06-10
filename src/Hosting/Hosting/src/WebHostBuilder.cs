@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Hosting
     /// <summary>
     /// A builder for <see cref="IWebHost"/>
     /// </summary>
-    [Obsolete]
     public class WebHostBuilder : IWebHostBuilder
     {
         private readonly HostingEnvironment _hostingEnvironment;
