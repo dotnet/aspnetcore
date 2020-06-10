@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             var email = await manager.GetEmailAsync(user);
 
-            return $"{Email}:{purpose}:{email}";
+            return $"Email:{purpose}:{email}";
         }
     }
 }
