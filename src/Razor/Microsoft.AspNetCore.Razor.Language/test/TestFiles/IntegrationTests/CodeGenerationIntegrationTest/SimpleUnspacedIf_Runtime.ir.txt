@@ -5,12 +5,12 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleUnspacedIf_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (1:0,1 [14] SimpleUnspacedIf.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (1:0,1 [14] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n
+                    LazyIntermediateToken - (1:0,1 [14] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n
                 HtmlContent - (15:2,0 [14] SimpleUnspacedIf.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (15:2,0 [1] SimpleUnspacedIf.cshtml) - Html - 	
-                    IntermediateTokenWithDeferredContentAllocation - (16:2,1 [4] SimpleUnspacedIf.cshtml) - Html - <div
-                    IntermediateTokenWithDeferredContentAllocation - (20:2,5 [1] SimpleUnspacedIf.cshtml) - Html - >
-                    IntermediateTokenWithDeferredContentAllocation - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
-                    IntermediateTokenWithDeferredContentAllocation - (27:2,12 [2] SimpleUnspacedIf.cshtml) - Html - \n
+                    LazyIntermediateToken - (15:2,0 [1] SimpleUnspacedIf.cshtml) - Html - 	
+                    LazyIntermediateToken - (16:2,1 [4] SimpleUnspacedIf.cshtml) - Html - <div
+                    LazyIntermediateToken - (20:2,5 [1] SimpleUnspacedIf.cshtml) - Html - >
+                    LazyIntermediateToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
+                    LazyIntermediateToken - (27:2,12 [2] SimpleUnspacedIf.cshtml) - Html - \n
                 CSharpCode - (29:3,0 [1] SimpleUnspacedIf.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (29:3,0 [1] SimpleUnspacedIf.cshtml) - CSharp - }
+                    LazyIntermediateToken - (29:3,0 [1] SimpleUnspacedIf.cshtml) - CSharp - }

@@ -34,26 +34,26 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:1,0 [2] Sections.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (17:1,0 [2] Sections.cshtml) - Html - \n
+                    LazyIntermediateToken - (17:1,0 [2] Sections.cshtml) - Html - \n
                 HtmlContent - (62:2,43 [4] Sections.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (62:2,43 [4] Sections.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (62:2,43 [4] Sections.cshtml) - Html - \n\n
                 CSharpCode - (68:4,2 [46] Sections.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (68:4,2 [46] Sections.cshtml) - CSharp -  \n    Layout = "_SectionTestLayout.cshtml";\n
+                    LazyIntermediateToken - (68:4,2 [46] Sections.cshtml) - CSharp -  \n    Layout = "_SectionTestLayout.cshtml";\n
                 HtmlContent - (117:7,0 [26] Sections.cshtml)
-                    IntermediateTokenWithDeferredContentAllocation - (117:7,0 [2] Sections.cshtml) - Html - \n
-                    IntermediateTokenWithDeferredContentAllocation - (119:8,0 [4] Sections.cshtml) - Html - <div
-                    IntermediateTokenWithDeferredContentAllocation - (123:8,4 [1] Sections.cshtml) - Html - >
-                    IntermediateTokenWithDeferredContentAllocation - (124:8,5 [9] Sections.cshtml) - Html - Some body
-                    IntermediateTokenWithDeferredContentAllocation - (133:8,14 [6] Sections.cshtml) - Html - </div>
-                    IntermediateTokenWithDeferredContentAllocation - (139:8,20 [4] Sections.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (117:7,0 [2] Sections.cshtml) - Html - \n
+                    LazyIntermediateToken - (119:8,0 [4] Sections.cshtml) - Html - <div
+                    LazyIntermediateToken - (123:8,4 [1] Sections.cshtml) - Html - >
+                    LazyIntermediateToken - (124:8,5 [9] Sections.cshtml) - Html - Some body
+                    LazyIntermediateToken - (133:8,14 [6] Sections.cshtml) - Html - </div>
+                    LazyIntermediateToken - (139:8,20 [4] Sections.cshtml) - Html - \n\n
                 Section -  - Section1
                     HtmlContent - (162:10,19 [43] Sections.cshtml)
-                        IntermediateTokenWithDeferredContentAllocation - (162:10,19 [6] Sections.cshtml) - Html - \n    
-                        IntermediateTokenWithDeferredContentAllocation - (168:11,4 [4] Sections.cshtml) - Html - <div
-                        IntermediateTokenWithDeferredContentAllocation - (172:11,8 [1] Sections.cshtml) - Html - >
-                        IntermediateTokenWithDeferredContentAllocation - (173:11,9 [20] Sections.cshtml) - Html - This is in Section 1
-                        IntermediateTokenWithDeferredContentAllocation - (193:11,29 [6] Sections.cshtml) - Html - </div>
-                        IntermediateTokenWithDeferredContentAllocation - (199:11,35 [6] Sections.cshtml) - Html - \n    
+                        LazyIntermediateToken - (162:10,19 [6] Sections.cshtml) - Html - \n    
+                        LazyIntermediateToken - (168:11,4 [4] Sections.cshtml) - Html - <div
+                        LazyIntermediateToken - (172:11,8 [1] Sections.cshtml) - Html - >
+                        LazyIntermediateToken - (173:11,9 [20] Sections.cshtml) - Html - This is in Section 1
+                        LazyIntermediateToken - (193:11,29 [6] Sections.cshtml) - Html - </div>
+                        LazyIntermediateToken - (199:11,35 [6] Sections.cshtml) - Html - \n    
                     TagHelper - (205:12,4 [25] Sections.cshtml) - input-test - TagMode.SelfClosing
                         DefaultTagHelperBody - 
                         DefaultTagHelperCreate -  - InputTestTagHelper
@@ -61,11 +61,11 @@ Document -
                             CSharpExpression - 
                                 IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                                 IntermediateToken -  - CSharp - __model.
-                                IntermediateTokenWithDeferredContentAllocation - (222:12,21 [4] Sections.cshtml) - CSharp - Date
+                                LazyIntermediateToken - (222:12,21 [4] Sections.cshtml) - CSharp - Date
                                 IntermediateToken -  - CSharp - )
                         DefaultTagHelperExecute - 
                     HtmlContent - (230:12,29 [2] Sections.cshtml)
-                        IntermediateTokenWithDeferredContentAllocation - (230:12,29 [2] Sections.cshtml) - Html - \n
+                        LazyIntermediateToken - (230:12,29 [2] Sections.cshtml) - Html - \n
             Inject - 
             Inject - 
             Inject - 

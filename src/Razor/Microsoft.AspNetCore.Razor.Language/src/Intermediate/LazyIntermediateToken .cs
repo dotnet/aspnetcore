@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class IntermediateTokenWithDeferredContentAllocation : IntermediateToken
+    internal class LazyIntermediateToken : IntermediateToken
     {
         public Func<string> ContentFactory { get; set; }
 
