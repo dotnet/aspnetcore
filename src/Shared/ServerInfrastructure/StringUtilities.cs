@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class StringUtilities
+    internal static class StringUtilities
     {
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
         {
