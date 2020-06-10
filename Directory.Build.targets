@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
@@ -107,8 +107,13 @@
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
 
     <HasReferenceAssembly
-        Condition=" '$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
+        Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
+    <ProduceReferenceAssembly>$(HasReferenceAssembly)</ProduceReferenceAssembly>
+
+    <!-- Duplicate setting from Microsoft.Common.CurrentVersion.targets because this is imported after that file. -->
+    <TargetRefPath
+        Condition=" '$(TargetRefPath)' == '' and $(ProduceReferenceAssembly) ">$([MSBuild]::NormalizePath($(TargetDir), 'ref', $(TargetFileName)))</TargetRefPath>
 
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>

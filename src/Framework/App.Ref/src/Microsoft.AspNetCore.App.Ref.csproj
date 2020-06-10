@@ -7,6 +7,7 @@
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+
     <!-- This is a reference package and does not include any dependencies. -->
     <!-- We also disable warnings about package downgrades, because we intentionally reference lower versions of certain packages -->
     <NoWarn>$(NoWarn);NU5128;NU1605</NoWarn>
@@ -126,19 +127,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
-          Condition="'%(ReferencePathWithRefAssemblies.IsReferenceAssembly)' != 'false'"
           Exclude="
             @(_ReferencedExtensionsRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Security.Cryptography.Pkcs'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Drawing.Common'));
-            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Win32.SystemEvents'));
-            @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Win32.SystemEvents'));" />
 
       <AspNetCoreReferenceAssemblyPath
           Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName)%(Extension)')" />
 
-      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).xml')"
+          Condition="Exists('%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
@@ -159,7 +159,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- Pin version for extensions references -->
       <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftExtensionsInternalTransportPackageVersion)')" />
 
-      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(AspNetCoreReferenceAssemblyPath.IsReferenceAssembly)' == 'true' " />
+      <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
     </ItemGroup>
 
     <WriteLinesToFile
