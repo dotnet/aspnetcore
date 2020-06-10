@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public override void Complete(Exception ex) { }
+        
+        public override Task CompleteAsync(Exception exception)=>Task.CompletedTask;
 
         public override void CancelPendingRead() { }
     }
