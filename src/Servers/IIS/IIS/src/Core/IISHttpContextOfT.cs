@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public override async Task<bool> ProcessRequestAsync()
         {
-            InitializeContext();
-
-            var context = default(TContext);
             var success = true;
 
             try
             {
+                InitializeContext();
+
+                var context = default(TContext);
                 context = _application.CreateContext(this);
 
                 await _application.ProcessRequestAsync(context);

@@ -9,17 +9,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderEncoding
     {
-        private static Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
+        private static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 
         internal static unsafe string GetString(byte* pBytes, int byteCount, bool useLatin1)
         {
             if (useLatin1)
             {
-                return StringUtilities.GetLatin1StringNonNullCharacters(new Span<byte>(pBytes, byteCount));
+                return new Span<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
             }
             else
             {
-                return StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(new Span<byte>(pBytes, byteCount), Encoding);
+                return new Span<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
             }
         }
 
