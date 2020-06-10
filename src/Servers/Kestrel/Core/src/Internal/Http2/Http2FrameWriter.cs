@@ -109,6 +109,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public Task CompleteAsync()
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
+                _completed = true;
+                _connectionOutputFlowControl.Abort();
+                _outputWriter.Abort();
+            }
+
+            return Task.CompletedTask;
+        }
+
         public void Abort(ConnectionAbortedException error)
         {
             lock (_writeLock)
@@ -133,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     return default;
                 }
-                
+
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
 
