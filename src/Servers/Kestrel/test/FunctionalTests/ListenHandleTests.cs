@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -42,6 +44,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 await server.StopAsync();
             }
+        }
+
+        [ConditionalFact]
+        public async Task CanListenToOpenTcpSocketHandleWithOwnsHandleFalse()
+        {
+            using var parent = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            parent.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+
+            var endpoint = new FileHandleEndPoint((ulong)parent.Handle, FileHandleType.Tcp, ownsHandle: false);
+
+            async Task BindHandleAsync()
+            {
+                using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(LoggerFactory),
+                    new ListenOptions(endpoint)))
+                {
+                    using (var connection = new TestConnection(((IPEndPoint)parent.LocalEndPoint).Port))
+                    {
+                        await connection.SendEmptyGet();
+
+                        await connection.Receive(
+                            "HTTP/1.1 200 OK",
+                            $"Date: {server.Context.DateHeaderValue}",
+                            "Content-Length: 0",
+                            "",
+                            "");
+                    }
+                    await server.StopAsync();
+                }
+            }
+
+#if LIBUV
+            await Assert.ThrowsAsync<NotSupportedException>(() => BindHandleAsync());
+#else
+            // Bind twice with the same handle to prove the parent handle was not closed
+            for (int i = 0; i < 2; i++)
+            {
+                await BindHandleAsync();
+            }
+#endif
         }
     }
 }
