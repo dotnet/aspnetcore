@@ -13,6 +13,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class StringUtilities
     {
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = span)
+            {
+                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    if (span.IndexOf((byte)0) != -1)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    try
+                    {
+                        resultString = defaultEncoding.GetString(buffer, span.Length);
+                    }
+                    catch (DecoderFallbackException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+
+            return resultString;
+        }
+
+        public static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = span)
+            {
+                // This returns false if there are any null (0 byte) characters in the string.
+                if (!TryGetLatin1String(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    throw new InvalidOperationException();
+                }
+            }
+
+            return resultString;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {

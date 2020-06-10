@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     {
         private const int AlignmentPadding = 8;
         private IntPtr _originalBufferAddress;
+        private bool _useLatin1;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
         private byte[] _backingBuffer;
         private int _bufferAlignment;
@@ -39,8 +40,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         // To be used by IIS Integration.
-        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request)
+        internal NativeRequestContext(HttpApiTypes.HTTP_REQUEST* request, bool useLatin1)
         {
+            _useLatin1 = useLatin1;
             _nativeRequest = request;
             _bufferAlignment = 0;
             _permanentlyPinned = true;
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else if (verb == HttpApiTypes.HTTP_VERB.HttpVerbUnknown && NativeRequest->pUnknownVerb != null)
             {
-                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength);
+                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, _useLatin1);
             }
 
             return null;
@@ -291,7 +293,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             // pRawValue will point to empty string ("\0")
             if (pKnownHeader->RawValueLength > 0)
             {
-                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength);
+                value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength, _useLatin1);
             }
 
             return value;
@@ -329,11 +331,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     // pRawValue will be null.
                     if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
                     {
-                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength);
+                        var headerName = HeaderEncoding.GetString(pUnknownHeader->pName + fixup, pUnknownHeader->NameLength, _useLatin1);
                         string headerValue;
                         if (pUnknownHeader->pRawValue != null && pUnknownHeader->RawValueLength > 0)
                         {
-                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength);
+                            headerValue = HeaderEncoding.GetString(pUnknownHeader->pRawValue + fixup, pUnknownHeader->RawValueLength, _useLatin1);
                         }
                         else
                         {
