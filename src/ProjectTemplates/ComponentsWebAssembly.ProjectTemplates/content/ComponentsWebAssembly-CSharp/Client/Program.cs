@@ -25,13 +25,13 @@ namespace ComponentsWebAssembly_CSharp
             builder.RootComponents.Add<App>("app");
 
 #if (!Hosted || NoAuth)
-            builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
             builder.Services.AddHttpClient("ComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
             // Supply HttpClient instances that include access tokens when making requests to the server project
-            builder.Services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ComponentsWebAssembly_CSharp.ServerAPI"));
+            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ComponentsWebAssembly_CSharp.ServerAPI"));
 #endif
 #if(!NoAuth)
 
