@@ -26,7 +26,8 @@
           PrivateAssets="All"
           IsImplicitlyDefined="true"
           ReferenceOutputAssembly="false"
-          SkipGetTargetFrameworkProperties="true" />
+          SkipGetTargetFrameworkProperties="true"
+          UndefineProperties="TargetFramework" />
       </ItemGroup>
 
       <PropertyGroup>
