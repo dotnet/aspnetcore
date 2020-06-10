@@ -89,7 +89,8 @@ export class WebAssemblyResourceLoader {
     try {
       cachedResponse = await cache.match(cacheKey);
     } catch {
-      // Be tolerant to failures reading from the cache.
+      // Be tolerant to errors reading from the cache. This is a guard for https://bugs.chromium.org/p/chromium/issues/detail?id=968444 where
+      // chromium browsers may sometimes throw when working with the cache.
     }
 
     if (cachedResponse) {
@@ -142,15 +143,18 @@ export class WebAssemblyResourceLoader {
 
     // Add to cache as a custom response object so we can track extra data such as responseBytes
     // We can't rely on the server sending content-length (ASP.NET Core doesn't by default)
+    const responseToCache = new Response(responseData, {
+      headers: {
+        'content-type': response.headers.get('content-type') || '',
+        'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
+      }
+    });
+
     try {
-      await cache.put(cacheKey, new Response(responseData, {
-        headers: {
-          'content-type': response.headers.get('content-type') || '',
-          'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
-        }
-      }));
+      await cache.put(cacheKey, responseToCache);
     } catch {
-      // Be tolerant to errors writing to the cache.
+      // Be tolerant to errors writing to the cache. This is a guard for https://bugs.chromium.org/p/chromium/issues/detail?id=968444 where
+      // chromium browsers may sometimes throw when performing cache operations.
     }
   }
 }
