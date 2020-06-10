@@ -56,12 +56,16 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Mvc.Core;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.17' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.18' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.Mvc.Formatters.Json;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.20' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.19' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
