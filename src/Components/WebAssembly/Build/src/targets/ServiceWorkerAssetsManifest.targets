@@ -163,7 +163,7 @@
 
     <WriteLinesToFile
       File="$(_CombinedHashIntermediatePath)"
-      Lines="@(_ServiceWorkerAssetsManifestItemWithHash->'%(FileHash)')"
+      Lines="@(_ServiceWorkerAssetsManifestItemWithHash->'%(Integrity)')"
       WriteOnlyWhenDifferent="true"
       Overwrite="true" />
 
