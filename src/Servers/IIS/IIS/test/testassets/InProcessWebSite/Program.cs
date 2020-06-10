@@ -199,9 +199,7 @@ namespace TestSite
                     factory.AddConsole();
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
-                .UseKestrel()
                 .UseIIS()
-                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -28,13 +29,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var client = new HttpClient(new LoggingHandler(new WinHttpHandler(), deploymentResult.Logger));
+            var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "/Latin1");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
             requestMessage.Headers.Add("foo", "£");
 
-            var result = await deploymentResult.HttpClient.SendAsync(requestMessage);
-            Assert.Equal(HttpStatusCode.RequestEntityTooLarge, result.StatusCode);
+            var result = await client.SendAsync(requestMessage);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
     }
 }
