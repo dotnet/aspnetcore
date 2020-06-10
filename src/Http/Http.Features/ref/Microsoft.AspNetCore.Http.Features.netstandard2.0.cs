@@ -6,12 +6,12 @@ namespace Microsoft.AspNetCore.Http
     public partial class CookieOptions
     {
         public CookieOptions() { }
-        public string Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Domain { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.DateTimeOffset? Expires { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool HttpOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsEssential { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.TimeSpan? MaxAge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.SameSiteMode SameSite { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool Secure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Http
     public partial class WebSocketAcceptContext
     {
         public WebSocketAcceptContext() { }
-        public virtual string SubProtocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual string? SubProtocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Http.Features
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public FeatureCollection() { }
         public FeatureCollection(Microsoft.AspNetCore.Http.Features.IFeatureCollection defaults) { }
         public bool IsReadOnly { get { throw null; } }
-        public object this[System.Type key] { get { throw null; } set { } }
+        public object? this[System.Type key] { get { throw null; } set { } }
         public virtual int Revision { get { throw null; } }
         public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>> GetEnumerator() { throw null; }
         public TFeature Get<TFeature>() { throw null; }
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IFeatureCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         bool IsReadOnly { get; }
-        object this[System.Type key] { get; set; }
+        object? this[System.Type key] { get; set; }
         int Revision { get; }
         TFeature Get<TFeature>();
         void Set<TFeature>(TFeature instance);

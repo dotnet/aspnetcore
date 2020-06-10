@@ -4,6 +4,7 @@
     <Description>ASP.NET Core design time hosting infrastructure for the Razor view engine.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
+    <PublishWindowsPdb>true</PublishWindowsPdb>
     <IsShipping>false</IsShipping>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>

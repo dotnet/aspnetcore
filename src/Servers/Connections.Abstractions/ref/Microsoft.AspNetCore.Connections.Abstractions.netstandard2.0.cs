@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Connections
     {
         protected BaseConnectionContext() { }
         public virtual System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public abstract string ConnectionId { get; set; }
+        public abstract string? ConnectionId { get; set; }
         public abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get; }
-        public abstract System.Collections.Generic.IDictionary<object, object> Items { get; set; }
-        public virtual System.Net.EndPoint LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public virtual System.Net.EndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public abstract System.Collections.Generic.IDictionary<object, object?>? Items { get; set; }
+        public virtual System.Net.EndPoint? LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual System.Net.EndPoint? RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public abstract void Abort();
         public abstract void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason);
         public virtual System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Connections
     public abstract partial class ConnectionContext : Microsoft.AspNetCore.Connections.BaseConnectionContext, System.IAsyncDisposable
     {
         protected ConnectionContext() { }
-        public abstract System.IO.Pipelines.IDuplexPipe Transport { get; set; }
+        public abstract System.IO.Pipelines.IDuplexPipe? Transport { get; set; }
         public override void Abort() { }
         public override void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
     }
@@ -53,26 +53,26 @@ namespace Microsoft.AspNetCore.Connections
         protected ConnectionHandler() { }
         public abstract System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection);
     }
-    public partial class ConnectionItems : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object>>, System.Collections.Generic.IDictionary<object, object>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<object, object>>, System.Collections.IEnumerable
+    public partial class ConnectionItems : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>, System.Collections.Generic.IDictionary<object, object?>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<object, object?>>, System.Collections.IEnumerable
     {
         public ConnectionItems() { }
-        public ConnectionItems(System.Collections.Generic.IDictionary<object, object> items) { }
-        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Count { get { throw null; } }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.IsReadOnly { get { throw null; } }
-        object System.Collections.Generic.IDictionary<System.Object,System.Object>.this[object key] { get { throw null; } set { } }
-        System.Collections.Generic.ICollection<object> System.Collections.Generic.IDictionary<System.Object,System.Object>.Keys { get { throw null; } }
-        System.Collections.Generic.ICollection<object> System.Collections.Generic.IDictionary<System.Object,System.Object>.Values { get { throw null; } }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Add(System.Collections.Generic.KeyValuePair<object, object> item) { }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Clear() { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Contains(System.Collections.Generic.KeyValuePair<object, object> item) { throw null; }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.CopyTo(System.Collections.Generic.KeyValuePair<object, object>[] array, int arrayIndex) { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Remove(System.Collections.Generic.KeyValuePair<object, object> item) { throw null; }
-        void System.Collections.Generic.IDictionary<System.Object,System.Object>.Add(object key, object value) { }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.ContainsKey(object key) { throw null; }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.Remove(object key) { throw null; }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.TryGetValue(object key, out object value) { throw null; }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<object, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.GetEnumerator() { throw null; }
+        public ConnectionItems(System.Collections.Generic.IDictionary<object, object?> items) { }
+        public System.Collections.Generic.IDictionary<object, object?> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.Count { get { throw null; } }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.IsReadOnly { get { throw null; } }
+        object? System.Collections.Generic.IDictionary<object, object?>.this[object key] { get { throw null; } set { } }
+        System.Collections.Generic.ICollection<object> System.Collections.Generic.IDictionary<object, object?>.Keys { get { throw null; } }
+        System.Collections.Generic.ICollection<object?> System.Collections.Generic.IDictionary<object, object?>.Values { get { throw null; } }
+        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.Add(System.Collections.Generic.KeyValuePair<object, object?> item) { }
+        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.Clear() { }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.Contains(System.Collections.Generic.KeyValuePair<object, object?> item) { throw null; }
+        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.CopyTo(System.Collections.Generic.KeyValuePair<object, object>[] array, int arrayIndex) { }
+        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object?>>.Remove(System.Collections.Generic.KeyValuePair<object, object?> item) { throw null; }
+        void System.Collections.Generic.IDictionary<object, object?>.Add(object key, object? value) { }
+        bool System.Collections.Generic.IDictionary<object, object?>.ContainsKey(object key) { throw null; }
+        bool System.Collections.Generic.IDictionary<object, object?>.Remove(object key) { throw null; }
+        bool System.Collections.Generic.IDictionary<object, object?>.TryGetValue(object key, out object? value) { throw null; }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<object, object?>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<object, object?>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
     public partial class ConnectionResetException : System.IO.IOException
@@ -85,15 +85,15 @@ namespace Microsoft.AspNetCore.Connections
         public DefaultConnectionContext() { }
         public DefaultConnectionContext(string id) { }
         public DefaultConnectionContext(string id, System.IO.Pipelines.IDuplexPipe transport, System.IO.Pipelines.IDuplexPipe application) { }
-        public System.IO.Pipelines.IDuplexPipe Application { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.IO.Pipelines.IDuplexPipe? Application { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.CancellationToken ConnectionClosed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public override string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public override string? ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public override System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public override System.Net.EndPoint LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public override System.Net.EndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public override System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public override System.Collections.Generic.IDictionary<object, object?>? Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public override System.Net.EndPoint? LocalEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public override System.Net.EndPoint? RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public override System.IO.Pipelines.IDuplexPipe? Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Security.Claims.ClaimsPrincipal? User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
         public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
     }
@@ -137,17 +137,17 @@ namespace Microsoft.AspNetCore.Connections
     }
     public partial interface IMultiplexedConnectionFactory
     {
-        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> ConnectAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> ConnectAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial interface IMultiplexedConnectionListener : System.IAsyncDisposable
     {
         System.Net.EndPoint EndPoint { get; }
-        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> AcceptAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext> AcceptAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         System.Threading.Tasks.ValueTask UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial interface IMultiplexedConnectionListenerFactory
     {
-        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener> BindAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener> BindAsync(System.Net.EndPoint endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial class MultiplexedConnectionBuilder : Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder
     {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Connections
     {
         protected MultiplexedConnectionContext() { }
         public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public delegate System.Threading.Tasks.Task MultiplexedConnectionDelegate(Microsoft.AspNetCore.Connections.MultiplexedConnectionContext connection);
     [System.FlagsAttribute]
@@ -184,8 +184,8 @@ namespace Microsoft.AspNetCore.Connections.Features
     }
     public partial interface IConnectionEndPointFeature
     {
-        System.Net.EndPoint LocalEndPoint { get; set; }
-        System.Net.EndPoint RemoteEndPoint { get; set; }
+        System.Net.EndPoint? LocalEndPoint { get; set; }
+        System.Net.EndPoint? RemoteEndPoint { get; set; }
     }
     public partial interface IConnectionHeartbeatFeature
     {
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Connections.Features
     }
     public partial interface IConnectionIdFeature
     {
-        string ConnectionId { get; set; }
+        string? ConnectionId { get; set; }
     }
     public partial interface IConnectionInherentKeepAliveFeature
     {
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Connections.Features
     }
     public partial interface IConnectionItemsFeature
     {
-        System.Collections.Generic.IDictionary<object, object> Items { get; set; }
+        System.Collections.Generic.IDictionary<object, object?>? Items { get; set; }
     }
     public partial interface IConnectionLifetimeFeature
     {
@@ -215,11 +215,11 @@ namespace Microsoft.AspNetCore.Connections.Features
     }
     public partial interface IConnectionTransportFeature
     {
-        System.IO.Pipelines.IDuplexPipe Transport { get; set; }
+        System.IO.Pipelines.IDuplexPipe? Transport { get; set; }
     }
     public partial interface IConnectionUserFeature
     {
-        System.Security.Claims.ClaimsPrincipal User { get; set; }
+        System.Security.Claims.ClaimsPrincipal? User { get; set; }
     }
     public partial interface IMemoryPoolFeature
     {

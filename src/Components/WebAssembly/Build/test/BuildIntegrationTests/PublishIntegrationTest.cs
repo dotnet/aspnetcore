@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Build;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
@@ -284,6 +285,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_WithLinkOnBuildTrue_Works()
         {
             // Arrange

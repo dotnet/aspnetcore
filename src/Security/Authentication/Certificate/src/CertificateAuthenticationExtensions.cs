@@ -87,5 +87,23 @@ namespace Microsoft.Extensions.DependencyInjection
             string authenticationScheme,
             Action<CertificateAuthenticationOptions, TService> configureOptions) where TService : class
             => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler, TService>(authenticationScheme, configureOptions);
+
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="configureOptions"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
+        public static AuthenticationBuilder AddCertificateCache(
+            this AuthenticationBuilder builder,
+            Action<CertificateValidationCacheOptions> configureOptions = null)
+        {
+            builder.Services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
+            if (configureOptions != null)
+            {
+                builder.Services.Configure(configureOptions);
+            }
+            return builder;
+        }
     }
 }

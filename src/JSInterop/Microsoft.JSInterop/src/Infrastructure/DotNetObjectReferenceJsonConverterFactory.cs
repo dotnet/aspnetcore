@@ -27,7 +27,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var instanceType = typeToConvert.GetGenericArguments()[0];
             var converterType = typeof(DotNetObjectReferenceJsonConverter<>).MakeGenericType(instanceType);
 
-            return (JsonConverter)Activator.CreateInstance(converterType, JSRuntime);
+            return (JsonConverter)Activator.CreateInstance(converterType, JSRuntime)!;
         }
     }
 }

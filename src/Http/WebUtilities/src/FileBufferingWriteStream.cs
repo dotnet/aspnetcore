@@ -4,9 +4,8 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Pipelines;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public FileBufferingWriteStream(
             int memoryThreshold = DefaultMemoryThreshold,
             long? bufferLimit = null,
-            Func<string> tempFileDirectoryAccessor = null)
+            Func<string>? tempFileDirectoryAccessor = null)
         {
             if (memoryThreshold < 0)
             {
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         internal PagedByteBuffer PagedByteBuffer { get; }
 
-        internal FileStream FileStream { get; private set; }
+        internal FileStream? FileStream { get; private set; }
 
         internal bool Disposed { get; private set; }
 
@@ -225,6 +224,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        [MemberNotNull(nameof(FileStream))]
         private void EnsureFileStream()
         {
             if (FileStream == null)
