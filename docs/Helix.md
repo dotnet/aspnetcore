@@ -16,9 +16,22 @@ To run Helix tests for one particular test project:
 
 This will restore, and then publish all the test project including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assembly on the helix machine(s), and upload the job to helix.
 
+## Overview of the helix usage in our pipelines
+
+Required queues: Windows10, OSX, Ubuntu1604 
+Full queue matrix:
+
+aspnetcore-ci runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
+aspnetcore-quarantined-tests runs only quarantined tests against the required queues only on master every 4 hours.
+aspnetcore-helix-matrix runs non quarantined tests against all queues twice a day only on master.
+
 ## How do I look at the results of a helix run on Azure Pipelines?
 
-There's a link embedded in the build.cmd log of the helix target on Azure Pipelines, near the bottom right that will look something like this:
+The easiest way to look a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachements to the relevant console logs.
+
+You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname> which will show you more urls you can drill into for more info. 
+
+There's also a link embedded in the build.cmd log of the helix target on Azure Pipelines, near the bottom right that will look something like this:
 
 ``` text
 2019-02-07T21:55:48.1516089Z   Results will be available from https://mc.dot.net/#/user/aspnetcore/pr~2Faspnet~2Faspnetcore/ci/20190207.34
@@ -35,8 +48,6 @@ There's a link embedded in the build.cmd log of the helix target on Azure Pipeli
 ```
 
 The link will take you to an overview of all the tests with clickable links to the logs and each run broken down by queue.
-
-All of the helix runs for aspnetcore can be found here <https://mc.dot.net/#/user/aspnetcore/builds>.
 
 ## What do I do if a test fails?
 
