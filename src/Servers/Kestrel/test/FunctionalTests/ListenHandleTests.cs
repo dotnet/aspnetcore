@@ -45,44 +45,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await server.StopAsync();
             }
         }
-
-        [ConditionalFact]
-        public async Task CanListenToOpenTcpSocketHandleWithOwnsHandleFalse()
-        {
-            using var parent = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            parent.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-
-            var endpoint = new FileHandleEndPoint((ulong)parent.Handle, FileHandleType.Tcp, ownsHandle: false);
-
-            async Task BindHandleAsync()
-            {
-                using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(LoggerFactory),
-                    new ListenOptions(endpoint)))
-                {
-                    using (var connection = new TestConnection(((IPEndPoint)parent.LocalEndPoint).Port))
-                    {
-                        await connection.SendEmptyGet();
-
-                        await connection.Receive(
-                            "HTTP/1.1 200 OK",
-                            $"Date: {server.Context.DateHeaderValue}",
-                            "Content-Length: 0",
-                            "",
-                            "");
-                    }
-                    await server.StopAsync();
-                }
-            }
-
-#if LIBUV
-            await Assert.ThrowsAsync<NotSupportedException>(() => BindHandleAsync());
-#else
-            // Bind twice with the same handle to prove the parent handle was not closed
-            for (int i = 0; i < 2; i++)
-            {
-                await BindHandleAsync();
-            }
-#endif
-        }
     }
 }

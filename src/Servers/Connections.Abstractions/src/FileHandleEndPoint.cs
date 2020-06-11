@@ -8,16 +8,10 @@ namespace Microsoft.AspNetCore.Connections
 {
     public class FileHandleEndPoint : EndPoint
     {
-        public FileHandleEndPoint(ulong fileHandle, FileHandleType fileHandleType) :
-            this(fileHandle, fileHandleType, ownsHandle: true)
-        {
-        }
-
-        public FileHandleEndPoint(ulong fileHandle, FileHandleType fileHandleType, bool ownsHandle)
+        public FileHandleEndPoint(ulong fileHandle, FileHandleType fileHandleType)
         {
             FileHandle = fileHandle;
             FileHandleType = fileHandleType;
-            OwnsHandle = ownsHandle;
 
             switch (fileHandleType)
             {
@@ -30,7 +24,6 @@ namespace Microsoft.AspNetCore.Connections
             }
         }
 
-        public bool OwnsHandle { get; }
         public ulong FileHandle { get; }
         public FileHandleType FileHandleType { get; }
     }

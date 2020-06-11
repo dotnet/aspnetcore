@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             switch (EndPoint)
             {
                 case FileHandleEndPoint fileHandle:
-                    _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: fileHandle.OwnsHandle);
+                    _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true);
                     listenSocket = new Socket(_socketHandle);
                     break;
                 case UnixDomainSocketEndPoint unix:
@@ -153,6 +153,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _listenSocket?.Dispose();
+
+            _socketHandle?.Dispose();
             return default;
         }
 
