@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRootOverride)' != ''">$(RazorSdkDirectoryRootOverride)</RazorSdkDirectoryRoot>
+    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRootOverride)' == ''">$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+</Project>

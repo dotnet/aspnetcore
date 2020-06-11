@@ -79,6 +79,13 @@ namespace Templates.Test.Helpers
                 argString += $" --no-https";
             }
 
+            var razorSdkDirectoryRootOverride = GetAssemblyMetadata("Test.RazorSdkDirectoryRootOverride");
+
+            if (!string.IsNullOrEmpty(razorSdkDirectoryRootOverride))
+            {
+                argString += $" /p:RazorSdkDirectoryRootOverride={razorSdkDirectoryRootOverride}";
+            }
+
             if (args != null)
             {
                 foreach (var arg in args)
