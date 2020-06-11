@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return OnConsumeAsync();
         }
 
-        public virtual Task StopAsync()
+        public virtual ValueTask StopAsync()
         {
             TryStop();
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
-        protected virtual Task OnStopAsync() => Task.CompletedTask;
+        protected virtual ValueTask OnStopAsync() => new ValueTask();
 
         public virtual void Reset()
         {
