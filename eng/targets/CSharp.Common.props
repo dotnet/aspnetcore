@@ -27,7 +27,7 @@
           IsImplicitlyDefined="true"
           ReferenceOutputAssembly="false"
           SkipGetTargetFrameworkProperties="true"
-          UndefineProperties="TargetFramework" />
+          UndefineProperties="TargetFramework;TargetFrameworks" />
       </ItemGroup>
 
       <PropertyGroup>
