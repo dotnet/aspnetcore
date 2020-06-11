@@ -124,6 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
+                // Ensure the file buffer stream is always disposed at the end of a request.
+                request.HttpContext.Response.RegisterForDispose(readStream);
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
