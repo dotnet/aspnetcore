@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.ObjectPool
     }
     public static partial class ObjectPool
     {
-        public static Microsoft.Extensions.ObjectPool.ObjectPool<T> Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> policy = null) where T : class, new() { throw null; }
+        public static Microsoft.Extensions.ObjectPool.ObjectPool<T> Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>? policy = null) where T : class, new() { throw null; }
     }
     public abstract partial class ObjectPoolProvider
     {

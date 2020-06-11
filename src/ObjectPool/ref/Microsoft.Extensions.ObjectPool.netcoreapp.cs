@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.ObjectPool
     {
         public DefaultObjectPool(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> policy) { }
         public DefaultObjectPool(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> policy, int maximumRetained) { }
+        [return: System.Diagnostics.CodeAnalysis.NotNullAttribute]
         public override T Get() { throw null; }
         public override void Return(T obj) { }
     }
@@ -40,7 +41,7 @@ namespace Microsoft.Extensions.ObjectPool
     }
     public static partial class ObjectPool
     {
-        public static Microsoft.Extensions.ObjectPool.ObjectPool<T> Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> policy = null) where T : class, new() { throw null; }
+        public static Microsoft.Extensions.ObjectPool.ObjectPool<T> Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>? policy = null) where T : class, new() { throw null; }
     }
     public abstract partial class ObjectPoolProvider
     {
