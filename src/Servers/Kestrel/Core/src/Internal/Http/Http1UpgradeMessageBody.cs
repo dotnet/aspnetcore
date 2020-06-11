@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _completed = true;
         }
 
-        public override Task CompleteAsync(Exception exception)
+        public override ValueTask CompleteAsync(Exception exception)
         {
             _context.ReportApplicationError(exception);
             _completed = true;
@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        public override Task StopAsync()
+        public override ValueTask StopAsync()
         {
-            return Task.CompletedTask;
+            return new ValueTask();
         }
 
         public override bool TryReadInternal(out ReadResult readResult)
