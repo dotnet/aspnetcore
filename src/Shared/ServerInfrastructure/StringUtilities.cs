@@ -37,12 +37,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                     try
                     {
-                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                        resultString = defaultEncoding.GetString(buffer, span.Length);
                     }
                     catch (DecoderFallbackException)
                     {
                         throw new InvalidOperationException();
-                    }                }
+                    }
+                }
             }
 
             return resultString;
@@ -530,7 +531,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
                 return !value.Contains('\0');
             }
-            catch (DecoderFallbackException) {
+            catch (DecoderFallbackException)
+            {
                 return false;
             }
         }

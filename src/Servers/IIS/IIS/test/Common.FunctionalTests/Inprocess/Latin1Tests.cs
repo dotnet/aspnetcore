@@ -49,16 +49,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}InvalidCharacter");
             requestMessage.Headers.Add("foo", "£");
 
             var result = await client.SendAsync(requestMessage);
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
 
         [ConditionalFact]
         [RequiresNewHandler]
-        public async Task Latin1InvalidCharacters_HttpSysThrows()
+        public async Task Latin1InvalidCharacters_HttpSysRejects()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");

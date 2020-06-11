@@ -1012,5 +1012,12 @@ namespace TestSite
             Assert.Equal("£", value);
             return Task.CompletedTask;
         }
+
+        public Task InvalidCharacter(HttpContext context)
+        {
+            var value = context.Request.Headers["foo"];
+            Assert.Equal("�", value);
+            return Task.CompletedTask;
+        }
     }
 }
