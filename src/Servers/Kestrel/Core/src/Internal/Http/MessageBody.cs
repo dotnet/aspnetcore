@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Complete(exception);
             return new ValueTask();
-        };
+        }
 
         public abstract void CancelPendingRead();
 
