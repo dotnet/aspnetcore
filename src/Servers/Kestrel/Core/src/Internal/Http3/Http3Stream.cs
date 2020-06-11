@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             OnTrailersComplete();
-            retrun RequestBodyPipe.Writer.CompleteAsync();
+            return RequestBodyPipe.Writer.CompleteAsync();
         }
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
