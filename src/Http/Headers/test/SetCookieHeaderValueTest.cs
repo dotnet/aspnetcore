@@ -417,11 +417,8 @@ namespace Microsoft.Net.Http.Headers
             string cookieHeaderValue1 = "cookiename=value; extensionname1=value; extensionname2=value;";
             string cookieHeaderValue2 = "cookiename=value; extensionname2=value; extensionname1=value;";
 
-            SetCookieHeaderValue setCookieHeaderValue1;
-            SetCookieHeaderValue setCookieHeaderValue2;
-
-            SetCookieHeaderValue.TryParse(cookieHeaderValue1, out setCookieHeaderValue1);
-            SetCookieHeaderValue.TryParse(cookieHeaderValue2, out setCookieHeaderValue2);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue1, out var setCookieHeaderValue1);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue2, out var setCookieHeaderValue2);
 
             Assert.Equal(setCookieHeaderValue1, setCookieHeaderValue2);
         }
