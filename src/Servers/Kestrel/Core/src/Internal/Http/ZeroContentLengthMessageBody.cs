@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task ConsumeAsync() => Task.CompletedTask;
 
-        public override Task StopAsync() => Task.CompletedTask;
+        public override ValueTask StopAsync() => new ValueTask();
 
         public override void AdvanceTo(SequencePosition consumed) { }
 
