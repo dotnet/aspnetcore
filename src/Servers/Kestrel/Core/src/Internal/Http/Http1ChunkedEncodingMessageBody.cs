@@ -193,11 +193,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected override Task OnStopAsync()
+        protected override ValueTask OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return Task.CompletedTask;
+                return new ValueTask();
             }
 
             // call complete here on the reader
@@ -208,14 +208,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // At this point both the request body pipe reader and writer should be completed.
                 _requestBodyPipe.Reset();
-                return Task.CompletedTask;
+                return new ValueTask();
             }
 
             // Should I call complete here?
             return StopAsyncAwaited();
         }
 
-        private async Task StopAsyncAwaited()
+        private async ValueTask StopAsyncAwaited()
         {
             _canceled = true;
             _context.Input.CancelPendingRead();
