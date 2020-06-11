@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // the new size.
                 _frameWriter.UpdateMaxHeaderTableSize(Math.Min(_clientSettings.HeaderTableSize, (uint)Limits.Http2.HeaderTableSize));
 
-                return ackTask.AsTask();
+                return ackTask.GetAsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
