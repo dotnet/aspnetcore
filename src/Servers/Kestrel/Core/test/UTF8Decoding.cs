@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Xunit;
 
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var byteRange = Enumerable.Range(1, length).Select(x => (byte)x).ToArray();
                     Array.Copy(bytes, 0, byteRange, position, bytes.Length);
 
-                    Assert.Throws<InvalidOperationException>(() => byteRange.AsSpan().GetRequestHeaderStringNonNullCharacters(useLatin1: false));
+                    Assert.Throws<DecoderFallbackException>(() => byteRange.AsSpan().GetRequestHeaderStringNonNullCharacters(useLatin1: false));
                 }
             }
         }

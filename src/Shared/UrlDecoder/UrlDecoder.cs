@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (byte1 == 0)
             {
-                throw new InvalidOperationException("The path contains null characters.");
+                throw new DecoderFallbackException("The path contains null characters.");
             }
 
             if (byte1 <= 0x7F)

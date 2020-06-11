@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     headers.Reset();
 
-                    Assert.Throws<InvalidOperationException>(() =>
+                    Assert.Throws<DecoderFallbackException>(() =>
                     {
                         var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
                         var nextSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
@@ -555,7 +555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 headers.Reset();
 
-                Assert.Throws<InvalidOperationException>(() =>
+                Assert.Throws<DecoderFallbackException>(() =>
                 {
                     var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
                     var valueSpan = Encoding.ASCII.GetBytes(valueString).AsSpan();
