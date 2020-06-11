@@ -28,8 +28,6 @@ namespace Microsoft.Extensions.Localization
     }
     public partial class ResourceManagerStringLocalizer : Microsoft.Extensions.Localization.IStringLocalizer
     {
-        public ResourceManagerStringLocalizer(System.Resources.ResourceManager resourceManager, Microsoft.Extensions.Localization.Internal.AssemblyWrapper resourceAssemblyWrapper, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, Microsoft.Extensions.Logging.ILogger logger) { }
-        public ResourceManagerStringLocalizer(System.Resources.ResourceManager resourceManager, Microsoft.Extensions.Localization.Internal.IResourceStringProvider resourceStringProvider, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, Microsoft.Extensions.Logging.ILogger logger) { }
         public ResourceManagerStringLocalizer(System.Resources.ResourceManager resourceManager, System.Reflection.Assembly resourceAssembly, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, Microsoft.Extensions.Logging.ILogger logger) { }
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
         public virtual Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
@@ -60,24 +58,5 @@ namespace Microsoft.Extensions.Localization
     {
         public RootNamespaceAttribute(string rootNamespace) { }
         public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-    }
-}
-namespace Microsoft.Extensions.Localization.Internal
-{
-    public partial class AssemblyWrapper
-    {
-        public AssemblyWrapper(System.Reflection.Assembly assembly) { }
-        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public virtual string FullName { get { throw null; } }
-        public virtual System.IO.Stream? GetManifestResourceStream(string name) { throw null; }
-    }
-    public partial interface IResourceStringProvider
-    {
-        System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing);
-    }
-    public partial class ResourceManagerStringProvider : Microsoft.Extensions.Localization.Internal.IResourceStringProvider
-    {
-        public ResourceManagerStringProvider(Microsoft.Extensions.Localization.IResourceNamesCache resourceCache, System.Resources.ResourceManager resourceManager, System.Reflection.Assembly assembly, string baseName) { }
-        public System.Collections.Generic.IList<string>? GetAllResourceStrings(System.Globalization.CultureInfo culture, bool throwOnMissing) { throw null; }
     }
 }

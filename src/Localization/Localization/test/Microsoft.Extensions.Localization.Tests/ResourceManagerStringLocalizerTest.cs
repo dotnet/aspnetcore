@@ -239,7 +239,7 @@ namespace Microsoft.Extensions.Localization
 
         private ILogger Logger => new TestLoggerFactory(Sink, enabled: true).CreateLogger<ResourceManagerStringLocalizer>();
 
-        public class TestResourceManager : ResourceManager
+        internal class TestResourceManager : ResourceManager
         {
             private AssemblyWrapper _assemblyWrapper;
 
@@ -259,7 +259,7 @@ namespace Microsoft.Extensions.Localization
             }
         }
 
-        public class TestResourceStringProvider : ResourceManagerStringProvider
+        internal class TestResourceStringProvider : ResourceManagerStringProvider
         {
             public TestResourceStringProvider(
                     IResourceNamesCache resourceCache,
@@ -271,7 +271,7 @@ namespace Microsoft.Extensions.Localization
             }
         }
 
-        public class TestAssemblyWrapper : AssemblyWrapper
+        internal class TestAssemblyWrapper : AssemblyWrapper
         {
             public TestAssemblyWrapper()
                 : this(typeof(TestAssemblyWrapper))
