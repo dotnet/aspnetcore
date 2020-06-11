@@ -32,12 +32,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // null characters are considered invalid
                     if (span.IndexOf((byte)0) != -1)
                     {
-                        throw new DecoderFallbackException("Cannot parse UTF8 string will null characters in the string.");
+                        throw new InvalidOperationException();
                     }
 
-                    // Will throw DecoderFallbackException if invalid UTF8.
-                    resultString = defaultEncoding.GetString(buffer, span.Length);
-                }
+                    try
+                    {
+                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                    }
+                    catch (DecoderFallbackException)
+                    {
+                        throw new InvalidOperationException();
+                    }                }
             }
 
             return resultString;
@@ -59,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 if (!TryGetLatin1String(buffer, output, span.Length))
                 {
                     // null characters are considered invalid
-                    throw new DecoderFallbackException($"Cannot parse Latin1 string with null characters in the string.");
+                    throw new InvalidOperationException();
                 }
             }
 

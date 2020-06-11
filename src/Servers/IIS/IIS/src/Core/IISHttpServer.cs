@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             private readonly IISServerOptions _options;
             private readonly IISHttpServer _server;
             private readonly ILogger _logger;
-            private bool _useLatin1;
+            private readonly bool _useLatin1;
 
             public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISServerOptions options, IISHttpServer server, ILogger logger)
             {
