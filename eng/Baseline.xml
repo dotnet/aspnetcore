@@ -8,6 +8,7 @@ Update this list when preparing for a new patch.
   <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.3" />
   <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.3" />
   <Package Id="dotnet-sql-cache" Version="3.1.5" />
+  <Package Id="Microsoft.Authentication.WebAssembly.Msal" Version="3.2.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.1.5" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.1.5" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.5" />

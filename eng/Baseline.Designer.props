@@ -18,6 +18,13 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
     <BaselinePackageVersion>3.1.5</BaselinePackageVersion>
   </PropertyGroup>
+  <!-- Package: Microsoft.Authentication.WebAssembly.Msal-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' ">
+    <BaselinePackageVersion>3.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Authentication.WebAssembly.Msal' AND '$(TargetFramework)' == 'netstandard2.1' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="[3.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ApiAuthorization.IdentityServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' ">
     <BaselinePackageVersion>3.1.5</BaselinePackageVersion>
