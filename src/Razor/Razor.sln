@@ -86,6 +86,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj", "{B3A97984-FC0A-4FBE-93D4-6CA7049252DC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Razor.IntegrationTests", "Microsoft.NET.Sdk.Razor\integrationtests\Microsoft.NET.Sdk.Razor.IntegrationTests.csproj", "{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -200,6 +202,10 @@ Global
 		{B3A97984-FC0A-4FBE-93D4-6CA7049252DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3A97984-FC0A-4FBE-93D4-6CA7049252DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3A97984-FC0A-4FBE-93D4-6CA7049252DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,6 +238,7 @@ Global
 		{C6CAD507-F441-4FA8-AE95-99086B5A245F} = {CFF4CF22-6CCF-41E6-8041-E3CC26ED27BA}
 		{381824E8-40CE-475C-9035-9F36AD34EBB7} = {CFF4CF22-6CCF-41E6-8041-E3CC26ED27BA}
 		{B3A97984-FC0A-4FBE-93D4-6CA7049252DC} = {CFF4CF22-6CCF-41E6-8041-E3CC26ED27BA}
+		{4EA6AAC9-F49B-4933-8009-D1F94B75DEB0} = {433DDF1D-F86A-492E-B448-4F299F56FACA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {779069AC-1F9F-407F-92C7-28507D91D64E}

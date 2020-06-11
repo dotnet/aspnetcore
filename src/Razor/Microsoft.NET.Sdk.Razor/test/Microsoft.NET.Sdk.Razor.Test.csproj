@@ -1,117 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--
-      There's not much value in multi-targeting here, this doesn't run much .NET code, it tests MSBuild.
-
-      This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
-      has netcoreapp dependencies that need to be built first.
-    -->
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-    <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
-    <!-- Copy references locally so that we can use them in the test. -->
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
-
-    <!-- Tests do not work on Helix yet -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.Core" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testassets\PregeneratedPackages</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>ArtifactsLogDir</_Parameter1>
-      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>ProcDumpToolPath</_Parameter1>
-      <_Parameter2>$(ProcDumpPath)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.RepoRoot</_Parameter1>
-      <_Parameter2>$(RepoRoot)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftNetCompilersToolsetPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNetCompilersToolsetPackageVersion)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RazorSdkDirectoryRoot</_Parameter1>
-      <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</_Parameter2>
-    </AssemblyAttribute>
-
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- The test projects rely on these binaries being available -->
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="rzc" />
     <Reference Include="Microsoft.NET.Sdk.Razor" />
-    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
-
-    <!-- We don't need anything in this assembly, we just want to make sure it's built -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" >
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
-    </ProjectReference>
   </ItemGroup>
-
-  <PropertyGroup>
-    <MSBuildLocationFileOutput>$(IntermediateOutputPath)BuildVariables.generated.cs</MSBuildLocationFileOutput>
-  </PropertyGroup>
-
-  <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes">
-    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="&quot;$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe&quot; -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild" ConsoleToMsBuild="true" StandardErrorImportance="high">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
-    </Exec>
-    <Error Condition="'$(OS)' == 'Windows_NT' and '$(_VSInstallDir)'=='' and '$(Test)' == 'true'" Text="Visual Studio not found on Windows." />
-
-    <PropertyGroup>
-      <_DesktopMSBuildPath Condition="'$(OS)' == 'Windows_NT' and Exists('$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe')">$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe</_DesktopMSBuildPath>
-      <_DesktopMSBuildPath Condition="'$(OS)' == 'Windows_NT' and Exists('$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe')">$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_DesktopMSBuildPath>
-    </PropertyGroup>
-
-    <Error Condition="'$(OS)' == 'Windows_NT' and '$(_DesktopMSBuildPath)'=='' and '$(Test)' == 'true'" Text="MSBuild.exe not found on Windows." />
-
-    <ItemGroup>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>DesktopMSBuildPath</_Parameter1>
-        <_Parameter2>$(_DesktopMSBuildPath)</_Parameter2>
-      </AssemblyAttribute>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\..\test\testassets\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-  </Target>
-
-  <Target Name="EnsureLogFolder" AfterTargets="Build">
-    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))" />
-  </Target>
 
 </Project>

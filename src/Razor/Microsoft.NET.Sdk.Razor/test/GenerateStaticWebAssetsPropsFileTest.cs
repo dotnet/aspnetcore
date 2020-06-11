@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // Assert
                 Assert.True(result);
                 var document = File.ReadAllText(file);
-                Assert.Equal(expectedDocument, document);
+                Assert.Equal(expectedDocument, document, ignoreLineEndingDifferences: true);
             }
             finally
             {
