@@ -6,7 +6,6 @@
     <AssemblyName>blazor-devserver</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DevServer</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <StartupObject>Microsoft.AspNetCore.Components.WebAssembly.DevServer.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->

@@ -13,7 +13,6 @@
     <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <!--
       The assembly 'contentFiles\any\any\x64\aspnetcorev2.dll' is intentionally
       not inside the 'lib' folder and hence it won't be added as a reference when

@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
 
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <IsShippingPackage>false</IsShippingPackage>
     <IsPackable>false</IsPackable>

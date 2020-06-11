@@ -7,7 +7,6 @@
 
     <Description>MSBuild tasks and targets for build-time Swagger and OpenApi document generation</Description>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>MSBuild;Swagger;OpenAPI;code generation;Web API;service reference;document generation</PackageTags>

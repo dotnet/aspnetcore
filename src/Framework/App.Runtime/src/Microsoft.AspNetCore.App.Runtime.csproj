@@ -10,7 +10,6 @@
     <IsPackable>true</IsPackable>
     <!-- Do not exclude this project from source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.
