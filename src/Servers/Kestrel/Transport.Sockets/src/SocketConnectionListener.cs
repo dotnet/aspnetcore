@@ -35,24 +35,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = trace;
             _options = options;
             _memoryPool = _options.MemoryPoolFactory();
-            var ioQueueCount = options.IOQueueCount;
 
-            if (ioQueueCount > 0)
-            {
-                _numSchedulers = ioQueueCount;
-                _schedulers = new IOQueue[_numSchedulers];
-
-                for (var i = 0; i < _numSchedulers; i++)
-                {
-                    _schedulers[i] = new IOQueue();
-                }
-            }
-            else
-            {
-                var directScheduler = new PipeScheduler[] { PipeScheduler.ThreadPool };
-                _numSchedulers = directScheduler.Length;
-                _schedulers = directScheduler;
-            }
+            var directScheduler = new PipeScheduler[] { PipeScheduler.Inline };
+            _numSchedulers = directScheduler.Length;
+            _schedulers = directScheduler;
         }
 
         internal void Bind()
