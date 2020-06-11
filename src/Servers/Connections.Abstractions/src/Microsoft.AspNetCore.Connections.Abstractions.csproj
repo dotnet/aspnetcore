@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <Description>Core components of ASP.NET Core networking protocol stack.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
@@ -10,8 +12,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" />
     <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
 </Project>

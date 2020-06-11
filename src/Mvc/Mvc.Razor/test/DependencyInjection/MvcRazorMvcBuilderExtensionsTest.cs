@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -21,12 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = services
-                .AddMvc()
-                .ConfigureApplicationPartManager(manager =>
-                {
-                    manager.ApplicationParts.Add(new TestApplicationPart());
-                });
+
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestApplicationPart());
+
+            var builder = new MvcBuilder(services, manager);
 
             // Act
             builder.AddTagHelpersAsServices();

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplicativo de Servidor Blazor",
+    "description": "Um modelo de projeto para criar um aplicativo Blazor que é executado no lado do servidor de um aplicativo ASP.NET Core. Esse modelo pode ser usado para aplicativos Web com interfaces do usuário completas e dinâmicas."
+  }
+}

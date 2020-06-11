@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
         internal static string GetAssemblyLocation(Assembly assembly)
         {
-            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) && result.IsFile)
+            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) && 
+                result.IsFile && string.IsNullOrWhiteSpace(result.Fragment))
             {
                 return result.LocalPath;
             }

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
+    <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Analyzers\src\CodeAnalysisExtensions.cs" />
+    <Compile Include="..\..\Mvc.Analyzers\src\MvcFacts.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+  </ItemGroup>
+
+</Project>

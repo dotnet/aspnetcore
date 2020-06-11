@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     // add routes that behave as advertised.
     public class RequestDelegateRouteBuilderExtensionsTest
     {
-        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+        private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
         public static TheoryData<Action<IRouteBuilder>, Action<HttpContext>> MatchingActions
         {
@@ -127,7 +127,6 @@ namespace Microsoft.AspNetCore.Routing
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
             services.AddLogging();

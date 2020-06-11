@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Name>AspNetCoreModuleV2IISExpress</Name>
+    <IsShipping>true</IsShipping>
+    <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
+    <OutputType>Package</OutputType>
+    <OutputName>ancm_iis_express_$(Platform)_en_v2</OutputName>
+    <SuppressIces>ICE03</SuppressIces>
+    <DisableGuidGeneration>true</DisableGuidGeneration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
+    <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="ancm_iis_expressv2.wxs" />
+    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+      <Link>iisca.wxs</Link>
+    </Compile>
+    <EmbeddedResource Include="..\setupstrings.wxl">
+      <Link>setupstrings.wxl</Link>
+    </EmbeddedResource>
+    <Content Include="$(IIS-Setup)include.wxi">
+      <Link>include.wxi</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
+      <Name>aspnetcoreCA</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
+      <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CopyBuildOutputToArtifactDirectory"
+          AfterTargets="Build">
+    <ItemGroup>
+      <BuildContentForAncm Include="$(ArtifactsBinDir)AspNetCore\$(TempPlatform)\$(Configuration)\*" />
+      <BuildContentForAncmHandler Include="$(ArtifactsBinDir)OutOfProcessRequestHandler\$(TempPlatform)\$(Configuration)\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildContentForAncm)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+    <Copy SourceFiles="@(BuildContentForAncmHandler)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+  <Import Project="..\build\settings.props" />
+
+  <PropertyGroup>
+    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
+</Project>

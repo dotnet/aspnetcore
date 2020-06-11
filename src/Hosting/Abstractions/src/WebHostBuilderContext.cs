@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Configuration;
@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Hosting
     public class WebHostBuilderContext
     {
         /// <summary>
-        /// The <see cref="IHostingEnvironment" /> initialized by the <see cref="IWebHost" />.
+        /// The <see cref="IWebHostEnvironment" /> initialized by the <see cref="IWebHost" />.
         /// </summary>
-        public IHostingEnvironment HostingEnvironment { get; set; }
+        public IWebHostEnvironment HostingEnvironment { get; set; }
 
         /// <summary>
         /// The <see cref="IConfiguration" /> containing the merged configuration of the application and the <see cref="IWebHost" />.

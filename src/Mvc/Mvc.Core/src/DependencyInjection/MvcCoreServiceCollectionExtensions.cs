@@ -13,14 +13,12 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -32,18 +30,18 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Additional services
-        /// including MVC's support for authorization, formatters, and validation must be added separately using the 
+        /// including MVC's support for authorization, formatters, and validation must be added separately using the
         /// <see cref="IMvcCoreBuilder"/> returned from this method.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>An <see cref="IMvcCoreBuilder"/> that can be used to further configure the MVC services.</returns>
         /// <remarks>
         /// The <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> approach for configuring
-        /// MVC is provided for experienced MVC developers who wish to have full control over the set of default services 
+        /// MVC is provided for experienced MVC developers who wish to have full control over the set of default services
         /// registered. <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> will register
-        /// the minimum set of services necessary to route requests and invoke controllers. It is not expected that any 
+        /// the minimum set of services necessary to route requests and invoke controllers. It is not expected that any
         /// application will satisfy its requirements with just a call to
-        /// <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>. Additional configuration using the 
+        /// <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>. Additional configuration using the
         /// <see cref="IMvcCoreBuilder"/> will be required.
         /// </remarks>
         public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
@@ -80,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 manager = new ApplicationPartManager();
 
-                var environment = GetServiceFromCollection<IHostingEnvironment>(services);
+                var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
                 var entryAssemblyName = environment?.ApplicationName;
                 if (string.IsNullOrEmpty(entryAssemblyName))
                 {
@@ -102,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Additional services
-        /// including MVC's support for authorization, formatters, and validation must be added separately using the 
+        /// including MVC's support for authorization, formatters, and validation must be added separately using the
         /// <see cref="IMvcCoreBuilder"/> returned from this method.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
@@ -110,11 +108,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>An <see cref="IMvcCoreBuilder"/> that can be used to further configure the MVC services.</returns>
         /// <remarks>
         /// The <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> approach for configuring
-        /// MVC is provided for experienced MVC developers who wish to have full control over the set of default services 
+        /// MVC is provided for experienced MVC developers who wish to have full control over the set of default services
         /// registered. <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> will register
-        /// the minimum set of services necessary to route requests and invoke controllers. It is not expected that any 
+        /// the minimum set of services necessary to route requests and invoke controllers. It is not expected that any
         /// application will satisfy its requirements with just a call to
-        /// <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>. Additional configuration using the 
+        /// <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>. Additional configuration using the
         /// <see cref="IMvcCoreBuilder"/> will be required.
         /// </remarks>
         public static IMvcCoreBuilder AddMvcCore(
@@ -148,6 +146,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcOptionsConfigureCompatibilityOptions>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be deallocated
-
+            services.TryAddSingleton<ApplicationModelFactory>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(
@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
 
-            services.TryAddSingleton<IActionDescriptorCollectionProvider, ActionDescriptorCollectionProvider>();
+            services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
 
             //
             // Action Selection
@@ -173,8 +173,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ActionConstraintCache>();
 
             // Will be cached by the DefaultActionSelector
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
+
+            // Policies for Endpoints
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ConsumesMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ActionConstraintMatcherPolicy>());
 
             //
             // Controller Factory
@@ -226,7 +229,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
                 var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
-                return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders);
+                return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders, options);
             });
             services.TryAddSingleton<ClientValidatorCache>();
             services.TryAddSingleton<ParameterBinder>();
@@ -253,6 +256,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<RedirectToRouteResult>, RedirectToRouteResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
+            services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
+            services.TryAddSingleton<ProblemDetailsFactory, DefaultProblemDetailsFactory>();
 
             //
             // Route Handlers
@@ -261,11 +267,21 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<MvcAttributeRouteHandler>(); // Many per app
 
             //
+            // Endpoint Routing / Endpoints
+            //
+            services.TryAddSingleton<ControllerActionEndpointDataSource>();
+            services.TryAddSingleton<ActionEndpointFactory>();
+            services.TryAddSingleton<DynamicControllerEndpointSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicControllerEndpointMatcherPolicy>());
+
+            //
             // Middleware pipeline filter related
             //
             services.TryAddSingleton<MiddlewareFilterConfigurationProvider>();
             // This maintains a cache of middleware pipelines, so it needs to be a singleton
             services.TryAddSingleton<MiddlewareFilterBuilder>();
+            // Sets ApplicationBuilder on MiddlewareFilterBuilder
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, MiddlewareFilterBuilderStartupFilter>());
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

@@ -3,8 +3,12 @@
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
+    /// <summary>
+    /// For ANCM
+    /// </summary>
     public enum HostingModel
     {
+        None,
         OutOfProcess,
         InProcess
     }

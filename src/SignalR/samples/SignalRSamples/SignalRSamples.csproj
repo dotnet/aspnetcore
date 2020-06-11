@@ -1,7 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,21 +16,24 @@
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Redis" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Reactive.Linq" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
     <ItemGroup>
-      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr\dist\browser\*" />
-      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\dist\browser\*" />
+      <SignalRBrowserJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr\dist\browser\*" />
+      <SignalRBrowserJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\dist\browser\*" />
+      <SignalRWebWorkerJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr\dist\webworker\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
+    <Copy SourceFiles="@(SignalRBrowserJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
+    <Copy SourceFiles="@(SignalRWebWorkerJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-webworker"/>
 
     <ItemGroup>
       <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />

@@ -1,0 +1,33 @@
+parameters:
+  # if parameter1 equals parameter 2, run 'ifScript' command, else run 'elsescript' command
+  parameter1: ''
+  parameter2: ''
+  ifScript: ''
+  elseScript: ''
+
+  # name of script step
+  name: Script
+
+  # display name of script step
+  displayName: If-Equal-Else Script
+
+  # environment
+  env: {}
+
+  # conditional expression for step execution
+  condition: ''
+
+steps:
+- ${{ if and(ne(parameters.ifScript, ''), eq(parameters.parameter1, parameters.parameter2)) }}:
+  - script: ${{ parameters.ifScript }}
+    name: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    env: ${{ parameters.env }}
+    condition: ${{ parameters.condition }}
+
+- ${{ if and(ne(parameters.elseScript, ''), ne(parameters.parameter1, parameters.parameter2)) }}:
+  - script: ${{ parameters.elseScript }}
+    name: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    env: ${{ parameters.env }}
+    condition: ${{ parameters.condition }}

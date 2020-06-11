@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         private IModelBinderFactory _modelBinderFactory;
         private IObjectModelValidator _objectValidator;
         private IUrlHelper _url;
+        private ProblemDetailsFactory _problemDetailsFactory;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
@@ -189,6 +191,28 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        public ProblemDetailsFactory ProblemDetailsFactory
+        {
+            get
+            {
+                if (_problemDetailsFactory == null)
+                {
+                    _problemDetailsFactory = HttpContext?.RequestServices?.GetRequiredService<ProblemDetailsFactory>();
+                }
+
+                return _problemDetailsFactory;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _problemDetailsFactory = value;
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
         /// </summary>
@@ -200,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The status code to set on the response.</param>
         /// <returns>The created <see cref="StatusCodeResult"/> object for the response.</returns>
         [NonAction]
-        public virtual StatusCodeResult StatusCode(int statusCode)
+        public virtual StatusCodeResult StatusCode([ActionResultStatusCode] int statusCode)
             => new StatusCodeResult(statusCode);
 
         /// <summary>
@@ -210,17 +234,16 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
         /// <returns>The created <see cref="ObjectResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ObjectResult StatusCode(int statusCode, object value)
+        public virtual ObjectResult StatusCode([ActionResultStatusCode] int statusCode, [ActionResultObjectValue] object value)
         {
-            var result = new ObjectResult(value);
-            result.StatusCode = statusCode;
-
-            return result;
+            return new ObjectResult(value)
+            {
+                StatusCode = statusCode
+            };
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
-        /// <paramref name="content"/> string.
+        /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
         /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
@@ -229,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Content(content, (MediaTypeHeaderValue)null);
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a content type.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -240,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Content(content, MediaTypeHeaderValue.Parse(contentType));
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string, a <paramref name="contentType"/>, and <paramref name="contentEncoding"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -260,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a <paramref name="contentType"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -269,18 +292,16 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ContentResult Content(string content, MediaTypeHeaderValue contentType)
         {
-            var result = new ContentResult
+            return new ContentResult
             {
                 Content = content,
                 ContentType = contentType?.ToString()
             };
-
-            return result;
         }
 
         /// <summary>
         /// Creates a <see cref="NoContentResult"/> object that produces an empty
-        /// <see cref="StatusCodes.Status204NoContent"/> response.   
+        /// <see cref="StatusCodes.Status204NoContent"/> response.
         /// </summary>
         /// <returns>The created <see cref="NoContentResult"/> object for the response.</returns>
         [NonAction]
@@ -301,9 +322,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="OkObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual OkObjectResult Ok(object value)
+        public virtual OkObjectResult Ok([ActionResultObjectValue] object value)
             => new OkObjectResult(value);
 
+        #region RedirectResult variants
         /// <summary>
         /// Creates a <see cref="RedirectResult"/> object that redirects (<see cref="StatusCodes.Status302Found"/>)
         /// to the specified <paramref name="url"/>.
@@ -1074,7 +1096,9 @@ namespace Microsoft.AspNetCore.Mvc
                 preserveMethod: true,
                 fragment: fragment);
         }
+        #endregion
 
+        #region FileResult variants
         /// <summary>
         /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>),
         /// and the specified <paramref name="contentType" /> as the Content-Type.
@@ -1695,6 +1719,7 @@ namespace Microsoft.AspNetCore.Mvc
                 EnableRangeProcessing = enableRangeProcessing,
             };
         }
+        #endregion
 
         /// <summary>
         /// Creates an <see cref="UnauthorizedResult"/> that produces an <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -1703,6 +1728,14 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual UnauthorizedResult Unauthorized()
             => new UnauthorizedResult();
+
+        /// <summary>
+        /// Creates an <see cref="UnauthorizedObjectResult"/> that produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="UnauthorizedObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnauthorizedObjectResult Unauthorized([ActionResultObjectValue] object value)
+            => new UnauthorizedObjectResult(value);
 
         /// <summary>
         /// Creates an <see cref="NotFoundResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
@@ -1717,7 +1750,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="NotFoundObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual NotFoundObjectResult NotFound(object value)
+        public virtual NotFoundObjectResult NotFound([ActionResultObjectValue] object value)
             => new NotFoundObjectResult(value);
 
         /// <summary>
@@ -1734,7 +1767,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult BadRequest(object error)
+        public virtual BadRequestObjectResult BadRequest([ActionResultObjectValue] object error)
             => new BadRequestObjectResult(error);
 
         /// <summary>
@@ -1743,7 +1776,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
+        public virtual BadRequestObjectResult BadRequest([ActionResultObjectValue] ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
@@ -1759,9 +1792,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="UnprocessableEntityResult"/> for the response.</returns>
         [NonAction]
         public virtual UnprocessableEntityResult UnprocessableEntity()
-        {
-            return new UnprocessableEntityResult();
-        }
+            => new UnprocessableEntityResult();
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -1769,10 +1800,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual UnprocessableEntityObjectResult UnprocessableEntity(object error)
-        {
-            return new UnprocessableEntityObjectResult(error);
-        }
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] object error)
+            => new UnprocessableEntityObjectResult(error);
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -1780,7 +1809,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual UnprocessableEntityObjectResult UnprocessableEntity(ModelStateDictionary modelState)
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
@@ -1804,7 +1833,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">Contains errors to be returned to the client.</param>
         /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ConflictObjectResult Conflict(object error)
+        public virtual ConflictObjectResult Conflict([ActionResultObjectValue] object error)
             => new ConflictObjectResult(error);
 
         /// <summary>
@@ -1813,15 +1842,46 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ConflictObjectResult Conflict(ModelStateDictionary modelState)
+        public virtual ConflictObjectResult Conflict([ActionResultObjectValue] ModelStateDictionary modelState)
             => new ConflictObjectResult(modelState);
+
+        /// <summary>
+        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+        /// </summary>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />..</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ObjectResult Problem(
+            string detail = null,
+            string instance = null,
+            int? statusCode = null,
+            string title = null,
+            string type = null)
+        {
+            var problemDetails = ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
+                statusCode: statusCode ?? 500,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
+
+            return new ObjectResult(problemDetails)
+            {
+                StatusCode = problemDetails.Status
+            };
+        }
 
         /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem(ValidationProblemDetails descriptor)
+        public virtual ActionResult ValidationProblem([ActionResultObjectValue] ValidationProblemDetails descriptor)
         {
             if (descriptor == null)
             {
@@ -1832,31 +1892,67 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with validation errors from <paramref name="modelStateDictionary"/>.
         /// </summary>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem(ModelStateDictionary modelStateDictionary)
-        {
-            if (modelStateDictionary == null)
-            {
-                throw new ArgumentNullException(nameof(modelStateDictionary));
-            }
+        public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
+             => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
-            var validationProblem = new ValidationProblemDetails(modelStateDictionary);
-            return new BadRequestObjectResult(validationProblem);
-        }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with validation errors from <see cref="ModelState"/>.
         /// </summary>
-        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem()
+            => ValidationProblem(ModelState);
+
+        /// <summary>
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with a <see cref="ValidationProblemDetails"/> value.
+        /// </summary>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>. 
+        /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ActionResult ValidationProblem(
+            string detail = null,
+            string instance = null,
+            int? statusCode = null,
+            string title = null,
+            string type = null,
+            [ActionResultObjectValue] ModelStateDictionary modelStateDictionary = null)
         {
-            var validationProblem = new ValidationProblemDetails(ModelState);
-            return new BadRequestObjectResult(validationProblem);
+            modelStateDictionary ??= ModelState;
+
+            var validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
+                HttpContext,
+                modelStateDictionary,
+                statusCode: statusCode,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
+
+            if (validationProblem.Status == 400)
+            {
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                return new BadRequestObjectResult(validationProblem);
+            }
+
+            return new ObjectResult(validationProblem)
+            {
+                StatusCode = validationProblem.Status
+            };
         }
 
         /// <summary>
@@ -1866,7 +1962,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created(string uri, object value)
+        public virtual CreatedResult Created(string uri, [ActionResultObjectValue] object value)
         {
             if (uri == null)
             {
@@ -1883,7 +1979,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created(Uri uri, object value)
+        public virtual CreatedResult Created(Uri uri, [ActionResultObjectValue] object value)
         {
             if (uri == null)
             {
@@ -1900,7 +1996,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object value)
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, [ActionResultObjectValue] object value)
             => CreatedAtAction(actionName, routeValues: null, value: value);
 
         /// <summary>
@@ -1911,7 +2007,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value)
+        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, [ActionResultObjectValue] object value)
             => CreatedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -1927,7 +2023,7 @@ namespace Microsoft.AspNetCore.Mvc
             string actionName,
             string controllerName,
             object routeValues,
-            object value)
+            [ActionResultObjectValue] object value)
             => new CreatedAtActionResult(actionName, controllerName, routeValues, value);
 
         /// <summary>
@@ -1937,7 +2033,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, [ActionResultObjectValue] object value)
             => CreatedAtRoute(routeName, routeValues: null, value: value);
 
         /// <summary>
@@ -1947,7 +2043,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(object routeValues, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(object routeValues, [ActionResultObjectValue] object value)
             => CreatedAtRoute(routeName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -1958,7 +2054,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, [ActionResultObjectValue] object value)
             => new CreatedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
@@ -1975,7 +2071,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(object value)
+        public virtual AcceptedResult Accepted([ActionResultObjectValue] object value)
             => new AcceptedResult(location: null, value: value);
 
         /// <summary>
@@ -2012,7 +2108,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(string uri, object value)
+        public virtual AcceptedResult Accepted(string uri, [ActionResultObjectValue] object value)
             => new AcceptedResult(uri, value);
 
         /// <summary>
@@ -2022,7 +2118,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(Uri uri, object value)
+        public virtual AcceptedResult Accepted(Uri uri, [ActionResultObjectValue] object value)
         {
             if (uri == null)
             {
@@ -2058,7 +2154,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, object value)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, [ActionResultObjectValue] object value)
             => AcceptedAtAction(actionName, routeValues: null, value: value);
 
         /// <summary>
@@ -2069,7 +2165,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, [ActionResultObjectValue] object routeValues)
             => AcceptedAtAction(actionName, controllerName, routeValues, value: null);
 
         /// <summary>
@@ -2080,7 +2176,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, object value)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, [ActionResultObjectValue] object value)
             => AcceptedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -2096,7 +2192,7 @@ namespace Microsoft.AspNetCore.Mvc
             string actionName,
             string controllerName,
             object routeValues,
-            object value)
+            [ActionResultObjectValue] object value)
             => new AcceptedAtActionResult(actionName, controllerName, routeValues, value);
 
         /// <summary>
@@ -2105,7 +2201,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(object routeValues)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute([ActionResultObjectValue] object routeValues)
             => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: null);
 
         /// <summary>
@@ -2134,7 +2230,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(object routeValues, object value)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(object routeValues, [ActionResultObjectValue] object value)
             => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -2145,7 +2241,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, object value)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, [ActionResultObjectValue] object value)
             => new AcceptedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
@@ -2356,7 +2452,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await TryUpdateModelAsync(model, prefix, valueProvider);
         }
 
@@ -2430,7 +2531,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2469,7 +2575,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2597,7 +2708,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,

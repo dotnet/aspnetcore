@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "HttpPort": {
+      "isHidden": true
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "NoHttps": {
+      "longName": "no-https",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}

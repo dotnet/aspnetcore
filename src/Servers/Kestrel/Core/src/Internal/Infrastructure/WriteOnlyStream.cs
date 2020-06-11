@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public abstract class WriteOnlyStream : Stream
+    internal abstract class WriteOnlyStream : Stream
     {
         public override bool CanRead => false;
 

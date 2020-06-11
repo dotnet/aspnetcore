@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static HubMessage ParseMessage(byte[] input, int startOffset, IInvocationBinder binder, IFormatterResolver resolver)
         {
-            _ = MessagePackBinary.ReadArrayHeader(input, startOffset, out var readSize);
+            var itemCount = MessagePackBinary.ReadArrayHeader(input, startOffset, out var readSize);
             startOffset += readSize;
 
             var messageType = ReadInt32(input, ref startOffset, "messageType");
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             switch (messageType)
             {
                 case HubProtocolConstants.InvocationMessageType:
-                    return CreateInvocationMessage(input, ref startOffset, binder, resolver);
+                    return CreateInvocationMessage(input, ref startOffset, binder, resolver, itemCount);
                 case HubProtocolConstants.StreamInvocationMessageType:
-                    return CreateStreamInvocationMessage(input, ref startOffset, binder, resolver);
+                    return CreateStreamInvocationMessage(input, ref startOffset, binder, resolver, itemCount);
                 case HubProtocolConstants.StreamItemMessageType:
                     return CreateStreamItemMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.CompletionMessageType:
@@ -137,14 +137,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 case HubProtocolConstants.PingMessageType:
                     return PingMessage.Instance;
                 case HubProtocolConstants.CloseMessageType:
-                    return CreateCloseMessage(input, ref startOffset);
+                    return CreateCloseMessage(input, ref startOffset, itemCount);
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
                     return null;
             }
         }
 
-        private static HubMessage CreateInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver, int itemCount)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
@@ -157,43 +157,70 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             var target = ReadString(input, ref offset, "target");
-            var parameterTypes = binder.GetParameterTypes(target);
 
+            object[] arguments = null;
             try
             {
-                var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new InvocationMessage(invocationId, target, arguments));
+                var parameterTypes = binder.GetParameterTypes(target);
+                arguments = BindArguments(input, ref offset, parameterTypes, resolver);
             }
             catch (Exception ex)
             {
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
+
+            string[] streams = null;
+            // Previous clients will send 5 items, so we check if they sent a stream array or not
+            if (itemCount > 5)
+            {
+                streams = ReadStreamIds(input, ref offset);
+            }
+
+            return ApplyHeaders(headers, new InvocationMessage(invocationId, target, arguments, streams));
         }
 
-        private static HubMessage CreateStreamInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateStreamInvocationMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver, int itemCount)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
             var target = ReadString(input, ref offset, "target");
-            var parameterTypes = binder.GetParameterTypes(target);
 
+            object[] arguments = null;
             try
             {
-                var arguments = BindArguments(input, ref offset, parameterTypes, resolver);
-                return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments));
+                var parameterTypes = binder.GetParameterTypes(target);
+                arguments = BindArguments(input, ref offset, parameterTypes, resolver);
             }
             catch (Exception ex)
             {
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
+
+            string[] streams = null;
+            // Previous clients will send 5 items, so we check if they sent a stream array or not
+            if (itemCount > 5)
+            {
+                streams = ReadStreamIds(input, ref offset);
+            }
+
+            return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments, streams));
         }
 
-        private static StreamItemMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
-            var itemType = binder.GetReturnType(invocationId);
-            var value = DeserializeObject(input, ref offset, itemType, "item", resolver);
+            object value;
+            try
+            {
+                var itemType = binder.GetStreamItemType(invocationId);
+                value = DeserializeObject(input, ref offset, itemType, "item", resolver);
+            }
+            catch (Exception ex)
+            {
+                return new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
+            }
+
             return ApplyHeaders(headers, new StreamItemMessage(invocationId, value));
         }
 
@@ -234,10 +261,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
         }
 
-        private static CloseMessage CreateCloseMessage(byte[] input, ref int offset)
+        private static CloseMessage CreateCloseMessage(byte[] input, ref int offset, int itemCount)
         {
             var error = ReadString(input, ref offset, "error");
-            return new CloseMessage(error);
+            var allowReconnect = false;
+
+            if (itemCount > 2)
+            {
+                allowReconnect = ReadBoolean(input, ref offset, "allowReconnect");
+            }
+
+            // An empty string is still an error
+            if (error == null && !allowReconnect)
+            {
+                return CloseMessage.Empty;
+            }
+
+            return new CloseMessage(error, allowReconnect);
         }
 
         private static Dictionary<string, string> ReadHeaders(byte[] input, ref int offset)
@@ -259,6 +299,24 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 return null;
             }
+        }
+
+        private static string[] ReadStreamIds(byte[] input, ref int offset)
+        {
+            var streamIdCount = ReadArrayLength(input, ref offset, "streamIds");
+            List<string> streams = null;
+
+            if (streamIdCount > 0)
+            {
+                streams = new List<string>();
+                for (var i = 0; i < streamIdCount; i++)
+                {
+                    streams.Add(MessagePackBinary.ReadString(input, offset, out var read));
+                    offset += read;
+                }
+            }
+
+            return streams?.ToArray();
         }
 
         private static object[] BindArguments(byte[] input, ref int offset, IReadOnlyList<Type> parameterTypes, IFormatterResolver resolver)
@@ -378,7 +436,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private void WriteInvocationMessage(InvocationMessage message, Stream packer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 5);
+            MessagePackBinary.WriteArrayHeader(packer, 6);
+
             MessagePackBinary.WriteInt32(packer, HubProtocolConstants.InvocationMessageType);
             PackHeaders(packer, message.Headers);
             if (string.IsNullOrEmpty(message.InvocationId))
@@ -395,11 +454,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 WriteArgument(arg, packer);
             }
+
+            WriteStreamIds(message.StreamIds, packer);
         }
 
         private void WriteStreamInvocationMessage(StreamInvocationMessage message, Stream packer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 5);
+            MessagePackBinary.WriteArrayHeader(packer, 6);
+
             MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamInvocationMessageType);
             PackHeaders(packer, message.Headers);
             MessagePackBinary.WriteString(packer, message.InvocationId);
@@ -410,6 +472,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 WriteArgument(arg, packer);
             }
+
+            WriteStreamIds(message.StreamIds, packer);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage message, Stream packer)
@@ -430,6 +494,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else
             {
                 MessagePackSerializer.NonGeneric.Serialize(argument.GetType(), stream, argument, _resolver);
+            }
+        }
+
+        private void WriteStreamIds(string[] streamIds, Stream packer)
+        {
+            if (streamIds != null)
+            {
+                MessagePackBinary.WriteArrayHeader(packer, streamIds.Length);
+                foreach (var streamId in streamIds)
+                {
+                    MessagePackBinary.WriteString(packer, streamId);
+                }
+            }
+            else
+            {
+                MessagePackBinary.WriteArrayHeader(packer, 0);
             }
         }
 
@@ -466,7 +546,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private void WriteCloseMessage(CloseMessage message, Stream packer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 2);
+            MessagePackBinary.WriteArrayHeader(packer, 3);
             MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CloseMessageType);
             if (string.IsNullOrEmpty(message.Error))
             {
@@ -476,6 +556,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 MessagePackBinary.WriteString(packer, message.Error);
             }
+
+            MessagePackBinary.WriteBoolean(packer, message.AllowReconnect);
         }
 
         private void WritePingMessage(PingMessage pingMessage, Stream packer)
@@ -507,6 +589,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static string ReadInvocationId(byte[] input, ref int offset)
         {
             return ReadString(input, ref offset, "invocationId");
+        }
+
+        private static bool ReadBoolean(byte[] input, ref int offset, string field)
+        {
+            Exception msgPackException = null;
+            try
+            {
+                var readBool = MessagePackBinary.ReadBoolean(input, offset, out var readSize);
+                offset += readSize;
+                return readBool;
+            }
+            catch (Exception e)
+            {
+                msgPackException = e;
+            }
+
+            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static int ReadInt32(byte[] input, ref int offset, string field)
@@ -541,23 +640,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             throw new InvalidDataException($"Reading '{field}' as String failed.", msgPackException);
-        }
-
-        private static bool ReadBoolean(byte[] input, ref int offset, string field)
-        {
-            Exception msgPackException = null;
-            try
-            {
-                var readBool = MessagePackBinary.ReadBoolean(input, offset, out var readSize);
-                offset += readSize;
-                return readBool;
-            }
-            catch (Exception e)
-            {
-                msgPackException = e;
-            }
-
-            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static long ReadMapLength(byte[] input, ref int offset, string field)

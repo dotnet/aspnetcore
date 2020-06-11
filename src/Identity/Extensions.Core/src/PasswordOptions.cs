@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity
         public int RequiredLength { get; set; } = 6;
 
         /// <summary>
-        /// Gets or sets the minimum number of unique chars a password must comprised of. Defaults to 1.
+        /// Gets or sets the minimum number of unique characters which a password must contain. Defaults to 1.
         /// </summary>
         public int RequiredUniqueChars { get; set; } = 1;
 

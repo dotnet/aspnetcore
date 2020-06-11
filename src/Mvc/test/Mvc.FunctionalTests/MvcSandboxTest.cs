@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,19 +21,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task Home_Pages_ReturnSuccess()
         {
             // Arrange & Act
-            var response = await Client.GetStringAsync("http://localhost");
+            var response = await Client.GetAsync("http://localhost");
 
             // Assert
-            Assert.Contains("This sandbox should give you a quick view of a basic MVC application.", response);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
+
         [Fact]
         public async Task RazorPages_ReturnSuccess()
         {
             // Arrange & Act
-            var response = await Client.GetStringAsync("http://localhost/PagesHome");
+            var response = await Client.GetAsync("http://localhost/PagesHome");
 
             // Assert
-            Assert.Contains("This file should give you a quick view of a Mvc Razor Page in action.", response);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
     }
 }

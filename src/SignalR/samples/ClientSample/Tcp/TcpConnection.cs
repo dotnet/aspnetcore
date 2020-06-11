@@ -43,17 +43,17 @@ namespace ClientSample
         // We claim to have inherent keep-alive so the client doesn't kill the connection when it hasn't seen ping frames.
         public bool HasInherentKeepAlive { get; } = true;
 
-        public Task DisposeAsync()
+        public override ValueTask DisposeAsync()
         {
             Transport?.Output.Complete();
             Transport?.Input.Complete();
 
             _socket?.Dispose();
 
-            return Task.CompletedTask;
+            return default;
         }
 
-        public async Task<ConnectionContext> StartAsync()
+        public async ValueTask<ConnectionContext> StartAsync()
         {
             await _socket.ConnectAsync(_endPoint);
 
@@ -244,12 +244,6 @@ namespace ClientSample
                     break;
                 }
             }
-        }
-
-        public Task StartAsync(TransferFormat transferFormat)
-        {
-            // Transfer format is irrelevant
-            return StartAsync();
         }
     }
 }

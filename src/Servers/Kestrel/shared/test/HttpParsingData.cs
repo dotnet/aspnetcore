@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        public static TheoryData<string, HttpMethod> MethodNotAllowedRequestLine
+        public static TheoryData<string, int> MethodNotAllowedRequestLine
         {
             get
             {
@@ -295,16 +295,16 @@ namespace Microsoft.AspNetCore.Testing
                     "CUSTOM",
                 };
 
-                var data = new TheoryData<string, HttpMethod>();
+                var data = new TheoryData<string, int>();
 
                 foreach (var method in methods.Except(new[] { "OPTIONS" }))
                 {
-                    data.Add($"{method} * HTTP/1.1\r\n", HttpMethod.Options);
+                    data.Add($"{method} * HTTP/1.1\r\n", (int)HttpMethod.Options);
                 }
 
                 foreach (var method in methods.Except(new[] { "CONNECT" }))
                 {
-                    data.Add($"{method} www.example.com:80 HTTP/1.1\r\n", HttpMethod.Connect);
+                    data.Add($"{method} www.example.com:80 HTTP/1.1\r\n", (int)HttpMethod.Connect);
                 }
 
                 return data;
@@ -428,6 +428,9 @@ namespace Microsoft.AspNetCore.Testing
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r\r", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF  },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
+
+            // Empty header name
+            new[] { ": value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@": value\x0D\x0A") },
         };
 
         public static TheoryData<string, string> HostHeaderData

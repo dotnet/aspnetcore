@@ -1,23 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Implements the SignalR Hub Protocol over JSON.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="TextMessageFormatter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="TextMessageParser.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Utf8BufferTextReader.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Utf8BufferTextWriter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ReusableUtf8JsonWriter.cs" Link="ReusableUtf8JsonWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.1'">
+    <!-- This dependency was replaced by System.Text.Json between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
+    <SuppressBaselineReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

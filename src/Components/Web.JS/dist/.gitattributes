@@ -1,0 +1,3 @@
+# Prevent generated files from showing up in git and GitHub diffs. See https://www.git-scm.com/docs/gitattributes#_defining_macro_attributes, https://github.com/github/linguist#generated-code
+*.js    -diff -merge
+*.js    linguist-generated=true

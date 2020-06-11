@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Name>AspNetCoreModuleV2</Name>
+    <IsShipping>true</IsShipping>
+    <ProjectGuid>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</ProjectGuid>
+    <OutputType>Package</OutputType>
+    <OutputName>aspnetcoremodule_$(Platform)_en_v2</OutputName>
+    <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <DisableGuidGeneration>true</DisableGuidGeneration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="aspnetcoremodulev2.wxs" />
+    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+      <Link>iisca.wxs</Link>
+    </Compile>
+    <EmbeddedResource Include="..\setupstrings.wxl">
+      <Link>setupstrings.wxl</Link>
+    </EmbeddedResource>
+    <Content Include="$(IIS-Setup)include.wxi">
+      <Link>include.wxi</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
+      <Name>aspnetcoreCA</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
+      <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+  <Import Project="..\build\settings.props" />
+
+  <PropertyGroup>
+    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
+</Project>

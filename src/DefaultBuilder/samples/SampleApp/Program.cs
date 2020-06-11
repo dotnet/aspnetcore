@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SampleApp
 {
@@ -14,16 +16,15 @@ namespace SampleApp
     {
         public static void Main(string[] args)
         {
-            HelloWorld();
-
-            CustomUrl();
-
-            CustomRouter();
-
-            CustomApplicationBuilder();
-
-            StartupClass(args);
+            CreateHostBuilder(args).Build().Run();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
 
         private static void HelloWorld()
         {
@@ -89,6 +90,22 @@ namespace SampleApp
             {
                 host.Run();
             }
+        }
+
+        private static void HostBuilderWithWebHost(string[] args)
+        {
+            var host = new HostBuilder()
+                .ConfigureAppConfiguration(config =>
+                {
+                    config.AddCommandLine(args);
+                })
+                .ConfigureWebHostDefaults(builder =>
+                {
+                    builder.UseStartup<Startup>();
+                })
+                .Build();
+
+            host.Run();
         }
     }
 }

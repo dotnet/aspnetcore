@@ -1,0 +1,29 @@
+@page "/multiple-components"
+@using BasicTestApp.MultipleComponents;
+
+@{
+    Layout = "./MultipleComponentsLayout.cshtml";
+}
+
+
+@(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+@(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+<component type="typeof(GreeterComponent)" render-mode="Static" param-name='"John"' />
+<component type="typeof(GreeterComponent)" render-mode="Server" />
+<div id="container">
+    <p>Some content before</p>
+    <component type="typeof(GreeterComponent)" render-mode="Server" />
+    <p>Some content between</p>
+    <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" />
+    <p>Some content after</p>
+    <div id="nested-an-extra-level">
+        <p>Some content before</p>
+        <component type="typeof(GreeterComponent)" render-mode="Server" />
+        <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" />
+        <p>Some content after</p>
+    </div>
+</div>
+<div id="container">
+    <component type="typeof(GreeterComponent)" render-mode="Server" param-name='"Albert"' />
+    <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" param-name='"Abraham"' />
+</div>

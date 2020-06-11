@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Boş",
+    "description": "ASP.NET Core uygulaması oluşturmaya yönelik boş bir proje şablonu. Bu şablonda içerik yoktur."
+  }
+}

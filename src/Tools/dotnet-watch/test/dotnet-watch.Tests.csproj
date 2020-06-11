@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -18,12 +19,8 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>TestSettings:RestoreSources</_Parameter1>
-      <_Parameter2>$(RestoreSources)</_Parameter2>
-    </AssemblyAttribute>
-     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>TestSettings:RuntimeFrameworkVersion</_Parameter1>
-      <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
+      <_Parameter1>DotnetPath</_Parameter1>
+      <_Parameter2>$(DotNetTool)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -31,10 +28,18 @@
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
 
-  <Target Name="PublishDotNetWatch" BeforeTargets="Build">
+  <!-- Do not publish in source build -->
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+  </Target>
+
+  <!-- Do not publish in source build -->
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <MSBuild Projects="..\src\dotnet-watch.csproj"
+      Targets="Publish"
+      Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
   </Target>
 
 </Project>

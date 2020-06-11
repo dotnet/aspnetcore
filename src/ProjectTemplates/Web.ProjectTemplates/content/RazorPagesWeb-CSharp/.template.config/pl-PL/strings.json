@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplikacja internetowa",
+    "description": "Szablon projektu służący do tworzenia aplikacji ASP.NET Core z przykładowymi stronami ASP.NET Core Razor."
+  }
+}

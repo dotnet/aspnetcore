@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// A media type value.
     /// </summary>
-    public struct MediaType
+    public readonly struct MediaType
     {
         private static readonly StringSegment QualityParameter = new StringSegment("q");
 
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     throw new ArgumentException(Resources.FormatArgument_InvalidOffsetLength(nameof(offset), nameof(length)));
                 }
             }
-            
+
             _parameterParser = default(MediaTypeParameterParser);
 
             var typeLength = GetTypeLength(mediaType, offset, out var type);
@@ -486,9 +485,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
-                // The set has no suffix, so we're just looking for an exact match (which means that if 'this'
-                // has a suffix, it won't match).
-                return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase);
+                // If this subtype or suffix matches the subtype of the set,
+                // it is considered a subtype.
+                // Ex: application/json > application/val+json
+                return MatchesEitherSubtypeOrSuffix(set);
             }
         }
 
@@ -503,6 +503,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
             // because there's no clear use case for it.
             return set.SubTypeSuffix.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesEitherSubtypeOrSuffix(MediaType set)
+        {
+            return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
+                set.SubType.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool ContainsAllParameters(MediaTypeParameterParser setParameters)
@@ -674,7 +680,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
-        private struct MediaTypeParameter : IEquatable<MediaTypeParameter>
+        private readonly struct MediaTypeParameter : IEquatable<MediaTypeParameter>
         {
             public MediaTypeParameter(StringSegment name, StringSegment value)
             {

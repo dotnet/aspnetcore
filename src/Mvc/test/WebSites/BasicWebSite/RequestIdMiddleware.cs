@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace BasicWebSite
 {
@@ -26,7 +27,7 @@ namespace BasicWebSite
                 throw new InvalidOperationException("RequestId should be null here");
             }
 
-            var requestId = context.Request.Headers["RequestId"];
+            var requestId = context.Request.Headers[HeaderNames.RequestId];
             requestIdService.RequestId = requestId;
 
             return _next(context);

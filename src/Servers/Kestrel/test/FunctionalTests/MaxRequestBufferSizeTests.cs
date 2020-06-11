@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,11 +21,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class MaxRequestBufferSizeTests : LoggedTest
     {
+        // The client is typically paused after uploading this many bytes:
+        //
+        // OS                   MaxRequestBufferSize (MB)   connectionAdapter   Transport   min pause (MB)      max pause (MB)
+        // ---------------      -------------------------   -----------------   ---------   --------------      --------------
+        // Windows 10 1803      1                           false               Libuv       1.7                 3.3
+        // Windows 10 1803      1                           false               Sockets     1.7                 4.4
+        // Windows 10 1803      1                           true                Libuv       3.0                 8.4
+        // Windows 10 1803      1                           true                Sockets     3.2                 9.0
+        //
+        // Windows 10 1803      5                           false               Libuv       6                   13
+        // Windows 10 1803      5                           false               Sockets     7                   24
+        // Windows 10 1803      5                           true                Libuv       12                  12
+        // Windows 10 1803      5                           true                Sockets     12                  36
+        // Ubuntu 18.04         5                           false               Libuv       13                  15
+        // Ubuntu 18.04         5                           false               Sockets     13                  15
+        // Ubuntu 18.04         5                           true                Libuv       19                  20
+        // Ubuntu 18.04         5                           true                Sockets     18                  20
+        // macOS 10.13.4        5                           false               Libuv       6                   6
+        // macOS 10.13.4        5                           false               Sockets     6                   6
+        // macOS 10.13.4        5                           true                Libuv       11                  11
+        // macOS 10.13.4        5                           true                Sockets     11                  11
+        //
+        // When connectionAdapter=true, the MaxRequestBufferSize is set on two pipes, so it's effectively doubled.
+        //
+        // To ensure reliability, _dataLength must be greater than the largest "max pause" in any configuration
         private const int _dataLength = 100 * 1024 * 1024;
 
         private static readonly string[] _requestLines = new[]
         {
-            "POST / HTTP/1.0\r\n",
+            "POST / HTTP/1.1\r\n",
+            "Host: \r\n",
             $"Content-Length: {_dataLength}\r\n",
             "\r\n"
         };
@@ -33,11 +60,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             get
             {
+                var totalHeaderSize = 0;
+
+                for (var i = 1; i < _requestLines.Length - 1; i++)
+                {
+                    totalHeaderSize += _requestLines[i].Length;
+                }
+
                 var maxRequestBufferSizeValues = new Tuple<long?, bool>[] {
-                    // Smallest buffer that can hold a test request line without causing
+                    // Smallest buffer that can hold the test request headers without causing
                     // the server to hang waiting for the end of the request line or
                     // a header line.
-                    Tuple.Create((long?)(_requestLines.Max(line => line.Length)), true),
+                    Tuple.Create((long?)totalHeaderSize, true),
 
                     // Small buffer, but large enough to hold all request headers.
                     Tuple.Create((long?)16 * 1024, true),
@@ -46,8 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Tuple.Create((long?)1024 * 1024, true),
 
                     // Larger than default, but still significantly lower than data, so client should be paused.
-                    // On Windows, the client is usually paused around (MaxRequestBufferSize + 700,000).
-                    // On Linux, the client is usually paused around (MaxRequestBufferSize + 10,000,000).
                     Tuple.Create((long?)5 * 1024 * 1024, true),
 
                     // Even though maxRequestBufferSize < _dataLength, client should not be paused since the
@@ -75,8 +107,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                        };
             }
         }
-
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2489", FlakyOn.AzP.All)]
         [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
@@ -86,14 +118,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            // Initialize data with random bytes
-            (new Random()).NextBytes(data);
-
             var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody))
+            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
+
+            using (var host = await StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -163,13 +194,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         startReadingRequestBody.TrySetResult(null);
                     }
 
-                    using (var reader = new StreamReader(stream, Encoding.ASCII))
-                    {
-                        var response = reader.ReadToEnd();
-                        Assert.Contains($"bytesRead: {data.Length}", response);
-                    }
+                    await AssertStreamContains(stream, $"bytesRead: {data.Length}");
                 }
+                await host.StopAsync();
             }
+
+            await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
         [Fact]
@@ -185,7 +215,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody))
+            var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
+
+            using (var host = await StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -239,18 +271,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                     // if a connection no longer has alloc and read callbacks configured.
+                    await host.StopAsync();
                     host.Dispose();
                 }
             }
+            // Allow appfunc to unblock
+            startReadingRequestBody.SetResult(null);
+            clientFinishedSendingRequestBody.SetResult(null);
+            await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        private IWebHost StartWebHost(long? maxRequestBufferSize,
+        private async Task<IWebHost> StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
-            TaskCompletionSource<object> clientFinishedSendingRequestBody)
+            TaskCompletionSource<object> clientFinishedSendingRequestBody,
+            Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
-            var host = TransportSelector.GetWebHostBuilder()
+            var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory, maxRequestBufferSize)
                 .ConfigureServices(AddTestLogging)
                 .UseKestrel(options =>
                 {
@@ -258,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (useConnectionAdapter)
                         {
-                            listenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
+                            listenOptions.UsePassThrough();
                         }
                     });
 
@@ -277,6 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
 
                     options.Limits.MinRequestBodyDataRate = null;
+
                     options.Limits.MaxRequestBodySize = _dataLength;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -301,22 +340,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         return;
                     }
 
-                    // Verify bytes received match expectedBody
-                    for (int i = 0; i < expectedBody.Length; i++)
-                    {
-                        if (buffer[i] != expectedBody[i])
-                        {
-                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                            await context.Response.WriteAsync($"Bytes received do not match expectedBody at position {i}");
-                            return;
-                        }
-                    }
-
                     await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");
                 }))
                 .Build();
 
-            host.Start();
+            await host.StartAsync();
 
             return host;
         }
@@ -341,6 +369,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 foreach (var line in _requestLines)
                 {
                     await writer.WriteAsync(line).ConfigureAwait(false);
+                }
+            }
+        }
+
+        // THIS IS NOT GENERAL PURPOSE. If the initial characters could repeat, this is broken. However, since we're
+        // looking for /bytesWritten: \d+/ and the initial "b" cannot occur elsewhere in the pattern, this works.
+        private static async Task AssertStreamContains(Stream stream, string expectedSubstring)
+        {
+            var expectedBytes = Encoding.ASCII.GetBytes(expectedSubstring);
+            var exptectedLength = expectedBytes.Length;
+            var responseBuffer = new byte[exptectedLength];
+
+            var matchedChars = 0;
+
+            while (matchedChars < exptectedLength)
+            {
+                var count = await stream.ReadAsync(responseBuffer, 0, exptectedLength - matchedChars).DefaultTimeout();
+
+                if (count == 0)
+                {
+                    Assert.True(false, "Stream completed without expected substring.");
+                }
+
+                for (var i = 0; i < count && matchedChars < exptectedLength; i++)
+                {
+                    if (responseBuffer[i] == expectedBytes[matchedChars])
+                    {
+                        matchedChars++;
+                    }
+                    else
+                    {
+                        matchedChars = 0;
+                    }
                 }
             }
         }

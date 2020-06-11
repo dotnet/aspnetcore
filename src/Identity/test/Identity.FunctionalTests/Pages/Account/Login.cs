@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
         private readonly IHtmlAnchorElement _forgotPasswordLink;
         private readonly IHtmlFormElement _externalLoginForm;
         private readonly IHtmlElement _contosoButton;
+        private readonly IHtmlElement _loginButton;
 
         public Login(
             HttpClient client,
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             : base(client, login, context)
         {
             _loginForm = HtmlAssert.HasForm("#account", login);
+            _loginButton = HtmlAssert.HasElement("#login-submit", login);
             _forgotPasswordLink = HtmlAssert.HasLink("#forgot-password", login);
             if (Context.ContosoLoginEnabled)
             {
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             return new Index(
                 Client,
                 index,
-                Context.WithAuthenticatedUser());
+                Context.WithAuthenticatedUser().WithPasswordLogin());
         }
 
         public async Task LoginWrongPasswordAsync(string userName, string password)
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 
         private async Task<HttpResponseMessage> SendLoginForm(string userName, string password)
         {
-            return await Client.SendAsync(_loginForm, new Dictionary<string, string>()
+            return await Client.SendAsync(_loginForm, _loginButton, new Dictionary<string, string>()
             {
                 ["Input_Email"] = userName,
                 ["Input_Password"] = password

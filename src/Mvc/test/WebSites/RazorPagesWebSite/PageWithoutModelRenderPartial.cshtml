@@ -1,0 +1,6 @@
+﻿@page
+@using RazorPagesWebSite.Models
+
+@functions {
+    public IActionResult OnGet() => Partial("_RenderPartial", new RenderPartialModel { Value = "Hello from Razor Page" });
+}

@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="RunPublishSymbols">
+  <PropertyGroup>
+    <!-- TFM doesn't matter. These settings are required to make NuGet happy so we can restore required MSBuild packages. -->
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <ManifestsPath>artifacts\manifests\</ManifestsPath>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!-- Expire symbols after 10 years (or so) by default. -->
+    <DotNetSymbolExpirationInDays Condition="'$(DotNetSymbolExpirationInDays)' == ''">3650</DotNetSymbolExpirationInDays>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SymbolUploader.Build.Task" Version="$(MicrosoftSymbolUploaderBuildTaskPackageVersion)" />
+  </ItemGroup>
+
+  <!--
+    Initially copied from
+    https://github.com/dotnet/core-setup/blob/19390ee14c2824c39db393aff75a95788ececebf/publish/publish.proj#L242-L286
+  -->
+  <Target Name="RunPublishSymbols">
+    <ItemGroup>
+      <SymbolServerConfig
+        Include="MSDL (public symbols server)"
+        Url="https://microsoftpublicsymbols.artifacts.visualstudio.com/DefaultCollection"
+        Pat="$(MicrosoftSymbolServerPAT)" />
+
+      <SymbolServerConfig
+        Include="SymWeb (internal symbols server)"
+        Url="https://microsoft.artifacts.visualstudio.com/DefaultCollection"
+        Pat="$(SymwebSymbolServerPAT)" />
+    </ItemGroup>
+
+    <Error
+      Condition="'%(SymbolServerConfig.Pat)' == ''"
+      Text="Missing symbol server publish PAT for '%(SymbolServerConfig.Identity)'" />
+
+    <!-- Could also set SymbolDryRun, SymbolExpirationInDays or SymbolVerboseLogging. -->
+    <ItemGroup>
+      <SymbolServerPublishProject
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="
+          SymbolServerDescription=%(SymbolServerConfig.Identity);
+          SymbolServerPath=%(SymbolServerConfig.Url);
+          SymbolServerPAT=%(SymbolServerConfig.Pat)" />
+    </ItemGroup>
+
+    <!-- Note: Can't run in parallel. Symbol publish opens the zips exclusively. -->
+    <MSBuild
+      Projects="@(SymbolServerPublishProject)"
+      Targets="SetupPublishSymbols;PublishSymbols"
+      Properties="SymbolDirectory=$(SymbolDirectory)" />
+  </Target>
+
+  <Target Name="SetupPublishSymbols">
+    <ItemGroup>
+      <SymbolFilesToPublish Include="$(SymbolDirectory)/**/*.pdb" />
+      <SymbolPackagesToPublish Include="$(SymbolDirectory)/**/*.symbols.nupkg" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Publishing symbol files to '$(SymbolServerDescription)':%0A  @(SymbolFilesToPublish, '%0A  ')" />
+    <Message Importance="High" Text="Publishing symbol packages to '$(SymbolServerDescription)':%0A  @(SymbolPackagesToPublish, '%0A  ')"/>
+  </Target>
+</Project>

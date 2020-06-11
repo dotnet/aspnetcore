@@ -111,7 +111,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.VerifyAll();
         }
 
-
         [Fact]
         public void DisposeAfterDisposeDoesNotThrow()
         {

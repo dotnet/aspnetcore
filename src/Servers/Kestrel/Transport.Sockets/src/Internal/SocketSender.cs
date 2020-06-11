@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,72 +11,55 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketSender : IDisposable
+    internal sealed class SocketSender : SocketSenderReceiverBase
     {
-        private readonly Socket _socket;
-        private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
-        private readonly SocketAwaitable _awaitable;
-
         private List<ArraySegment<byte>> _bufferList;
 
-        public SocketSender(Socket socket, PipeScheduler scheduler)
+        public SocketSender(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
         {
-            _socket = socket;
-            _awaitable = new SocketAwaitable(scheduler);
-            _eventArgs.UserToken = _awaitable;
-            _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable SendAsync(ReadOnlySequence<byte> buffers)
+        public SocketAwaitableEventArgs SendAsync(in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
                 return SendAsync(buffers.First);
             }
 
-#if NETCOREAPP2_1
-            if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
-#else
-            if (_eventArgs.Buffer != null)
-#endif
+            if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
             {
-                _eventArgs.SetBuffer(null, 0, 0);
+                _awaitableEventArgs.SetBuffer(null, 0, 0);
             }
 
-            _eventArgs.BufferList = GetBufferList(buffers);
+            _awaitableEventArgs.BufferList = GetBufferList(buffers);
 
-            if (!_socket.SendAsync(_eventArgs))
+            if (!_socket.SendAsync(_awaitableEventArgs))
             {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
+                _awaitableEventArgs.Complete();
             }
 
-            return _awaitable;
+            return _awaitableEventArgs;
         }
 
-        private SocketAwaitable SendAsync(ReadOnlyMemory<byte> memory)
+        private SocketAwaitableEventArgs SendAsync(ReadOnlyMemory<byte> memory)
         {
             // The BufferList getter is much less expensive then the setter.
-            if (_eventArgs.BufferList != null)
+            if (_awaitableEventArgs.BufferList != null)
             {
-                _eventArgs.BufferList = null;
+                _awaitableEventArgs.BufferList = null;
             }
 
-#if NETCOREAPP2_1
-            _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-#else
-            var segment = memory.GetArray();
+            _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
 
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
-#endif
-            if (!_socket.SendAsync(_eventArgs))
+            if (!_socket.SendAsync(_awaitableEventArgs))
             {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
+                _awaitableEventArgs.Complete();
             }
 
-            return _awaitable;
+            return _awaitableEventArgs;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
+        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);
@@ -97,11 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
             return _bufferList;
-        }
-
-        public void Dispose()
-        {
-            _eventArgs.Dispose();
         }
     }
 }

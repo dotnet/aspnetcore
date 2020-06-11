@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/json")]
         [InlineData("application/json;Parameter1=12")]
         [InlineData("text/xml")]
-        public void Accept_MatchesForMachingRequestContentType(string contentType)
+        public void ActionConstraint_Accept_MatchesForMatchingRequestContentType(string contentType)
         {
             // Arrange
             var constraint = new ConsumesAttribute("application/json", "text/xml");
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Accept_TheFirstCandidateReturnsFalse_IfALaterOneMatches()
+        public void ActionConstraint_Accept_TheFirstCandidateReturnsFalse_IfALaterOneMatches()
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json", "text/xml");
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc
                     new List<FilterDescriptor>() { new FilterDescriptor(constraint1, FilterScope.Action) }
             };
 
-            var constraint2 = new Mock<ITestConsumeConstraint>();
+            var constraint2 = new Mock<ITestActionConsumeConstraint>();
             var action2 = new ActionDescriptor()
             {
                 FilterDescriptors =
@@ -142,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/custom")]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoMatchingCandidates_SelectsTheFirstCandidate(string contentType)
+        public void ActionConstraint_Accept_ForNoMatchingCandidates_SelectsTheFirstCandidate(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json", "text/xml");
@@ -152,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc
                     new List<FilterDescriptor>() { new FilterDescriptor(constraint1, FilterScope.Action) }
             };
 
-            var constraint2 = new Mock<ITestConsumeConstraint>();
+            var constraint2 = new Mock<ITestActionConsumeConstraint>();
             var action2 = new ActionDescriptor()
             {
                 FilterDescriptors =
@@ -179,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoRequestType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        public void ActionConstraint_Accept_ForNoRequestType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json");
@@ -219,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("application/xml")]
         [InlineData("application/custom")]
         [InlineData("invalid/invalid")]
-        public void Accept_UnrecognizedMediaType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
+        public void ActionConstraint_Accept_UnrecognizedMediaType_SelectsTheCandidateWithoutConstraintIfPresent(string contentType)
         {
             // Arrange
             var actionWithoutConstraint = new ActionDescriptor();
@@ -258,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Accept_ForNoRequestType_ReturnsTrueForAllConstraints(string contentType)
+        public void ActionConstraint_Accept_ForNoRequestType_ReturnsTrueForAllConstraints(string contentType)
         {
             // Arrange
             var constraint1 = new ConsumesAttribute("application/json");
@@ -404,11 +403,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static RouteContext CreateRouteContext(string contentType = null, object routeValues = null)
         {
-            var httpContext = new DefaultHttpContext();
-            if (contentType != null)
-            {
-                httpContext.Request.ContentType = contentType;
-            }
+            var httpContext = CreateHttpContext(contentType);
 
             var routeContext = new RouteContext(httpContext);
             routeContext.RouteData = new RouteData();
@@ -421,7 +416,18 @@ namespace Microsoft.AspNetCore.Mvc
             return routeContext;
         }
 
-        public interface ITestConsumeConstraint : IConsumesActionConstraint, IResourceFilter
+        private static HttpContext CreateHttpContext(string contentType = null, object routeValues = null)
+        {
+            var httpContext = new DefaultHttpContext();
+            if (contentType != null)
+            {
+                httpContext.Request.ContentType = contentType;
+            }
+
+            return httpContext;
+        }
+
+        internal interface ITestActionConsumeConstraint : IConsumesActionConstraint, IResourceFilter
         {
         }
     }
