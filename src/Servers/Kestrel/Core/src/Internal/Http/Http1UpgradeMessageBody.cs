@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _context.ReportApplicationError(exception);
             _completed = true;
-            return Task.CompletedTask;
+            return new ValueTask();
         }
 
         public override void CancelPendingRead()
