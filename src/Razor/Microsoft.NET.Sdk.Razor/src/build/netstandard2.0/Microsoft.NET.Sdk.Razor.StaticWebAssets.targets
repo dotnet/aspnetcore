@@ -236,7 +236,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- StaticWebAssets from packages are already available, so we don't do anything. -->
   <Target
     Name="ResolveStaticWebAssetsInputs"
-    DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
+    DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)"
+    Returns="@(StaticWebAsset)" />
 
   <!-- This is a helper task to compute the project references we need to invoke to retrieve
        the static assets for a given application. We do it this way so that we can
@@ -269,7 +270,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset
         Include="@(_ReferencedProjectStaticWebAssets)"
-        KeepMetadata="ContentRoot;BasePath;RelativePath;SourceId;SourceType" />
+        KeepMetadata="ContentRoot;BasePath;RelativePath;SourceId;SourceType;CopyToPublishDirectory" />
     </ItemGroup>
 
   </Target>
@@ -291,7 +292,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       </_ThisProjectStaticWebAsset>
 
-      <StaticWebAsset Include="@(_ThisProjectStaticWebAsset->'%(FullPath)')" RemoveMetadata="CopyToPublishDirectory;ExcludeFromSingleFile">
+      <StaticWebAsset Include="@(_ThisProjectStaticWebAsset->'%(FullPath)')" RemoveMetadata="ExcludeFromSingleFile">
         <!-- (Package, Project, '' (CurrentProject)) -->
         <SourceType></SourceType>
         <!-- Identifier describing the source, the package id, the project name, empty for the current project.  -->
@@ -513,7 +514,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        -->
       <_ExternalPublishStaticWebAsset
         Include="%(StaticWebAsset.FullPath)"
-        Condition="'%(SourceType)' != ''">
+        Condition="'%(SourceType)' != '' AND '%(StaticWebAsset.CopyToPublishDirectory)' != 'Never'">
 
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot\%(BasePath)\%(RelativePath)'))'))</RelativePath>

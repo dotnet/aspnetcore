@@ -1,0 +1,441 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.Components.Wasm.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateBlazorWebAssemblyBootJson" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BrotliCompress" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+
+  <PropertyGroup>
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
+    <SelfContained>true</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
+    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+
+    <!-- Turn off parts of the build that do not apply to WASM projects -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <PreserveCompilationReferences>false</PreserveCompilationReferences>
+    <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
+    <OutputType>exe</OutputType>
+
+    <!-- Internal properties -->
+    <_BlazorOutputPath>wwwroot\_framework\</_BlazorOutputPath>
+    <_BlazorSatelliteAssemblyCacheFile>$(IntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyCacheFile>
+  </PropertyGroup>
+
+  <!-- Temporary workaround until ILLink.targets are updated -->
+  <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
+    <IntermediateLinkDir Condition=" '$(IntermediateLinkDir)' == '' ">$(IntermediateOutputPath)linked\</IntermediateLinkDir>
+    <IntermediateLinkDir Condition=" !HasTrailingSlash('$(IntermediateLinkDir)') ">$(IntermediateLinkDir)\</IntermediateLinkDir>
+    <!-- Used to enable incremental build for the linker target. -->
+    <_LinkSemaphore>$(IntermediateOutputPath)Link.semaphore</_LinkSemaphore>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.NET.Sdk.Razor.Components.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
+
+  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies">
+    <!--
+      Calculates the outputs and the paths for Blazor WASM. This target is invoked frequently and should perform minimal work.
+    -->
+    <ItemGroup>
+      <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
+      <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
+
+      <!-- Clear out temporary build artifacts that the runtime packages -->
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.a'" />
+
+      <!--
+        ReferenceCopyLocalPaths includes satellite assemblies from referenced projects but are inexpicably missing
+        any metadata that might allow them to be differentiated. We'll explicitly add those
+        to _BlazorOutputWithTargetPath so that satellite assemblies from packages, the current project and referenced project
+        are all treated the same.
+       -->
+
+      <_BlazorCopyLocalPath
+        Include="@(ReferenceCopyLocalPaths)"
+        Exclude="@(ReferenceSatellitePaths)"/>
+
+      <_BlazorCopyLocalPath Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
+        <DestinationSubDirectory>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\</DestinationSubDirectory>
+      </_BlazorCopyLocalPath>
+
+      <_BlazorOutputWithTargetPath Include="
+          @(_BlazorCopyLocalPath);
+          @(IntermediateAssembly);
+          @(_DebugSymbolsIntermediatePath);
+          @(_BlazorJSFile)" />
+
+      <_BlazorOutputWithTargetPath Include="@(ReferenceSatellitePaths)">
+        <Culture>$([System.String]::Copy('%(ReferenceSatellitePaths.DestinationSubDirectory)').Trim('\').Trim('/'))</Culture>
+      </_BlazorOutputWithTargetPath>
+    </ItemGroup>
+
+    <!--
+      BuildingProject=false is typically set for referenced projects when building inside VisualStudio.
+
+      When building with BuildingProject=false, satellite assemblies do not get resolved (the ones for the current project and the one for
+      referenced project). Satellite assemblies from packages get resolved.
+      To workaround this, we'll cache metadata during a regular build, and rehydrate from it when BuildingProject=false.
+    -->
+    <BlazorReadSatelliteAssemblyFile
+        ReadFile="$(_BlazorSatelliteAssemblyCacheFile)"
+        Condition="'$(BuildingProject)' != 'true' AND EXISTS('$(_BlazorSatelliteAssemblyCacheFile)')">
+      <Output TaskParameter="SatelliteAssembly" ItemName="_BlazorReadSatelliteAssembly" />
+    </BlazorReadSatelliteAssemblyFile>
+
+    <ItemGroup >
+      <!-- We've imported a previously Cacheed file. Let's turn in to a _BlazorOutputWithTargetPath -->
+      <_BlazorOutputWithTargetPath
+        Include="@(_BlazorReadSatelliteAssembly)"
+        Exclude="@(_BlazorOutputWithTargetPath)"
+        Condition="'@(_BlazorReadSatelliteAssembly->Count())' != '0'" />
+
+      <!-- Calculate the target path -->
+      <_BlazorOutputWithTargetPath
+        TargetPath="$(_BlazorOutputPath)%(_BlazorOutputWithTargetPath.DestinationSubDirectory)%(FileName)%(Extension)"
+        Condition="'%(__BlazorOutputWithTargetPath.TargetPath)' == ''" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ProcessBlazorWasmOutputs" DependsOnTargets="_ResolveBlazorWasmOutputs">
+    <ItemGroup>
+      <_BlazorWriteSatelliteAssembly Include="@(_BlazorOutputWithTargetPath->HasMetadata('Culture'))" />
+
+      <!-- Retarget ReferenceCopyLocalPaths to copy to the wwwroot directory -->
+      <ReferenceCopyLocalPaths DestinationSubDirectory="$(_BlazorOutputPath)%(ReferenceCopyLocalPaths.DestinationSubDirectory)" />
+    </ItemGroup>
+
+    <!--
+      When building with BuildingProject=false, satellite assemblies do not get resolved (the ones for the current project and the one for
+      referenced project). BuildingProject=false is typically set for referenced projects when building inside VisualStudio.
+      To workaround this, we'll cache metadata during a regular build, and rehydrate from it when BuildingProject=false.
+    -->
+
+    <BlazorWriteSatelliteAssemblyFile
+      SatelliteAssembly="@(_BlazorWriteSatelliteAssembly)"
+      WriteFile="$(_BlazorSatelliteAssemblyCacheFile)"
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' != '0'" />
+
+    <Delete
+      Files="$(_BlazorSatelliteAssemblyCacheFile)"
+      Condition="'$(BuildingProject)' == 'true' AND '@(_BlazorWriteSatelliteAssembly->Count())' == '0' and EXISTS('$(_BlazorSatelliteAssemblyCacheFile)')" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorSatelliteAssemblyCacheFile)" Condition="Exists('$(_BlazorSatelliteAssemblyCacheFile)')" />
+    </ItemGroup>
+
+    <GetFileHash Files="@(_BlazorOutputWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
+    </GetFileHash>
+  </Target>
+
+  <PropertyGroup>
+    <PrepareForRunDependsOn>
+      _BlazorWasmPrepareForRun;
+      $(PrepareForRunDependsOn)
+    </PrepareForRunDependsOn>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _BlazorWasmPrepareForRun;
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs">
+    <PropertyGroup>
+      <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
+    </PropertyGroup>
+
+    <GenerateBlazorWebAssemblyBootJson
+      AssemblyPath="@(IntermediateAssembly)"
+      Resources="@(_BlazorOutputWithHash)"
+      DebugBuild="true"
+      LinkerEnabled="false"
+      CacheBootResources="$(BlazorCacheBootResources)"
+      OutputPath="$(_BlazorBuildBootJsonPath)"
+      ConfigurationFiles="$(_BlazorConfigFile)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)$(_BlazorOutputPath)blazor.boot.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_BlazorConfigFile Include="wwwroot\appsettings*.json" />
+
+      <_BlazorWebAssemblyStaticWebAsset Include="$(_BlazorBuildBootJsonPath)">
+        <SourceId>$(PackageId)</SourceId>
+        <SourceType></SourceType>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>_framework/blazor.boot.json</RelativePath>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </_BlazorWebAssemblyStaticWebAsset>
+
+      <_BlazorWebAssemblyStaticWebAsset Include="@(_BlazorOutputWithHash)">
+        <SourceId>$(PackageId)</SourceId>
+        <SourceType></SourceType>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>$([System.String]::Copy('%(_BlazorOutputWithHash.TargetPath)').Replace('\','/').Substring(8))</RelativePath>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </_BlazorWebAssemblyStaticWebAsset>
+
+      <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" />
+      <_ExternalStaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" SourceType="Generated" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Mimics the behavior of CopyFilesToOutputDirectory. We simply copy relevant build outputs to the wwwroot directory -->
+  <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
+    <Copy
+        SourceFiles="@(IntermediateAssembly)"
+        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
+        Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+
+    <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
+
+    <Copy
+        SourceFiles="@(_DebugSymbolsIntermediatePath)"
+        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
+        Condition="'$(_DebugSymbolsProduced)'=='true' and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true' and '$(CopyOutputSymbolsToOutputDirectory)'=='true'">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+
+    <Copy
+        SourceFiles="@(IntermediateSatelliteAssembliesWithTargetPath)"
+        DestinationFiles="@(IntermediateSatelliteAssembliesWithTargetPath->'$(OutDir)$(_BlazorOutputPath)%(Culture)\$(TargetName).resources.dll')"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)"
+        Condition="'@(IntermediateSatelliteAssembliesWithTargetPath)' != ''" >
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+
+    <Copy
+        SourceFiles="@(_BlazorJSFile);$(_BlazorBuildBootJsonPath)"
+        DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+  </Target>
+
+  <Target Name="_CreateBlazorTrimmerRootDescriptorFiles" BeforeTargets="ILLink" AfterTargets="ComputeResolvedFilesToPublishList">
+    <PropertyGroup>
+      <_BlazorApplicationTrimmerDescriptorFile>$(IntermediateOutputPath)default.trimmerdescriptor.xml</_BlazorApplicationTrimmerDescriptorFile>
+      <_BlazorTypeGranularTrimmerDescriptorFile>$(IntermediateOutputPath)typegranularity.trimmerdescriptor.xml</_BlazorTypeGranularTrimmerDescriptorFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BlazorTypeGranularAssembly
+          Include="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))">
+        <Required>false</Required>
+        <Preserve>all</Preserve>
+      </_BlazorTypeGranularAssembly>
+
+      <_BlazorApplicationAssembly Include="@(IntermediateAssembly)">
+        <Required>true</Required>
+      </_BlazorApplicationAssembly>
+    </ItemGroup>
+
+    <CreateBlazorTrimmerRootDescriptorFile
+      Assemblies="@(_BlazorApplicationAssembly)"
+      TrimmerFile="$(_BlazorApplicationTrimmerDescriptorFile)" />
+
+    <CreateBlazorTrimmerRootDescriptorFile
+      Assemblies="@(_BlazorTypeGranularAssembly)"
+      TrimmerFile="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
+
+    <ItemGroup>
+      <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
+      <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
+      <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)Linkerworkaround.xml" />
+
+      <FileWrites Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
+      <FileWrites Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ProcessPublishFilesForBlazor" DependsOnTargets="_ResolveBlazorWasmOutputs" AfterTargets="ILLink">
+
+    <!--
+      ResolvedFileToPublish.Culture is missing for satellite assemblies from project references.
+      Since we need the culture to correctly generate blazor.boot.json, we cross-reference the culture we calculate as part of _ResolveBlazorWasmOutputs
+    -->
+    <JoinItems Left="@(ResolvedFileToPublish)"
+               Right="@(_BlazorOutputWithTargetPath->HasMetadata('Culture'))"
+               LeftMetadata="*"
+               RightMetadata="Culture"
+               ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ResolvedSatelliteToPublish" />
+    </JoinItems>
+
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(_ResolvedSatelliteToPublish)" />
+      <ResolvedFileToPublish Include="@(_ResolvedSatelliteToPublish)" />
+
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.a'" />
+
+      <!-- Retarget so that items are published to the wwwroot directory -->
+      <ResolvedFileToPublish
+        RelativePath="$(_BlazorOutputPath)%(ResolvedFileToPublish.RelativePath)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)' != 'web.config' AND !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
+
+      <!-- Remove pdbs from the publish output -->
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'$(BlazorWebAssemblyEnableDebugging)' != 'true' AND '%(Extension)' == '.pdb'" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
+      <ResolvedFileToPublish
+         Include="$(MSBuildThisFileDirectory)BlazorWasm.web.config"
+         ExcludeFromSingleFile="true"
+         CopyToPublishDirectory="PreserveNewest"
+         RelativePath="web.config" />
+    </ItemGroup>
+
+    <!-- Generate the publish boot json -->
+    <ItemGroup>
+      <_BlazorPublishBootResource
+        Include="@(ResolvedFileToPublish)"
+        Condition="$([System.String]::Copy('%(RelativePath)').Replace('\','/').StartsWith('wwwroot/_framework')) AND '%(Extension)' != '.a'" />
+    </ItemGroup>
+
+    <GetFileHash Files="@(_BlazorPublishBootResource)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
+    </GetFileHash>
+
+    <GenerateBlazorWebAssemblyBootJson
+      AssemblyPath="@(IntermediateAssembly)"
+      Resources="@(_BlazorPublishBootResourceWithHash)"
+      DebugBuild="false"
+      LinkerEnabled="$(PublishTrimmed)"
+      CacheBootResources="$(BlazorCacheBootResources)"
+      OutputPath="$(IntermediateOutputPath)blazor.publish.boot.json"
+      ConfigurationFiles="$(_BlazorConfigFile)" />
+
+    <ItemGroup>
+      <ResolvedFileToPublish
+        Include="$(IntermediateOutputPath)blazor.publish.boot.json"
+        RelativePath="$(_BlazorOutputPath)blazor.boot.json" />
+
+      <ResolvedFileToPublish
+        Include="@(_BlazorJSFile)"
+        RelativePath="$(_BlazorOutputPath)%(FileName)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BlazorCompressPublishFiles" AfterTargets="_ProcessPublishFilesForBlazor" Condition="'$(BlazorEnableCompression)' != 'false'">
+    <PropertyGroup>
+      <_CompressedFileOutputPath>$(IntermediateOutputPath)compressed\</_CompressedFileOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BrotliCompressionFile
+        Include="@(ResolvedFileToPublish)"
+        TargetPath="$(_CompressedFileOutputPath)%(ResolvedFileToPublish.RelativePath).br"
+        RelativePath="%(ResolvedFileToPublish.RelativePath).br"
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
+    </ItemGroup>
+
+    <Message Text="Compressing Blazor WebAssembly publish artifacts. This may take a while..." Importance="High" />
+
+    <BrotliCompress
+      FilesToCompress="@(_BrotliCompressionFile)"
+      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      SkipIfOutputIsNewer="true"
+      ToolAssembly="$(_RazorToolAssembly)" />
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="%(_BrotliCompressionFile.TargetPath)" RelativePath="%(_BrotliCompressionFile.RelativePath)" />
+      <FileWrites Include="%(_BrotliCompressionFile.TargetPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_SetupPublishSemaphore" BeforeTargets="PrepareForPublish">
+    <PropertyGroup>
+      <!--
+        Add marker that indicates Blazor WASM is doing a publish. This is used to identify when GetCopyToPublishDirectoryItems
+        is invoked as a result of a P2P reference.
+      -->
+      <_PublishingBlazorWasmProject>true</_PublishingBlazorWasmProject>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GetBlazorWasmFilesForPublishInner"
+    DependsOnTargets="_ResolveBlazorWasmOutputs;ComputeFilesToPublish"
+    Returns="@(ResolvedFileToPublish)" />
+
+  <Target Name="_GetBlazorWasmFilesForPublish" BeforeTargets="GetCopyToPublishDirectoryItems">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GetBlazorWasmFilesForPublishInner"
+      Properties="BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;_PublishingBlazorWasmProject=true"
+      RemoveProperties="NoBuild"
+      BuildInParallel="$(BuildInParallel)"
+      Condition="'$(_PublishingBlazorWasmProject)' != 'true'">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedFileToPublish" />
+    </MSBuild>
+
+    <ItemGroup>
+      <AllPublishItemsFullPathWithTargetPath Include="@(_ResolvedFileToPublish->'%(FullPath)')">
+        <TargetPath>%(RelativePath)</TargetPath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </AllPublishItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BlazorApplyLinkPreferencesToContent" BeforeTargets="AssignTargetPaths;ResolveCurrentProjectStaticWebAssetsInputs;ResolveStaticWebAssetsInputs" Returns="@(Content)">
+    <ItemGroup>
+      <Content
+        Condition="'%(Content.Link)' != '' AND '%(Content.CopyToPublishDirectory)' == '' AND $([System.String]::Copy('%(Content.Link)').Replace('\','/').StartsWith('wwwroot/'))"
+        CopyToPublishDirectory="PreserveNewest" />
+
+    </ItemGroup>
+  </Target>
+</Project>

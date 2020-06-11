@@ -14,4 +14,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorSdkCurrentVersionProps>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
     <RazorSdkCurrentVersionTargets>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
+
+  <!-- Temporary until we can untangle the build -->
+  <PropertyGroup Condition="'$(UseBlazorWebAssembly)' == 'true'">
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <PublishTrimmed>true</PublishTrimmed>
+    <SelfContained>true</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
 </Project>

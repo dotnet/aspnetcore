@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
@@ -18,9 +17,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public bool PreserveWorkingDirectory { get; set; }
 #endif
 
-        public static ProjectDirectory Create(string originalProjectName, string targetProjectName, string baseDirectory, string[] additionalProjects, string language)
+        public readonly struct ProjectDirectoryOptions
         {
-            var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", baseDirectory, Path.GetRandomFileName());
+            public ProjectDirectoryOptions(string baseDirectory, string targetProjectName, string language)
+            {
+                BaseDirectory = baseDirectory;
+                TargetProjectName = targetProjectName;
+                Language = language;
+            }
+
+            public string TargetProjectName { get; }
+
+            public string BaseDirectory { get; }
+
+            public string Language { get; }
+        }
+
+        public static ProjectDirectory Create(string projectName, params string[] additionalProjects) => Create(projectName, default, additionalProjects);
+
+        public static ProjectDirectory Create(string originalProjectName, ProjectDirectoryOptions options, params string[] additionalProjects)
+        {
+            // string targetProjectName, string baseDirectory, 
+            var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", options.BaseDirectory ?? string.Empty, Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
 
             try
@@ -50,30 +68,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
 
                 // Rename the csproj/fsproj
-                string extension;
-                if (language.Equals("C#", StringComparison.OrdinalIgnoreCase))
-                {
-                    extension = ".csproj";
-                }
-                else if (language.Equals("F#", StringComparison.OrdinalIgnoreCase))
+                var extension = ".csproj";
+                if (string.Equals("F#", options.Language, StringComparison.OrdinalIgnoreCase))
                 {
                     extension = ".fsproj";
                 }
-                else
-                {
-                    throw new InvalidOperationException($"Language {language} is not supported.");
-                }
+
                 var directoryPath = Path.Combine(destinationPath, originalProjectName);
-                var oldProjectFilePath = Path.Combine(directoryPath, originalProjectName + extension);
-                var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + extension);
-                File.Move(oldProjectFilePath, newProjectFilePath);
+                var projectFilePath = Path.Combine(directoryPath, originalProjectName + extension);
+                if (options.TargetProjectName != null)
+                {
+                    var newProjectFilePath = Path.Combine(directoryPath, options.TargetProjectName + extension);
+                    File.Move(projectFilePath, newProjectFilePath);
+                    projectFilePath = newProjectFilePath;
+                }
 
                 CopyRepositoryAssets(repositoryRoot, destinationPath);
 
                 return new ProjectDirectory(
                     destinationPath,
                     directoryPath,
-                    newProjectFilePath);
+                    projectFilePath);
             }
             catch
             {
@@ -127,7 +142,7 @@ $@"<Project>
 </Project>";
                 File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);
 
-                new List<string> { "Directory.Build.props", "Directory.Build.targets", "RazorTest.Introspection.targets" }
+                new List<string> { "Directory.Build.props", "Directory.Build.targets", "RazorTest.Introspection.targets", "blazor.webassembly.js" }
                     .ForEach(file =>
                     {
                         var source = Path.Combine(testAppsRoot, file);
@@ -149,6 +164,12 @@ $@"<Project>
             }
         }
 
+        public ProjectDirectory GetSibling(string projectName)
+        {
+            var siblingDirectory = Path.GetFullPath(Path.Combine(DirectoryPath, "..", projectName));
+            return new ProjectDirectory(SolutionPath, siblingDirectory, Path.Combine(siblingDirectory, projectName + ".csproj"));
+        }
+
         protected ProjectDirectory(string solutionPath, string directoryPath, string projectFilePath)
         {
             SolutionPath = solutionPath;
@@ -156,11 +177,35 @@ $@"<Project>
             ProjectFilePath = projectFilePath;
         }
 
+        public string TargetFramework { get; set; } = BuildVariables.DefaultNetCoreTargetFramework;
+
+        public string Configuration { get; set; } =
+#if DEBUG
+            "Debug";
+#else
+            "Release";
+#endif
+
+        /// <summary>
+        /// Razor-Temp\unique-id\project
+        /// </summary>
         public string DirectoryPath { get; }
 
+        /// <summary>
+        /// Razor-Temp\unique-id\project\project.csproj
+        /// </summary>
         public string ProjectFilePath { get;}
 
+        /// <summary>
+        /// Razor-Temp\unique-id\
+        /// </summary>
         public string SolutionPath { get; }
+
+        public string IntermediateOutputDirectory => Path.Combine("obj", Configuration, TargetFramework);
+
+        public string BuildOutputDirectory => Path.Combine("bin", Configuration, TargetFramework);
+
+        public string PublishOutputDirectory => Path.Combine(BuildOutputDirectory, "publish");
 
         public void Dispose()
         {
@@ -209,6 +254,32 @@ $@"<Project>
             while (directoryInfo.Parent != null);
 
             throw new Exception($"File {fileName} could not be found in {baseDirectory} or its parent directories.");
+        }
+
+        internal void AddProjectFileContent(string content)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var existing = File.ReadAllText(ProjectFilePath);
+            var updated = existing.Replace("<!-- Test Placeholder -->", content);
+            File.WriteAllText(ProjectFilePath, updated);
+        }
+
+        internal void AddDirectoryBuildContent(string content)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var filepath = Path.Combine(DirectoryPath, "Directory.Build.props");
+
+            var existing = File.ReadAllText(filepath);
+            var updated = existing.Replace("<!-- Test Placeholder -->", content);
+            File.WriteAllText(filepath, updated);
         }
     }
 }

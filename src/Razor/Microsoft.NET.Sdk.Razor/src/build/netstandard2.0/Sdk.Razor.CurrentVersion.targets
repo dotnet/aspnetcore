@@ -33,12 +33,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net5.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
+    <_RazorToolAssembly>$(RazorSdkDirectoryRoot)tools\netcoreapp3.0\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
   <PropertyGroup>
     <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
     <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">true</_TargetingNETCoreApp30OrLater>
+    <_TargetingNET50OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '5.0'">true</_TargetingNET50OrLater>
 
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
@@ -354,6 +356,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
 
+  <Import Project="Microsoft.NET.Sdk.Razor.Components.Wasm.targets" Condition="'$(_TargetingNET50OrLater)' == 'true' AND '$(UseBlazorWebAssembly)' == 'true'" />
+  
   <!--
     These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
 

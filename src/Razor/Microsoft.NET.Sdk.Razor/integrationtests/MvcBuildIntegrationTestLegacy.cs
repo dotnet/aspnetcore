@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected IDisposable CreateTestProject()
         {
-            Project = ProjectDirectory.Create(TestProjectName, TestProjectName, string.Empty, Array.Empty<string>(), "C#");
+            Project = ProjectDirectory.Create(TestProjectName);
             MSBuildIntegrationTestBase.TargetFramework = TargetFramework;
 
             return new Disposable();

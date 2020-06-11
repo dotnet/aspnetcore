@@ -16,6 +16,7 @@
 
     <RepoRoot Condition="'$(BuildingTestAppsIndependently)' == 'true' AND '$(RepoRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, 'global.json'))\</RepoRoot>
     <RazorSdkArtifactsDirectory>$(RepoRoot)artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
+    <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\Versions.props" />
@@ -26,6 +27,9 @@
 
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+
+    <!-- Turn down the compression level for brotli -->
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->
@@ -37,7 +41,6 @@
     <!-- Have the SDK treat the MvcShim as an MVC assembly -->
     <_MvcAssemblyName Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
   </ItemGroup>
-
   <ItemGroup Condition="$(BuildingTestAppsIndependently) == 'false'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
         Version="$(MicrosoftNetCompilersToolsetPackageVersion)"

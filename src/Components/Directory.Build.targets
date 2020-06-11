@@ -1,17 +1,24 @@
 ﻿<Project>
+  <PropertyGroup Condition="'$(UseBlazorWebAssembly)' == 'true'">
+    <BlazorWebAssemblyJSPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorWebAssemblyJSMapPath>$(BlazorWebAssemblyJSPath).map</BlazorWebAssemblyJSMapPath>
+
+    <_BlazorDevServerPath>$(RepoRoot)src/Components/WebAssembly/DevServer/src/bin/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
+    <RunCommand>dotnet</RunCommand>
+    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; serve --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
     <ProjectReference
-      Condition="'$(ReferenceBlazorBuildLocally)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
+      Condition="'$(UseBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
       Private="false" />
   </ItemGroup>
-
-  <Import Project="WebAssembly\Build\src\ReferenceFromSource.props" Condition="'$(ReferenceBlazorBuildLocally)' == 'true'" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 

@@ -38,8 +38,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Used to hash file inputs for RazorGenerate -->
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
-
-    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(RazorSdkDirectoryRoot)tools\netcoreapp3.0\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
   <!--
