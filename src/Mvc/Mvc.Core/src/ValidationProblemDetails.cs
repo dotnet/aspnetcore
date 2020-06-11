@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -11,16 +13,21 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// A <see cref="ProblemDetails"/> for validation errors.
     /// </summary>
+    [JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
     public class ValidationProblemDetails : ProblemDetails
     {
         /// <summary>
-        /// Intializes a new instance of <see cref="ValidationProblemDetails"/>.
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
         public ValidationProblemDetails()
         {
             Title = Resources.ValidationProblemDescription_Title;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="modelState"/>.
+        /// </summary>
+        /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
         public ValidationProblemDetails(ModelStateDictionary modelState)
             : this()
         {
@@ -62,8 +69,24 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="errors"/>.
         /// </summary>
+        /// <param name="errors">The validation errors.</param>
+        public ValidationProblemDetails(IDictionary<string, string[]> errors)
+            : this()
+        {
+            if (errors == null)
+            {
+                throw new ArgumentNullException(nameof(errors));
+            }
+
+            Errors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
+        /// </summary>
+        [JsonPropertyName("errors")]
         public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
     }
 }

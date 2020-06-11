@@ -1,0 +1,5 @@
+<!-- Intentionally does not import parent Directory.Build.props file to isolate templates projects from the rest of the repo -->
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\dependencies.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\sources.props" />
+</Project>

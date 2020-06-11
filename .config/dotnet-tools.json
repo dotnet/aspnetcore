@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-serve": {
+      "version": "1.7.125",
+      "commands": [
+        "dotnet-serve"
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
             {
                 AllowAutoRedirect = false,
                 UseCookies = false,
-                
             };
 
             return new HttpClient(handler)
@@ -229,7 +228,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                     // on Windows, by which time the logic in SockJS has already timed out and made
                     // it fall back on some other transport (xhr_streaming, usually). It's fine
                     // on Linux though, completing almost instantly.
-                    // 
+                    //
                     // The slowness on Windows does not cause a problem though, because the transport
                     // fallback logic works correctly and doesn't surface any errors, but it would be
                     // better if ConnectAsync was fast enough and the initial Websocket transport

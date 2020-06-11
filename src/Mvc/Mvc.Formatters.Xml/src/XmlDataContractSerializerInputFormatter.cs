@@ -4,17 +4,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -25,18 +22,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private const int DefaultMemoryThreshold = 1024 * 30;
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
-        private readonly bool _suppressInputFormatterBuffering;
         private readonly MvcOptions _options;
         private DataContractSerializerSettings _serializerSettings;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
         /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public XmlDataContractSerializerInputFormatter()
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        public XmlDataContractSerializerInputFormatter(MvcOptions options)
         {
+            _options = options;
+
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
@@ -46,31 +45,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             _serializerSettings = new DataContractSerializerSettings();
 
-            WrapperProviderFactories = new List<IWrapperProviderFactory>();
-            WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
-        /// </summary>
-        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public XmlDataContractSerializerInputFormatter(bool suppressInputFormatterBuffering)
-            : this()
-        {
-            _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="MvcOptions"/>.</param>
-        public XmlDataContractSerializerInputFormatter(MvcOptions options)
-#pragma warning disable CS0618
-            : this()
-#pragma warning restore CS0618
-        {
-            _options = options;
+            WrapperProviderFactories = new List<IWrapperProviderFactory>
+            {
+                new SerializableErrorWrapperProviderFactory(),
+            };
         }
 
         /// <summary>
@@ -139,44 +117,70 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var request = context.HttpContext.Request;
+            Stream readStream = new NonDisposableStream(request.Body);
+            var disposeReadStream = false;
 
-            var suppressInputFormatterBuffering = _options?.SuppressInputFormatterBuffering ?? _suppressInputFormatterBuffering;
-
-            if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
+            if (readStream.CanSeek)
+            {
+                // The most common way of getting here is the user has request buffering on.
+                // However, request buffering isn't eager, and consequently it will peform pass-thru synchronous
+                // reads as part of the deserialization.
+                // To avoid this, drain and reset the stream.
+                var position = request.Body.Position;
+                await readStream.DrainAsync(CancellationToken.None);
+                readStream.Position = position;
+            }
+            else if (!_options.SuppressInputFormatterBuffering)
             {
                 // XmlDataContractSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
+                var memoryThreshold = DefaultMemoryThreshold;
+                var contentLength = request.ContentLength.GetValueOrDefault();
+                if (contentLength > 0 && contentLength < memoryThreshold)
+                {
+                    // If the Content-Length is known and is smaller than the default buffer size, use it.
+                    memoryThreshold = (int)contentLength;
+                }
 
-                await request.Body.DrainAsync(CancellationToken.None);
-                request.Body.Seek(0L, SeekOrigin.Begin);
+                readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
+                // Ensure the file buffer stream is always disposed at the end of a request.
+                request.HttpContext.Response.RegisterForDispose(readStream);
+
+                await readStream.DrainAsync(CancellationToken.None);
+                readStream.Seek(0L, SeekOrigin.Begin);
+
+                disposeReadStream = true;
             }
 
             try
             {
-                using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), encoding))
+                using var xmlReader = CreateXmlReader(readStream, encoding);
+                var type = GetSerializableType(context.ModelType);
+                var serializer = GetCachedSerializer(type);
+
+                var deserializedObject = serializer.ReadObject(xmlReader);
+
+                // Unwrap only if the original type was wrapped.
+                if (type != context.ModelType)
                 {
-                    var type = GetSerializableType(context.ModelType);
-                    var serializer = GetCachedSerializer(type);
-
-                    var deserializedObject = serializer.ReadObject(xmlReader);
-
-                    // Unwrap only if the original type was wrapped.
-                    if (type != context.ModelType)
+                    if (deserializedObject is IUnwrappable unwrappable)
                     {
-                        if (deserializedObject is IUnwrappable unwrappable)
-                        {
-                            deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
-                        }
+                        deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
                     }
-
-                    return InputFormatterResult.Success(deserializedObject);
                 }
+
+                return InputFormatterResult.Success(deserializedObject);
             }
             catch (SerializationException exception)
             {
                 throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception);
+            }
+            finally
+            {
+                if (disposeReadStream)
+                {
+                    await readStream.DisposeAsync();
+                }
             }
         }
 

@@ -1,0 +1,8 @@
+<p>
+    Current count:
+    <strong id="current-count">@CurrentCounter.NumClicks</strong>
+</p>
+
+@code {
+    [CascadingParameter] CounterDTO CurrentCounter { get; set; }
+}

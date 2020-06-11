@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Exclude the TestFiles directory from default wildcards -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embed test files so they can be referenced in tests -->
+    <EmbeddedResource Include="TestFiles\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(GenerateBaselines)'=='true'">
+    <DefineConstants>GENERATE_BASELINES;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="RestoreTestAssets" AfterTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <ItemGroup>
+      <_TestAsset Include="..\testassets\standalone\standalone.csproj" />
+      <_TestAsset Include="..\testassets\blazorhosted\blazorhosted.csproj" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(_TestAsset)"
+      Targets="Restore"
+      Properties="
+        RepoRoot=$(RepoRoot);
+        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)" />
+  </Target>
+
+</Project>

@@ -458,7 +458,7 @@ namespace MusicStore.Controllers
 
             // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
             // AuthType to sign out.
-            var appEnv = HttpContext.RequestServices.GetService<IHostingEnvironment>();
+            var appEnv = HttpContext.RequestServices.GetService<IWebHostEnvironment>();
             if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
             {
                 return new SignOutResult("OpenIdConnect", new AuthenticationProperties

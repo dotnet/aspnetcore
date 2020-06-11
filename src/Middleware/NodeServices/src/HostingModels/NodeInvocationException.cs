@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
@@ -5,6 +8,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <summary>
     /// Represents an exception caused by invoking Node.js code.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class NodeInvocationException : Exception
     {
         /// <summary>

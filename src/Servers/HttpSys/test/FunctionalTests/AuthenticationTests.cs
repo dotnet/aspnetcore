@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -168,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task AuthTypes_AccessUserInOnCompleted_Success()
         {
-            var completed = new ManualResetEvent(false);
+            var completed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             string userName = null;
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
             using (var server = Utilities.CreateDynamicHost(authTypes, DenyAnoymous, out var address, httpContext =>
@@ -179,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 httpContext.Response.OnCompleted(() =>
                 {
                     userName = httpContext.User.Identity.Name;
-                    completed.Set();
+                    completed.SetResult(0);
                     return Task.FromResult(0);
                 });
                 return Task.FromResult(0);
@@ -187,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(completed.WaitOne(TimeSpan.FromSeconds(5)));
+                await completed.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
                 Assert.False(string.IsNullOrEmpty(userName));
             }
         }
@@ -239,7 +238,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]

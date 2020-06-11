@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,8 +20,7 @@ namespace SampleStartups
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                //.UseKestrel()
-                .UseFakeServer()
+                .UseKestrel()
                 // Each of these three sets ApplicationName to the current assembly, which is needed in order to
                 // scan the assembly for HostingStartupAttributes.
                 // .UseSetting(WebHostDefaults.ApplicationKey, "SampleStartups")

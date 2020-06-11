@@ -13,7 +13,8 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IdentityServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds and configures the identity system for the specified User and Role types.
+        /// Adds and configures the identity system for the specified User type. Role services are not added 
+        /// by default but can be added with <see cref="IdentityBuilder.AddRoles{TRole}"/>.
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
         /// <param name="services">The services available in the application.</param>
@@ -22,7 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.AddIdentityCore<TUser>(o => { });
 
         /// <summary>
-        /// Adds and configures the identity system for the specified User and Role types.
+        /// Adds and configures the identity system for the specified User type. Role services are not added by default 
+        /// but can be added with <see cref="IdentityBuilder.AddRoles{TRole}"/>.
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
         /// <param name="services">The services available in the application.</param>
@@ -39,10 +41,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
             services.TryAddScoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
             services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
             // No interface for the error describer so we can add errors without rev'ing the interface
             services.TryAddScoped<IdentityErrorDescriber>();
             services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser>>();
-            services.TryAddScoped<UserManager<TUser>, UserManager<TUser>>();
+            services.TryAddScoped<UserManager<TUser>>();
 
             if (setupAction != null)
             {

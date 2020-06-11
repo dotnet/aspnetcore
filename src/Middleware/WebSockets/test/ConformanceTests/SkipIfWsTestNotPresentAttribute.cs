@@ -1,5 +1,5 @@
 using System;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest

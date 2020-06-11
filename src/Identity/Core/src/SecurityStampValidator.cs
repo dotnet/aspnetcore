@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity
@@ -23,7 +24,8 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
         /// <param name="clock">The system clock.</param>
-        public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock)
+        /// <param name="logger">The logger.</param>
+        public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger)
         {
             if (options == null)
             {
@@ -36,6 +38,7 @@ namespace Microsoft.AspNetCore.Identity
             SignInManager = signInManager;
             Options = options.Value;
             Clock = clock;
+            Logger = logger.CreateLogger(this.GetType().FullName);
         }
 
         /// <summary>
@@ -53,6 +56,14 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         public ISystemClock Clock { get; }
 
+        /// <summary>
+        /// Gets the <see cref="ILogger"/> used to log messages.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ILogger"/> used to log messages.
+        /// </value>
+        public ILogger Logger { get; set; }
+        
         /// <summary>
         /// Called when the security stamp has been verified.
         /// </summary>
@@ -94,7 +105,7 @@ namespace Microsoft.AspNetCore.Identity
         /// the identity.
         /// </summary>
         /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
-        /// and <see cref="Http.Authentication.AuthenticationProperties"/> to validate.</param>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
@@ -121,6 +132,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
                 else
                 {
+                    Logger.LogDebug(0, "Security stamp validation failed, rejecting cookie.");
                     context.RejectPrincipal();
                     await SignInManager.SignOutAsync();
                 }

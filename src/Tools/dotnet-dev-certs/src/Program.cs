@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue())))
                         {
                             reporter.Error(@"Incompatible set of flags. Sample usages
+'dotnet dev-certs https'
 'dotnet dev-certs https --clean'
 'dotnet dev-certs https --check --trust'
 'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'");
@@ -104,10 +105,10 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 app.HelpOption("-h|--help");
 
                 app.OnExecute(() =>
-                    {
-                        app.ShowHelp();
-                        return Success;
-                    });
+                {
+                    app.ShowHelp();
+                    return Success;
+                });
 
                 return app.Execute(args);
             }
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 }
 
                 manager.CleanupHttpsCertificates();
-                reporter.Verbose("HTTPS development certificates successfully removed from the machine.");
+                reporter.Output("HTTPS development certificates successfully removed from the machine.");
                 return Success;
             }
             catch(Exception e)
@@ -150,10 +151,10 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         {
             var now = DateTimeOffset.Now;
             var certificateManager = new CertificateManager();
-            var certificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            var certificates = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             if (certificates.Count == 0)
             {
-                reporter.Verbose("No valid certificate found.");
+                reporter.Output("No valid certificate found.");
                 return ErrorNoValidCertificateFound;
             }
             else
@@ -167,22 +168,21 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 {
                     reporter.Verbose("A valid certificate was found.");
                 }
-
             }
 
             if (trust != null && trust.HasValue())
             {
                 var store = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? StoreName.My : StoreName.Root;
-                var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
+                var trustedCertificates = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
                 if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                 {
-                    reporter.Verbose($@"The following certificates were found, but none of them is trusted:
+                    reporter.Output($@"The following certificates were found, but none of them is trusted:
 {string.Join(Environment.NewLine, certificates.Select(c => $"{c.Subject} - {c.Thumbprint}"))}");
                     return ErrorCertificateNotTrusted;
                 }
                 else
                 {
-                    reporter.Verbose("A trusted certificate was found.");
+                    reporter.Output("A trusted certificate was found.");
                 }
             }
 
@@ -199,6 +199,13 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 reporter.Warn($"A valid HTTPS certificate with a key accessible across security partitions was not found. The following command will run to fix it:" + Environment.NewLine +
                     "'sudo security set-key-partition-list -D localhost -S unsigned:,teamid:UBF8T346G9'" + Environment.NewLine +
                     "This command will make the certificate key accessible across security partitions and might prompt you for your password. For more information see: https://aka.ms/aspnetcore/2.1/troubleshootcertissues");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && manager.HasValidCertificateWithInnaccessibleKeyAcrossPartitions() || manager.GetHttpsCertificates().Count == 0)
+            {
+                reporter.Warn($"A valid HTTPS certificate with a key accessible across security partitions was not found. The following command will run to fix it:" + Environment.NewLine +
+                    "'sudo security set-key-partition-list -D localhost -S unsigned:,teamid:UBF8T346G9'" + Environment.NewLine +
+                    "This command will make the certificate key accessible across security partitions and might prompt you for your password. For more information see: https://aka.ms/aspnetcore/3.1/troubleshootcertissues");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && trust?.HasValue() == true)
@@ -224,7 +231,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 password.HasValue(),
                 password.Value());
 
-            switch (result)
+            reporter.Verbose(string.Join(Environment.NewLine, result.Diagnostics.Messages));
+
+            switch (result.ResultCode)
             {
                 case EnsureCertificateResult.Succeeded:
                     reporter.Output("The HTTPS developer certificate was generated successfully.");

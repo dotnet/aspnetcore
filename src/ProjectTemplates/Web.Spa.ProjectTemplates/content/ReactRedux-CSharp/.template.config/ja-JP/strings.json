@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "React.js と Redux",
+    "description": "ASP.NET Core アプリケーションを React.js と Redux で作成するためのプロジェクト テンプレートです。"
+  }
+}

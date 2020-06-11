@@ -10,7 +10,7 @@ namespace FunctionalTests
         public string String { get; set; }
         public int[] IntArray { get; set; }
         public byte[] ByteArray { get; set; }
-        public Guid GUID { get; set; }
+        public Guid Guid { get; set; }
         public DateTime DateTime { get;set; }
     }
 }

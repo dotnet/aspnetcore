@@ -1,0 +1,16 @@
+@page "/prerendered-redirection"
+@inject NavigationManager NavigationManager
+
+@{
+    throw new InvalidOperationException("The rendering logic should never be executed");
+}
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.Uri;
+        var destination = uri.Substring(uri.IndexOf("?destination=") + 13);
+        NavigationManager.NavigateTo(destination);
+        return Task.CompletedTask;
+    }
+}

@@ -9,8 +9,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
@@ -71,10 +73,51 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app =>
+                    {
+                        app.UseRouting();
+
+                        app.Use(next => context =>
+                        {
+                            // Assign an endpoint, this will make the default files noop.
+                            context.SetEndpoint(new Endpoint((c) =>
+                            {
+                                return context.Response.WriteAsync(context.Request.Path.Value);
+                            },
+                            new EndpointMetadataCollection(),
+                            "test"));
+
+                            return next(context);
+                        });
+
+                        app.UseDefaultFiles(new DefaultFilesOptions
+                        {
+                            RequestPath = new PathString(""),
+                            FileProvider = fileProvider
+                        });
+
+                        app.UseEndpoints(endpoints => {});
+                    },
+                    services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+
+                var response = await server.CreateRequest("/SubFolder/").GetAsync();
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("/SubFolder/", await response.Content.ReadAsStringAsync()); // Should not be modified
+            }
+        }
+
         [Theory]
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("", @"./", "/SubFolder/")]
         [InlineData("", @"./SubFolder", "/")]
+        [InlineData("", @"./SubFolder", "/你好/")]
+        [InlineData("", @"./SubFolder", "/你好/世界/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified_All(string baseUrl, string baseDir, string requestUrl)
         {
             await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
@@ -85,6 +128,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("", @".\", "/SubFolder/")]
         [InlineData("", @".\subFolder", "/")]
+        [InlineData("", @".\SubFolder", "/你好/")]
+        [InlineData("", @".\SubFolder", "/你好/世界/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified_Windows(string baseUrl, string baseDir, string requestUrl)
         {
             await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
@@ -114,6 +159,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("", @".", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "?a=b")]
+        [InlineData("", @"./SubFolder", "/你好", "?a=b")]
+        [InlineData("", @"./SubFolder", "/你好/世界", "?a=b")]
         public async Task NearMatch_RedirectAddSlash_All(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
@@ -124,6 +171,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("", @".\", "/SubFolder", "")]
         [InlineData("", @".\", "/SubFolder", "?a=b")]
+        [InlineData("", @".\SubFolder", "/你好", "?a=b")]
+        [InlineData("", @".\SubFolder", "/你好/世界", "?a=b")]
         public async Task NearMatch_RedirectAddSlash_Windows(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
@@ -141,7 +190,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                // the url in the header of `Location: /xxx/xxx` should be encoded
+                var actualURL = response.Headers.GetValues("Location").FirstOrDefault();
+                Assert.Equal("http://localhost" + baseUrl + new PathString(requestUrl + "/") + queryString, actualURL);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
@@ -169,12 +220,12 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvder = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = fileProvder
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
 

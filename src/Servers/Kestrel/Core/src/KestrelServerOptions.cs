@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,18 +39,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AddServerHeader { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value that determines how Kestrel should schedule user callbacks.
-        /// </summary>
-        /// <remarks>The default mode is <see cref="SchedulingMode.Default"/></remarks>
-        public SchedulingMode ApplicationSchedulingMode { get; set; } = SchedulingMode.Default;
-
-        /// <summary>
-        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/> 
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
-        /// Defaults to true.
+        /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value that controls whether the string values materialized
+        /// will be reused across requests; if they match, or if the strings will always be reallocated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DisableStringReuse { get; set; } = false;
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
@@ -90,6 +93,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal bool IsDevCertLoaded { get; set; }
 
         /// <summary>
+        /// Treat request headers as Latin-1 or ISO/IEC 8859-1 instead of UTF-8.
+        /// </summary>
+        internal bool Latin1RequestHeaders { get; set; }
+
+        /// <summary>
         /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
         /// the prior action.
         /// </summary>
@@ -101,6 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
             listenOptions.KestrelServerOptions = this;
+            ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }
 
@@ -138,8 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
                 try
                 {
-                    var certificateManager = new CertificateManager();
-                    DefaultCertificate = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
+                    DefaultCertificate = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
                         .FirstOrDefault();
 
                     if (DefaultCertificate != null)
@@ -292,7 +300,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 throw new ArgumentNullException(nameof(socketPath));
             }
-            if (socketPath.Length == 0 || socketPath[0] != '/')
+
+            if (!Path.IsPathRooted(socketPath))
             {
                 throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
             }

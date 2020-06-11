@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
-            HttpTransportType? transportTypes = null)
+            HttpTransportType? transportTypes = null, string connectionToken = "connection-token", int negotiateVersion = 0)
         {
             var availableTransports = new List<object>();
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
             }
 
-            return JsonConvert.SerializeObject(new { connectionId, availableTransports });
+            return JsonConvert.SerializeObject(new { connectionId, availableTransports, connectionToken, negotiateVersion });
         }
     }
 }

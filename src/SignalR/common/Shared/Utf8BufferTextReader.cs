@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 reader = new Utf8BufferTextReader();
             }
 
-            // Taken off the the thread static
+            // Taken off the thread static
             _cachedInstance = null;
 #if DEBUG
             if (reader._inUse)
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var source = _utf8Buffer.First.Span;
             var bytesUsed = 0;
             var charsUsed = 0;
-#if NETCOREAPP2_1
+#if NETCOREAPP
             var destination = new Span<char>(buffer, index, count);
             _decoder.Convert(source, destination, false, out bytesUsed, out charsUsed, out var completed);
 #else

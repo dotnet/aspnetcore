@@ -12,13 +12,13 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -57,8 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 outputAttributes,
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
                     new DefaultTagHelperContent()));
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
 
             // Ensure expanded path does not look like an absolute path on Linux, avoiding
@@ -71,16 +69,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelper.Object);
 
-            var helper = new ImageTagHelper(
-                hostingEnvironment,
-                MakeCache(),
-                new HtmlTestEncoder(),
-                urlHelperFactory.Object)
-            {
-                ViewContext = viewContext,
-                AppendVersion = true,
-                Src = src,
-            };
+            var helper = GetHelper(urlHelperFactory: urlHelperFactory.Object);
+            helper.AppendVersion = true;
+            helper.Src = src;
 
             // Act
             helper.Process(context, output);
@@ -122,19 +113,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "src", "testimage.png?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk" }
                 });
 
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
-
-            var helper = new ImageTagHelper(
-                hostingEnvironment,
-                MakeCache(),
-                new HtmlTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Src = "testimage.png",
-                AppendVersion = true,
-            };
+            var helper = GetHelper();
+            helper.Src = "testimage.png";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -145,10 +126,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             for (var i = 0; i < expectedOutput.Attributes.Count; i++)
             {
-                var expectedAtribute = expectedOutput.Attributes[i];
+                var expectedAttribute = expectedOutput.Attributes[i];
                 var actualAttribute = output.Attributes[i];
-                Assert.Equal(expectedAtribute.Name, actualAttribute.Name);
-                Assert.Equal(expectedAtribute.Value.ToString(), actualAttribute.Value.ToString());
+                Assert.Equal(expectedAttribute.Name, actualAttribute.Name);
+                Assert.Equal(expectedAttribute.Value.ToString(), actualAttribute.Value.ToString());
             }
         }
 
@@ -170,12 +151,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Src = "/images/test-image.png",
-                AppendVersion = true
-            };
+            var helper = GetHelper();
+            helper.Src = "/images/test-image.png";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -206,12 +184,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Src = "/images/test-image.png",
-                AppendVersion = false
-            };
+            var helper = GetHelper();
+            helper.Src = "/images/test-image.png";
 
             // Act
             helper.Process(context, output);
@@ -242,12 +216,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-                Src = "/bar/images/image.jpg",
-                AppendVersion = true
-            };
+            var helper = GetHelper();
+            helper.Src = "/bar/images/image.jpg";
+            helper.AppendVersion = true;
 
             // Act
             helper.Process(context, output);
@@ -280,6 +251,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return viewContext;
         }
 
+        private static ImageTagHelper GetHelper(
+            IWebHostEnvironment hostingEnvironment = null,
+            IUrlHelperFactory urlHelperFactory = null,
+            ViewContext viewContext = null)
+        {
+            hostingEnvironment = hostingEnvironment ?? MakeHostingEnvironment();
+            urlHelperFactory = urlHelperFactory ?? MakeUrlHelperFactory();
+            viewContext = viewContext ?? MakeViewContext();
+
+            var cacheProvider = new TagHelperMemoryCacheProvider();
+            var fileVersionProvider = new DefaultFileVersionProvider(hostingEnvironment, cacheProvider);
+
+            return new ImageTagHelper(
+                fileVersionProvider,
+                new HtmlTestEncoder(),
+                urlHelperFactory)
+            {
+                ViewContext = viewContext,
+            };
+        }
+
         private static TagHelperContext MakeTagHelperContext(
             TagHelperAttributeList attributes)
         {
@@ -305,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
         }
 
-        private static IHostingEnvironment MakeHostingEnvironment()
+        private static IWebHostEnvironment MakeHostingEnvironment()
         {
             var emptyDirectoryContents = new Mock<IDirectoryContents>();
             emptyDirectoryContents.Setup(dc => dc.GetEnumerator())
@@ -322,13 +314,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Returns(mockFile.Object);
             mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
                 .Returns(new TestFileChangeToken());
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;
         }
-
-        private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());
 
         private static IUrlHelperFactory MakeUrlHelperFactory()
         {

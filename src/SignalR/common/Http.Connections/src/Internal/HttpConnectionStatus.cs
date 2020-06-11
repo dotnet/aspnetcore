@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public enum HttpConnectionStatus
+    internal enum HttpConnectionStatus
     {
         Inactive,
         Active,

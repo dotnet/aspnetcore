@@ -855,7 +855,6 @@ namespace Microsoft.AspNetCore.Session
                         var token = cts.Token;
                         cts.Cancel();
                         await Assert.ThrowsAsync<OperationCanceledException>(() => context.Session.CommitAsync(token));
-                        context.RequestAborted = token;
                     });
                 })
                 .ConfigureServices(services =>
@@ -875,12 +874,73 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(DistributedSession).FullName, StringComparison.Ordinal)));
+            // The session is automatically committed on unwind even after the manual commit was canceled.
+            var sessionLogMessages = sink.Writes.Where(message => message.LoggerName.Equals(typeof(DistributedSession).FullName, StringComparison.Ordinal)).ToList();
 
-            var sessionMiddlewareLogs = sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)).ToList();
+            Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
 
-            Assert.Contains("Committing the session was canceled.", sessionMiddlewareLogs[0].State.ToString());
-            Assert.Equal(LogLevel.Information, sessionMiddlewareLogs[0].LogLevel);
+            Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
+            Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
+
+            Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task RequestAbortedIgnored()
+        {
+            var sink = new TestSink(
+                writeContext =>
+                {
+                    return writeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
+                        || writeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                },
+                beginScopeContext =>
+                {
+                    return beginScopeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
+                        || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                });
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        context.Session.SetInt32("key", 0);
+                        var cts = new CancellationTokenSource();
+                        var token = cts.Token;
+                        cts.Cancel();
+                        context.RequestAborted = token;
+                        return Task.CompletedTask;
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    {
+                        DelaySetAsync = true
+                    });
+                    services.AddSession();
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+            }
+
+            var sessionLogMessages = sink.Writes.Where(message => message.LoggerName.Equals(typeof(DistributedSession).FullName, StringComparison.Ordinal)).ToList();
+
+            Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+
+            Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
+            Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
+
+            Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
         }
 
         [Fact]

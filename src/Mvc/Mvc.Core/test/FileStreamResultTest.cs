@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -349,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.Equal(11, httpResponse.ContentLength);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
         }
@@ -433,10 +432,11 @@ namespace Microsoft.AspNetCore.Mvc
             var httpResponse = actionContext.HttpContext.Response;
             httpResponse.Body.Seek(0, SeekOrigin.Begin);
             var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
+            var body = await streamReader.ReadToEndAsync();
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);            
+            Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
@@ -487,6 +487,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
         }

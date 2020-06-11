@@ -29,11 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
             return _buffer;
         }
 
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void CancelPendingFlush()
         {
             throw new NotImplementedException();

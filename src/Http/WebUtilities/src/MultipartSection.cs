@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             get
             {
                 StringValues values;
-                if (Headers.TryGetValue("Content-Type", out values))
+                if (Headers.TryGetValue(HeaderNames.ContentType, out values))
                 {
                     return values;
                 }
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             get
             {
                 StringValues values;
-                if (Headers.TryGetValue("Content-Disposition", out values))
+                if (Headers.TryGetValue(HeaderNames.ContentDisposition, out values))
                 {
                     return values;
                 }

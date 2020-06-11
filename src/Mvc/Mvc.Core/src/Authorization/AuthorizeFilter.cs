@@ -8,11 +8,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Authorization
 {
@@ -23,9 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
-        private MvcOptions _mvcOptions;
-        private AuthorizationPolicy _effectivePolicy;
-
         /// <summary>
         /// Initializes a new <see cref="AuthorizeFilter"/> instance.
         /// </summary>
@@ -108,66 +105,62 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         bool IFilterFactory.IsReusable => true;
 
-        private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
+        // Computes the actual policy for this filter using either Policy or PolicyProvider + AuthorizeData
+        private Task<AuthorizationPolicy> ComputePolicyAsync()
         {
-            if (_effectivePolicy != null)
+            if (Policy != null)
             {
-                return _effectivePolicy;
+                return Task.FromResult(Policy);
             }
 
-            var effectivePolicy = Policy;
-
-            if (_mvcOptions == null) 
-            {
-                _mvcOptions = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
-            }
-
-            if (_mvcOptions.AllowCombiningAuthorizeFilters)
-            {
-                if (!context.IsEffectivePolicy<AuthorizeFilter>(this))
-                {
-                    return null;
-                }
-
-                // Combine all authorize filters into single effective policy that's only run on the closest filter
-                AuthorizationPolicyBuilder builder = null;
-                for (var i = 0; i < context.Filters.Count; i++)
-                {
-                    if (ReferenceEquals(this, context.Filters[i]))
-                    {
-                        continue;
-                    }
-                    
-                    if (context.Filters[i] is AuthorizeFilter authorizeFilter)
-                    {
-                        builder = builder ?? new AuthorizationPolicyBuilder(effectivePolicy);
-                        builder.Combine(authorizeFilter.Policy);
-                    }
-                }
-
-                effectivePolicy = builder?.Build() ?? effectivePolicy;
-            }
-
-            if (effectivePolicy == null)
-            {
-                if (PolicyProvider == null)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
-                            nameof(AuthorizationPolicy),
-                            nameof(IAuthorizationPolicyProvider)));
-                }
-
-                effectivePolicy = await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
-            }
-
-            // We can cache the effective policy when there is no custom policy provider 
             if (PolicyProvider == null)
             {
-                _effectivePolicy = effectivePolicy;
+                throw new InvalidOperationException(
+                    Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
+                        nameof(AuthorizationPolicy),
+                        nameof(IAuthorizationPolicyProvider)));
             }
 
-            return effectivePolicy;
+            return AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
+        }
+
+        internal async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
+        {
+            // Combine all authorize filters into single effective policy that's only run on the closest filter
+            var builder = new AuthorizationPolicyBuilder(await ComputePolicyAsync());
+            for (var i = 0; i < context.Filters.Count; i++)
+            {
+                if (ReferenceEquals(this, context.Filters[i]))
+                {
+                    continue;
+                }
+
+                if (context.Filters[i] is AuthorizeFilter authorizeFilter)
+                {
+                    // Combine using the explicit policy, or the dynamic policy provider
+                    builder.Combine(await authorizeFilter.ComputePolicyAsync());
+                }
+            }
+
+            var endpoint = context.HttpContext.GetEndpoint();
+            if (endpoint != null)
+            {
+                // When doing endpoint routing, MVC does not create filters for any authorization specific metadata i.e [Authorize] does not
+                // get translated into AuthorizeFilter. Consequently, there are some rough edges when an application uses a mix of AuthorizeFilter
+                // explicilty configured by the user (e.g. global auth filter), and uses endpoint metadata.
+                // To keep the behavior of AuthFilter identical to pre-endpoint routing, we will gather auth data from endpoint metadata
+                // and produce a policy using this. This would mean we would have effectively run some auth twice, but it maintains compat.
+                var policyProvider = PolicyProvider ?? context.HttpContext.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
+                var endpointAuthorizeData = endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+
+                var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpointAuthorizeData);
+                if (endpointPolicy != null)
+                {
+                    builder.Combine(endpointPolicy);
+                }
+            }
+
+            return builder.Build();
         }
 
         /// <inheritdoc />
@@ -178,6 +171,12 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (!context.IsEffectivePolicy(this))
+            {
+                return;
+            }
+
+            // IMPORTANT: Changes to authorization logic should be mirrored in security's AuthorizationMiddleware
             var effectivePolicy = await GetEffectivePolicyAsync(context);
             if (effectivePolicy == null)
             {
@@ -189,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var authenticateResult = await policyEvaluator.AuthenticateAsync(effectivePolicy, context.HttpContext);
 
             // Allow Anonymous skips all authorization
-            if (context.Filters.Any(item => item is IAllowAnonymousFilter))
+            if (HasAllowAnonymous(context))
             {
                 return;
             }
@@ -217,6 +216,29 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             Debug.Assert(AuthorizeData != null);
             var policyProvider = serviceProvider.GetRequiredService<IAuthorizationPolicyProvider>();
             return AuthorizationApplicationModelProvider.GetFilter(policyProvider, AuthorizeData);
+        }
+
+        private static bool HasAllowAnonymous(AuthorizationFilterContext context)
+        {
+            var filters = context.Filters;
+            for (var i = 0; i < filters.Count; i++)
+            {
+                if (filters[i] is IAllowAnonymousFilter)
+                {
+                    return true;
+                }
+            }
+
+            // When doing endpoint routing, MVC does not add AllowAnonymousFilters for AllowAnonymousAttributes that
+            // were discovered on controllers and actions. To maintain compat with 2.x,
+            // we'll check for the presence of IAllowAnonymous in endpoint metadata.
+            var endpoint = context.HttpContext.GetEndpoint();
+            if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

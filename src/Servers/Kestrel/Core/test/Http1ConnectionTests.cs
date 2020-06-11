@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly IDuplexPipe _application;
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
-        private readonly Http1ConnectionContext _http1ConnectionContext;
+        private readonly HttpConnectionContext _http1ConnectionContext;
         private readonly MemoryPool<byte> _pipelineFactory;
         private SequencePosition _consumed;
         private SequencePosition _examined;
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http1ConnectionTests()
         {
-            _pipelineFactory = KestrelMemoryPool.Create();
+            _pipelineFactory = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -52,18 +51,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
-            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
 
-            _serviceContext = new TestServiceContext();
+            _serviceContext = new TestServiceContext()
+            {
+                Scheduler = PipeScheduler.Inline
+            };
+
             _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new Http1ConnectionContext
+            _http1ConnectionContext = new HttpConnectionContext
             {
                 ServiceContext = _serviceContext,
                 ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
-                Application = pair.Application,
                 Transport = pair.Transport
             };
 
@@ -83,6 +84,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task TakeMessageHeadersSucceedsWhenHeaderValueContainsUTF8()
+        {
+            var headerName = "Header";
+            var headerValueBytes = new byte[] { 0x46, 0x72, 0x61, 0x6e, 0xc3, 0xa7, 0x6f, 0x69, 0x73 };
+            var headerValue = Encoding.UTF8.GetString(headerValueBytes);
+            _http1Connection.Reset();
+
+            await _application.Output.WriteAsync(Encoding.UTF8.GetBytes($"{headerName}: "));
+            await _application.Output.WriteAsync(headerValueBytes);
+            await _application.Output.WriteAsync(Encoding.UTF8.GetBytes("\r\n\r\n"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
+            _transport.Input.AdvanceTo(_consumed, _examined);
+
+            Assert.Equal(headerValue, _http1Connection.RequestHeaders[headerName]);
+        }
+
+        [Fact]
+        public async Task TakeMessageHeadersThrowsWhenHeaderValueContainsExtendedASCII()
+        {
+            var extendedAsciiEncoding = Encoding.GetEncoding("ISO-8859-1");
+            var headerName = "Header";
+            var headerValueBytes = new byte[] { 0x46, 0x72, 0x61, 0x6e, 0xe7, 0x6f, 0x69, 0x73 };
+            _http1Connection.Reset();
+
+            await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes($"{headerName}: "));
+            await _application.Output.WriteAsync(headerValueBytes);
+            await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
+            var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<InvalidOperationException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+        }
+
+        [Fact]
         public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
             const string headerLine = "Header: value\r\n";
@@ -92,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, exception.Message);
@@ -108,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_TooManyHeaders, exception.Message);
@@ -213,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine1}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            var takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -225,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine2}\r\n"));
             readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -316,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var messageBody = Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
-            _http1Connection.InitializeStreams(messageBody);
+            _http1Connection.InitializeBodyControl(messageBody);
 
             var originalRequestBody = _http1Connection.RequestBody;
             var originalResponseBody = _http1Connection.ResponseBody;
@@ -324,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.ResponseBody = new MemoryStream();
 
             // Act
-            _http1Connection.InitializeStreams(messageBody);
+            _http1Connection.InitializeBodyControl(messageBody);
 
             // Assert
             Assert.Same(originalRequestBody, _http1Connection.RequestBody);
@@ -391,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
-            _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
+            _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutReason.RequestHeaders));
         }
 
         [Fact]
@@ -488,8 +524,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [MemberData(nameof(MethodNotAllowedTargetData))]
-        public async Task TakeStartLineThrowsWhenMethodNotAllowed(string requestLine, HttpMethod allowedMethod)
+        public async Task TakeStartLineThrowsWhenMethodNotAllowed(string requestLine, int intAllowedMethod)
         {
+            var allowedMethod = (HttpMethod)intAllowedMethod;
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
@@ -503,17 +540,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
+        public async Task ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
-            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.StopProcessingNextRequest));
+            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
             _http1Connection.StopProcessingNextRequest();
             _application.Output.Complete();
 
-            requestProcessingTask.Wait();
+            await requestProcessingTask.DefaultTimeout();
         }
 
         [Fact]
@@ -607,17 +644,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             foreach (var ch in "hello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
@@ -625,17 +666,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             foreach (var ch in "hello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
@@ -643,36 +688,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _http1Connection.ResponseHeaders["Content-Length"] = "12";
 
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             // Only first write can be WriteAsyncAwaited
             var startingTask = _http1Connection.InitializeResponseAwaited(Task.CompletedTask, 1);
             await _http1Connection.WriteAsyncAwaited(startingTask, new ArraySegment<byte>(new[] { (byte)'h' }), default(CancellationToken));
-            Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.Equal(original, _http1Connection.RequestAborted);
 
             foreach (var ch in "ello, worl")
             {
                 await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
-                Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+                Assert.Equal(original, _http1Connection.RequestAborted);
             }
 
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
         }
 
         [Fact]
         public async Task RequestAbortedTokenIsResetBeforeLastWriteWithChunkedEncoding()
         {
-            // Need to compare WaitHandle ref since CancellationToken is struct
-            var original = _http1Connection.RequestAborted.WaitHandle;
+            var original = _http1Connection.RequestAborted;
 
             _http1Connection.HttpVersion = "HTTP/1.1";
             await _http1Connection.WriteAsync(new ArraySegment<byte>(Encoding.ASCII.GetBytes("hello, world")), default(CancellationToken));
-            Assert.Same(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.Equal(original, _http1Connection.RequestAborted);
 
             await _http1Connection.ProduceEndAsync();
-            Assert.NotSame(original, _http1Connection.RequestAborted.WaitHandle);
+            Assert.NotEqual(original, _http1Connection.RequestAborted);
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.False(original.IsCancellationRequested);
+            Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void RequestAbortedTokenIsFullyUsableAfterCancellation()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+            var originalRegistration = originalToken.Register(() => { });
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+
+            Assert.Equal(originalToken, originalRegistration.Token);
+        }
+
+        [Fact]
+        public void RequestAbortedTokenIsUsableAfterCancellation()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+            var originalRegistration = originalToken.Register(() => { });
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            // The following line will throw an ODE because the original CTS backing the token has been diposed.
+            // See https://github.com/aspnet/AspNetCore/pull/4447 for the history behind this test.
+            //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+
+            Assert.Equal(originalToken, originalRegistration.Token);
         }
 
         [Fact]
@@ -909,7 +992,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public static TheoryData<string, string> TargetInvalidData
             => HttpParsingData.TargetInvalidData;
 
-        public static TheoryData<string, HttpMethod> MethodNotAllowedTargetData
+        public static TheoryData<string, int> MethodNotAllowedTargetData
             => HttpParsingData.MethodNotAllowedRequestLine;
 
         public static TheoryData<string> TargetWithNullCharData
@@ -956,21 +1039,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return data;
             }
         }
-
-        public static TheoryData<TimeSpan> RequestBodyTimeoutDataValid => new TheoryData<TimeSpan>
-        {
-            TimeSpan.FromTicks(1),
-            TimeSpan.MaxValue,
-            Timeout.InfiniteTimeSpan,
-            TimeSpan.FromMilliseconds(-1) // Same as Timeout.InfiniteTimeSpan
-        };
-
-        public static TheoryData<TimeSpan> RequestBodyTimeoutDataInvalid => new TheoryData<TimeSpan>
-        {
-            TimeSpan.MinValue,
-            TimeSpan.FromTicks(-1),
-            TimeSpan.Zero
-        };
 
         public static TheoryData<MinDataRate> MinDataRateData => new TheoryData<MinDataRate>
         {
