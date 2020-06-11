@@ -318,6 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ValueReuseOnlyWhenAllowed(bool reuseValue, KnownHeader header)
         {
             const string HeaderValue = "Hello";
+
             var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
 
             for (var i = 0; i < 6; i++)
@@ -336,14 +337,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(values.PrevHeaderValue, values.NextHeaderValue);
                 if (reuseValue)
                 {
-                    // When materalized string is reused previous and new should be the same object
+                    // When materialized string is reused previous and new should be the same object
                     Assert.Same(values.PrevHeaderValue, values.NextHeaderValue);
                 }
                 else
                 {
-                    // When materalized string is not reused previous and new should be the different objects
+                    // When materialized string is not reused previous and new should be the different objects
                     Assert.NotSame(values.PrevHeaderValue, values.NextHeaderValue);
-            }
+                }
             }
         }
 
@@ -480,6 +481,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Reset back to Ascii
                 headerValue[i] = 'a';
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void Latin1ValuesAcceptedInLatin1ModeButNotReused(bool reuseValue, KnownHeader header)
+        {
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue, useLatin1: true);
+
+            var headerValue = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                headerValue[i] = 'a';
+            }
+
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                headerValue[i] = '\u00a3';
+
+                for (var mode = 0; mode <= 1; mode++)
+                {
+                    string headerValueUtf16Latin1CrossOver;
+                    if (mode == 0)
+                    {
+                        // Full length
+                        headerValueUtf16Latin1CrossOver = new string(headerValue);
+                    }
+                    else
+                    {
+                        // Truncated length (to ensure different paths from changing lengths in matching)
+                        headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
+                    }
+
+                    headers.Reset();
+
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var latinValueSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                    Assert.False(latinValueSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
+
+                    headers.Append(headerName, latinValueSpan);
+                    headers.OnHeadersComplete();
+                    var parsedHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+                    Assert.Equal(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
+                    Assert.NotSame(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
+                }
+
+                // Reset back to Ascii
+                headerValue[i] = 'a';
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, KnownHeader header)
+        {
+            var headers = new HttpRequestHeaders(useLatin1: useLatin1);
+
+            var valueArray = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < valueArray.Length; i++)
+            {
+                valueArray[i] = 'a';
+            }
+
+            for (var i = 1; i < valueArray.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                valueArray[i] = '\0';
+                string valueString = new string(valueArray);
+
+                headers.Reset();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var valueSpan = Encoding.ASCII.GetBytes(valueString).AsSpan();
+
+                    headers.Append(headerName, valueSpan);
+                });
+
+                valueArray[i] = 'a';
             }
         }
 
