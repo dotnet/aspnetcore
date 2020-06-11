@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async Task OnEndStreamReceived()
+        private ValueTask OnEndStreamReceived()
         {
             if (InputRemaining.HasValue)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             OnTrailersComplete();
-            await RequestBodyPipe.Writer.CompleteAsync();
+            retrun RequestBodyPipe.Writer.CompleteAsync();
         }
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
