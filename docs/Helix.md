@@ -18,11 +18,13 @@ This will restore, and then publish all the test project including some bootstra
 
 ## Overview of the helix usage in our pipelines
 
-Required queues: Windows10, OSX, Ubuntu1604 
-Full queue matrix:
+- Required queues: Windows10, OSX, Ubuntu1604 
+- Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian[8,9], Redhat7, Fedora28, Arm64 (Win10, Debian9)
 
 aspnetcore-ci runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
+
 aspnetcore-quarantined-tests runs only quarantined tests against the required queues only on master every 4 hours.
+
 aspnetcore-helix-matrix runs non quarantined tests against all queues twice a day only on master.
 
 ## How do I look at the results of a helix run on Azure Pipelines?
