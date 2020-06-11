@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.10">
+<Baseline Version="2.2.11">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -79,7 +79,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.10" />
   <Package Id="Microsoft.AspNetCore.Mvc.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.11" />
   <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.2.0" />
