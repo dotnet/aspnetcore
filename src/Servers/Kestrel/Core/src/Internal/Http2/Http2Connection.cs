@@ -1019,7 +1019,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // fields is malformed (Section 8.1.2.6).
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
                 }
-                
                 if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
                 {
                     // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
