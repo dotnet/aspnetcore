@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // in the string
                 if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
                 {
-                    throw new InvalidOperationException();
+                    throw new DecoderFallbackException();
                 }
             }
             return asciiString;
