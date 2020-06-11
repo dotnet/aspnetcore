@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanDispatchAsyncWorkToSyncContext()
+        public virtual void CanDispatchAsyncWorkToSyncContext()
         {
             var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
