@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return new ValueTask();
+                return default;
             }
 
             // call complete here on the reader
