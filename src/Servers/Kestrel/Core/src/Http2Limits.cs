@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -12,8 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class Http2Limits
     {
-        private static readonly TimeSpan MinimumKeepAliveInterval = TimeSpan.FromSeconds(1);
-
         private int _maxStreamsPerConnection = 100;
         private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
         private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
@@ -162,9 +161,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             get => _keepAlivePingInterval;
             set
             {
-                if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
+                // Keep alive uses Kestrel's system clock which has a 1 second resolution. Time is greater or equal to clock resolution.
+                if (value < Heartbeat.Interval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(MinimumKeepAliveInterval));
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(Heartbeat.Interval));
                 }
 
                 _keepAlivePingInterval = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
@@ -186,9 +186,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             get => _keepAlivePingTimeout;
             set
             {
-                if (value < MinimumKeepAliveInterval && value != Timeout.InfiniteTimeSpan)
+                // Keep alive uses Kestrel's system clock which has a 1 second resolution. Time is greater or equal to clock resolution.
+                if (value < Heartbeat.Interval && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(MinimumKeepAliveInterval));
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(Heartbeat.Interval));
                 }
 
                 _keepAlivePingTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;

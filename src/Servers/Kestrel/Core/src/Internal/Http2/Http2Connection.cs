@@ -235,6 +235,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                         if (_keepAlive != null)
                         {
+                            // Note that the keep alive uses a complete frame being received to reset state.
+                            // Some other keep alive implementations use any bytes being received to reset state.
                             var state = _keepAlive.ProcessKeepAlive(frameReceived);
                             if (state == KeepAliveState.SendPing)
                             {
