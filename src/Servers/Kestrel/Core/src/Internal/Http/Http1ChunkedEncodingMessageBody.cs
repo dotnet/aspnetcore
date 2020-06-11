@@ -108,14 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _completed = true;
             _context.ReportApplicationError(exception);
         }
-
-        public override ValueTask CompleteAsync(Exception exception)
-        {
-            _completed = true;
-            _context.ReportApplicationError(exception);
-            return new ValueTask();
-        }
-
+        
         public override void CancelPendingRead()
         {
             _requestBodyPipe.Reader.CancelPendingRead();
