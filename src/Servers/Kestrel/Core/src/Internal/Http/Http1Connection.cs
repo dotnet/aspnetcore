@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -402,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // an setting to null is fast as it doesn't need to use a GC write barrier.
                 _parsedAbsoluteRequestTarget = null;
             }
-            catch (InvalidOperationException)
+            catch (DecoderFallbackException)
             {
                 ThrowRequestTargetRejected(target);
             }
@@ -650,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 ParseRequest(result.Buffer, out consumed, out examined);
             }
-            catch (InvalidOperationException)
+            catch (DecoderFallbackException)
             {
                 if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                 {

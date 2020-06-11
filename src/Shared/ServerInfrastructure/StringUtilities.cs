@@ -27,22 +27,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
                 // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!TryGetAsciiString(buffer, output, span.Length))
                 {
                     // null characters are considered invalid
                     if (span.IndexOf((byte)0) != -1)
                     {
-                        throw new InvalidOperationException();
+                        throw new DecoderFallbackException("Cannot parse UTF8 string will null characters in the string.");
                     }
 
-                    try
-                    {
-                        resultString = defaultEncoding.GetString(buffer, span.Length);
-                    }
-                    catch (DecoderFallbackException)
-                    {
-                        throw new InvalidOperationException();
-                    }
+                    // Will throw DecoderFallbackException if invalid UTF8.
+                    resultString = defaultEncoding.GetString(buffer, span.Length);
                 }
             }
 
@@ -65,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 if (!TryGetLatin1String(buffer, output, span.Length))
                 {
                     // null characters are considered invalid
-                    throw new InvalidOperationException();
+                    throw new DecoderFallbackException($"Cannot parse Latin1 string with null characters in the string.");
                 }
             }
 

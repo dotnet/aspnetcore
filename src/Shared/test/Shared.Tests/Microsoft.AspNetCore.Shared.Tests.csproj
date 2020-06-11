@@ -16,6 +16,7 @@
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

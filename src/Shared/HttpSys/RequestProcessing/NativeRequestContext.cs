@@ -127,7 +127,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else if (verb == HttpApiTypes.HTTP_VERB.HttpVerbUnknown && NativeRequest->pUnknownVerb != null)
             {
-                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, _useLatin1);
+                // Never use Latin1 for the VERB
+                return HeaderEncoding.GetString(NativeRequest->pUnknownVerb, NativeRequest->UnknownVerbLength, useLatin1: false);
             }
 
             return null;
