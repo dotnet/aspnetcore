@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Build;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
@@ -284,11 +285,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_WithLinkOnBuildTrue_Works()
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
             AddSiblingProjectFileContent(project, @"
 <PropertyGroup>
@@ -337,7 +339,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
 
             AddSiblingProjectFileContent(project, @"
 <PropertyGroup>
@@ -396,7 +398,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
 
             Assert.BuildPassed(result);
@@ -438,7 +440,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             project.Configuration = "Release";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build", "/p:BuildInsideVisualStudio=true");
 
@@ -483,7 +485,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             // Arrange
             var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", "classlibrarywithsatelliteassemblies" });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             project.Configuration = "Release";
             var standaloneProjectDirectory = Path.Combine(project.DirectoryPath, "..", "standalone");
 

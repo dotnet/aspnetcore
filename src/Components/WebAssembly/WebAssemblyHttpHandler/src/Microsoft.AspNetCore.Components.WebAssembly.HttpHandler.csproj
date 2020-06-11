@@ -7,7 +7,6 @@
     <AssemblyVersion>0.2.2.0</AssemblyVersion>
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <StrongNameKeyId>Open</StrongNameKeyId>
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

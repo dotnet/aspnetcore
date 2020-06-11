@@ -10,7 +10,7 @@ parameters:
   HelixPostCommands: ''                  # optional -- commands to run after Helix work item execution
   WorkItemDirectory: ''                  # optional -- a payload directory to zip up and send to Helix; requires WorkItemCommand; incompatible with XUnitProjects
   WorkItemCommand: ''                    # optional -- a command to execute on the payload; requires WorkItemDirectory; incompatible with XUnitProjects
-  WorkItemTimeout: ''                    # optional -- a timeout in seconds for the work item command; requires WorkItemDirectory; incompatible with XUnitProjects
+  WorkItemTimeout: ''                    # optional -- a timeout in TimeSpan.Parse-ready value (e.g. 00:02:00) for the work item command; requires WorkItemDirectory; incompatible with XUnitProjects
   CorrelationPayloadDirectory: ''        # optional -- a directory to zip up and send to Helix as a correlation payload
   XUnitProjects: ''                      # optional -- semicolon delimited list of XUnitProjects to parse and send to Helix; requires XUnitRuntimeTargetFramework, XUnitPublishTargetFramework, XUnitRunnerVersion, and IncludeDotNetCli=true
   XUnitWorkItemTimeout: ''               # optional -- the workitem timeout in seconds for all workitems created from the xUnit projects specified by XUnitProjects
@@ -18,11 +18,12 @@ parameters:
   XUnitRuntimeTargetFramework: ''        # optional -- framework to use for the xUnit console runner
   XUnitRunnerVersion: ''                 # optional -- version of the xUnit nuget package you wish to use on Helix; required for XUnitProjects
   IncludeDotNetCli: false                # optional -- true will download a version of the .NET CLI onto the Helix machine as a correlation payload; requires DotNetCliPackageType and DotNetCliVersion
-  DotNetCliPackageType: ''               # optional -- either 'sdk' or 'runtime'; determines whether the sdk or runtime will be sent to Helix; see https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases.json
-  DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases.json
+  DotNetCliPackageType: ''               # optional -- either 'sdk' or 'runtime'; determines whether the sdk or runtime will be sent to Helix; see https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases-index.json
+  DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases-index.json
   EnableXUnitReporter: false             # optional -- true enables XUnit result reporting to Mission Control
   WaitForWorkItemCompletion: true        # optional -- true will make the task wait until work items have been completed and fail the build if work items fail. False is "fire and forget."
   IsExternal: false                      # [DEPRECATED] -- doesn't do anything, jobs are external if HelixAccessToken is empty and Creator is set
+  HelixBaseUri: 'https://helix.dot.net/' # optional -- sets the Helix API base URI (allows targeting int)
   Creator: ''                            # optional -- if the build is external, use this to specify who is sending the job
   DisplayNamePrefix: 'Run Tests'         # optional -- rename the beginning of the displayName of the steps in AzDO 
   condition: succeeded()                 # optional -- condition for step to execute; defaults to succeeded()
@@ -55,6 +56,7 @@ steps:
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
       EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+      HelixBaseUri: ${{ parameters.HelixBaseUri }}
       Creator: ${{ parameters.Creator }}
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
@@ -85,6 +87,7 @@ steps:
       DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
       EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
       WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+      HelixBaseUri: ${{ parameters.HelixBaseUri }}
       Creator: ${{ parameters.Creator }}
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, ne(variables['Agent.Os'], 'Windows_NT'))

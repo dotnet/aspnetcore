@@ -9,7 +9,7 @@
       <BlazorBuildRoot>$(ComponentsRoot)WebAssembly\Build\src\</BlazorBuildRoot>
       <ReferenceBlazorBuildFromSourceProps>$(BlazorBuildRoot)ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
 
-      <!-- Workaround for https://github.com/aspnet/AspNetCore/issues/17308 -->
+      <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/17308 -->
       <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
 
       <EnableSourceLink>false</EnableSourceLink>
@@ -24,10 +24,7 @@
         Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
-
-      <PackageReference Include="Microsoft.NET.Sdk.Razor"
-        Version="$(MicrosoftNETSdkRazorPackageVersion)"
-        PrivateAssets="All"
-        IsImplicitlyDefined="true" />
     </ItemGroup>
+
+    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"/>
 </Project>

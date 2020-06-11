@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
-    /// This default implementation of the ICookieAuthenticationEvents may be used if the 
+    /// This default implementation of the ICookieAuthenticationEvents may be used if the
     /// application only needs to override a few of the interface methods. This may be used as a base class
     /// or may be instantiated directly.
     /// </summary>
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private static bool IsAjaxRequest(HttpRequest request)
         {
-            return string.Equals(request.Query["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal) ||
-                string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal);
-        }		
+            return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
+                string.Equals(request.Headers[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal);
+        }
 
         /// <summary>
         /// Implements the interface method by invoking the related delegate method.

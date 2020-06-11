@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="principal">the <see cref="ClaimsPrincipal"/> that represents the authenticated user.</param>
         /// <param name="properties">additional properties that can be consumed by the user or runtime.</param>
         /// <param name="authenticationScheme">the authentication middleware that was responsible for this ticket.</param>
-        public AuthenticationTicket(ClaimsPrincipal principal, AuthenticationProperties properties, string authenticationScheme)
+        public AuthenticationTicket(ClaimsPrincipal principal, AuthenticationProperties? properties, string? authenticationScheme)
         {
             if (principal == null)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets the authentication type.
         /// </summary>
-        public string AuthenticationScheme { get; private set; }
+        public string? AuthenticationScheme { get; private set; }
 
         /// <summary>
         /// Gets the claims-principal with authenticated user identities.
@@ -52,5 +52,20 @@ namespace Microsoft.AspNetCore.Authentication
         /// Additional state values for the authentication session.
         /// </summary>
         public AuthenticationProperties Properties { get; private set; }
+
+        /// <summary>
+        /// Returns a copy of the ticket.
+        /// Note: the claims principal will be cloned by calling Clone() on each of the Identities.
+        /// </summary>
+        /// <returns>A copy of the ticket</returns>
+        public AuthenticationTicket Clone()
+        {
+            var principal = new ClaimsPrincipal();
+            foreach (var identity in Principal.Identities)
+            {
+                principal.AddIdentity(identity.Clone());
+            }
+            return new AuthenticationTicket(principal, Properties.Clone(), AuthenticationScheme);
+        }
     }
 }

@@ -10,18 +10,6 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieOptions
     {
-        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
-        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
-        internal static bool SuppressSameSiteNone;
-
-        static CookieOptions()
-        {
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
-            {
-                SuppressSameSiteNone = enabled;
-            }
-        }
-
         /// <summary>
         /// Creates a default cookie with a path of '/'.
         /// </summary>
@@ -34,13 +22,13 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the domain to associate the cookie with.
         /// </summary>
         /// <returns>The domain to associate the cookie with.</returns>
-        public string Domain { get; set; }
+        public string? Domain { get; set; }
 
         /// <summary>
         /// Gets or sets the cookie path.
         /// </summary>
         /// <returns>The cookie path.</returns>
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         /// <summary>
         /// Gets or sets the expiration date and time for the cookie.
@@ -58,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the value for the SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <returns>The <see cref="SameSiteMode"/> representing the enforcement mode of the cookie.</returns>
-        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : SameSiteMode.Unspecified;
+        public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
         /// Gets or sets a value that indicates whether a cookie is accessible by client-side script.

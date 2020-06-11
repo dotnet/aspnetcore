@@ -82,7 +82,7 @@ private:
     );
 
     //
-    // Pointer to the begining of the inlined array.
+    // Pointer to the beginning of the inlined array.
     //
     PVOID   m_pVariables;
     SIZE_T  m_Alignment;
@@ -104,7 +104,7 @@ PER_CPU<T>::Create(
     DWORD           ObjectCacheLineSize = 0;
     DWORD           NumberOfProcessors = 0;
     PER_CPU<T> *    pInstance = NULL;
-    
+
     hr = GetProcessorInformation(&CacheLineSize,
                                  &NumberOfProcessors);
     if (FAILED(hr))
@@ -143,7 +143,7 @@ PER_CPU<T>::Create(
     // The array start in the 2nd cache line.
     //
     pInstance->m_pVariables = reinterpret_cast<PBYTE>(pInstance) + CacheLineSize;
-    
+
     //
     // Pass a disposer for disposing initialized items in case of failure.
     //

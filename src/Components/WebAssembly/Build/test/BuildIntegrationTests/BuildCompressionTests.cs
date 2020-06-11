@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary" });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project, target: "publish");
 
             Assert.BuildPassed(result);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary" });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project, target: "publish", args: "/p:BlazorWebAssemblyEnableLinking=false");
 
             Assert.BuildPassed(result);

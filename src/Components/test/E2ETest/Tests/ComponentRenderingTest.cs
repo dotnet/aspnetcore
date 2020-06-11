@@ -12,6 +12,7 @@ using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -625,7 +627,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(incompleteItemsSelector);
 
             // Mark first item as done; observe the remaining incomplete item appears unchecked
-            // because the diff algoritm explicitly unchecks it
+            // because the diff algorithm explicitly unchecks it
             appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
             Browser.True(() =>
             {
@@ -635,7 +637,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
 
             // Mark first done item as not done; observe the remaining complete item appears checked
-            // because the diff algoritm explicitly re-checks it
+            // because the diff algorithm explicitly re-checks it
             appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
             Browser.True(() =>
             {

@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Http
             return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {

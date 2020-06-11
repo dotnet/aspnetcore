@@ -3,38 +3,41 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
     internal class OutputFlowControl
     {
         private FlowControl _flow;
-        private Queue<OutputFlowControlAwaitable> _awaitableQueue;
+        private readonly AwaitableProvider _awaitableProvider;
 
-        public OutputFlowControl(uint initialWindowSize)
+        public OutputFlowControl(AwaitableProvider awaitableProvider, uint initialWindowSize)
         {
             _flow = new FlowControl(initialWindowSize);
+            _awaitableProvider = awaitableProvider;
         }
 
         public int Available => _flow.Available;
         public bool IsAborted => _flow.IsAborted;
 
-        public OutputFlowControlAwaitable AvailabilityAwaitable
+        public ManualResetValueTaskSource<object> AvailabilityAwaitable
         {
             get
             {
                 Debug.Assert(!_flow.IsAborted, $"({nameof(AvailabilityAwaitable)} accessed after abort.");
                 Debug.Assert(_flow.Available <= 0, $"({nameof(AvailabilityAwaitable)} accessed with {Available} bytes available.");
 
-                if (_awaitableQueue == null)
-                {
-                    _awaitableQueue = new Queue<OutputFlowControlAwaitable>();
-                }
-
-                var awaitable = new OutputFlowControlAwaitable();
-                _awaitableQueue.Enqueue(awaitable);
-                return awaitable;
+                return _awaitableProvider.GetAwaitable();
             }
+        }
+
+        public void Reset(uint initialWindowSize)
+        {
+            // When output flow control is reused the client window size needs to be reset.
+            // The client might have changed the window size before the stream is reused.
+            _flow = new FlowControl(initialWindowSize);
+            Debug.Assert(_awaitableProvider.ActiveCount == 0, "Queue should have been emptied by the previous stream.");
         }
 
         public void Advance(int bytes)
@@ -49,9 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         {
             if (_flow.TryUpdateWindow(bytes))
             {
-                while (_flow.Available > 0 && _awaitableQueue?.Count > 0)
+                while (_flow.Available > 0 && _awaitableProvider.ActiveCount > 0)
                 {
-                    _awaitableQueue.Dequeue().Complete();
+                    _awaitableProvider.CompleteCurrent();
                 }
 
                 return true;
@@ -65,9 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             // Make sure to set the aborted flag before running any continuations.
             _flow.Abort();
 
-            while (_awaitableQueue?.Count > 0)
+            while (_awaitableProvider.ActiveCount > 0)
             {
-                _awaitableQueue.Dequeue().Complete();
+                _awaitableProvider.CompleteCurrent();
             }
         }
     }

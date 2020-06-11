@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -69,10 +71,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     case HttpProtocols.None:
                         // An error was already logged in SelectProtocol(), but we should close the connection.
                         break;
+
                     default:
                         // SelectProtocol() only returns Http1, Http2 or None.
-                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
-                }
+                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2, Http3 or None.");
+                }   
 
                 _requestProcessor = requestProcessor;
 
@@ -103,13 +106,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             catch (Exception ex)
             {
                 Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
-            }
-            finally
-            {
-                if (_http1Connection?.IsUpgraded == true)
-                {
-                    _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
-                }
             }
         }
 

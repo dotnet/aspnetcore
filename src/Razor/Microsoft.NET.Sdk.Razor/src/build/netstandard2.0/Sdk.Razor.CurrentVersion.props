@@ -1,0 +1,85 @@
+<!--
+***********************************************************************************************
+Sdk.Razor.CurrentVersion.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+  <!--
+    Properties and tasks supporting Razor MSBuild integration
+  -->
+
+  <!--
+    Default properties for common Razor SDK behavior.
+  -->
+  <PropertyGroup>
+    <!--
+    Set to true to automatically include certain file types, such as .cshtml files, as content in the project.
+    When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under wwwroot, and any config files.
+    -->
+    <EnableDefaultContentItems Condition="'$(EnableDefaultContentItems)'==''">true</EnableDefaultContentItems>
+
+    <!--
+      Set to true to automatically include Razor (.cshtml) files in @(RazorGenerate) from @(Content).
+    -->
+    <EnableDefaultRazorGenerateItems Condition="'$(EnableDefaultRazorGenerateItems)'==''">true</EnableDefaultRazorGenerateItems>
+
+    <!--
+      Set to true to automatically include Razor (.razor) files in @(RazorComponent) from @(Content).
+    -->
+    <EnableDefaultRazorComponentItems Condition="'$(EnableDefaultRazorComponentItems)'==''">true</EnableDefaultRazorComponentItems>
+
+    <!--
+      Set to true to copy RazorGenerate items (.cshtml) to the publish directory.
+
+      Typically Razor files are not needed for a published application if they participate in compilation at build-time
+      or publish-time. By default, the Razor SDK will suppress the copying of RazorGenerate items to the publish directory.
+    -->
+    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'==''">false</CopyRazorGenerateFilesToPublishDirectory>
+
+    <!--
+    Determines the toolset to use to compile Razor (.cshtml) files. Defaults to 'Implicit' to let the Razor Sdk determine the toolset to use.
+    Valid values include 'Implicit', 'RazorSdk', and 'PrecompilationTool'.
+    -->
+    <RazorCompileToolset>Implicit</RazorCompileToolset>
+
+    <!--
+    Configures whether all Razor content items (.cshtml files) will be marked to be included in the produced NuGet package as content.
+
+    All Content items are included in a NuGet package as content files. This setting can be used to control this behavior for Razor content items.
+    -->
+    <IncludeRazorContentInPack Condition="'$(IncludeRazorContentInPack)'==''">false</IncludeRazorContentInPack>
+
+    <!--
+    Configures the file extension used for generated C# files.
+    -->
+    <RazorGenerateOutputFileExtension>.g.cs</RazorGenerateOutputFileExtension>
+
+    <!-- Determines if the deps file includes complication context -->
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+
+    <!-- Determines if the refs folder is produced as part of build \ publish -->
+    <PreserveCompilationReferences>false</PreserveCompilationReferences>
+
+    <!--
+    List of file extensions that will cause VS to restart the application when RazorSDK is effective.
+    This property affects C# projects targeting 3.0 or later.
+    -->
+    <RazorUpToDateReloadFileTypes>.cs;.razor;.resx;.cshtml</RazorUpToDateReloadFileTypes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
+    <Content Include="**\*.cshtml" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <Content Include="**\*.razor" ExcludeFromSingleFile="true" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <None Remove="**\*.cshtml" />
+    <None Remove="**\*.razor" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Sdk\Sdk.Razor.StaticAssets.ProjectSystem.props" />
+
+</Project>

@@ -28,13 +28,13 @@ namespace Http2SampleApp
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
                     // Http/1.1 endpoint for comparison
-                    options.Listen(IPAddress.Any, basePort, listenOptions =>
+                    options.ListenAnyIP(basePort, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1;
                     });
 
                     // TLS Http/1.1 or HTTP/2 endpoint negotiated via ALPN
-                    options.Listen(IPAddress.Any, basePort + 1, listenOptions =>
+                    options.ListenAnyIP(basePort + 1, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                         listenOptions.UseHttps();
@@ -56,7 +56,7 @@ namespace Http2SampleApp
 
                     // Prior knowledge, no TLS handshake. WARNING: Not supported by browsers
                     // but useful for the h2spec tests
-                    options.Listen(IPAddress.Any, basePort + 5, listenOptions =>
+                    options.ListenAnyIP(basePort + 5, listenOptions =>
                     {
                         listenOptions.Protocols = HttpProtocols.Http2;
                     });

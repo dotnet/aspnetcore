@@ -55,6 +55,10 @@ class WebSocketTransportTest {
         public HttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
             return null;
         }
+
+        @Override
+        public void close() {
+        }
     }
 
     class TestWrapper extends WebSocketWrapper {

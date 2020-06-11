@@ -4,6 +4,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using static Microsoft.AspNetCore.Components.WebAssembly.Build.WebAssemblyRuntimePackage;
 
@@ -160,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = TestFacts.DefaultNetCoreTargetFramework;
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -203,6 +204,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange

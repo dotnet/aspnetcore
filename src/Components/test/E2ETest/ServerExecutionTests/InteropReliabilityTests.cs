@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    [Flaky("https://github.com/dotnet/aspnetcore/issues/19666", FlakyOn.All)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class InteropReliabilityTests : IgnitorTest<ServerStartup>
     {
         public InteropReliabilityTests(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
@@ -215,6 +215,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19410")]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange

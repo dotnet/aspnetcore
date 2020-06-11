@@ -13,7 +13,8 @@
     <Reference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <SuppressBaselineReference Include="System.ComponentModel.Annotations" />
+
+    <Reference Include="System.ComponentModel.Annotations" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
   </ItemGroup>
 
 </Project>

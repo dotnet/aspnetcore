@@ -2,8 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-
     <OutputType>exe</OutputType>
+
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
@@ -12,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
     <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
@@ -25,7 +30,7 @@
         <_Parameter1>TestAppLocatiion</_Parameter1>
         <_Parameter2>$(MSBuildThisFileDirectory)..\TestApp\</_Parameter2>
       </AssemblyAttribute>
-    </ItemGroup>
+  </ItemGroup>
   </Target>
 
 </Project>

@@ -1,11 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- Exclude the TestFiles directory from default wildcards -->
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
-    <NoWarn>$(NoWarn);BL0006</NoWarn>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,12 +28,13 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,8 +44,18 @@
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.RazorSdkDirectoryRoot</_Parameter1>
+      <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Testing.MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion</_Parameter1>
       <_Parameter2>$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

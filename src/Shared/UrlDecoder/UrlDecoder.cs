@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Internal
             if (destination.Length < source.Length)
             {
                 throw new ArgumentException(
-                    "Lenghth of the destination byte span is less then the source.",
+                    "Length of the destination byte span is less then the source.",
                     nameof(destination));
             }
 
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Internal
         /// Read the next char and convert it into hexadecimal value.
         ///
         /// The <paramref name="scan"/> index will be moved to the next
-        /// byte no matter no matter whether the operation successes.
+        /// byte no matter whether the operation successes.
         /// </summary>
         /// <param name="scan">The index of the byte in the buffer to read</param>
         /// <param name="buffer">The byte span from which the hex to be read</param>

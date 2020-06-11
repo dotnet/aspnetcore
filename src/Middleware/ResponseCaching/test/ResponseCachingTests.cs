@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -769,6 +765,24 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
                     client.DefaultRequestHeaders.MaxForwards = 1;
                     var subsequentResponse = await client.GetAsync("");
+
+                    await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ServesCachedContent_IfAvailable_UsingHead_WithContentLength()
+        {
+            var builders = TestUtils.CreateBuildersWithResponseCaching();
+
+            foreach (var builder in builders)
+            {
+                using (var server = new TestServer(builder))
+                {
+                    var client = server.CreateClient();
+                    var initialResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
+                    var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }

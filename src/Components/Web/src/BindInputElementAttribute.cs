@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Configures options for binding subtypes of an HTML <code>input</code> element.
+    /// Configures options for binding subtypes of an HTML <c>input</c> element.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public sealed class BindInputElementAttribute : Attribute
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Constructs an instance of <see cref="BindInputElementAttribute"/>.
         /// </summary>
-        /// <param name="type">The value of the element's <code>type</code> attribute.</param>
+        /// <param name="type">The value of the element's <c>type</c> attribute.</param>
         /// <param name="suffix">The suffix value.</param>
         /// <param name="valueAttribute">The name of the value attribute to be bound.</param>
         /// <param name="changeAttribute">The name of an attribute that will register an associated change event.</param>
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Gets the value of the element's <code>type</code> attribute.
+        /// Gets the value of the element's <c>type</c> attribute.
         /// </summary>
         public string Type { get; }
         

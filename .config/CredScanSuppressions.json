@@ -20,6 +20,10 @@
     {
       "placeholder": "1qaz@WSX",
       "_justification": "This is a fake password used in test code."
+    },
+    {
+      "file": "\\src\\Servers\\Kestrel\\shared\\test\\TestCertificates\\testCert.pfx",
+      "_justification": "Legitimate UT certificate file with private key"
     }
   ]
 }

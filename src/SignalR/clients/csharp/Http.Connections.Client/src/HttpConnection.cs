@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 return;
             }
 
-            await _connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync(cancellationToken);
             try
             {
                 CheckDisposed();
@@ -578,14 +578,34 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.Timeout = HttpClientTimeout;
 
             // Start with the user agent header
-            httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
+            httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
             {
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
-                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    // Check if the key is User-Agent and remove if empty string then replace if it exists.
+                    if (string.Equals(header.Key, Constants.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.IsNullOrEmpty(header.Value))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                        }
+                        else if (httpClient.DefaultRequestHeaders.Contains(header.Key))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                        else
+                        {
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                    }
+                    else
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
                 }
             }
 

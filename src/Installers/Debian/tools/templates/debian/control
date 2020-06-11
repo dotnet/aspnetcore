@@ -13,7 +13,7 @@ Homepage: {HOMEPAGE}
 
 Package: {PACKAGE_NAME}
 Architecture: {ARCH}
-Depends: ${{shlibs:Depends}}, ${{misc:Depends}}{DEPENDENT_PACKAGES}
+Depends: ${{misc:Depends}}{DEPENDENT_PACKAGES}
 Conflicts: {CONFLICT_PACKAGES}
 Description: {SHORT_DESCRIPTION}
  {LONG_DESCRIPTION}

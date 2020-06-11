@@ -7,11 +7,11 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
-    internal class BuildServiceProviderValidator
+    internal class BuildServiceProviderAnalyzer
     {
         private readonly StartupAnalysis _context;
 
-        public BuildServiceProviderValidator(StartupAnalysis context)
+        public BuildServiceProviderAnalyzer(StartupAnalysis context)
         {
             _context = context;
         }

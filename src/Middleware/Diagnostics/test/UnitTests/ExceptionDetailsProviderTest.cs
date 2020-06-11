@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.Internal
             using (var provider = new PhysicalFileProvider(rootPath))
             {
                 // Act
-                var exceptionDetailProvider = new ExceptionDetailsProvider(provider, sourceCodeLineCount: 6);
+                var exceptionDetailProvider = new ExceptionDetailsProvider(provider, logger: null, sourceCodeLineCount: 6);
                 var stackFrame = exceptionDetailProvider.GetStackFrameSourceCodeInfo(
                     "func1",
                     absoluteFilePath,
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Internal
             using (var provider = new PhysicalFileProvider(rootPath))
             {
                 // Act
-                var exceptionDetailProvider = new ExceptionDetailsProvider(provider, sourceCodeLineCount: 6);
+                var exceptionDetailProvider = new ExceptionDetailsProvider(provider, logger: null, sourceCodeLineCount: 6);
                 var stackFrame = exceptionDetailProvider.GetStackFrameSourceCodeInfo(
                     "func1",
                     relativePath,
@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.Internal
                 baseNamespace: $"{typeof(ExceptionDetailsProviderTest).GetTypeInfo().Assembly.GetName().Name}.Resources");
 
             // Act
-            var exceptionDetailProvider = new ExceptionDetailsProvider(provider, sourceCodeLineCount: 6);
+            var exceptionDetailProvider = new ExceptionDetailsProvider(provider, logger: null, sourceCodeLineCount: 6);
             var stackFrame = exceptionDetailProvider.GetStackFrameSourceCodeInfo(
                 "func1",
                 relativePath,
@@ -259,7 +259,8 @@ namespace Microsoft.Extensions.Internal
             // Act
             var exceptionDetailProvider = new ExceptionDetailsProvider(
                 new PhysicalFileProvider(Directory.GetCurrentDirectory()),
-               sourceCodeLineCount: 6);
+                logger: null,
+                sourceCodeLineCount: 6);
 
             exceptionDetailProvider.ReadFrameContent(
                 stackFrame,

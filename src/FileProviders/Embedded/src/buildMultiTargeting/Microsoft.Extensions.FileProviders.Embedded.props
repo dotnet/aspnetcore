@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="..\build\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.props" />
+</Project>

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Build
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
     public class RuntimeDependenciesResolverTest
     {
         [Fact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
@@ -42,13 +44,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                  uncalled implementation code from mscorlib.dll anyway.
                  */
                 "Microsoft.AspNetCore.Components.dll",
-                "Microsoft.AspNetCore.Components.pdb",
                 "Microsoft.AspNetCore.Components.Forms.dll",
-                "Microsoft.AspNetCore.Components.Forms.pdb",
                 "Microsoft.AspNetCore.Components.Web.dll",
-                "Microsoft.AspNetCore.Components.Web.pdb",
                 "Microsoft.AspNetCore.Components.WebAssembly.dll",
-                "Microsoft.AspNetCore.Components.WebAssembly.pdb",
                 "Microsoft.Bcl.AsyncInterfaces.dll",
                 "Microsoft.Extensions.Configuration.Abstractions.dll",
                 "Microsoft.Extensions.Configuration.dll",
@@ -65,20 +63,23 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "Microsoft.Extensions.Primitives.dll",
                 "Microsoft.JSInterop.dll",
                 "Microsoft.JSInterop.WebAssembly.dll",
-                "Microsoft.JSInterop.WebAssembly.pdb",
                 "Mono.Security.dll",
                 "mscorlib.dll",
                 "netstandard.dll",
                 "StandaloneApp.dll",
-                "StandaloneApp.pdb",
                 "System.dll",
                 "System.Buffers.dll",
+                "System.Collections.Concurrent.dll",
+                "System.Collections.dll",
                 "System.ComponentModel.Annotations.dll",
                 "System.ComponentModel.DataAnnotations.dll",
                 "System.ComponentModel.Composition.dll",
                 "System.Core.dll",
                 "System.Data.dll",
                 "System.Data.DataSetExtensions.dll",
+                "System.Diagnostics.Debug.dll",
+                "System.Diagnostics.DiagnosticSource.dll",
+                "System.Diagnostics.Tracing.dll",
                 "System.Drawing.Common.dll",
                 "System.IO.Compression.dll",
                 "System.IO.Compression.FileSystem.dll",
@@ -88,11 +89,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                 "System.Net.Http.WebAssemblyHttpHandler.dll",
                 "System.Numerics.dll",
                 "System.Numerics.Vectors.dll",
+                "System.Reflection.dll",
+                "System.Resources.ResourceManager.dll",
+                "System.Runtime.Extensions.dll",
+                "System.Runtime.InteropServices.dll",
                 "System.Runtime.CompilerServices.Unsafe.dll",
                 "System.Runtime.Serialization.dll",
+                "System.Runtime.dll",
                 "System.ServiceModel.Internals.dll",
                 "System.Text.Encodings.Web.dll",
                 "System.Text.Json.dll",
+                "System.Threading.dll",
                 "System.Threading.Tasks.Extensions.dll",
                 "System.Transactions.dll",
                 "System.Xml.dll",
@@ -106,12 +113,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             var paths = ResolveBlazorRuntimeDependencies
                 .ResolveRuntimeDependenciesCore(
-                   mainAssemblyLocation,
+                    mainAssemblyLocation,
                    hintPaths,
-                   bclLocations);
+                    bclLocations);
 
             var contents = paths
                 .Select(p => Path.GetFileName(p))
+                .Where(p => Path.GetExtension(p) != ".pdb")
                 .OrderBy(i => i, StringComparer.Ordinal)
                 .ToArray();
 

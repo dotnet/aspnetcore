@@ -110,10 +110,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             static void SetupDirectoryBuildFiles(string repoRoot, string testAppsRoot, string projectDestination)
             {
+                var razorSdkDirectoryRoot = TestFacts.RazorSdkDirectoryRoot;
                 var beforeDirectoryPropsContent =
 $@"<Project>
   <PropertyGroup>
     <RepoRoot>{repoRoot}</RepoRoot>
+    <RazorSdkDirectoryRoot>{razorSdkDirectoryRoot}</RazorSdkDirectoryRoot>
   </PropertyGroup>
 </Project>";
                 File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);

@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             
             // Read 0 bytes in 1 second
             now += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(now);;
+            _timeoutControl.Tick(now);
 
             // Timed out
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);

@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private BufferBlock<string> _source;
         private ITestOutputHelper _logger;
         private TaskCompletionSource<int> _exited;
+        private bool _started;
 
         public AwaitableProcess(ProcessSpec spec, ITestOutputHelper logger)
         {
@@ -71,10 +72,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _process.ErrorDataReceived += OnData;
             _process.Exited += OnExit;
 
+            _logger.WriteLine($"{DateTime.Now}: starting process: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
             _process.Start();
+            _started = true;
             _process.BeginErrorReadLine();
             _process.BeginOutputReadLine();
-            _logger.WriteLine($"{DateTime.Now}: process start: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
+            _logger.WriteLine($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
 
         public async Task<string> GetOutputLineAsync(string message, TimeSpan timeout)
@@ -150,7 +153,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             if (_process != null)
             {
-                if (!_process.HasExited)
+                if (_started && !_process.HasExited)
                 {
                     _process.KillTree();
                 }

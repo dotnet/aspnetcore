@@ -42,7 +42,7 @@ namespace Ignitor
             foreach (var kvp in Components)
             {
                 var component = kvp.Value;
-                if (TryGetElementFromChildren(component, out element))
+                if (TryGetElementFromChildren(component, id, out element))
                 {
                     return true;
                 }
@@ -50,31 +50,31 @@ namespace Ignitor
 
             element = null;
             return false;
+        }
 
-            bool TryGetElementFromChildren(Node node, out ElementNode? foundNode)
+        bool TryGetElementFromChildren(Node node, string id, [NotNullWhen(true)] out ElementNode? foundNode)
+        {
+            if (node is ElementNode elementNode &&
+                elementNode.Attributes.TryGetValue("id", out var elementId) &&
+                elementId.ToString() == id)
             {
-                if (node is ElementNode elementNode &&
-                    elementNode.Attributes.TryGetValue("id", out var elementId) &&
-                    elementId?.ToString() == id)
-                {
-                    foundNode = elementNode;
-                    return true;
-                }
+                foundNode = elementNode;
+                return true;
+            }
 
-                if (node is ContainerNode containerNode)
+            if (node is ContainerNode containerNode)
+            {
+                for (var i = 0; i < containerNode.Children.Count; i++)
                 {
-                    for (var i = 0; i < containerNode.Children.Count; i++)
+                    if (TryGetElementFromChildren(containerNode.Children[i], id, out foundNode))
                     {
-                        if (TryGetElementFromChildren(containerNode.Children[i], out foundNode))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
-
-                foundNode = null;
-                return false;
             }
+
+            foundNode = null;
+            return false;
         }
 
         private void UpdateComponent(RenderBatch batch, int componentId, ArrayBuilderSegment<RenderTreeEdit> edits)
@@ -264,8 +264,14 @@ namespace Ignitor
 
                 case RenderTreeFrameType.ElementReferenceCapture:
                     {
-                        // No action for reference captures.
-                        break;
+                        if (parent is ElementNode)
+                        {
+                            return 0; // A "capture" is a child in the diff, but has no node in the DOM
+                        }
+                        else
+                        {
+                            throw new Exception("Reference capture frames can only be children of element frames.");
+                        }
                     }
 
                 case RenderTreeFrameType.Markup:
