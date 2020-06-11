@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _context.ReportApplicationError(exception);
         }
 
-        public override async Task CompleteAsync(Exception exception)
+        public override async ValueTask CompleteAsync(Exception exception)
         {
             await _context.RequestBodyPipe.Reader.CompleteAsync();
             _context.ReportApplicationError(exception);
