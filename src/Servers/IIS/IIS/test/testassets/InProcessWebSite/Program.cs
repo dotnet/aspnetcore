@@ -165,7 +165,7 @@ namespace TestSite
                     }
                 case "AddLatin1":
                     {
-                        // App context switch.
+                        AppContext.SetSwitch("Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders", isEnabled: true);
                         var host = new HostBuilder().ConfigureWebHost((c) =>
                         {
                             c.ConfigureLogging((_, factory) =>
