@@ -125,16 +125,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context.RequestBodyPipe.Reader.CancelPendingRead();
         }
 
-        protected override Task OnStopAsync()
+        protected override ValueTask OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
-                return Task.CompletedTask;
+                return new ValueTask();
             }
 
             _context.RequestBodyPipe.Reader.Complete();
 
-            return Task.CompletedTask;
+            return new ValueTask();
         }
     }
 }
