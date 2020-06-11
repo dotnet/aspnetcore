@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 IEnumerable<string> values;
                 Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
                 Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
+                Assert.Equal("no-cache,no-store", values.First());
                 Assert.True(response.Headers.TryGetValues("Pragma", out values));
                 Assert.Single(values);
                 Assert.Equal("no-cache", values.First());
