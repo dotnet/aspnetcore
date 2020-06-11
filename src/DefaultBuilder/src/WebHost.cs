@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore
             });
             builder.UseKestrel((builderContext, options) =>
             {
-                options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+                options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
             })
             .ConfigureServices((hostingContext, services) =>
             {
