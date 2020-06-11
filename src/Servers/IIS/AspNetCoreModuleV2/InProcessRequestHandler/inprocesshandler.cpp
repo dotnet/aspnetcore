@@ -140,6 +140,7 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
 )
 {
     bool disconnectFired = false;
+
     {
         SRWExclusiveLock lock(m_srwDisconnectLock);
         m_pManagedHttpContext = pManagedHttpContext;

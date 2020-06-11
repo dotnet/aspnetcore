@@ -187,9 +187,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         resumeWriterThreshold: ResumeWriterTheshold,
                         minimumSegmentSize: MinAllocBufferSize));
                 _bodyOutput = new OutputProducer(pipe);
-
-                NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
             }
+
+            NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
         }
 
         private string GetOriginalPath()
