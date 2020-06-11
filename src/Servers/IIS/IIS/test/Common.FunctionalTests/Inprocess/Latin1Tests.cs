@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
-        public async Task Latin1ThrowsWithoutAppContextSwitch()
+        public async Task Latin1ReplacedWithoutAppContextSwitch()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a}");
