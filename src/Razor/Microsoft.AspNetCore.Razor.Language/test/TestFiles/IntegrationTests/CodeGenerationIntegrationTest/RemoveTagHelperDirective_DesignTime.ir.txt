@@ -11,4 +11,4 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (32:0,32 [2] RemoveTagHelperDirective.cshtml)
-                    IntermediateToken - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - Html - \n
+                    LazyIntermediateToken - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - Html - \n

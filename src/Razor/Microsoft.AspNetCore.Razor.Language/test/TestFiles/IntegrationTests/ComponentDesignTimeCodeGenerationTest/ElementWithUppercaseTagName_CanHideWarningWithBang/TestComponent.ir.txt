@@ -16,5 +16,5 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [18] x:\dir\subdir\Test\TestComponent.cshtml) - NotAComponent
                 HtmlContent - (18:0,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (18:0,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (18:0,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (20:1,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - DefinitelyNotAComponent

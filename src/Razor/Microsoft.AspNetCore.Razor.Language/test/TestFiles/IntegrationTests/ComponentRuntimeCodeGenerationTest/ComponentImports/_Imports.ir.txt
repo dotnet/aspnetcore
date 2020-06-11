@@ -12,5 +12,5 @@ Document -
         ClassDeclaration -  - public partial - _Imports - System.Object - 
             MethodDeclaration -  - protected - void - Execute
                 CSharpExpression - (69:4,1 [3] x:\dir\subdir\Test\_Imports.razor)
-                    IntermediateToken - (69:4,1 [3] x:\dir\subdir\Test\_Imports.razor) - CSharp - Foo
-                IntermediateToken - (69:4,1 [3] x:\dir\subdir\Test\_Imports.razor) - CSharp - Foo
+                    LazyIntermediateToken - (69:4,1 [3] x:\dir\subdir\Test\_Imports.razor) - CSharp - Foo
+                LazyIntermediateToken - (69:4,1 [3] x:\dir\subdir\Test\_Imports.razor) - CSharp - Foo

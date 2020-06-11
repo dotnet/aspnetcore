@@ -10,4 +10,4 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [0] CodeBlockAtEOF.cshtml)
-                    IntermediateToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 
+                    LazyIntermediateToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 

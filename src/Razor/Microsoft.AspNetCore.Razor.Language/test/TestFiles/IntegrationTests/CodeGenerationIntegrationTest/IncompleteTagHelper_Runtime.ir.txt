@@ -8,7 +8,7 @@ Document -
             FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] IncompleteTagHelper.cshtml)
-                    IntermediateToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
+                    LazyIntermediateToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - TestNamespace.PTagHelper

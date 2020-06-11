@@ -10,12 +10,12 @@ Document -
                 MarkupElement - (0:0,0 [67] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (6:0,6 [12] x:\dir\subdir\Test\TestComponent.cshtml) -  type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                            LazyIntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
                     HtmlAttribute - (18:0,18 [21] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind=" - "
                         CSharpExpressionAttributeValue - (26:0,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
+                            LazyIntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
                     HtmlAttribute - (39:0,39 [26] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind:format=" - "
                         HtmlAttributeValue - (54:0,54 [10] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (54:0,54 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html - MM/dd/yyyy
+                            LazyIntermediateToken - (54:0,54 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html - MM/dd/yyyy
             CSharpCode - (76:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (76:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n
+                LazyIntermediateToken - (76:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n

@@ -10,4 +10,4 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [31] ParserError.cshtml)
-                    IntermediateToken - (2:0,2 [31] ParserError.cshtml) - CSharp - \n/*\nint i =10;\nint j =20;\n}
+                    LazyIntermediateToken - (2:0,2 [31] ParserError.cshtml) - CSharp - \n/*\nint i =10;\nint j =20;\n}

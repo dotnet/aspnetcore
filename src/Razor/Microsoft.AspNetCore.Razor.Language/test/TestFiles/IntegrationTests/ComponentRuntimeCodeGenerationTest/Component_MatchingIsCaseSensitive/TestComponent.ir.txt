@@ -12,6 +12,6 @@ Document -
                 Component - (34:2,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - intproperty -  - AttributeStructure.SingleQuotes
                         HtmlContent - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
+                            LazyIntermediateToken - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
                     ComponentAttribute - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - BoolProperty - BoolProperty - AttributeStructure.SingleQuotes
-                        IntermediateToken - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
+                        LazyIntermediateToken - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true

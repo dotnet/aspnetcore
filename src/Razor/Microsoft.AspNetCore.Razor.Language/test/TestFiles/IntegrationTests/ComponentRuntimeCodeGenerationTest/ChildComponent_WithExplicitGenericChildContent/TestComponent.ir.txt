@@ -10,4 +10,4 @@ Document -
                 Component - (0:0,0 [64] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent - (13:0,13 [37] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent - context
                         CSharpExpression - (28:0,28 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (28:0,28 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context
+                            LazyIntermediateToken - (28:0,28 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context

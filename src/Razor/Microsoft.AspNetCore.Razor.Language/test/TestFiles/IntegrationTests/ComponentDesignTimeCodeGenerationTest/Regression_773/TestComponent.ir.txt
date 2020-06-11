@@ -17,15 +17,15 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (11:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (11:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (11:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (13:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
                     HtmlContent - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
+                        LazyIntermediateToken - (17:2,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
                 HtmlContent - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
+                    LazyIntermediateToken - (35:2,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
                 Component - (67:6,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt
                     ComponentAttribute - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Title - Title - AttributeStructure.DoubleQuotes
                         HtmlContent - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <div>Test!</div>
+                            LazyIntermediateToken - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <div>Test!</div>
                 HtmlContent - (108:6,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (108:6,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (108:6,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

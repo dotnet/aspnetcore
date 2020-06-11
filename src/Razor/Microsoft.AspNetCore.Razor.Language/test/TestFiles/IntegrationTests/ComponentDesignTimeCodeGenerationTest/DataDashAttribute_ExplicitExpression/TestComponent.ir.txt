@@ -15,13 +15,13 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
+                    LazyIntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
                 MarkupElement - (44:3,0 [55] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlAttribute - (49:3,5 [25] x:\dir\subdir\Test\TestComponent.cshtml) -  data-abc=" - "
                         HtmlAttributeValue - (60:3,16 [7] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (60:3,16 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Literal
+                            LazyIntermediateToken - (60:3,16 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Literal
                         HtmlAttributeValue - (67:3,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) -  
-                            IntermediateToken - (68:3,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - value
+                            LazyIntermediateToken - (68:3,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - value
                     HtmlAttribute - (74:3,30 [22] x:\dir\subdir\Test\TestComponent.cshtml) -  data-def=" - "
                         CSharpExpressionAttributeValue - (85:3,41 [10] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (87:3,43 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
+                            LazyIntermediateToken - (87:3,43 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue

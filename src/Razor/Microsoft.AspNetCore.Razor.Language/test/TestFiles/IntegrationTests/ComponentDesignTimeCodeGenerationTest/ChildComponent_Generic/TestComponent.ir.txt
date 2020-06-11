@@ -16,7 +16,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentTypeArgument - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
-                        IntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
+                        LazyIntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
                     ComponentAttribute - (32:0,32 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - (33:0,33 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (34:0,34 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"
+                            LazyIntermediateToken - (34:0,34 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"

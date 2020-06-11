@@ -10,15 +10,15 @@ Document -
                 Component - (0:0,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (36:0,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - (37:0,37 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (38:0,38 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 18
+                            LazyIntermediateToken - (38:0,38 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 18
                     ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
+                            LazyIntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                     ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value)
             CSharpCode - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+                LazyIntermediateToken - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

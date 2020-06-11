@@ -16,13 +16,13 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (50:0,50 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (50:0,50 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (50:0,50 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 CSharpCode - (56:2,2 [138] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (56:2,2 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    var output = string.Empty;\n    if (__builder == null) output = "Builder is null!";\n    else output = "Builder is not null!";\n    
+                    LazyIntermediateToken - (56:2,2 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    var output = string.Empty;\n    if (__builder == null) output = "Builder is null!";\n    else output = "Builder is not null!";\n    
                 MarkupElement - (194:6,4 [22] x:\dir\subdir\Test\TestComponent.cshtml) - p
                     HtmlContent - (197:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (197:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
+                        LazyIntermediateToken - (197:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
                     CSharpExpression - (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
+                        LazyIntermediateToken - (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
                 CSharpCode - (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n
+                    LazyIntermediateToken - (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n

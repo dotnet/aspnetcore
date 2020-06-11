@@ -12,10 +12,10 @@ Document -
                     HtmlAttribute - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - onfocus=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.FocusEventArgs>(this, 
-                            IntermediateToken - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnFocus
+                            LazyIntermediateToken - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnFocus
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (95:1,51 [22] x:\dir\subdir\Test\TestComponent.cshtml) - onfocus - PreventDefault - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (95:1,51 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ShouldPreventDefault()
+                            LazyIntermediateToken - (95:1,51 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ShouldPreventDefault()
             CSharpCode - (130:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (130:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnFocus(FocusEventArgs e) { }\n\n    bool ShouldPreventDefault() { return false; }\n
+                LazyIntermediateToken - (130:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnFocus(FocusEventArgs e) { }\n\n    bool ShouldPreventDefault() { return false; }\n

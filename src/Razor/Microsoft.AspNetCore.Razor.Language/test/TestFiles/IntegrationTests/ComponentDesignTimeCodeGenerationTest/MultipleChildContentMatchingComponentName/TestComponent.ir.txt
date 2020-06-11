@@ -17,13 +17,13 @@ Document -
                 Component - (0:0,0 [78] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent - (17:1,2 [20] x:\dir\subdir\Test\TestComponent.cshtml) - Header - context
                         HtmlContent - (25:1,10 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (25:1,10 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hi!
+                            LazyIntermediateToken - (25:1,10 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hi!
                     ComponentChildContent - (41:2,2 [21] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - context
                         HtmlContent - (49:2,10 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (49:2,10 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Bye!
+                            LazyIntermediateToken - (49:2,10 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Bye!
                 HtmlContent - (78:3,14 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (78:3,14 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (78:3,14 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (80:4,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - Header
                     ComponentChildContent -  - ChildContent - context
                         HtmlContent - (88:4,8 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (88:4,8 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello!
+                            LazyIntermediateToken - (88:4,8 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello!

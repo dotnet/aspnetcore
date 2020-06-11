@@ -16,13 +16,13 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 CSharpCode - (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(__builder); 
+                    LazyIntermediateToken - (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(__builder); 
                 HtmlContent - (92:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (92:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (92:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (101:4,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (101:4,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder __builder)\n    {\n        
+                LazyIntermediateToken - (101:4,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder __builder)\n    {\n        
             Component - (178:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
             CSharpCode - (193:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (193:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n
+                LazyIntermediateToken - (193:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n

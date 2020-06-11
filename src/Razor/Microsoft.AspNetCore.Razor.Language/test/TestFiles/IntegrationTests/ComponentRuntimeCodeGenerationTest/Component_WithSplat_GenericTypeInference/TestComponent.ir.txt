@@ -9,11 +9,11 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [58] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (20:0,20 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (20:0,20 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 18
+                        LazyIntermediateToken - (20:0,20 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 18
                     Splat - (37:0,37 [17] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (39:0,39 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - someAttributes
+                        LazyIntermediateToken - (39:0,39 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - someAttributes
             CSharpCode - (69:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (69:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();\n
+                LazyIntermediateToken - (69:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

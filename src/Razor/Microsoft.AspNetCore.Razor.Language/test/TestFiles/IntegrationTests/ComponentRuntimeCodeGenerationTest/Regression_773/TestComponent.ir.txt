@@ -12,4 +12,4 @@ Document -
                 Component - (67:6,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt
                     ComponentAttribute - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Title - Title - AttributeStructure.DoubleQuotes
                         HtmlContent - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <div>Test!</div>
+                            LazyIntermediateToken - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <div>Test!</div>

@@ -10,7 +10,7 @@ Document -
                 Component - (0:0,0 [45] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Message - Message - AttributeStructure.DoubleQuotes
                         HtmlContent - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
+                            LazyIntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
                     ComponentAttribute -  - mESSAGE -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (37:0,37 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (37:0,37 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
+                            LazyIntermediateToken - (37:0,37 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test

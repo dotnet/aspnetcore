@@ -10,9 +10,9 @@ Document -
                 MarkupElement - (0:0,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (6:0,6 [16] x:\dir\subdir\Test\TestComponent.cshtml) -  type=" - "
                         HtmlAttributeValue - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
+                            LazyIntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
                     HtmlAttribute - (22:0,22 [17] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind=" - "
                         CSharpExpressionAttributeValue - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (31:0,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
+                            LazyIntermediateToken - (31:0,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
             CSharpCode - (51:1,7 [41] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (51:1,7 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n
+                LazyIntermediateToken - (51:1,7 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n

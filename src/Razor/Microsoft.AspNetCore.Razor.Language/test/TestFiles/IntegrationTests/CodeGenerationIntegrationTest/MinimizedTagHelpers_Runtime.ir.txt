@@ -16,16 +16,16 @@ Document -
             FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] MinimizedTagHelpers.cshtml)
-                    IntermediateToken - (33:1,0 [2] MinimizedTagHelpers.cshtml) - Html - \n
+                    LazyIntermediateToken - (33:1,0 [2] MinimizedTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [762] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (64:2,29 [34] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
-                            IntermediateToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
-                            IntermediateToken - (76:3,10 [13] MinimizedTagHelpers.cshtml) - Html -  nottaghelper
-                            IntermediateToken - (89:3,23 [1] MinimizedTagHelpers.cshtml) - Html -  
-                            IntermediateToken - (90:3,24 [2] MinimizedTagHelpers.cshtml) - Html - />
-                            IntermediateToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
+                            LazyIntermediateToken - (76:3,10 [13] MinimizedTagHelpers.cshtml) - Html -  nottaghelper
+                            LazyIntermediateToken - (89:3,23 [1] MinimizedTagHelpers.cshtml) - Html -  
+                            LazyIntermediateToken - (90:3,24 [2] MinimizedTagHelpers.cshtml) - Html - />
+                            LazyIntermediateToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (98:4,4 [59] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
@@ -33,7 +33,7 @@ Document -
                             DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                             DefaultTagHelperExecute - 
                         HtmlContent - (157:5,39 [6] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (163:6,4 [119] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
@@ -44,7 +44,7 @@ Document -
                             PreallocatedTagHelperProperty - (273:7,101 [5] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_1 - input-bound-required-string - BoundRequiredString
                             DefaultTagHelperExecute - 
                         HtmlContent - (282:7,110 [6] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (282:7,110 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (282:7,110 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (288:8,4 [176] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
@@ -56,7 +56,7 @@ Document -
                             PreallocatedTagHelperProperty - (454:11,93 [6] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_3 - input-bound-required-string - BoundRequiredString
                             DefaultTagHelperExecute - 
                         HtmlContent - (464:11,103 [6] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (464:11,103 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (464:11,103 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (470:12,4 [206] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
@@ -68,7 +68,7 @@ Document -
                             PreallocatedTagHelperProperty - (667:16,40 [5] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_6 - input-bound-required-string - BoundRequiredString
                             DefaultTagHelperExecute - 
                         HtmlContent - (676:16,49 [6] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (676:16,49 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (676:16,49 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (682:17,4 [41] MinimizedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - DivTagHelper
@@ -76,15 +76,15 @@ Document -
                             DefaultTagHelperProperty -  - booldict-prefix-key - System.Collections.Generic.IDictionary<string, bool> DivTagHelper.BoolDictProp - HtmlAttributeValueStyle.Minimized
                             DefaultTagHelperExecute - 
                         HtmlContent - (723:17,45 [6] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (723:17,45 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (723:17,45 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (729:18,4 [62] MinimizedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
                             DefaultTagHelperBody - 
                                 HtmlContent - (734:18,9 [51] MinimizedTagHelpers.cshtml)
-                                    IntermediateToken - (734:18,9 [51] MinimizedTagHelpers.cshtml) - Html - Tag helper with unmatched bound boolean attributes.
+                                    LazyIntermediateToken - (734:18,9 [51] MinimizedTagHelpers.cshtml) - Html - Tag helper with unmatched bound boolean attributes.
                             DefaultTagHelperCreate -  - DivTagHelper
                             DefaultTagHelperExecute - 
                         HtmlContent - (791:18,66 [2] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (791:18,66 [2] MinimizedTagHelpers.cshtml) - Html - \n
+                            LazyIntermediateToken - (791:18,66 [2] MinimizedTagHelpers.cshtml) - Html - \n
                     DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
                     DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                     DefaultTagHelperExecute - 

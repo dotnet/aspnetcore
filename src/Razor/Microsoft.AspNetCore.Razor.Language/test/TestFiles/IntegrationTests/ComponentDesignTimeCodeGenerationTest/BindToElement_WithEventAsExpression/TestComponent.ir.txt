@@ -15,12 +15,12 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [25] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  var x = "anotherevent"; 
+                    LazyIntermediateToken - (2:0,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  var x = "anotherevent"; 
                 MarkupElement - (30:1,0 [57] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlAttribute - (48:1,18 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
-                            IntermediateToken - (49:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            LazyIntermediateToken - (49:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (48:1,18 [12] x:\dir\subdir\Test\TestComponent.cshtml) - =" - "
                         CSharpExpressionAttributeValue -  - 
@@ -28,6 +28,6 @@ Document -
                             IntermediateToken -  - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                 HtmlContent - (87:1,57 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (87:1,57 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (87:1,57 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (96:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (96:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n
+                LazyIntermediateToken - (96:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

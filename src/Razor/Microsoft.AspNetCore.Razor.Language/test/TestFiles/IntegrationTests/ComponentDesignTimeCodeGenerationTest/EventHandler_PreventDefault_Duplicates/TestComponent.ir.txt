@@ -16,9 +16,9 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (44:1,0 [64] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     ComponentAttribute - (76:1,32 [4] x:\dir\subdir\Test\TestComponent.cshtml) - onclick - PreventDefault - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (76:1,32 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
+                            LazyIntermediateToken - (76:1,32 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
                     HtmlAttribute -  - @onclick:preventDefault - 

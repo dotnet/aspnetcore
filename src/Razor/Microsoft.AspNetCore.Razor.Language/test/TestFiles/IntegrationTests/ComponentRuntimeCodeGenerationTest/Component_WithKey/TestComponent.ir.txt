@@ -10,10 +10,10 @@ Document -
                 Component - (0:0,0 [75] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - ParamBefore -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                            LazyIntermediateToken - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     SetKey - (40:0,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - someDate.Day
                     ComponentAttribute -  - ParamAfter -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (66:0,66 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (66:0,66 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                            LazyIntermediateToken - (66:0,66 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
             CSharpCode - (86:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (86:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n
+                LazyIntermediateToken - (86:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n

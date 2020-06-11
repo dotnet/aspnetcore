@@ -22,4 +22,4 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (269:4,0 [13] AttributeDirective.cshtml)
-                    IntermediateToken - (269:4,0 [13] AttributeDirective.cshtml) - Html - \nHello World
+                    LazyIntermediateToken - (269:4,0 [13] AttributeDirective.cshtml) - Html - \nHello World

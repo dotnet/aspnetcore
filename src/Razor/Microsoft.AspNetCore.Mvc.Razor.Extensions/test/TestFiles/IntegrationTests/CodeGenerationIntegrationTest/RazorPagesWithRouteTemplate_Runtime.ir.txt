@@ -14,21 +14,21 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithRouteTemplate - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml)
-                    IntermediateToken - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
+                    LazyIntermediateToken - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
                 HtmlContent - (79:4,0 [2] RazorPagesWithRouteTemplate.cshtml)
-                    IntermediateToken - (79:4,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
+                    LazyIntermediateToken - (79:4,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
                 HtmlContent - (193:11,0 [19] RazorPagesWithRouteTemplate.cshtml)
-                    IntermediateToken - (193:11,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
-                    IntermediateToken - (195:12,0 [3] RazorPagesWithRouteTemplate.cshtml) - Html - <h1
-                    IntermediateToken - (198:12,3 [1] RazorPagesWithRouteTemplate.cshtml) - Html - >
-                    IntermediateToken - (199:12,4 [13] RazorPagesWithRouteTemplate.cshtml) - Html - New Customer 
+                    LazyIntermediateToken - (193:11,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
+                    LazyIntermediateToken - (195:12,0 [3] RazorPagesWithRouteTemplate.cshtml) - Html - <h1
+                    LazyIntermediateToken - (198:12,3 [1] RazorPagesWithRouteTemplate.cshtml) - Html - >
+                    LazyIntermediateToken - (199:12,4 [13] RazorPagesWithRouteTemplate.cshtml) - Html - New Customer 
                 CSharpExpression - (213:12,18 [10] RazorPagesWithRouteTemplate.cshtml)
-                    IntermediateToken - (213:12,18 [10] RazorPagesWithRouteTemplate.cshtml) - CSharp - Model.Name
+                    LazyIntermediateToken - (213:12,18 [10] RazorPagesWithRouteTemplate.cshtml) - CSharp - Model.Name
                 HtmlContent - (223:12,28 [7] RazorPagesWithRouteTemplate.cshtml)
-                    IntermediateToken - (223:12,28 [5] RazorPagesWithRouteTemplate.cshtml) - Html - </h1>
-                    IntermediateToken - (228:12,33 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
+                    LazyIntermediateToken - (223:12,28 [5] RazorPagesWithRouteTemplate.cshtml) - Html - </h1>
+                    LazyIntermediateToken - (228:12,33 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
             CSharpCode - (93:5,12 [97] RazorPagesWithRouteTemplate.cshtml)
-                IntermediateToken - (93:5,12 [97] RazorPagesWithRouteTemplate.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public string Name { get; set; }\n    }\n
+                LazyIntermediateToken - (93:5,12 [97] RazorPagesWithRouteTemplate.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public string Name { get; set; }\n    }\n
             Inject - 
             Inject - 
             Inject - 

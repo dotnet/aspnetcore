@@ -17,6 +17,6 @@ Document -
                 Component - (0:0,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - CoolnessMeter
                     ComponentAttribute - (25:0,25 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Coolness - Coolness - AttributeStructure.DoubleQuotes
                         CSharpExpression - (26:0,26 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "very-cool"
+                            LazyIntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "very-cool"
                 HtmlContent - (43:0,43 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (43:0,43 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (43:0,43 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

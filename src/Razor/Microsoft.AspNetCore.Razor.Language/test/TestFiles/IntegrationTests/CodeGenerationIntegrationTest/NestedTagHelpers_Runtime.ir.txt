@@ -14,16 +14,16 @@ Document -
                 TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml) - span - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (46:1,15 [4] NestedTagHelpers.cshtml)
-                            IntermediateToken - (46:1,15 [4] NestedTagHelpers.cshtml) - Html - Hola
+                            LazyIntermediateToken - (46:1,15 [4] NestedTagHelpers.cshtml) - Html - Hola
                     DefaultTagHelperCreate -  - SpanTagHelper
                     DefaultTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
                     DefaultTagHelperExecute - 
                 HtmlContent - (57:1,26 [2] NestedTagHelpers.cshtml)
-                    IntermediateToken - (57:1,26 [2] NestedTagHelpers.cshtml) - Html - \n
+                    LazyIntermediateToken - (57:1,26 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (59:2,0 [66] NestedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (78:2,19 [6] NestedTagHelpers.cshtml)
-                            IntermediateToken - (78:2,19 [6] NestedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (78:2,19 [6] NestedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (84:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - InputTagHelper
@@ -31,7 +31,7 @@ Document -
                             PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             DefaultTagHelperExecute - 
                         HtmlContent - (117:3,37 [2] NestedTagHelpers.cshtml)
-                            IntermediateToken - (117:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
+                            LazyIntermediateToken - (117:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
                     DefaultTagHelperCreate -  - DivTagHelper
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     DefaultTagHelperExecute - 

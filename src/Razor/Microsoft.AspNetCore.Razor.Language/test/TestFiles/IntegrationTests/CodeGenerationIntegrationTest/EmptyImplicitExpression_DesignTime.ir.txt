@@ -10,8 +10,8 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] EmptyImplicitExpression.cshtml)
-                    IntermediateToken - (0:0,0 [18] EmptyImplicitExpression.cshtml) - Html - This is markup\n\n
+                    LazyIntermediateToken - (0:0,0 [18] EmptyImplicitExpression.cshtml) - Html - This is markup\n\n
                 CSharpExpression - (19:2,1 [0] EmptyImplicitExpression.cshtml)
-                    IntermediateToken - (19:2,1 [0] EmptyImplicitExpression.cshtml) - CSharp - 
+                    LazyIntermediateToken - (19:2,1 [0] EmptyImplicitExpression.cshtml) - CSharp - 
                 HtmlContent - (19:2,1 [1] EmptyImplicitExpression.cshtml)
-                    IntermediateToken - (19:2,1 [1] EmptyImplicitExpression.cshtml) - Html - !
+                    LazyIntermediateToken - (19:2,1 [1] EmptyImplicitExpression.cshtml) - Html - !

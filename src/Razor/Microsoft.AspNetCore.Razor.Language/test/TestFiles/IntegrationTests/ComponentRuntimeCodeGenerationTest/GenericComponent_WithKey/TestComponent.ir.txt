@@ -9,9 +9,9 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [50] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentTypeArgument - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
-                        IntermediateToken - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
+                        LazyIntermediateToken - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
                     ComponentAttribute - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
+                        LazyIntermediateToken - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
                     SetKey - (38:0,38 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
             CSharpCode - (61:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (61:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
+                LazyIntermediateToken - (61:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n

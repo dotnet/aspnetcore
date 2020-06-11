@@ -11,6 +11,6 @@ Document -
                 Component - (44:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (66:1,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
+                            LazyIntermediateToken - (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
             CSharpCode - (90:3,7 [139] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (90:3,7 [139] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private Task Increment(MouseEventArgs e) {\n        counter++;\n        return Task.CompletedTask;\n    }\n
+                LazyIntermediateToken - (90:3,7 [139] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private Task Increment(MouseEventArgs e) {\n        counter++;\n        return Task.CompletedTask;\n    }\n

@@ -8,5 +8,5 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (0:0,0 [17] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (0:0,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <!DOCTYPE html>\n
+                    LazyIntermediateToken - (0:0,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <!DOCTYPE html>\n
                 MarkupBlock -  - <div>\n</div>

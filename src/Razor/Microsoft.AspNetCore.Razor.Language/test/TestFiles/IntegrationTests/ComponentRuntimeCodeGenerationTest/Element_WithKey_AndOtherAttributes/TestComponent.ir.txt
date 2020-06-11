@@ -10,10 +10,10 @@ Document -
                 MarkupElement - (0:0,0 [63] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                            LazyIntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
                     HtmlAttribute -  - data-slider-min=" - "
                         CSharpExpressionAttributeValue - (36:0,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
+                            LazyIntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
                     SetKey - (49:0,49 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
             CSharpCode - (74:2,7 [109] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (74:2,7 [109] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] public int Min { get; set; }\n    
+                LazyIntermediateToken - (74:2,7 [109] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] public int Min { get; set; }\n    

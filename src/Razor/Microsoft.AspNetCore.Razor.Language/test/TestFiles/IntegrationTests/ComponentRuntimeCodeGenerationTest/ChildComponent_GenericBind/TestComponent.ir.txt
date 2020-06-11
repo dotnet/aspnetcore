@@ -9,12 +9,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentTypeArgument - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
-                        IntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
+                        LazyIntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
                     ComponentAttribute - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
+                            LazyIntermediateToken - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                     ComponentAttribute - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
             CSharpCode - (53:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (53:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+                LazyIntermediateToken - (53:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n

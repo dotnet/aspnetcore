@@ -16,17 +16,17 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [84] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlContent - (72:0,72 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (72:0,72 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                        LazyIntermediateToken - (72:0,72 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                            LazyIntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     SetKey - (37:0,37 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                            LazyIntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (84:0,84 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (84:0,84 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (84:0,84 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 HtmlContent - (145:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (145:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (145:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n
+                LazyIntermediateToken - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n

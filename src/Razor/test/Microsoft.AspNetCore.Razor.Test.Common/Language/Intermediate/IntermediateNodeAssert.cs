@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < html.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(html.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(html.Children[i]);
                     Assert.Equal(TokenKind.Html, token.Kind);
                     content.Append(token.Content);
                 }
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < statement.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(statement.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(statement.Children[i]);
                     Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < attributeValue.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(attributeValue.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(attributeValue.Children[i]);
                     Assert.True(token.IsCSharp);
                     content.Append(token.Content);
                 }
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < attributeValue.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(attributeValue.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(attributeValue.Children[i]);
                     Assert.True(token.IsHtml);
                     content.Append(token.Content);
                 }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < cSharp.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(cSharp.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(cSharp.Children[i]);
                     Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < beginNode.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(beginNode.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(beginNode.Children[i]);
                     Assert.True(token.IsCSharp);
                     content.Append(token.Content);
                 }
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < endNode.Children.Count; i++)
                 {
-                    var token = Assert.IsType<IntermediateToken>(endNode.Children[i]);
+                    var token = Assert.IsAssignableFrom<IntermediateToken>(endNode.Children[i]);
                     Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }

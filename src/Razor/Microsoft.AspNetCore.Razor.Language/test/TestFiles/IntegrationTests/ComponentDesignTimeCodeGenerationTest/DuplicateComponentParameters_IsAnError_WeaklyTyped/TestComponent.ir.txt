@@ -17,9 +17,9 @@ Document -
                 Component - (0:0,0 [37] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - Foo -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (18:0,18 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (18:0,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
+                            LazyIntermediateToken - (18:0,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
                     ComponentAttribute -  - foo -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (29:0,29 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (29:0,29 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
+                            LazyIntermediateToken - (29:0,29 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - test
                 HtmlContent - (37:0,37 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (37:0,37 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (37:0,37 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

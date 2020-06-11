@@ -9,14 +9,14 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlContent - (83:0,83 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (83:0,83 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                        LazyIntermediateToken - (83:0,83 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                            LazyIntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     Splat - (44:0,44 [14] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (44:0,44 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - someAttributes
+                        LazyIntermediateToken - (44:0,44 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - someAttributes
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (76:0,76 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (76:0,76 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                            LazyIntermediateToken - (76:0,76 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
             CSharpCode - (106:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (106:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();\n
+                LazyIntermediateToken - (106:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();\n

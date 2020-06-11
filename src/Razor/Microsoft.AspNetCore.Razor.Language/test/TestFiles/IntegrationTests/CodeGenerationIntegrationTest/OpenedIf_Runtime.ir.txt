@@ -5,17 +5,17 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_OpenedIf_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [16] OpenedIf.cshtml)
-                    IntermediateToken - (0:0,0 [5] OpenedIf.cshtml) - Html - <html
-                    IntermediateToken - (5:0,5 [1] OpenedIf.cshtml) - Html - >
-                    IntermediateToken - (6:0,6 [2] OpenedIf.cshtml) - Html - \n
-                    IntermediateToken - (8:1,0 [5] OpenedIf.cshtml) - Html - <body
-                    IntermediateToken - (13:1,5 [1] OpenedIf.cshtml) - Html - >
-                    IntermediateToken - (14:1,6 [2] OpenedIf.cshtml) - Html - \n
+                    LazyIntermediateToken - (0:0,0 [5] OpenedIf.cshtml) - Html - <html
+                    LazyIntermediateToken - (5:0,5 [1] OpenedIf.cshtml) - Html - >
+                    LazyIntermediateToken - (6:0,6 [2] OpenedIf.cshtml) - Html - \n
+                    LazyIntermediateToken - (8:1,0 [5] OpenedIf.cshtml) - Html - <body
+                    LazyIntermediateToken - (13:1,5 [1] OpenedIf.cshtml) - Html - >
+                    LazyIntermediateToken - (14:1,6 [2] OpenedIf.cshtml) - Html - \n
                 CSharpCode - (17:2,1 [14] OpenedIf.cshtml)
-                    IntermediateToken - (17:2,1 [14] OpenedIf.cshtml) - CSharp - if (true) { \n
+                    LazyIntermediateToken - (17:2,1 [14] OpenedIf.cshtml) - CSharp - if (true) { \n
                 HtmlContent - (31:3,0 [16] OpenedIf.cshtml)
-                    IntermediateToken - (31:3,0 [7] OpenedIf.cshtml) - Html - </body>
-                    IntermediateToken - (38:3,7 [2] OpenedIf.cshtml) - Html - \n
-                    IntermediateToken - (40:4,0 [7] OpenedIf.cshtml) - Html - </html>
+                    LazyIntermediateToken - (31:3,0 [7] OpenedIf.cshtml) - Html - </body>
+                    LazyIntermediateToken - (38:3,7 [2] OpenedIf.cshtml) - Html - \n
+                    LazyIntermediateToken - (40:4,0 [7] OpenedIf.cshtml) - Html - </html>
                 CSharpCode - (47:4,7 [0] OpenedIf.cshtml)
-                    IntermediateToken - (47:4,7 [0] OpenedIf.cshtml) - CSharp - 
+                    LazyIntermediateToken - (47:4,7 [0] OpenedIf.cshtml) - CSharp - 

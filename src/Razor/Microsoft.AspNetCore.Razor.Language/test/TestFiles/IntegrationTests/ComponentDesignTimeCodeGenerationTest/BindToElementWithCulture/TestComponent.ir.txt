@@ -16,14 +16,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (27:0,27 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (27:0,27 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (27:0,27 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (29:1,0 [118] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlAttribute - (47:1,18 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
-                            IntermediateToken - (48:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            LazyIntermediateToken - (48:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - , culture: 
-                            IntermediateToken - (115:1,86 [28] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CultureInfo.InvariantCulture
+                            LazyIntermediateToken - (115:1,86 [28] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CultureInfo.InvariantCulture
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (47:1,18 [12] x:\dir\subdir\Test\TestComponent.cshtml) - anotherevent=" - "
                         CSharpExpressionAttributeValue -  - 
@@ -32,6 +32,6 @@ Document -
                             IntermediateToken -  - CSharp - , culture: CultureInfo.InvariantCulture
                             IntermediateToken -  - CSharp - )
                 HtmlContent - (147:1,118 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (147:1,118 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (147:1,118 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (156:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (156:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n
+                LazyIntermediateToken - (156:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

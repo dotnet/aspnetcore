@@ -15,14 +15,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
+                    LazyIntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
                 Template - (48:1,44 [45] x:\dir\subdir\Test\TestComponent.cshtml)
                     MarkupElement - (48:1,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         Component - (53:1,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                             ComponentAttribute - (72:1,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name - AttributeStructure.DoubleQuotes
                                 CSharpExpression - (73:1,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                                    IntermediateToken - (73:1,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                                    LazyIntermediateToken - (73:1,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (93:1,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (93:1,89 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
+                    LazyIntermediateToken - (93:1,89 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
             CSharpCode - (106:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (106:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+                LazyIntermediateToken - (106:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

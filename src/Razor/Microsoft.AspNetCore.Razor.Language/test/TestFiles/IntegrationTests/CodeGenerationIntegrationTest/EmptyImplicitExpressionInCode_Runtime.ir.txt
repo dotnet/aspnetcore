@@ -5,8 +5,8 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpressionInCode_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml)
-                    IntermediateToken - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n    
+                    LazyIntermediateToken - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n    
                 CSharpExpression - (9:1,5 [0] EmptyImplicitExpressionInCode.cshtml)
-                    IntermediateToken - (9:1,5 [0] EmptyImplicitExpressionInCode.cshtml) - CSharp - 
+                    LazyIntermediateToken - (9:1,5 [0] EmptyImplicitExpressionInCode.cshtml) - CSharp - 
                 CSharpCode - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml)
-                    IntermediateToken - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n
+                    LazyIntermediateToken - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n

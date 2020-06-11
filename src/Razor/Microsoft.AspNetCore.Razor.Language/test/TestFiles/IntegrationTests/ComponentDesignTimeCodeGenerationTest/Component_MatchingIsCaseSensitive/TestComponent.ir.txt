@@ -16,13 +16,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                 HtmlContent - (15:0,15 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (15:0,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (15:0,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (17:1,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - mycomponent
                 HtmlContent - (32:1,15 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (32:1,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (32:1,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (34:2,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - intproperty -  - AttributeStructure.SingleQuotes
                         HtmlContent - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
+                            LazyIntermediateToken - (60:2,26 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
                     ComponentAttribute - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - BoolProperty - BoolProperty - AttributeStructure.SingleQuotes
-                        IntermediateToken - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
+                        LazyIntermediateToken - (77:2,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true

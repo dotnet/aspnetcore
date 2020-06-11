@@ -10,13 +10,13 @@ Document -
                 MarkupElement - (25:1,0 [91] BasicComponent.cshtml) - div
                     HtmlAttribute - (29:1,4 [25] BasicComponent.cshtml) -  class=" - "
                         CSharpExpressionAttributeValue - (37:1,12 [16] BasicComponent.cshtml) - 
-                            IntermediateToken - (38:1,13 [15] BasicComponent.cshtml) - CSharp - this.ToString()
+                            LazyIntermediateToken - (38:1,13 [15] BasicComponent.cshtml) - CSharp - this.ToString()
                     HtmlContent - (55:1,30 [23] BasicComponent.cshtml)
-                        IntermediateToken - (55:1,30 [19] BasicComponent.cshtml) - Html - \n    Hello world\n
-                        IntermediateToken - (74:3,0 [4] BasicComponent.cshtml) - Html -     
+                        LazyIntermediateToken - (55:1,30 [19] BasicComponent.cshtml) - Html - \n    Hello world\n
+                        LazyIntermediateToken - (74:3,0 [4] BasicComponent.cshtml) - Html -     
                     CSharpExpression - (79:3,5 [29] BasicComponent.cshtml)
-                        IntermediateToken - (79:3,5 [29] BasicComponent.cshtml) - CSharp - string.Format("{0}", "Hello")
+                        LazyIntermediateToken - (79:3,5 [29] BasicComponent.cshtml) - CSharp - string.Format("{0}", "Hello")
                     HtmlContent - (108:3,34 [2] BasicComponent.cshtml)
-                        IntermediateToken - (108:3,34 [2] BasicComponent.cshtml) - Html - \n
+                        LazyIntermediateToken - (108:3,34 [2] BasicComponent.cshtml) - Html - \n
             CSharpCode - (132:6,12 [37] BasicComponent.cshtml)
-                IntermediateToken - (132:6,12 [37] BasicComponent.cshtml) - CSharp - \n    void IDisposable.Dispose(){ }\n
+                LazyIntermediateToken - (132:6,12 [37] BasicComponent.cshtml) - CSharp - \n    void IDisposable.Dispose(){ }\n

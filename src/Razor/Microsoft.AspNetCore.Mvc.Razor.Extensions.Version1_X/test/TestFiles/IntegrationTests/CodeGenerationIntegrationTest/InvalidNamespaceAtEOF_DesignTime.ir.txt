@@ -29,7 +29,7 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (10:0,10 [6] InvalidNamespaceAtEOF.cshtml)
-                    IntermediateToken - (10:0,10 [6] InvalidNamespaceAtEOF.cshtml) - Html -  Test.
+                    LazyIntermediateToken - (10:0,10 [6] InvalidNamespaceAtEOF.cshtml) - Html -  Test.
             Inject - 
             Inject - 
             Inject - 

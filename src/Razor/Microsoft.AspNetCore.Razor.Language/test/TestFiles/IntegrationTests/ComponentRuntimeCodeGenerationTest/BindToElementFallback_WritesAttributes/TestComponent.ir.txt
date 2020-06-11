@@ -10,11 +10,11 @@ Document -
                 MarkupElement - (0:0,0 [77] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                            LazyIntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
                     HtmlAttribute - (32:0,32 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
-                            IntermediateToken - (33:0,33 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            LazyIntermediateToken - (33:0,33 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (32:0,32 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
@@ -22,4 +22,4 @@ Document -
                             IntermediateToken -  - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
             CSharpCode - (86:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (86:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+                LazyIntermediateToken - (86:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

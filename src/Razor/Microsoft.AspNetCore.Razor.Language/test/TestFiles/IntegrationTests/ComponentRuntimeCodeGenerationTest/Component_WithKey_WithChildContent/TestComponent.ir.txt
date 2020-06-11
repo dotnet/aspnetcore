@@ -10,9 +10,9 @@ Document -
                 Component - (0:0,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
                         HtmlContent - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                            LazyIntermediateToken - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
                         MarkupBlock -  - <el>further</el> content\n
                     SetKey - (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 123 + 456
                     ComponentAttribute -  - SomeProp -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
+                            LazyIntermediateToken - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val

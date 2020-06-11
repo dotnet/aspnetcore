@@ -9,13 +9,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [80] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlContent - (68:0,68 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (68:0,68 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                        LazyIntermediateToken - (68:0,68 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                            LazyIntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     ReferenceCapture - (37:0,37 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (61:0,61 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (61:0,61 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                            LazyIntermediateToken - (61:0,61 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
             CSharpCode - (91:2,7 [128] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (91:2,7 [128] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Components.ElementReference myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n
+                LazyIntermediateToken - (91:2,7 [128] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Components.ElementReference myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n

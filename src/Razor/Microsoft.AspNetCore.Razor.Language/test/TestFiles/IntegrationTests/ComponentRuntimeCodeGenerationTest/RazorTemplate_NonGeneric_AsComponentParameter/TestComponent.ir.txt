@@ -8,12 +8,12 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [27] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [27] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment template = 
+                    LazyIntermediateToken - (2:0,2 [27] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment template = 
                 Template - (30:0,30 [15] x:\dir\subdir\Test\TestComponent.cshtml)
                     MarkupBlock -  - <div>Joey</div>
                 CSharpCode - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
+                    LazyIntermediateToken - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
                 Component - (50:1,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - Person -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - (71:1,21 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (72:1,22 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
+                            LazyIntermediateToken - (72:1,22 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

@@ -34,11 +34,11 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (28:0,28 [2] UsingDirectives.cshtml)
-                    IntermediateToken - (28:0,28 [2] UsingDirectives.cshtml) - Html - \n
+                    LazyIntermediateToken - (28:0,28 [2] UsingDirectives.cshtml) - Html - \n
                 HtmlContent - (55:1,25 [2] UsingDirectives.cshtml)
-                    IntermediateToken - (55:1,25 [2] UsingDirectives.cshtml) - Html - \n
+                    LazyIntermediateToken - (55:1,25 [2] UsingDirectives.cshtml) - Html - \n
                 HtmlContent - (70:2,13 [2] UsingDirectives.cshtml)
-                    IntermediateToken - (70:2,13 [2] UsingDirectives.cshtml) - Html - \n
+                    LazyIntermediateToken - (70:2,13 [2] UsingDirectives.cshtml) - Html - \n
             Inject - 
             Inject - 
             Inject - 

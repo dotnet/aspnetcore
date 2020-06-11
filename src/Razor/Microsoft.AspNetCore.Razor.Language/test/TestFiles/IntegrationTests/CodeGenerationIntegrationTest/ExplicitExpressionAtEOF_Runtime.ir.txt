@@ -5,6 +5,6 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ExplicitExpressionAtEOF_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] ExplicitExpressionAtEOF.cshtml)
-                    IntermediateToken - (0:0,0 [18] ExplicitExpressionAtEOF.cshtml) - Html - This is markup\n\n
+                    LazyIntermediateToken - (0:0,0 [18] ExplicitExpressionAtEOF.cshtml) - Html - This is markup\n\n
                 CSharpExpression - (20:2,2 [0] ExplicitExpressionAtEOF.cshtml)
-                    IntermediateToken - (20:2,2 [0] ExplicitExpressionAtEOF.cshtml) - CSharp - 
+                    LazyIntermediateToken - (20:2,2 [0] ExplicitExpressionAtEOF.cshtml) - CSharp - 

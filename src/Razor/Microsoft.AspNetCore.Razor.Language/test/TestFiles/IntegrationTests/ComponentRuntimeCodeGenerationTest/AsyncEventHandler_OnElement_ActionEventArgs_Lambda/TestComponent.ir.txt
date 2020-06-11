@@ -12,5 +12,5 @@ Document -
                     HtmlAttribute - (92:2,17 [36] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                            IntermediateToken - (94:2,19 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async (e) => await Task.Delay(10)
+                            LazyIntermediateToken - (94:2,19 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async (e) => await Task.Delay(10)
                             IntermediateToken -  - CSharp - )

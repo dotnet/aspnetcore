@@ -19,4 +19,4 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
                 HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

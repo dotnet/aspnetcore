@@ -10,7 +10,7 @@ Document -
                 Component - (0:0,0 [45] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - SomeParam - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            LazyIntermediateToken - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                     ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - SomeParamChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
@@ -18,7 +18,7 @@ Document -
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
             CSharpCode - (54:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (54:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
+                LazyIntermediateToken - (54:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

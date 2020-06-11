@@ -9,4 +9,4 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupBlock -  - <elem attributebefore="before" @KEY="someObject" attributeafter="after">Hello</elem>
             CSharpCode - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n
+                LazyIntermediateToken - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n

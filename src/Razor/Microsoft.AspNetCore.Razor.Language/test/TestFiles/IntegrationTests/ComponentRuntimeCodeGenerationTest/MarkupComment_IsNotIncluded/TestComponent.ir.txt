@@ -8,8 +8,8 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
+                    LazyIntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
                 MarkupElement - (44:3,0 [38] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     CSharpExpression - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
+                        LazyIntermediateToken - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
                     MarkupBlock -  -   

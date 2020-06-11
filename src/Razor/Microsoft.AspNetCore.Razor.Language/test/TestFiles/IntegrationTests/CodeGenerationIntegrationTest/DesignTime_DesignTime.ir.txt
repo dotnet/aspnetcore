@@ -11,58 +11,58 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
-                    IntermediateToken - (0:0,0 [4] DesignTime.cshtml) - Html - <div
-                    IntermediateToken - (4:0,4 [1] DesignTime.cshtml) - Html - >
-                    IntermediateToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            
+                    LazyIntermediateToken - (0:0,0 [4] DesignTime.cshtml) - Html - <div
+                    LazyIntermediateToken - (4:0,4 [1] DesignTime.cshtml) - Html - >
+                    LazyIntermediateToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            
                 CSharpCode - (20:1,13 [36] DesignTime.cshtml)
-                    IntermediateToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
+                    LazyIntermediateToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
                 HtmlContent - (56:2,4 [17] DesignTime.cshtml)
-                    IntermediateToken - (56:2,4 [2] DesignTime.cshtml) - Html - <p
-                    IntermediateToken - (58:2,6 [1] DesignTime.cshtml) - Html - >
-                    IntermediateToken - (59:2,7 [14] DesignTime.cshtml) - Html - This is item #
+                    LazyIntermediateToken - (56:2,4 [2] DesignTime.cshtml) - Html - <p
+                    LazyIntermediateToken - (58:2,6 [1] DesignTime.cshtml) - Html - >
+                    LazyIntermediateToken - (59:2,7 [14] DesignTime.cshtml) - Html - This is item #
                 CSharpExpression - (74:2,22 [1] DesignTime.cshtml)
-                    IntermediateToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
+                    LazyIntermediateToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
                 HtmlContent - (75:2,23 [4] DesignTime.cshtml)
-                    IntermediateToken - (75:2,23 [4] DesignTime.cshtml) - Html - </p>
+                    LazyIntermediateToken - (75:2,23 [4] DesignTime.cshtml) - Html - </p>
                 CSharpCode - (79:2,27 [15] DesignTime.cshtml)
-                    IntermediateToken - (79:2,27 [15] DesignTime.cshtml) - CSharp - \n            }
+                    LazyIntermediateToken - (79:2,27 [15] DesignTime.cshtml) - CSharp - \n            }
                 HtmlContent - (94:3,13 [17] DesignTime.cshtml)
-                    IntermediateToken - (94:3,13 [2] DesignTime.cshtml) - Html - \n
-                    IntermediateToken - (96:4,0 [6] DesignTime.cshtml) - Html - </div>
-                    IntermediateToken - (102:4,6 [4] DesignTime.cshtml) - Html - \n\n
-                    IntermediateToken - (106:6,0 [2] DesignTime.cshtml) - Html - <p
-                    IntermediateToken - (108:6,2 [1] DesignTime.cshtml) - Html - >
-                    IntermediateToken - (109:6,3 [2] DesignTime.cshtml) - Html - \n
+                    LazyIntermediateToken - (94:3,13 [2] DesignTime.cshtml) - Html - \n
+                    LazyIntermediateToken - (96:4,0 [6] DesignTime.cshtml) - Html - </div>
+                    LazyIntermediateToken - (102:4,6 [4] DesignTime.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (106:6,0 [2] DesignTime.cshtml) - Html - <p
+                    LazyIntermediateToken - (108:6,2 [1] DesignTime.cshtml) - Html - >
+                    LazyIntermediateToken - (109:6,3 [2] DesignTime.cshtml) - Html - \n
                 CSharpExpression - (113:7,2 [12] DesignTime.cshtml)
-                    IntermediateToken - (113:7,2 [12] DesignTime.cshtml) - CSharp - Foo(Bar.Baz)
+                    LazyIntermediateToken - (113:7,2 [12] DesignTime.cshtml) - CSharp - Foo(Bar.Baz)
                 HtmlContent - (126:7,15 [2] DesignTime.cshtml)
-                    IntermediateToken - (126:7,15 [2] DesignTime.cshtml) - Html - \n
+                    LazyIntermediateToken - (126:7,15 [2] DesignTime.cshtml) - Html - \n
                 CSharpExpression - (129:8,1 [23] DesignTime.cshtml)
-                    IntermediateToken - (129:8,1 [4] DesignTime.cshtml) - CSharp - Foo(
+                    LazyIntermediateToken - (129:8,1 [4] DesignTime.cshtml) - CSharp - Foo(
                     Template - (134:8,6 [18] DesignTime.cshtml)
                         HtmlContent - (134:8,6 [7] DesignTime.cshtml)
-                            IntermediateToken - (134:8,6 [2] DesignTime.cshtml) - Html - <p
-                            IntermediateToken - (136:8,8 [1] DesignTime.cshtml) - Html - >
-                            IntermediateToken - (137:8,9 [4] DesignTime.cshtml) - Html - Bar 
+                            LazyIntermediateToken - (134:8,6 [2] DesignTime.cshtml) - Html - <p
+                            LazyIntermediateToken - (136:8,8 [1] DesignTime.cshtml) - Html - >
+                            LazyIntermediateToken - (137:8,9 [4] DesignTime.cshtml) - Html - Bar 
                         CSharpExpression - (142:8,14 [3] DesignTime.cshtml)
-                            IntermediateToken - (142:8,14 [3] DesignTime.cshtml) - CSharp - baz
+                            LazyIntermediateToken - (142:8,14 [3] DesignTime.cshtml) - CSharp - baz
                         HtmlContent - (145:8,17 [8] DesignTime.cshtml)
-                            IntermediateToken - (145:8,17 [4] DesignTime.cshtml) - Html -  Biz
-                            IntermediateToken - (149:8,21 [4] DesignTime.cshtml) - Html - </p>
-                    IntermediateToken - (153:8,25 [1] DesignTime.cshtml) - CSharp - )
+                            LazyIntermediateToken - (145:8,17 [4] DesignTime.cshtml) - Html -  Biz
+                            LazyIntermediateToken - (149:8,21 [4] DesignTime.cshtml) - Html - </p>
+                    LazyIntermediateToken - (153:8,25 [1] DesignTime.cshtml) - CSharp - )
                 HtmlContent - (154:8,26 [10] DesignTime.cshtml)
-                    IntermediateToken - (154:8,26 [2] DesignTime.cshtml) - Html - \n
-                    IntermediateToken - (156:9,0 [4] DesignTime.cshtml) - Html - </p>
-                    IntermediateToken - (160:9,4 [4] DesignTime.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (154:8,26 [2] DesignTime.cshtml) - Html - \n
+                    LazyIntermediateToken - (156:9,0 [4] DesignTime.cshtml) - Html - </p>
+                    LazyIntermediateToken - (160:9,4 [4] DesignTime.cshtml) - Html - \n\n
                 Section -  - Footer
                     HtmlContent - (181:11,17 [22] DesignTime.cshtml)
-                        IntermediateToken - (181:11,17 [6] DesignTime.cshtml) - Html - \n    
-                        IntermediateToken - (187:12,4 [2] DesignTime.cshtml) - Html - <p
-                        IntermediateToken - (189:12,6 [1] DesignTime.cshtml) - Html - >
-                        IntermediateToken - (190:12,7 [3] DesignTime.cshtml) - Html - Foo
-                        IntermediateToken - (193:12,10 [4] DesignTime.cshtml) - Html - </p>
-                        IntermediateToken - (197:12,14 [6] DesignTime.cshtml) - Html - \n    
+                        LazyIntermediateToken - (181:11,17 [6] DesignTime.cshtml) - Html - \n    
+                        LazyIntermediateToken - (187:12,4 [2] DesignTime.cshtml) - Html - <p
+                        LazyIntermediateToken - (189:12,6 [1] DesignTime.cshtml) - Html - >
+                        LazyIntermediateToken - (190:12,7 [3] DesignTime.cshtml) - Html - Foo
+                        LazyIntermediateToken - (193:12,10 [4] DesignTime.cshtml) - Html - </p>
+                        LazyIntermediateToken - (197:12,14 [6] DesignTime.cshtml) - Html - \n    
                     CSharpExpression - (204:13,5 [3] DesignTime.cshtml)
-                        IntermediateToken - (204:13,5 [3] DesignTime.cshtml) - CSharp - bar
+                        LazyIntermediateToken - (204:13,5 [3] DesignTime.cshtml) - CSharp - bar
                     HtmlContent - (207:13,8 [2] DesignTime.cshtml)
-                        IntermediateToken - (207:13,8 [2] DesignTime.cshtml) - Html - \n
+                        LazyIntermediateToken - (207:13,8 [2] DesignTime.cshtml) - Html - \n

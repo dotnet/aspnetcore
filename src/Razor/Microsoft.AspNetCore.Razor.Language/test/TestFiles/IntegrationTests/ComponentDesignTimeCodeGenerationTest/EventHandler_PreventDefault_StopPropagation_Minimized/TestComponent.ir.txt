@@ -16,9 +16,9 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (44:1,0 [74] x:\dir\subdir\Test\TestComponent.cshtml) - button
                     HtmlContent - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Click Me
+                        LazyIntermediateToken - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Click Me
                     ComponentAttribute -  - onclick - PreventDefault - AttributeStructure.Minimized
                     ComponentAttribute -  - onclick - StopPropagation - AttributeStructure.Minimized

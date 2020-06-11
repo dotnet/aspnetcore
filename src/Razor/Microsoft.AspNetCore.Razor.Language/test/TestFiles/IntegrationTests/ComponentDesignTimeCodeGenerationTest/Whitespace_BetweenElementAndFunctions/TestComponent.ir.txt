@@ -17,10 +17,10 @@ Document -
                 MarkupElement - (0:0,0 [18] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlAttribute - (5:0,5 [10] x:\dir\subdir\Test\TestComponent.cshtml) -  attr= - 
                         CSharpExpressionAttributeValue - (11:0,11 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Foo
+                            LazyIntermediateToken - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Foo
                 HtmlContent - (18:0,18 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (18:0,18 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    LazyIntermediateToken - (18:0,18 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
                 HtmlContent - (61:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (61:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (61:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    
+                LazyIntermediateToken - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    

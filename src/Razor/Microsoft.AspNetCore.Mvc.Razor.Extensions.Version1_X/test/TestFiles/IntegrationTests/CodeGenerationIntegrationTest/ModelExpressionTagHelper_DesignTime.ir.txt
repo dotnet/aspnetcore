@@ -33,9 +33,9 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
-                    IntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    LazyIntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 HtmlContent - (62:2,43 [4] ModelExpressionTagHelper.cshtml)
-                    IntermediateToken - (62:2,43 [4] ModelExpressionTagHelper.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (62:2,43 [4] ModelExpressionTagHelper.cshtml) - Html - \n\n
                 TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - InputTestTagHelper
@@ -43,22 +43,22 @@ Document -
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                             IntermediateToken -  - CSharp - __model.
-                            IntermediateToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
+                            LazyIntermediateToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
                             IntermediateToken -  - CSharp - )
                     DefaultTagHelperExecute - 
                 HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
-                    IntermediateToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    LazyIntermediateToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - InputTestTagHelper
                     DefaultTagHelperProperty - (110:5,17 [6] ModelExpressionTagHelper.cshtml) - for - Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression InputTestTagHelper.For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
-                            IntermediateToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
+                            LazyIntermediateToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
                             IntermediateToken -  - CSharp - )
                     DefaultTagHelperExecute - 
                 HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
-                    IntermediateToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    LazyIntermediateToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
             Inject - 
             Inject - 
             Inject - 

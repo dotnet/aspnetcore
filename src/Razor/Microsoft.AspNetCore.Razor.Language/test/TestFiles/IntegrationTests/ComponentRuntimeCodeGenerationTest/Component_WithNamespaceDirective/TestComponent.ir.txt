@@ -11,10 +11,10 @@ Document -
                 Component - (39:3,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - HeaderComponent
                     ComponentAttribute - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Header - Header - AttributeStructure.SingleQuotes
                         HtmlContent - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - head
+                            LazyIntermediateToken - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - head
                 HtmlContent - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (92:5,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - FooterComponent
                     ComponentAttribute - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - Footer - AttributeStructure.SingleQuotes
                         HtmlContent - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - feet
+                            LazyIntermediateToken - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - feet

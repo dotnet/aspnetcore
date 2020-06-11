@@ -9,15 +9,15 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (54:1,2 [42] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (54:1,2 [42] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent()\n    {\n
+                    LazyIntermediateToken - (54:1,2 [42] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent()\n    {\n
                 HtmlContent - (96:4,0 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (96:4,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
+                    LazyIntermediateToken - (96:4,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
                 Component - (104:4,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                 HtmlContent - (119:4,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (119:4,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (119:4,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n
+                    LazyIntermediateToken - (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n
                 HtmlContent - (131:7,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (131:7,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (131:7,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(); 
+                    LazyIntermediateToken - (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(); 

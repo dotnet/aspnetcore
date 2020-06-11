@@ -5,4 +5,4 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlockAtEOF_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [0] CodeBlockAtEOF.cshtml)
-                    IntermediateToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 
+                    LazyIntermediateToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 

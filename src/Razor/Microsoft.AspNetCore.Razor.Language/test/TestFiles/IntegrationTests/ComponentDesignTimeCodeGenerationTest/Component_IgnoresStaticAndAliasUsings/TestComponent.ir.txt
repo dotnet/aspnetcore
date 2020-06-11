@@ -17,12 +17,12 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (33:0,33 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (33:0,33 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (33:0,33 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (53:1,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (53:1,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (53:1,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (55:2,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                 HtmlContent - (70:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (70:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (70:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (72:3,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - SomeComponent
                 HtmlContent - (89:3,17 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (89:3,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
+                    LazyIntermediateToken - (89:3,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  

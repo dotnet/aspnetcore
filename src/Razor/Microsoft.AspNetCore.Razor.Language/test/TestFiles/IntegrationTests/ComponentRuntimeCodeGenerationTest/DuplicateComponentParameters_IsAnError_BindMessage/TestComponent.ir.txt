@@ -10,10 +10,10 @@ Document -
                 Component - (0:0,0 [59] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (22:0,22 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - (23:0,23 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (23:0,23 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
+                            LazyIntermediateToken - (23:0,23 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                     ComponentAttribute - (47:0,47 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (48:0,48 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
+                            LazyIntermediateToken - (48:0,48 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                     ComponentAttribute - (47:0,47 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => message = __value, message)
@@ -21,4 +21,4 @@ Document -
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message
             CSharpCode - (73:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (73:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n
+                LazyIntermediateToken - (73:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n

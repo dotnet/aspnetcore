@@ -17,7 +17,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(11, 5, true);
                 HtmlContent - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml)
-                    IntermediateToken - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml) - Html - Test.
+                    LazyIntermediateToken - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml) - Html - Test.
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
             Inject - 

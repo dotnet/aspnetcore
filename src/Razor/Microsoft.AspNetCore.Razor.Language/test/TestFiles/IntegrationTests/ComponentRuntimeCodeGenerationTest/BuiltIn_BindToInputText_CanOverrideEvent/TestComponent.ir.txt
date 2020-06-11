@@ -12,7 +12,7 @@ Document -
                     HtmlAttribute - (58:1,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
-                            IntermediateToken - (59:1,15 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
+                            LazyIntermediateToken - (59:1,15 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
                             IntermediateToken -  - CSharp - , format: 
                             IntermediateToken -  - CSharp - "MM/dd"
                             IntermediateToken -  - CSharp - )
@@ -23,4 +23,4 @@ Document -
                             IntermediateToken -  - CSharp - , format: "MM/dd"
                             IntermediateToken -  - CSharp - )
             CSharpCode - (126:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (126:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n
+                LazyIntermediateToken - (126:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n

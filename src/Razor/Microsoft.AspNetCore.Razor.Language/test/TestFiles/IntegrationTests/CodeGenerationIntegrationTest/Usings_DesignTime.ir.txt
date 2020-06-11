@@ -16,33 +16,33 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (16:0,16 [2] Usings.cshtml)
-                    IntermediateToken - (16:0,16 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (16:0,16 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (51:1,33 [2] Usings.cshtml)
-                    IntermediateToken - (51:1,33 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (51:1,33 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (66:2,13 [4] Usings.cshtml)
-                    IntermediateToken - (66:2,13 [4] Usings.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (66:2,13 [4] Usings.cshtml) - Html - \n\n
                 HtmlContent - (90:4,20 [2] Usings.cshtml)
-                    IntermediateToken - (90:4,20 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (90:4,20 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (120:5,28 [2] Usings.cshtml)
-                    IntermediateToken - (120:5,28 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (120:5,28 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (164:6,42 [4] Usings.cshtml)
-                    IntermediateToken - (164:6,42 [4] Usings.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (164:6,42 [4] Usings.cshtml) - Html - \n\n
                 CSharpCode - (170:8,2 [158] Usings.cshtml)
-                    IntermediateToken - (170:8,2 [158] Usings.cshtml) - CSharp -  \n    using var disposable = (IDisposable)ViewData["disposable"];\n    using System.IDisposable otherDisposable = (IDisposable)ViewData["otherdisposable"];\n
+                    LazyIntermediateToken - (170:8,2 [158] Usings.cshtml) - CSharp -  \n    using var disposable = (IDisposable)ViewData["disposable"];\n    using System.IDisposable otherDisposable = (IDisposable)ViewData["otherdisposable"];\n
                 HtmlContent - (331:12,0 [30] Usings.cshtml)
-                    IntermediateToken - (331:12,0 [2] Usings.cshtml) - Html - \n
-                    IntermediateToken - (333:13,0 [2] Usings.cshtml) - Html - <p
-                    IntermediateToken - (335:13,2 [1] Usings.cshtml) - Html - >
-                    IntermediateToken - (336:13,3 [25] Usings.cshtml) - Html - Path's full type name is 
+                    LazyIntermediateToken - (331:12,0 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (333:13,0 [2] Usings.cshtml) - Html - <p
+                    LazyIntermediateToken - (335:13,2 [1] Usings.cshtml) - Html - >
+                    LazyIntermediateToken - (336:13,3 [25] Usings.cshtml) - Html - Path's full type name is 
                 CSharpExpression - (362:13,29 [21] Usings.cshtml)
-                    IntermediateToken - (362:13,29 [21] Usings.cshtml) - CSharp - typeof(Path).FullName
+                    LazyIntermediateToken - (362:13,29 [21] Usings.cshtml) - CSharp - typeof(Path).FullName
                 HtmlContent - (383:13,50 [40] Usings.cshtml)
-                    IntermediateToken - (383:13,50 [4] Usings.cshtml) - Html - </p>
-                    IntermediateToken - (387:13,54 [2] Usings.cshtml) - Html - \n
-                    IntermediateToken - (389:14,0 [2] Usings.cshtml) - Html - <p
-                    IntermediateToken - (391:14,2 [1] Usings.cshtml) - Html - >
-                    IntermediateToken - (392:14,3 [31] Usings.cshtml) - Html - Foo's actual full type name is 
+                    LazyIntermediateToken - (383:13,50 [4] Usings.cshtml) - Html - </p>
+                    LazyIntermediateToken - (387:13,54 [2] Usings.cshtml) - Html - \n
+                    LazyIntermediateToken - (389:14,0 [2] Usings.cshtml) - Html - <p
+                    LazyIntermediateToken - (391:14,2 [1] Usings.cshtml) - Html - >
+                    LazyIntermediateToken - (392:14,3 [31] Usings.cshtml) - Html - Foo's actual full type name is 
                 CSharpExpression - (424:14,35 [20] Usings.cshtml)
-                    IntermediateToken - (424:14,35 [20] Usings.cshtml) - CSharp - typeof(Foo).FullName
+                    LazyIntermediateToken - (424:14,35 [20] Usings.cshtml) - CSharp - typeof(Foo).FullName
                 HtmlContent - (444:14,55 [4] Usings.cshtml)
-                    IntermediateToken - (444:14,55 [4] Usings.cshtml) - Html - </p>
+                    LazyIntermediateToken - (444:14,55 [4] Usings.cshtml) - Html - </p>

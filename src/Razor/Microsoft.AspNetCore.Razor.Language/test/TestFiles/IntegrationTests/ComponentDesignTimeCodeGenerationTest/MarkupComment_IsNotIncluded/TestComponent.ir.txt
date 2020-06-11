@@ -15,11 +15,11 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
+                    LazyIntermediateToken - (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n  var myValue = "Expression value";\n
                 MarkupElement - (44:3,0 [38] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     CSharpExpression - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
+                        LazyIntermediateToken - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
                     HtmlContent - (57:3,13 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (57:3,13 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
+                        LazyIntermediateToken - (57:3,13 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
                     HtmlContent - (75:3,31 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (75:3,31 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
+                        LazyIntermediateToken - (75:3,31 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  

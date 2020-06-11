@@ -16,11 +16,11 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(27, 20, true);
                 HtmlContent - (27:1,0 [20] ViewWithNamespace.cshtml)
-                    IntermediateToken - (27:1,0 [3] ViewWithNamespace.cshtml) - Html - <h1
-                    IntermediateToken - (30:1,3 [1] ViewWithNamespace.cshtml) - Html - >
-                    IntermediateToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
-                    IntermediateToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
-                    IntermediateToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
+                    LazyIntermediateToken - (27:1,0 [3] ViewWithNamespace.cshtml) - Html - <h1
+                    LazyIntermediateToken - (30:1,3 [1] ViewWithNamespace.cshtml) - Html - >
+                    LazyIntermediateToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
+                    LazyIntermediateToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
+                    LazyIntermediateToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
             Inject - 

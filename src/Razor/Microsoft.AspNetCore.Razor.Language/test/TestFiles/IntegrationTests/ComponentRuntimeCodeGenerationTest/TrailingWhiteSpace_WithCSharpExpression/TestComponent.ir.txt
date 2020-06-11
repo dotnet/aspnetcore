@@ -9,4 +9,4 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupBlock -  - <h1>Hello</h1>\n\n
                 CSharpExpression - (20:2,2 [10] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (20:2,2 [10] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "My value"
+                    LazyIntermediateToken - (20:2,2 [10] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "My value"

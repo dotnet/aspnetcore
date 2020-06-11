@@ -17,4 +17,4 @@ Document -
                 Component - (0:0,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (29:0,29 [16] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - StringProperty - AttributeStructure.DoubleQuotes
                         CSharpExpression - (31:0,31 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (31:0,31 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 42.ToString()
+                            LazyIntermediateToken - (31:0,31 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 42.ToString()

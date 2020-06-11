@@ -14,16 +14,16 @@ Document -
                 TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml)
-                            IntermediateToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
+                            LazyIntermediateToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
                     DefaultTagHelperCreate -  - PTagHelper
                     DefaultTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
                     DefaultTagHelperExecute - 
                 HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml)
-                    IntermediateToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
+                    LazyIntermediateToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (53:2,0 [68] NestedTagHelpers.cshtml) - form - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (73:2,20 [6] NestedTagHelpers.cshtml)
-                            IntermediateToken - (73:2,20 [6] NestedTagHelpers.cshtml) - Html - \n    
+                            LazyIntermediateToken - (73:2,20 [6] NestedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (79:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 
                             DefaultTagHelperCreate -  - InputTagHelper
@@ -31,7 +31,7 @@ Document -
                             PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             DefaultTagHelperExecute - 
                         HtmlContent - (112:3,37 [2] NestedTagHelpers.cshtml)
-                            IntermediateToken - (112:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
+                            LazyIntermediateToken - (112:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
                     DefaultTagHelperCreate -  - FormTagHelper
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     DefaultTagHelperExecute - 

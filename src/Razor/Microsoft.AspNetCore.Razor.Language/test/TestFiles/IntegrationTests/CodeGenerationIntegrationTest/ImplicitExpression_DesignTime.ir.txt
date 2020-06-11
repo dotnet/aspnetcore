@@ -10,14 +10,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (1:0,1 [36] ImplicitExpression.cshtml)
-                    IntermediateToken - (1:0,1 [36] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
+                    LazyIntermediateToken - (1:0,1 [36] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
                 HtmlContent - (37:1,4 [17] ImplicitExpression.cshtml)
-                    IntermediateToken - (37:1,4 [2] ImplicitExpression.cshtml) - Html - <p
-                    IntermediateToken - (39:1,6 [1] ImplicitExpression.cshtml) - Html - >
-                    IntermediateToken - (40:1,7 [14] ImplicitExpression.cshtml) - Html - This is item #
+                    LazyIntermediateToken - (37:1,4 [2] ImplicitExpression.cshtml) - Html - <p
+                    LazyIntermediateToken - (39:1,6 [1] ImplicitExpression.cshtml) - Html - >
+                    LazyIntermediateToken - (40:1,7 [14] ImplicitExpression.cshtml) - Html - This is item #
                 CSharpExpression - (55:1,22 [1] ImplicitExpression.cshtml)
-                    IntermediateToken - (55:1,22 [1] ImplicitExpression.cshtml) - CSharp - i
+                    LazyIntermediateToken - (55:1,22 [1] ImplicitExpression.cshtml) - CSharp - i
                 HtmlContent - (56:1,23 [4] ImplicitExpression.cshtml)
-                    IntermediateToken - (56:1,23 [4] ImplicitExpression.cshtml) - Html - </p>
+                    LazyIntermediateToken - (56:1,23 [4] ImplicitExpression.cshtml) - Html - </p>
                 CSharpCode - (60:1,27 [3] ImplicitExpression.cshtml)
-                    IntermediateToken - (60:1,27 [3] ImplicitExpression.cshtml) - CSharp - \n}
+                    LazyIntermediateToken - (60:1,27 [3] ImplicitExpression.cshtml) - CSharp - \n}

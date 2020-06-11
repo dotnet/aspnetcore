@@ -17,13 +17,13 @@ Document -
                 Component - (0:0,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
                         HtmlContent - (26:0,26 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (26:0,26 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Some text
+                            LazyIntermediateToken - (26:0,26 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Some text
                         MarkupElement - (35:0,35 [42] x:\dir\subdir\Test\TestComponent.cshtml) - some-child
                             HtmlAttribute - (46:0,46 [6] x:\dir\subdir\Test\TestComponent.cshtml) -  a=' - '
                                 HtmlAttributeValue - (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                                    IntermediateToken - (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
+                                    LazyIntermediateToken - (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
                             HtmlContent - (53:0,53 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                                IntermediateToken - (53:0,53 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Nested text
+                                LazyIntermediateToken - (53:0,53 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Nested text
                     ComponentAttribute - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - MyAttr - AttributeStructure.DoubleQuotes
                         HtmlContent - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc
+                            LazyIntermediateToken - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc

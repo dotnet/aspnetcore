@@ -16,12 +16,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
                 HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (14:1,1 [18] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (14:1,1 [18] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - if (true)\n{\n    
+                    LazyIntermediateToken - (14:1,1 [18] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - if (true)\n{\n    
                 HtmlContent - (38:3,10 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (38:3,10 [21] x:\dir\subdir\Test\TestComponent.cshtml) - Html - This text is rendered
+                    LazyIntermediateToken - (38:3,10 [21] x:\dir\subdir\Test\TestComponent.cshtml) - Html - This text is rendered
                 CSharpCode - (66:3,38 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (66:3,38 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
+                    LazyIntermediateToken - (66:3,38 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
                 HtmlContent - (69:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (69:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (69:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

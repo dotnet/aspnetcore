@@ -16,12 +16,12 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (44:1,0 [89] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (66:1,22 [64] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (67:1,23 [63] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (68:1,24 [61] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - EventCallback.Factory.Create<MouseEventArgs>(this, Increment)
+                            LazyIntermediateToken - (68:1,24 [61] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - EventCallback.Factory.Create<MouseEventArgs>(this, Increment)
                 HtmlContent - (133:1,89 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (133:1,89 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (133:1,89 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
             CSharpCode - (144:3,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (144:3,7 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n
+                LazyIntermediateToken - (144:3,7 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n

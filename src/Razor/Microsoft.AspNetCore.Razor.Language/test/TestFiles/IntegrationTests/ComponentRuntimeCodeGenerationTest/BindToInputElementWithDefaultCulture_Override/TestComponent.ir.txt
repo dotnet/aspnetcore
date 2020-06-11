@@ -11,13 +11,13 @@ Document -
                 MarkupElement - (29:1,0 [132] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (42:1,13 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (42:1,13 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - custom
+                            LazyIntermediateToken - (42:1,13 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - custom
                     HtmlAttribute - (63:1,34 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
-                            IntermediateToken - (64:1,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            LazyIntermediateToken - (64:1,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - , culture: 
-                            IntermediateToken - (131:1,102 [26] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CultureInfo.CurrentCulture
+                            LazyIntermediateToken - (131:1,102 [26] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CultureInfo.CurrentCulture
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (63:1,34 [12] x:\dir\subdir\Test\TestComponent.cshtml) - anotherevent=" - "
                         CSharpExpressionAttributeValue -  - 
@@ -26,4 +26,4 @@ Document -
                             IntermediateToken -  - CSharp - , culture: CultureInfo.CurrentCulture
                             IntermediateToken -  - CSharp - )
             CSharpCode - (170:2,7 [44] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (170:2,7 [44] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; }\n
+                LazyIntermediateToken - (170:2,7 [44] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; }\n

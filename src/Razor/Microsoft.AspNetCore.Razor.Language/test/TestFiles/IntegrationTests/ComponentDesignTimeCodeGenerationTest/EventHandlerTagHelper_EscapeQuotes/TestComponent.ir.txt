@@ -17,6 +17,6 @@ Document -
                 MarkupElement - (0:0,0 [34] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (6:0,6 [25] x:\dir\subdir\Test\TestComponent.cshtml) -  onfocus=' - '
                         HtmlAttributeValue - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - alert("Test");
+                            LazyIntermediateToken - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - alert("Test");
                 HtmlContent - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

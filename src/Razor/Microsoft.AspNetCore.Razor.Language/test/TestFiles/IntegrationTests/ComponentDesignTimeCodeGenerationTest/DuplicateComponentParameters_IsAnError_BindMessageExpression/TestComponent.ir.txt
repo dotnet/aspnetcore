@@ -17,10 +17,10 @@ Document -
                 Component - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (57:0,57 [12] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - MessageExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - (58:0,58 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (59:0,59 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
+                            LazyIntermediateToken - (59:0,59 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
                     ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
+                            LazyIntermediateToken - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                     ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => message = __value, message)
@@ -28,8 +28,8 @@ Document -
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message
                 HtmlContent - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (118:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (118:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (118:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (87:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (87:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n
+                LazyIntermediateToken - (87:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n

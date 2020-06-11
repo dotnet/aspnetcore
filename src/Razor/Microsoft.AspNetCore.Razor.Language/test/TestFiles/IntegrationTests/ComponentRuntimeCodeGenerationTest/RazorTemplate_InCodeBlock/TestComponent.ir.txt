@@ -8,12 +8,12 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
+                    LazyIntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
                 Template - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml)
                     MarkupElement - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         CSharpExpression - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                            LazyIntermediateToken - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
+                    LazyIntermediateToken - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
             CSharpCode - (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+                LazyIntermediateToken - (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

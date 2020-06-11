@@ -16,14 +16,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 MarkupElement - (44:1,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                            IntermediateToken - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
+                            LazyIntermediateToken - (61:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
                             IntermediateToken -  - CSharp - )
                 HtmlContent - (72:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (72:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (72:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (81:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (81:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnClick(MouseEventArgs e) {\n    }\n
+                LazyIntermediateToken - (81:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnClick(MouseEventArgs e) {\n    }\n

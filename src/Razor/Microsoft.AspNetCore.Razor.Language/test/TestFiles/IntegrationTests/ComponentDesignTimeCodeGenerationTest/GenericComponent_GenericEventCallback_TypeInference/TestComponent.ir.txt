@@ -16,14 +16,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (13:1,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (32:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (32:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
+                        LazyIntermediateToken - (32:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
                     ComponentAttribute - (44:1,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - MyEvent - MyEvent - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (44:1,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - x => {}
+                        LazyIntermediateToken - (44:1,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - x => {}
                 HtmlContent - (55:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (55:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (55:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

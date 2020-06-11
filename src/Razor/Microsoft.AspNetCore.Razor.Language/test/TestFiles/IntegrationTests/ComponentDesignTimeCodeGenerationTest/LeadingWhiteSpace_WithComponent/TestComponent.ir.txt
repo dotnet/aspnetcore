@@ -16,7 +16,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
                 HtmlContent - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 MarkupElement - (26:2,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
                     HtmlContent - (30:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (30:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                        LazyIntermediateToken - (30:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello

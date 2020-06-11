@@ -16,14 +16,14 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
+                        LazyIntermediateToken - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
                     SetKey - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
                 HtmlContent - (40:0,40 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (40:0,40 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (40:0,40 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 HtmlContent - (99:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (99:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (99:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (51:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (51:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
+                LazyIntermediateToken - (51:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

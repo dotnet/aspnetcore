@@ -10,9 +10,9 @@ Document -
                 Component - (0:0,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (19:0,19 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         HtmlContent - (19:0,19 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (19:0,19 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                            LazyIntermediateToken - (19:0,19 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     ComponentAttribute -  - MyEvent -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (35:0,35 [14] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (35:0,35 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - MyEventHandler
+                            LazyIntermediateToken - (35:0,35 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - MyEventHandler
             CSharpCode - (64:2,7 [39] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (64:2,7 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public void MyEventHandler() {}\n
+                LazyIntermediateToken - (64:2,7 [39] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public void MyEventHandler() {}\n

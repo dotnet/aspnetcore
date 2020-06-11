@@ -10,6 +10,6 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (44:1,0 [74] x:\dir\subdir\Test\TestComponent.cshtml) - button
                     HtmlContent - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Click Me
+                        LazyIntermediateToken - (101:1,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Click Me
                     ComponentAttribute -  - onclick - PreventDefault - AttributeStructure.Minimized
                     ComponentAttribute -  - onclick - StopPropagation - AttributeStructure.Minimized

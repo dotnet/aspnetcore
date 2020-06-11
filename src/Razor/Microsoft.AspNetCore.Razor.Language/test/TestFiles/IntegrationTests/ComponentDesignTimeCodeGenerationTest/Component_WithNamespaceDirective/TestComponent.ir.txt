@@ -17,18 +17,18 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (37:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (37:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (37:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (39:3,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - HeaderComponent
                     ComponentAttribute - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Header - Header - AttributeStructure.SingleQuotes
                         HtmlContent - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - head
+                            LazyIntermediateToken - (64:3,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - head
                 HtmlContent - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (90:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (92:5,0 [51] x:\dir\subdir\Test\TestComponent.cshtml) - FooterComponent
                     ComponentAttribute - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - Footer - AttributeStructure.SingleQuotes
                         HtmlContent - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - feet
+                            LazyIntermediateToken - (117:5,25 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - feet
                 HtmlContent - (143:6,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (143:6,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (143:6,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

@@ -11,6 +11,6 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] Inherits.cshtml)
-                    IntermediateToken - (33:1,0 [2] Inherits.cshtml) - Html - \n
+                    LazyIntermediateToken - (33:1,0 [2] Inherits.cshtml) - Html - \n
                 CSharpExpression - (36:2,1 [5] Inherits.cshtml)
-                    IntermediateToken - (36:2,1 [5] Inherits.cshtml) - CSharp - foo()
+                    LazyIntermediateToken - (36:2,1 [5] Inherits.cshtml) - CSharp - foo()

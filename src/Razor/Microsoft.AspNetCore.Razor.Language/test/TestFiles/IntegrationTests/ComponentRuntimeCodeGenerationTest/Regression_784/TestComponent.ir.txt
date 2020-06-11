@@ -12,14 +12,14 @@ Document -
                     HtmlAttribute - (61:1,17 [16] x:\dir\subdir\Test\TestComponent.cshtml) - onmouseover=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                            IntermediateToken - (61:1,17 [16] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnComponentHover
+                            LazyIntermediateToken - (61:1,17 [16] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnComponentHover
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute -  - style=" - "
                         HtmlAttributeValue - (86:1,42 [11] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (86:1,42 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - background:
+                            LazyIntermediateToken - (86:1,42 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - background:
                         CSharpExpressionAttributeValue - (97:1,53 [15] x:\dir\subdir\Test\TestComponent.cshtml) -  
-                            IntermediateToken - (99:1,55 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentBgColor
+                            LazyIntermediateToken - (99:1,55 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentBgColor
                         HtmlAttributeValue - (112:1,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (112:1,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
+                            LazyIntermediateToken - (112:1,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
             CSharpCode - (126:2,7 [130] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (126:2,7 [130] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(MouseEventArgs e)\n    {\n    }\n
+                LazyIntermediateToken - (126:2,7 [130] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(MouseEventArgs e)\n    {\n    }\n

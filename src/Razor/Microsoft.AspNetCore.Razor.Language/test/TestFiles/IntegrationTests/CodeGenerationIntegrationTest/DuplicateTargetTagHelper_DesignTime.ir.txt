@@ -14,19 +14,19 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] DuplicateTargetTagHelper.cshtml)
-                    IntermediateToken - (31:0,31 [4] DuplicateTargetTagHelper.cshtml) - Html - \n\n
+                    LazyIntermediateToken - (31:0,31 [4] DuplicateTargetTagHelper.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml) - input - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
                     DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
                     DefaultTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - string TestNamespace.InputTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml)
-                            IntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
+                            LazyIntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
                     DefaultTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - string TestNamespace.CatchAllTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml)
-                            IntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
+                            LazyIntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
                     DefaultTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - bool TestNamespace.InputTagHelper.Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        LazyIntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     DefaultTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - bool TestNamespace.CatchAllTagHelper.Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        LazyIntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     DefaultTagHelperExecute - 

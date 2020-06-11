@@ -18,4 +18,4 @@ Document -
                     ComponentChildContent -  - ChildContent - context
                         MarkupElement - (13:0,13 [20] x:\dir\subdir\Test\TestComponent.cshtml) - child
                             HtmlContent - (20:0,20 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                                IntermediateToken - (20:0,20 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - hello
+                                LazyIntermediateToken - (20:0,20 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - hello

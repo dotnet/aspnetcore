@@ -16,11 +16,11 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [131] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (31:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - IntProperty - IntProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (31:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 123
+                        LazyIntermediateToken - (31:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 123
                     ComponentAttribute - (55:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - BoolProperty - BoolProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (55:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
+                        LazyIntermediateToken - (55:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
                     ComponentAttribute - (82:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - StringProperty - AttributeStructure.DoubleQuotes
                         HtmlContent - (82:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (82:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - My string
+                            LazyIntermediateToken - (82:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - My string
                     ComponentAttribute - (114:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - ObjectProperty - ObjectProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (114:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - new SomeType()
+                        LazyIntermediateToken - (114:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - new SomeType()

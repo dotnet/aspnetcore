@@ -19,4 +19,4 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (21:1,0 [12] Counter.razor) - Counter2
                 HtmlContent - (33:1,12 [2] Counter.razor)
-                    IntermediateToken - (33:1,12 [2] Counter.razor) - Html - \n
+                    LazyIntermediateToken - (33:1,12 [2] Counter.razor) - Html - \n

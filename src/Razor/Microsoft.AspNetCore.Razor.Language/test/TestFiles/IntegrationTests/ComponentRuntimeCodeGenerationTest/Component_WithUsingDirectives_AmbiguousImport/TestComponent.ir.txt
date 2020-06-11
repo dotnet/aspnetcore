@@ -11,5 +11,5 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (28:2,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                 HtmlContent - (43:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (43:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                    LazyIntermediateToken - (43:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (45:3,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - SomeComponent

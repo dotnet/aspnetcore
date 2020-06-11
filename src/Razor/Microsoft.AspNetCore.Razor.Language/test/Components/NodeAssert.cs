@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var actual = new StringBuilder();
             for (var i = 0; i < attributeValueNode.Children.Count; i++)
             {
-                var token = Assert.IsType<IntermediateToken>(attributeValueNode.Children[i]);
+                var token = Assert.IsAssignableFrom<IntermediateToken>(attributeValueNode.Children[i]);
                 Assert.Equal(TokenKind.Html, token.Kind);
                 actual.Append(token.Content);
             }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var actual = new StringBuilder();
             for (var i = 0; i < contentNode.Children.Count; i++)
             {
-                var token = Assert.IsType<IntermediateToken>(contentNode.Children[i]);
+                var token = Assert.IsAssignableFrom<IntermediateToken>(contentNode.Children[i]);
                 Assert.Equal(TokenKind.Html, token.Kind);
                 actual.Append(token.Content);
             }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var actual = new StringBuilder();
             for (var i = 0; i < attributeValueNode.Children.Count; i++)
             {
-                var token = Assert.IsType<IntermediateToken>(attributeValueNode.Children[i]);
+                var token = Assert.IsAssignableFrom<IntermediateToken>(attributeValueNode.Children[i]);
                 Assert.Equal(TokenKind.CSharp, token.Kind);
                 actual.Append(token.Content);
             }
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var contentNode = Assert.IsType<HtmlContentIntermediateNode>(node);
             for (var i = 0; i < contentNode.Children.Count; i++)
             {
-                var token = Assert.IsType<IntermediateToken>(contentNode.Children[i]);
+                var token = Assert.IsAssignableFrom<IntermediateToken>(contentNode.Children[i]);
                 Assert.Equal(TokenKind.Html, token.Kind);
                 Assert.True(string.IsNullOrWhiteSpace(token.Content));
             }

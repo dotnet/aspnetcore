@@ -8,9 +8,9 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpExpression - (1:0,1 [27] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (1:0,1 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - RenderPerson(
+                    LazyIntermediateToken - (1:0,1 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - RenderPerson(
                     Template - (15:0,15 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                         MarkupBlock -  - <div>HI</div>
-                    IntermediateToken - (28:0,28 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
+                    LazyIntermediateToken - (28:0,28 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
             CSharpCode - (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    object RenderPerson(RenderFragment p) => null;\n
+                LazyIntermediateToken - (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    object RenderPerson(RenderFragment p) => null;\n

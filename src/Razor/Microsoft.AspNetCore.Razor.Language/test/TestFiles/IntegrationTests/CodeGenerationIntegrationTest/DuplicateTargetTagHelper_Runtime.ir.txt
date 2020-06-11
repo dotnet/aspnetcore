@@ -9,7 +9,7 @@ Document -
             FieldDeclaration -  - private - global::TestNamespace.CatchAllTagHelper - __TestNamespace_CatchAllTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DuplicateTargetTagHelper.cshtml)
-                    IntermediateToken - (33:1,0 [2] DuplicateTargetTagHelper.cshtml) - Html - \n
+                    LazyIntermediateToken - (33:1,0 [2] DuplicateTargetTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml) - input - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
@@ -17,7 +17,7 @@ Document -
                     PreallocatedTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - __tagHelperAttribute_0 - type - Type
                     PreallocatedTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - __tagHelperAttribute_0 - type - Type
                     DefaultTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - bool TestNamespace.InputTagHelper.Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        LazyIntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     DefaultTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - bool TestNamespace.CatchAllTagHelper.Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        LazyIntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     DefaultTagHelperExecute - 
