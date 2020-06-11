@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
     {
         private const string HeaderValueNoCache = "no-cache";
+        private const string HeaderValueNoCacheNoStore = "no-cache,no-store";
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
         private const string SessionIdClaim = "Microsoft.AspNetCore.Authentication.Cookies-SessionId";
 
@@ -374,7 +375,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
         {
-            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
+            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCacheNoStore;
             Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 

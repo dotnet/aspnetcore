@@ -138,6 +138,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.DoesNotContain("; expires=", setCookie);
             Assert.DoesNotContain("; domain=", setCookie);
             Assert.DoesNotContain("; secure", setCookie);
+            Assert.True(transaction.Response.Headers.CacheControl.NoCache);
+            Assert.True(transaction.Response.Headers.CacheControl.NoStore);
+            Assert.Equal("no-cache", transaction.Response.Headers.Pragma.ToString());
         }
 
         [Fact]
