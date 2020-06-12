@@ -15,6 +15,7 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
