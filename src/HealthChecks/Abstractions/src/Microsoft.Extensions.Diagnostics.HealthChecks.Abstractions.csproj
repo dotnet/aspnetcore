@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Abstractions for defining health checks in .NET applications
@@ -14,6 +14,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsPackable>true</IsPackable>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>
