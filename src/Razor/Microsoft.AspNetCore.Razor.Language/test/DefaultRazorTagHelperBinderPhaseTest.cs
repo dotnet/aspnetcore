@@ -1359,8 +1359,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Equal(expectedResult, result);
-            Assert.Equal(expectedNamespace, @namespace);
-            Assert.Equal(expectedTypeName, typeName);
+            Assert.Equal(expectedNamespace, DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(@namespace, fullTypeName));
+            Assert.Equal(expectedTypeName, DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeName, fullTypeName));
         }
 
         private static RazorSourceDocument CreateComponentTestSourceDocument(string content, string filePath = null)
