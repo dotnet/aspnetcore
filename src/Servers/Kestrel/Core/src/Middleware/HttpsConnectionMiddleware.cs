@@ -43,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
+            _options = options;
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
             if (options.HttpProtocols == HttpProtocols.Http2)
             {
@@ -53,6 +56,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
                 {
                     throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
+                }
+            }
+
+            if (options.HttpProtocols == HttpProtocols.Http1AndHttp2)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && Environment.OSVersion.Version >= new Version(6, 2)
+                    && Environment.OSVersion.Version < new Version(10, 0))
+                {
+                    _logger.LogWarning(4, CoreStrings.HTTP2DefaultCiphersInsufficient);
+                    options.HttpProtocols = HttpProtocols.Http1;
                 }
             }
 
@@ -75,9 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
             }
-
-            _options = options;
-            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
 
         public async Task OnConnectionAsync(ConnectionContext context)
