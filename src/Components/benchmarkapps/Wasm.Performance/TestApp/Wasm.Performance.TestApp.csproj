@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
-
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
