@@ -63,6 +63,12 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.20' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore;
+      Microsoft.AspNetCore.WebSockets;
+      Microsoft.AspNetCore.Server.IISIntegration;
+      Microsoft.AspNetCore.Identity.UI;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.AspNetCore.Mvc.RazorPages;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
