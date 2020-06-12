@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public abstract class InProcessTestServer : IDisposable
+    public abstract class InProcessTestServer : IAsyncDisposable
     {
         internal abstract event Action<LogRecord> ServerLogged;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public abstract string Url { get; }
 
-        public abstract void Dispose();
+        public abstract ValueTask DisposeAsync();
     }
 
     public class InProcessTestServer<TStartup> : InProcessTestServer
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return builder.ToString();
         }
 
-        public override void Dispose()
+        public override async ValueTask DisposeAsync()
         {
             try
             {
@@ -156,6 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
             finally
             {
+                await _host.StopAsync();
                 _host.Dispose();
                 _loggerFactory.Dispose();
             }
