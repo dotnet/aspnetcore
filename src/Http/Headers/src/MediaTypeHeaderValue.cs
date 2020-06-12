@@ -206,7 +206,7 @@ namespace Microsoft.Net.Http.Headers
         /// </summary>
         public double? Quality
         {
-            get { return HeaderUtilities.GetQuality(Parameters); }
+            get => HeaderUtilities.GetQuality(_parameters);
             set
             {
                 HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
