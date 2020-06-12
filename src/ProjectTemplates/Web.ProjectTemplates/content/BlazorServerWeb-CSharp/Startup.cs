@@ -116,12 +116,10 @@ namespace BlazorServerWeb_CSharp
 
 #endif
 #if (OrganizationalAuth)
-            services.AddControllersWithViews(options =>
+
+            services.AddAuthorization(options =>
             {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+                options.FallbackPolicy = options.DefaultPolicy;
             });
 
 #endif
