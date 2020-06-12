@@ -63,6 +63,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.20' ">
     <PackagesInPatch>
+      @aspnet/signalr;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
