@@ -282,6 +282,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     // Defaults
                     Options.ApplyHttpsDefaults(httpsOptions);
 
+                    // Default SslProtocol from config
+                    if (ConfigurationReader.EndpointDefaults.SslProtocols.HasValue)
+                    {
+                        httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols.Value;
+                    }
+
                     // Specified
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
                         ?? httpsOptions.ServerCertificate;
@@ -311,6 +317,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 {
                     var endpointConfig = new EndpointConfiguration(https, listenOptions, httpsOptions, endpoint.ConfigSection);
                     configureEndpoint(endpointConfig);
+                }
+
+                if (https && endpoint.SslProtocols.HasValue)
+                {
+                    httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
                 }
 
                 // EndpointDefaults or configureEndpoint may have added an https adapter.

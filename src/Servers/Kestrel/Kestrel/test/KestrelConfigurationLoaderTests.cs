@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 {
-    public class KestrelConfigurationBuilderTests
+    public class KestrelConfigurationLoaderTests
     {
         private KestrelServerOptions CreateServerOptions()
         {
