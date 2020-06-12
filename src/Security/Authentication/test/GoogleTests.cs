@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?FailureMessage=AccessDenied", transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("https://example.com/error?FailureMessage=AccessDenied", transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
