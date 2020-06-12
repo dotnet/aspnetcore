@@ -153,6 +153,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
+                // Ensure the file buffer stream is always disposed at the end of a request.
+                request.HttpContext.Response.RegisterForDispose(readStream);
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
@@ -278,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
         /// <remarks>
@@ -297,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <param name="context">A context object used by an input formatter for deserializing the request body into an object.</param>
         /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
