@@ -25,11 +25,11 @@ aspnetcore-ci runs non quarantined tests against the required helix queues as a 
 
 aspnetcore-quarantined-tests runs only quarantined tests against the required queues only on master every 4 hours.
 
-aspnetcore-helix-matrix runs non quarantined tests against all queues twice a day only on master.
+aspnetcore-helix-matrix runs non quarantined tests against all queues twice a day only on public master.
 
 ## How do I look at the results of a helix run on Azure Pipelines?
 
-The easiest way to look a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachements to the relevant console logs.
+The easiest way to look at a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachments to the relevant console logs.
 
 You can also drill down into the helix web apis if you take the HelixJobId from the Debug tab of a failing test, and the HelixWorkItemName and go to: helix.dot.net/api/2019-06-17/jobs/<jobId>/workitems/<workitemname> which will show you more urls you can drill into for more info. 
 
