@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    parameters!.Add(new NameValueHeaderValue(QualityName, qualityString));
+                    parameters.Add(new NameValueHeaderValue(QualityName, qualityString));
                 }
             }
             else
@@ -52,15 +52,14 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
+        internal static double? GetQuality(IList<NameValueHeaderValue>? parameters)
         {
             var qualityParameter = NameValueHeaderValue.Find(parameters, QualityName);
             if (qualityParameter != null)
             {
                 // Note that the RFC requires decimal '.' regardless of the culture. I.e. using ',' as decimal
                 // separator is considered invalid (even if the current culture would allow it).
-                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out var length))
-
+                if (TryParseQualityDouble(qualityParameter.Value, 0, out var qualityValue, out _))
                 {
                     return qualityValue;
                 }
@@ -703,7 +702,8 @@ namespace Microsoft.Net.Http.Headers
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
             // 2 for quotes
-            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
+            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
+            {
                 // Helps to elide the bounds check for span[0]
                 span[span.Length - 1] = span[0] = '\"';
 
