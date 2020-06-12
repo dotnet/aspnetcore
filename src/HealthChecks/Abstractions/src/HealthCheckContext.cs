@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <summary>
         /// Gets or sets the <see cref="HealthCheckRegistration"/> of the currently executing <see cref="IHealthCheck"/>.
         /// </summary>
+        // This allows null values for convenience during unit testing. This is expected to be non-null when within application code.
         public HealthCheckRegistration Registration { get; set; } = default!;
     }
 }
