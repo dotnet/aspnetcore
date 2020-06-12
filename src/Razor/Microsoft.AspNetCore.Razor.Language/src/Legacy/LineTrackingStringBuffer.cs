@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SourceLocation EndLocation
         {
-            get { return new SourceLocation(_filePath, Length, _lines.Count - 1, Length); }
+            get { return new SourceLocation(_filePath, Length, _lines.Count - 1, _lines[_lines.Count - 1].Length); }
         }
 
         public CharacterReference CharAt(int absoluteIndex)
