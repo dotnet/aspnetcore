@@ -8,7 +8,6 @@
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>Build Tasks;MSBuild;Swagger;OpenAPI;code generation;Web API client;service reference</PackageTags>
-    <IsPackable>true</IsPackable>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>

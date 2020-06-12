@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs -->
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

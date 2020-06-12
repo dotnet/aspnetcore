@@ -7,7 +7,6 @@
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
-    <IsPackable>true</IsPackable>
     <!-- Do not exclude this project from source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.

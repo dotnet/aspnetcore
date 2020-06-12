@@ -6,7 +6,6 @@
     <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

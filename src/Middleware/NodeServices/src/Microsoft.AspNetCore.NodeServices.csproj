@@ -2,7 +2,6 @@
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
