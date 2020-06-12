@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _http1Output.Abort(abortReason);
             CancelRequestAbortedToken();
+            PoisonBodyStreamsAndPipes(abortReason);
         }
 
         protected override void ApplicationAbort()
@@ -110,7 +111,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
             Abort(abortReason);
-            PoisonBodyStreamsAndPipes(abortReason);
         }
 
         /// <summary>

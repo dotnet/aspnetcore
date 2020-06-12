@@ -521,20 +521,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ApplicationAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
-            if (ResetAndAbort(abortReason, error))
-            {
-                PoisonBodyStreamsAndPipes(abortReason);
-            }
+            ResetAndAbort(abortReason, error);
         }
 
-        internal bool ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
+        internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
             // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
             var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
             if (oldState == newState)
             {
-                return false;
+                return;
             }
 
             Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
@@ -544,8 +541,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _ = _http2Output.WriteRstStreamAsync(error);
 
             AbortCore(abortReason);
-
-            return true;
         }
 
         private void AbortCore(Exception abortReason)
@@ -557,6 +552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             CancelRequestAbortedToken();
 
             // Unblock the request body.
+            PoisonBodyStreamsAndPipes(abortReason);
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
