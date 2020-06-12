@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     && Environment.OSVersion.Version >= new Version(6, 2)
                     && Environment.OSVersion.Version < new Version(10, 0))
                 {
-                    _logger.LogWarning(4, CoreStrings.HTTP2DefaultCiphersInsufficient);
+                    _logger.HTTP2DefaultCiphersInsufficient();
                     options.HttpProtocols = HttpProtocols.Http1;
                 }
             }
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    _logger.AuthenticationTimedOut();
                     await sslStream.DisposeAsync();
                     return;
                 }
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.AuthenticationFailed(ex);
                     await sslStream.DisposeAsync();
                     return;
                 }
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.AuthenticationFailed(ex);
 
                     await sslStream.DisposeAsync();
                     return;
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
-            _logger.LogDebug(3, CoreStrings.HttpsConnectionEstablished, context.ConnectionId, sslStream.SslProtocol);
+            _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
             var originalTransport = context.Transport;
 
@@ -309,5 +309,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return new X509Certificate2(certificate);
         }
+    }
+
+    internal static class HttpsConnectionMiddlewareLoggerExtensions
+    {
+
+        private static readonly Action<ILogger, Exception> _authenticationFailed =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(1, "AuthenticationFailed"),
+                formatString: CoreStrings.AuthenticationFailed);
+
+        private static readonly Action<ILogger, Exception> _authenticationTimedOut =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(2, "AuthenticationTimedOut"),
+                formatString: CoreStrings.AuthenticationTimedOut);
+
+        private static readonly Action<ILogger, string, SslProtocols, Exception> _httpsConnectionEstablished =
+            LoggerMessage.Define<string, SslProtocols>(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(3, "HttpsConnectionEstablished"),
+                formatString: CoreStrings.HttpsConnectionEstablished);
+
+        private static readonly Action<ILogger, Exception> _http2DefaultCiphersInsufficient =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Warning,
+                eventId: new EventId(4, "HTTP2DefaultCiphersInsufficient"),
+                formatString: CoreStrings.HTTP2DefaultCiphersInsufficient);
+
+        public static void AuthenticationFailed(this ILogger logger, Exception exception) => _authenticationFailed(logger, exception);
+
+        public static void AuthenticationTimedOut(this ILogger logger) => _authenticationTimedOut(logger, null);
+
+        public static void HttpsConnectionEstablished(this ILogger logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
+
+        public static void HTTP2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
     }
 }
