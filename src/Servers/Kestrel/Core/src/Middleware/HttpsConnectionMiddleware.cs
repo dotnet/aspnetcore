@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             if (options.HttpProtocols == HttpProtocols.Http1AndHttp2)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    && Environment.OSVersion.Version >= new Version(6, 2)
                     && Environment.OSVersion.Version < new Version(10, 0))
                 {
                     _logger.HTTP2DefaultCiphersInsufficient();
