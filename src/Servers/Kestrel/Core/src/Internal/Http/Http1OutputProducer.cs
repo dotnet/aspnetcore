@@ -78,11 +78,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             PipeWriter pipeWriter,
             string connectionId,
             ConnectionContext connectionContext,
+            MemoryPool<byte> memoryPool,
             IKestrelTrace log,
             ITimeoutControl timeoutControl,
             IHttpMinResponseDataRateFeature minResponseDataRateFeature,
-            IHttpOutputAborter outputAborter,
-            MemoryPool<byte> memoryPool)
+            IHttpOutputAborter outputAborter)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
             _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
