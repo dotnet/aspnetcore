@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private static readonly Action<ILogger, Exception> _http2DefaultCiphersInsufficient =
             LoggerMessage.Define(
-                logLevel: LogLevel.Warning,
+                logLevel: LogLevel.Information,
                 eventId: new EventId(4, "HTTP2DefaultCiphersInsufficient"),
                 formatString: CoreStrings.HTTP2DefaultCiphersInsufficient);
 
