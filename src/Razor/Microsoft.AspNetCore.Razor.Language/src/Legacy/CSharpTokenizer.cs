@@ -554,13 +554,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Transition(CSharpTokenizerState.Data, EndToken(SyntaxKind.StringLiteral));
         }
 
-        private StateResult QuotedCharacterLiteral() => QuotedLiteral('\'', SyntaxKind.CharacterLiteral);
+        private StateResult QuotedCharacterLiteral() => QuotedLiteral('\'', IsEndQuotedCharacterLiteral, SyntaxKind.CharacterLiteral);
 
-        private StateResult QuotedStringLiteral() => QuotedLiteral('\"', SyntaxKind.StringLiteral);
+        private StateResult QuotedStringLiteral() => QuotedLiteral('\"', IsEndQuotedStringLiteral, SyntaxKind.StringLiteral);
 
-        private StateResult QuotedLiteral(char quote, SyntaxKind literalType)
+        private Func<char, bool> IsEndQuotedCharacterLiteral = (c) => c == '\\' || c == '\'' || ParserHelpers.IsNewLine(c);
+        private Func<char, bool> IsEndQuotedStringLiteral = (c) => c == '\\' || c == '\"' || ParserHelpers.IsNewLine(c);
+
+        private StateResult QuotedLiteral(char quote, Func<char, bool> isEndQuotedLiteral, SyntaxKind literalType)
         {
-            TakeUntil(c => c == '\\' || c == quote || ParserHelpers.IsNewLine(c));
+            TakeUntil(isEndQuotedLiteral);
             if (CurrentCharacter == '\\')
             {
                 TakeCurrent(); // Take the '\'
