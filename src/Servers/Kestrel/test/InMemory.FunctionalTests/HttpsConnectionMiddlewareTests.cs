@@ -623,6 +623,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 stream.NegotiatedApplicationProtocol);
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
         private static async Task App(HttpContext httpContext)
         {
             var request = httpContext.Request;
