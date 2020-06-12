@@ -164,9 +164,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(expectedResponseBody, await response.Content.ReadAsStringAsync());
                 IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
-                Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
                 Assert.True(response.Headers.TryGetValues("Pragma", out values));
                 Assert.Single(values);
                 Assert.Equal("no-cache", values.First());
@@ -214,9 +213,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(expectedResponseBody, await response.Content.ReadAsStringAsync());
                 IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
-                Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
                 Assert.True(response.Headers.TryGetValues("Pragma", out values));
                 Assert.Single(values);
                 Assert.Equal("no-cache", values.First());
