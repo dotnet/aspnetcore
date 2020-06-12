@@ -1,0 +1,12 @@
+﻿<div class="my-component">
+    This Blazor component is defined in the <strong>rclwithpackages</strong> package.
+</div>
+
+@code {
+    private void OnClick() {
+        string json = @"{
+            'test': 'value'
+        }";
+        JObject o = JObject.Parse(json);
+    }
+}

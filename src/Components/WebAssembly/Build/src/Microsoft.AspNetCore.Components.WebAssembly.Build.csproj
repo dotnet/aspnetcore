@@ -45,6 +45,7 @@
       ReferenceOutputAssemblies="false"
       Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'" />
 
+    <Reference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <Reference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <Reference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="Runtime" />
     <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
