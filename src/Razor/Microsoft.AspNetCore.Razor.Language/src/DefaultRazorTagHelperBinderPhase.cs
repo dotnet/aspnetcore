@@ -247,7 +247,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         // If this is a child content tag helper, we want to add it if it's original type is in scope.
                         // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in scope.
-                        TrySplitNamespaceAndType(typeName, out typeName, out var _);
+                        TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
+                        typeName = GetTextSpanContent(typeNameTextSpan, typeName);
                     }
 
                     if (currentNamespace != null && IsTypeInScope(typeName, currentNamespace))
@@ -336,7 +337,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 // If this is a child content tag helper, we want to add it if it's original type is in scope of the given namespace.
                                 // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in this namespace.
-                                TrySplitNamespaceAndType(typeName, out typeName, out var _);
+                                TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
+                                typeName = GetTextSpanContent(typeNameTextSpan, typeName);
                             }
                             if (typeName != null && IsTypeInNamespace(typeName, @namespace))
                             {
@@ -350,13 +352,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             internal static bool IsTypeInNamespace(string typeName, string @namespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out var _) || typeNamespace == string.Empty)
+                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out var _) || typeNamespace.Length == 0)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
-                return typeNamespace.Equals(@namespace, StringComparison.Ordinal);
+                return @namespace.Length == typeNamespace.Length && 0 == string.CompareOrdinal(typeName, typeNamespace.Start, @namespace, 0, @namespace.Length);
             }
 
             // Check if the given type is already in scope given the namespace of the current document.
@@ -366,12 +368,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Whereas `MyComponents.SomethingElse.OtherComponent` is not in scope.
             internal static bool IsTypeInScope(string typeName, string currentNamespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out var _) || typeNamespace == string.Empty)
+                if (!TrySplitNamespaceAndType(typeName, out var typeNamespaceTextSpan, out var _) || typeNamespaceTextSpan.Length == 0)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
+                var typeNamespace = GetTextSpanContent(typeNamespaceTextSpan, typeName);
                 var typeNamespaceSegments = typeNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
                 var currentNamespaceSegments = currentNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
                 if (typeNamespaceSegments.Length > currentNamespaceSegments.Length)
@@ -399,21 +402,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     // If this is a child content tag helper, we want to look at it's original type.
                     // E.g, if the type name is `Test.__generated__MyComponent.ChildContent`, we want to look at `Test.__generated__MyComponent`.
-                    TrySplitNamespaceAndType(typeName, out typeName, out var _);
+                    TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
+                    typeName = GetTextSpanContent(typeNameTextSpan, typeName);
                 }
-                if (!TrySplitNamespaceAndType(typeName, out var _, out var className))
+                if (!TrySplitNamespaceAndType(typeName, out var _, out var classNameTextSpan))
                 {
                     return false;
                 }
+                var className = GetTextSpanContent(classNameTextSpan, typeName);
 
                 return ComponentMetadata.IsMangledClass(className);
             }
 
             // Internal for testing.
-            internal static bool TrySplitNamespaceAndType(string fullTypeName, out string @namespace, out string typeName)
+            internal static bool TrySplitNamespaceAndType(string fullTypeName, out TextSpan @namespace, out TextSpan typeName)
             {
-                @namespace = string.Empty;
-                typeName = string.Empty;
+                @namespace = default;
+                typeName = default;
 
                 if (string.IsNullOrEmpty(fullTypeName))
                 {
@@ -442,19 +447,25 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 if (splitLocation == -1)
                 {
-                    typeName = fullTypeName;
+                    typeName = new TextSpan(0, fullTypeName.Length);
                     return true;
                 }
 
-                @namespace = fullTypeName.Substring(0, splitLocation);
+                @namespace = new TextSpan(0, splitLocation);
 
                 var typeNameStartLocation = splitLocation + 1;
                 if (typeNameStartLocation < fullTypeName.Length)
                 {
-                    typeName = fullTypeName.Substring(typeNameStartLocation, fullTypeName.Length - typeNameStartLocation);
+                    typeName = new TextSpan(typeNameStartLocation, fullTypeName.Length - typeNameStartLocation);
                 }
 
                 return true;
+            }
+
+            // Internal for testing.
+            internal static string GetTextSpanContent(TextSpan textSpan, string s)
+            {
+                return s.Substring(textSpan.Start, textSpan.Length);
             }
         }
     }
