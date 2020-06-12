@@ -103,10 +103,20 @@ namespace InteropTests
                     }
                     catch (Exception ex)
                     {
-                        var clientOutput = clientProcess.GetOutput();
-                        var errorMessage = $@"Error while running client process. Process output:
+                        var errorMessage = $@"Error while running client process.
+
+Server ready: {serverProcess.IsReady}
+Client ready: {clientProcess.IsReady}
+
+Server process output:
 ======================================
-{clientOutput}";
+{serverProcess.GetOutput()}
+======================================
+
+Client process output:
+======================================
+{clientProcess.GetOutput()}
+======================================";
                         throw new InvalidOperationException(errorMessage, ex);
                     }
                 }

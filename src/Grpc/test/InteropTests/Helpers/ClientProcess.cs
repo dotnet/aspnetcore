@@ -44,6 +44,7 @@ namespace InteropTests.Helpers
         public Task WaitForReadyAsync() => _startTcs.Task;
         public Task WaitForExitAsync() => _processEx.Exited;
         public int ExitCode => _process.ExitCode;
+        public bool IsReady => _startTcs.Task.IsCompletedSuccessfully;
 
         public string GetOutput()
         {
@@ -77,7 +78,7 @@ namespace InteropTests.Helpers
             {
                 lock (_outputLock)
                 {
-                    _output.AppendLine(data);
+                    _output.AppendLine("ERROR: " + data);
                 }
             }
         }
