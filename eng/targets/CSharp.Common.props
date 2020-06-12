@@ -28,13 +28,14 @@
           <SetTargetFramework Condition=" '$(MSBuildRuntimeType)' != 'Core'">TargetFramework=net46</SetTargetFramework>
         </ProjectReference>
       </ItemGroup>
+
+      <PropertyGroup>
+        <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)' == ''">$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+      </PropertyGroup>
     </When>
   </Choose>
 
-  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
-    <Import Project="$(RepoRoot)eng\targets\RazorSDKDirectoryOverride.props"  />
-    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"  />
-  </ImportGroup>
+  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
