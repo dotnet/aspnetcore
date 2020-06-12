@@ -55,7 +55,6 @@ namespace Microsoft.Extensions.ObjectPool
             }
         }
 
-        [return: NotNull]
         public override T Get()
         {
             var item = _firstItem;

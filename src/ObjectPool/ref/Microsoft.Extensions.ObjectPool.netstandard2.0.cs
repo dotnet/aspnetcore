@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.ObjectPool
         public override T Create() { throw null; }
         public override bool Return(T obj) { throw null; }
     }
-    public partial interface IPooledObjectPolicy<T>
+    public partial interface IPooledObjectPolicy<T> where T : notnull
     {
         T Create();
         bool Return(T obj);
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.ObjectPool
         public abstract T Get();
         public abstract void Return(T obj);
     }
-    public abstract partial class PooledObjectPolicy<T> : Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>
+    public abstract partial class PooledObjectPolicy<T> : Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> where T : notnull
     {
         protected PooledObjectPolicy() { }
         public abstract T Create();
