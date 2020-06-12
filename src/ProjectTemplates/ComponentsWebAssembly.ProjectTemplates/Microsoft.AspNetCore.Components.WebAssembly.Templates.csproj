@@ -8,6 +8,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <Description>Templates for ASP.NET Core Blazor WebAssembly projects.</Description>
     <PackageTags>$(PackageTags);blazor;spa</PackageTags>
+    <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
