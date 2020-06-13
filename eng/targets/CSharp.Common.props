@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
-    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
     <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" />
+    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   </ImportGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
