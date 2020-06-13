@@ -75,45 +75,31 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We always consider a document to have at least a 0th line, even if it's empty.
             starts.Add(0);
 
-            var unprocessedCR = false;
-
-            // Length - 1 because we don't care if there was a linebreak as the last character.
             var length = _document.Length;
-            for (var i = 0; i < length - 1; i++)
+            for (var i = 0; i < length; i++)
             {
                 var c = _document[i];
-                var isLineBreak = false;
 
                 switch (c)
                 {
                     case '\r':
-                        unprocessedCR = true;
-                        continue;
+                        if (i + 1 < length && _document[i + 1] == '\n')
+                        {
+                            i++;
+                        }
+
+                        starts.Add(i + 1);
+                        break;
 
                     case '\n':
-                        unprocessedCR = false;
-                        isLineBreak = true;
+                        starts.Add(i + 1);
                         break;
 
                     case '\u0085':
                     case '\u2028':
                     case '\u2029':
-                        isLineBreak = true;
+                        starts.Add(i + 1);
                         break;
-
-                }
-
-                if (unprocessedCR)
-                {
-                    // If we get here it means that we had a CR followed by something other than an LF.
-                    // Add the CR as a line break.
-                    starts.Add(i);
-                    unprocessedCR = false;
-                }
-
-                if (isLineBreak)
-                {
-                    starts.Add(i + 1);
                 }
             }
 
