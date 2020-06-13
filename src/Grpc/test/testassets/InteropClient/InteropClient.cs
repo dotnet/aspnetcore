@@ -97,7 +97,11 @@ namespace InteropTestsClient
             services.AddLogging(configure =>
             {
                 configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                configure.AddConsole(loggerOptions => loggerOptions.IncludeScopes = true);
+                configure.AddConsole(loggerOptions =>
+                {
+                    loggerOptions.IncludeScopes = true;
+                    loggerOptions.DisableColors = true;
+                });
             });
 
             serviceProvider = services.BuildServiceProvider();
