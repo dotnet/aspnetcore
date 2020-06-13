@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
-        private readonly TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Notify all waiters that we're done disposing
-                _disposeTcs.TrySetResult(null);
+                _disposeTcs.TrySetResult();
             }
             catch (OperationCanceledException)
             {

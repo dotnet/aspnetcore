@@ -164,8 +164,8 @@ namespace RunTests
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var canceledTcs = new TaskCompletionSource<object?>();
-            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult(null));
+            var canceledTcs = new TaskCompletionSource();
+            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult());
 
             var result = await Task.WhenAny(processLifetimeTask.Task, canceledTcs.Task);
 

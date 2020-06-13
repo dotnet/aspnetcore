@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         .Build();
                 try
                 {
-                    var closeTcs = new TaskCompletionSource<object>();
+                    var closeTcs = new TaskCompletionSource();
                     connection.Closed += e =>
                     {
                         if (e != null)
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         }
                         else
                         {
-                            closeTcs.SetResult(null);
+                            closeTcs.SetResult();
                         }
                         return Task.CompletedTask;
                     };

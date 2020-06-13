@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamPool_SingleStream_ReturnedToPool()
         {
-            var serverTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async context =>
             {
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var stream = _connection._streams[1];
-            serverTcs.SetResult(null);
+            serverTcs.SetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 36,
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [QuarantinedTest]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
-            TaskCompletionSource<object> appDelegateTcs = null;
+            TaskCompletionSource appDelegateTcs = null;
 
             await InitializeConnectionAsync(async context =>
             {
@@ -312,13 +312,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(0, _connection.StreamPool.Count);
 
-            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            appDelegateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             // Get the in progress stream
             var stream = _connection._streams[1];
 
-            appDelegateTcs.TrySetResult(null);
+            appDelegateTcs.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 36,
@@ -330,13 +330,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
             Assert.Equal(stream, pooledStream);
 
-            appDelegateTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            appDelegateTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
 
             // New stream has been taken from the pool
             Assert.Equal(0, _connection.StreamPool.Count);
 
-            appDelegateTcs.TrySetResult(null);
+            appDelegateTcs.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 6,
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [QuarantinedTest]
         public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
         {
-            var serverTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async context =>
             {
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var stream = _connection._streams[1];
-            serverTcs.SetResult(null);
+            serverTcs.SetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 32,
@@ -933,10 +933,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task DATA_Received_Multiplexed_AppMustNotBlockOtherFrames()
         {
-            var stream1Read = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var stream1ReadFinished = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var stream3Read = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var stream3ReadFinished = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream1Read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream1ReadFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream3Read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var stream3ReadFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async context =>
             {
@@ -944,13 +944,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var read = await context.Request.Body.ReadAsync(new byte[10], 0, 10);
                 if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
                 {
-                    stream1Read.TrySetResult(null);
+                    stream1Read.TrySetResult();
 
                     await stream1ReadFinished.Task.DefaultTimeout();
                 }
                 else
                 {
-                    stream3Read.TrySetResult(null);
+                    stream3Read.TrySetResult();
 
                     await stream3ReadFinished.Task.DefaultTimeout();
                 }
@@ -966,7 +966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendDataAsync(3, _helloBytes, endStream: true);
             await stream3Read.Task.DefaultTimeout();
 
-            stream3ReadFinished.TrySetResult(null);
+            stream3ReadFinished.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 32,
@@ -981,7 +981,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 3);
 
-            stream1ReadFinished.TrySetResult(null);
+            stream1ReadFinished.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 2,
@@ -1380,15 +1380,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
         {
             _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
-            var firstRequestBlock = new TaskCompletionSource<object>();
-            var firstRequestReceived = new TaskCompletionSource<object>();
+            var firstRequestBlock = new TaskCompletionSource();
+            var firstRequestReceived = new TaskCompletionSource();
             var makeFirstRequestWait = false;
             await InitializeConnectionAsync(async context =>
             {
                 if (!makeFirstRequestWait)
                 {
                     makeFirstRequestWait = true;
-                    firstRequestReceived.SetResult(null);
+                    firstRequestReceived.SetResult();
                     await firstRequestBlock.Task.DefaultTimeout();
                 }
             });
@@ -1405,7 +1405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
-            firstRequestBlock.SetResult(null);
+            firstRequestBlock.SetResult();
 
             await StopConnectionAsync(3, ignoreNonGoAwayFrames: false);
         }
@@ -1414,7 +1414,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
         {
             _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await InitializeConnectionAsync(async context =>
             {
                 await tcs.Task.DefaultTimeout();
@@ -1431,7 +1431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
                 expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
 
-            tcs.SetResult(null);
+            tcs.SetResult();
 
             await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
         }
@@ -1542,7 +1542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         }
                     }
 
-                    _runningStreams[streamId].SetResult(null);
+                    _runningStreams[streamId].SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -1772,22 +1772,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task HEADERS_Received_AppCannotBlockOtherFrames()
         {
-            var firstRequestReceived = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var finishFirstRequest = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var secondRequestReceived = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var finishSecondRequest = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var firstRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finishFirstRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var secondRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finishSecondRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await InitializeConnectionAsync(async context =>
             {
                 if (!firstRequestReceived.Task.IsCompleted)
                 {
-                    firstRequestReceived.TrySetResult(null);
+                    firstRequestReceived.TrySetResult();
 
                     await finishFirstRequest.Task.DefaultTimeout();
                 }
                 else
                 {
-                    secondRequestReceived.TrySetResult(null);
+                    secondRequestReceived.TrySetResult();
 
                     await finishSecondRequest.Task.DefaultTimeout();
                 }
@@ -1801,14 +1801,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await secondRequestReceived.Task.DefaultTimeout();
 
-            finishSecondRequest.TrySetResult(null);
+            finishSecondRequest.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 36,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
-            finishFirstRequest.TrySetResult(null);
+            finishFirstRequest.TrySetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 6,
@@ -1971,7 +1971,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connection.ServerSettings.MaxConcurrentStreams = 1;
 
-            var requestBlocker = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestBlocker = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await InitializeConnectionAsync(context => requestBlocker.Task);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -1980,7 +1980,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, CoreStrings.Http2ErrorMaxStreams);
 
-            requestBlocker.SetResult(0);
+            requestBlocker.SetResult();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 36,
@@ -2533,15 +2533,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
 
-                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 context.RequestAborted.Register(() =>
                 {
                     lock (_abortedStreamIdsLock)
                     {
                         _abortedStreamIds.Add(streamId);
-                        abortedTcs.SetResult(null);
+                        abortedTcs.SetResult();
                     }
                 });
 
@@ -2559,11 +2559,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     await context.Response.Body.WriteAsync(_maxData, 0, remainingBytesBeforeBackpressure + 1);
 
-                    writeTcs.SetResult(null);
+                    writeTcs.SetResult();
 
                     await abortedTcs.Task;
 
-                    _runningStreams[streamId].SetResult(null);
+                    _runningStreams[streamId].SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -2651,15 +2651,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
 
-                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 context.RequestAborted.Register(() =>
                 {
                     lock (_abortedStreamIdsLock)
                     {
                         _abortedStreamIds.Add(streamId);
-                        abortedTcs.SetResult(null);
+                        abortedTcs.SetResult();
                     }
                 });
 
@@ -2667,11 +2667,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     writeTasks[streamId] = writeTcs.Task;
                     await context.Response.Body.WriteAsync(_helloWorldBytes, 0, _helloWorldBytes.Length);
-                    writeTcs.SetResult(null);
+                    writeTcs.SetResult();
 
                     await abortedTcs.Task;
 
-                    _runningStreams[streamId].SetResult(null);
+                    _runningStreams[streamId].SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -3481,15 +3481,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
 
-                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 context.RequestAborted.Register(() =>
                 {
                     lock (_abortedStreamIdsLock)
                     {
                         _abortedStreamIds.Add(streamId);
-                        abortedTcs.SetResult(null);
+                        abortedTcs.SetResult();
                     }
                 });
 
@@ -3507,11 +3507,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     await context.Response.Body.WriteAsync(_maxData, 0, remainingBytesBeforeBackpressure + 1);
 
-                    writeTcs.SetResult(null);
+                    writeTcs.SetResult();
 
                     await abortedTcs.Task;
 
-                    _runningStreams[streamId].SetResult(null);
+                    _runningStreams[streamId].SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -3583,15 +3583,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var streamId = context.Features.Get<IHttp2StreamIdFeature>().StreamId;
 
-                var abortedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 context.RequestAborted.Register(() =>
                 {
                     lock (_abortedStreamIdsLock)
                     {
                         _abortedStreamIds.Add(streamId);
-                        abortedTcs.SetResult(null);
+                        abortedTcs.SetResult();
                     }
                 });
 
@@ -3599,11 +3599,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     writeTasks[streamId] = writeTcs.Task;
                     await context.Response.Body.WriteAsync(_helloWorldBytes, 0, _helloWorldBytes.Length);
-                    writeTcs.SetResult(null);
+                    writeTcs.SetResult();
 
                     await abortedTcs.Task;
 
-                    _runningStreams[streamId].SetResult(null);
+                    _runningStreams[streamId].SetResult();
                 }
                 catch (Exception ex)
                 {
@@ -3811,8 +3811,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This way we're sure that if Response.Body.WriteAsync returns an incomplete task, it's because
             // of the flow control window and not Pipe backpressure.
             var expectingDataSem = new SemaphoreSlim(0);
-            var backpressureObservedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var backpressureReleasedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var backpressureObservedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var backpressureReleasedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Double the stream window to be 128KiB so it doesn't interfere with the rest of the test.
             _clientSettings.InitialWindowSize = Http2PeerSettings.DefaultInitialWindowSize * 2;
@@ -3834,10 +3834,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var lastWriteTask = context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
 
                     Assert.False(lastWriteTask.IsCompleted);
-                    backpressureObservedTcs.TrySetResult(null);
+                    backpressureObservedTcs.TrySetResult();
 
                     await lastWriteTask;
-                    backpressureReleasedTcs.TrySetResult(null);
+                    backpressureReleasedTcs.TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -4325,7 +4325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             // Send a blocked request
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             task = tcs.Task;
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
@@ -4344,7 +4344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(result.IsCompleted);
 
             // Unblock the request and ProcessRequestsAsync
-            tcs.TrySetResult(null);
+            tcs.TrySetResult();
             await _connectionTask;
 
             // Assert connection's Input pipe is completed

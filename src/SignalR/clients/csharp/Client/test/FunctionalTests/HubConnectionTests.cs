@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 const string originalMessage = "SignalR";
 
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
-                var restartTcs = new TaskCompletionSource<object>();
+                var restartTcs = new TaskCompletionSource();
                 connection.Closed += async e =>
                 {
                     try
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                             logger.LogInformation("Restarting connection");
                             await connection.StartAsync().OrTimeout();
                             logger.LogInformation("Restarted connection");
-                            restartTcs.SetResult(null);
+                            restartTcs.SetResult();
                         }
                     }
                     catch (Exception ex)
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var server = await StartServer<Startup>())
             {
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
-                var closeTcs = new TaskCompletionSource<object>();
+                var closeTcs = new TaskCompletionSource();
                 connection.Closed += e =>
                 {
                     if (e != null)
@@ -725,7 +725,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     }
                     else
                     {
-                        closeTcs.SetResult(null);
+                        closeTcs.SetResult();
                     }
                     return Task.CompletedTask;
                 };
@@ -1881,12 +1881,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     var echoMessage = "test";
-                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     connection.Reconnecting += _ =>
                     {
-                        reconnectingTcs.SetResult(null);
+                        reconnectingTcs.SetResult();
                         return Task.CompletedTask;
                     };
 
@@ -1942,12 +1942,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     var echoMessage = "test";
-                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     connection.Reconnecting += _ =>
                     {
-                        reconnectingTcs.SetResult(null);
+                        reconnectingTcs.SetResult();
                         return Task.CompletedTask;
                     };
 
@@ -2008,12 +2008,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     var echoMessage = "test";
-                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     connection.Reconnecting += _ =>
                     {
-                        reconnectingTcs.SetResult(null);
+                        reconnectingTcs.SetResult();
                         return Task.CompletedTask;
                     };
 

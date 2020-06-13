@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         DefaultTransferFormat = TransferFormat.Text
                     }),
                     LoggerFactory);
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
 
                 var proxyConnectionFactory = new ProxyConnectionFactory(httpConnectionFactory);
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var connection = connectionBuilder.Build();
                 connection.On("NewProtocolMethodClient", () =>
                 {
-                    tcs.SetResult(null);
+                    tcs.SetResult();
                 });
 
                 try

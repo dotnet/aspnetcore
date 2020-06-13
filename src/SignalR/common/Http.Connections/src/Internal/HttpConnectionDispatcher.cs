@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
-                var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 if (!connection.TryActivateLongPollingConnection(
                         connectionDelegate, context, options.LongPolling.PollTimeout,
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     // Artificial task queue
                     // This will cause incoming polls to wait until the previous poll has finished updating internal state info
-                    currentRequestTcs.TrySetResult(null);
+                    currentRequestTcs.TrySetResult();
                 }
             }
         }

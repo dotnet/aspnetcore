@@ -47,16 +47,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/9985", Queues = "Fedora.28.Amd64;Fedora.28.Amd64.Open")]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestStopping = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<KestrelTrace>(TestApplicationErrorLogger)
             {
                 CallBase = true
             };
             mockKestrelTrace
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => requestStopping.SetResult(null));
+                .Callback(() => requestStopping.SetResult());
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
             using (var server = new TestServer(async context =>
             {
-                requestStarted.SetResult(null);
+                requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await requestStopping.Task.DefaultTimeout();
 
                 // Unblock the request
-                requestUnblocked.SetResult(null);
+                requestUnblocked.SetResult();
 
                 Assert.Equal("hello world HTTP/2", await requestTask);
                 await stopTask.DefaultTimeout();
@@ -103,8 +103,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21521")] // Test still quarantined due to Sockets.Functional tests.
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
-            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestUnblocked = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             // Abortive shutdown leaves one request hanging
             using (var server = new TestServer(async context =>
             {
-                requestStarted.SetResult(null);
+                requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Some connections failed to close gracefully during server shutdown."));
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
 
-            requestUnblocked.SetResult(null);
+            requestUnblocked.SetResult();
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }

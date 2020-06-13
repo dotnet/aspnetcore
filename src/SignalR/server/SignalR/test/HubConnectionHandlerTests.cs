@@ -2823,13 +2823,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         internal class PipeReaderWrapper : PipeReader
         {
             private readonly PipeReader _originalPipeReader;
-            private TaskCompletionSource<object> _waitForRead;
+            private TaskCompletionSource _waitForRead;
             private object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
                 _originalPipeReader = pipeReader;
-                _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _waitForRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
             public override void AdvanceTo(SequencePosition consumed) =>
@@ -2848,7 +2848,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 lock (_lock)
                 {
-                    _waitForRead.SetResult(null);
+                    _waitForRead.SetResult();
                 }
 
                 try
@@ -2859,7 +2859,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     lock (_lock)
                     {
-                        _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                        _waitForRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     }
                 }
             }
@@ -4011,8 +4011,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public int ReleaseCount;
             private IServiceProvider _serviceProvider;
-            public TaskCompletionSource<object> ReleaseTask = new TaskCompletionSource<object>();
-            public TaskCompletionSource<object> CreateTask = new TaskCompletionSource<object>();
+            public TaskCompletionSource ReleaseTask = new TaskCompletionSource();
+            public TaskCompletionSource CreateTask = new TaskCompletionSource();
 
             public CustomHubActivator(IServiceProvider serviceProvider)
             {
@@ -4021,9 +4021,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public THub Create()
             {
-                ReleaseTask = new TaskCompletionSource<object>();
+                ReleaseTask = new TaskCompletionSource();
                 var hub = new DefaultHubActivator<THub>(_serviceProvider).Create();
-                CreateTask.TrySetResult(null);
+                CreateTask.TrySetResult();
                 return hub;
             }
 
@@ -4031,8 +4031,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 ReleaseCount++;
                 hub.Dispose();
-                ReleaseTask.TrySetResult(null);
-                CreateTask = new TaskCompletionSource<object>();
+                ReleaseTask.TrySetResult();
+                CreateTask = new TaskCompletionSource();
             }
         }
 
