@@ -27,9 +27,9 @@ echo Set path to: %PATH%
 echo "Downloading dotnet-install.ps1"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -file GetDotNetInstall.ps1
 echo "Installing SDK"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%" -NoCdn true
 echo "Installing Runtime"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%" -NoCdn true
 
 set exit_code=0
 echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --ignore-failed-sources..."
