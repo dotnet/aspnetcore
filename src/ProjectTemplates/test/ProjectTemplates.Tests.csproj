@@ -2,7 +2,7 @@
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
-  <Import Project="$(RepoRoot)eng\targets\CSharp.Common.props" />
+  <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
