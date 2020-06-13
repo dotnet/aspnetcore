@@ -224,7 +224,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal bool NextIs(SyntaxKind type)
         {
-            return NextIs(token => token != null && type == token.Kind);
+            // Duplicated logic with NextIs(Func...) to prevent allocation 
+            var cur = CurrentToken;
+            var result = false;
+            if (NextToken())
+            {
+                result = (type == CurrentToken.Kind);
+                PutCurrentBack();
+            }
+
+            PutBack(cur);
+            EnsureCurrent();
+
+            return result;
         }
 
         protected internal bool NextIs(params SyntaxKind[] types)
@@ -235,21 +247,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected internal bool NextIs(Func<SyntaxToken, bool> condition)
         {
             var cur = CurrentToken;
+            var result = false;
             if (NextToken())
             {
-                var result = condition(CurrentToken);
+                result = condition(CurrentToken);
                 PutCurrentBack();
-                PutBack(cur);
-                EnsureCurrent();
-                return result;
-            }
-            else
-            {
-                PutBack(cur);
-                EnsureCurrent();
             }
 
-            return false;
+            PutBack(cur);
+            EnsureCurrent();
+
+            return result;
         }
 
         protected internal bool Was(SyntaxKind type)

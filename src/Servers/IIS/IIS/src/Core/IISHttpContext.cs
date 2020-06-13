@@ -121,69 +121,75 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         protected void InitializeContext()
         {
-            _thisHandle = GCHandle.Alloc(this);
-
-            Method = GetVerb();
-
-            RawTarget = GetRawUrl();
-            // TODO version is slow.
-            HttpVersion = GetVersion();
-            Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
-            KnownMethod = VerbId;
-            StatusCode = 200;
-
-            var originalPath = GetOriginalPath();
-
-            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            // create a memory barrier between initialize and disconnect to prevent a possible
+            // NullRef with disconnect being called before these fields have been written
+            // disconnect aquires this lock as well
+            lock (_abortLock)
             {
-                PathBase = string.Empty;
-                Path = string.Empty;
-            }
-            else
-            {
-                // Path and pathbase are unescaped by RequestUriBuilder
-                // The UsePathBase middleware will modify the pathbase and path correctly
-                PathBase = string.Empty;
-                Path = originalPath;
-            }
+                _thisHandle = GCHandle.Alloc(this);
 
-            var cookedUrl = GetCookedUrl();
-            QueryString = cookedUrl.GetQueryString() ?? string.Empty;
+                Method = GetVerb();
 
-            RequestHeaders = new RequestHeaders(this);
-            HttpResponseHeaders = new HeaderCollection();
-            ResponseHeaders = HttpResponseHeaders;
+                RawTarget = GetRawUrl();
+                // TODO version is slow.
+                HttpVersion = GetVersion();
+                Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
+                KnownMethod = VerbId;
+                StatusCode = 200;
 
-            if (_options.ForwardWindowsAuthentication)
-            {
-                WindowsUser = GetWindowsPrincipal();
-                if (_options.AutomaticAuthentication)
+                var originalPath = GetOriginalPath();
+
+                if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
                 {
-                    User = WindowsUser;
+                    PathBase = string.Empty;
+                    Path = string.Empty;
                 }
+                else
+                {
+                    // Path and pathbase are unescaped by RequestUriBuilder
+                    // The UsePathBase middleware will modify the pathbase and path correctly
+                    PathBase = string.Empty;
+                    Path = originalPath;
+                }
+
+                var cookedUrl = GetCookedUrl();
+                QueryString = cookedUrl.GetQueryString() ?? string.Empty;
+
+                RequestHeaders = new RequestHeaders(this);
+                HttpResponseHeaders = new HeaderCollection();
+                ResponseHeaders = HttpResponseHeaders;
+
+                if (_options.ForwardWindowsAuthentication)
+                {
+                    WindowsUser = GetWindowsPrincipal();
+                    if (_options.AutomaticAuthentication)
+                    {
+                        User = WindowsUser;
+                    }
+                }
+
+                MaxRequestBodySize = _options.MaxRequestBodySize;
+
+                ResetFeatureCollection();
+
+                if (!_server.IsWebSocketAvailable(_pInProcessHandler))
+                {
+                    _currentIHttpUpgradeFeature = null;
+                }
+
+                _streams = new Streams(this);
+
+                (RequestBody, ResponseBody) = _streams.Start();
+
+                var pipe = new Pipe(
+                    new PipeOptions(
+                        _memoryPool,
+                        readerScheduler: PipeScheduler.ThreadPool,
+                        pauseWriterThreshold: PauseWriterThreshold,
+                        resumeWriterThreshold: ResumeWriterTheshold,
+                        minimumSegmentSize: MinAllocBufferSize));
+                _bodyOutput = new OutputProducer(pipe);
             }
-
-            MaxRequestBodySize = _options.MaxRequestBodySize;
-
-            ResetFeatureCollection();
-
-            if (!_server.IsWebSocketAvailable(_pInProcessHandler))
-            {
-                _currentIHttpUpgradeFeature = null;
-            }
-
-            _streams = new Streams(this);
-
-            (RequestBody, ResponseBody) = _streams.Start();
-
-            var pipe = new Pipe(
-                new PipeOptions(
-                    _memoryPool,
-                    readerScheduler: PipeScheduler.ThreadPool,
-                    pauseWriterThreshold: PauseWriterThreshold,
-                    resumeWriterThreshold: ResumeWriterTheshold,
-                    minimumSegmentSize: MinAllocBufferSize));
-            _bodyOutput = new OutputProducer(pipe);
 
             NativeMethods.HttpSetManagedContext(_pInProcessHandler, (IntPtr)_thisHandle);
         }

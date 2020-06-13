@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly IList<TextLine> _lines;
         private readonly string _filePath;
         private TextLine _currentLine;
-        private TextLine _endLine;
 
         public LineTrackingStringBuffer(string content, string filePath)
             : this(content.ToCharArray(), filePath)
@@ -22,17 +21,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public LineTrackingStringBuffer(char[] content, string filePath)
         {
-            _endLine = new TextLine(0, 0);
-            _lines = new List<TextLine>() { _endLine };
+            _lines = new List<TextLine>();
 
-            Append(content);
+            BuildTextLines(content);
 
             _filePath = filePath;
         }
 
         public int Length
         {
-            get { return _endLine.End; }
+            get { return _lines[_lines.Count - 1].End; }
         }
 
         public SourceLocation EndLocation
@@ -43,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public CharacterReference CharAt(int absoluteIndex)
         {
             var line = FindLine(absoluteIndex);
-            if (line == null)
+            if (line.IsDefault)
             {
                 throw new ArgumentOutOfRangeException(nameof(absoluteIndex));
             }
@@ -51,38 +49,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CharacterReference(line.Content[idx], new SourceLocation(_filePath, absoluteIndex, line.Index, idx));
         }
 
-        private void Append(char[] content)
+        private void BuildTextLines(char[] content)
         {
+            string lineText;
+            var lineStart = 0;
+
             for (int i = 0; i < content.Length; i++)
             {
-                AppendCore(content[i]);
-
-                // \r on it's own: Start a new line, otherwise wait for \n
-                // Other Newline: Start a new line
-                if ((content[i] == '\r' && (i + 1 == content.Length || content[i + 1] != '\n')) || (content[i] != '\r' && ParserHelpers.IsNewLine(content[i])))
+                if (ParserHelpers.IsNewLine(content[i]))
                 {
-                    PushNewLine();
+                    // \r on it's own: Start a new line, otherwise wait for \n
+                    // Other Newline: Start a new line
+                    if (content[i] == '\r' && i + 1 < content.Length && content[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+
+                    lineText = new string(content, lineStart, (i - lineStart) + 1); // +1 to include the current char
+                    _lines.Add(new TextLine(lineStart, _lines.Count, lineText));
+
+                    lineStart = i + 1;
                 }
             }
-        }
 
-        private void PushNewLine()
-        {
-            _endLine = new TextLine(_endLine.End, _endLine.Index + 1);
-            _lines.Add(_endLine);
-        }
-
-        private void AppendCore(char chr)
-        {
-            Debug.Assert(_lines.Count > 0);
-            _lines[_lines.Count - 1].Content.Append(chr);
+            lineText = new string(content, lineStart, content.Length - lineStart); // no +1 as content.Length points past the last char already
+            _lines.Add(new TextLine(lineStart, _lines.Count, lineText));
         }
 
         private TextLine FindLine(int absoluteIndex)
         {
-            TextLine selected = null;
+            TextLine selected;
 
-            if (_currentLine == null)
+            if (_currentLine.IsDefault)
             {
                 // Scan from line 0
                 selected = ScanLines(absoluteIndex, 0, _lines.Count);
@@ -104,6 +102,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         selected = ScanLines(absoluteIndex, _currentLine.Index, _lines.Count);
                     }
                 }
+                else
+                {
+                    selected = default;
+                }
             }
             else if (absoluteIndex < _currentLine.Start)
             {
@@ -122,6 +124,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         selected = ScanLines(absoluteIndex, 0, _currentLine.Index);
                     }
                 }
+                else
+                {
+                    selected = default;
+                }
             }
             else
             {
@@ -129,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 selected = _currentLine;
             }
 
-            Debug.Assert(selected == null || selected.Contains(absoluteIndex));
+            Debug.Assert(selected.IsDefault || selected.Contains(absoluteIndex));
             _currentLine = selected;
             return selected;
         }
@@ -159,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            return null;
+            return default;
         }
 
         internal struct CharacterReference
@@ -175,28 +181,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public SourceLocation Location { get; }
         }
 
-        private class TextLine
+        private struct TextLine
         {
-            private StringBuilder _content = new StringBuilder();
-
-            public TextLine(int start, int index)
+            public TextLine(int start, int index, string content)
             {
                 Start = start;
                 Index = index;
+                Content = content;
             }
 
-            public StringBuilder Content
-            {
-                get { return _content; }
-            }
+            public string Content { get; }
+
+            public bool IsDefault => Content == null;
 
             public int Length
             {
                 get { return Content.Length; }
             }
 
-            public int Start { get; set; }
-            public int Index { get; set; }
+            public int Start { get; }
+            public int Index { get; }
 
             public int End
             {

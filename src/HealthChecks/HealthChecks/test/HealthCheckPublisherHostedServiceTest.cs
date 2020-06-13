@@ -76,9 +76,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task StartAsync_WithPublishers_StartsTimer_RunsPublishers()
         {
             // Arrange
-            var unblock0 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock0 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task StopAsync_CancelsExecution()
         {
             // Arrange
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Arrange
             var sink = new TestSink();
 
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -225,9 +225,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task RunAsync_WaitsForCompletion_Multiple()
         {
             // Arrange
-            var unblock0 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var unblock2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock0 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -278,7 +278,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         {
             // Arrange
             var sink = new TestSink();
-            var unblock = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unblock = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var publishers = new TestPublisher[]
             {
@@ -440,8 +440,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private HealthCheckPublisherHostedService CreateService(
             IHealthCheckPublisher[] publishers,
-            Action<HealthCheckPublisherOptions> configure = null,
-            TestSink sink = null)
+            Action<HealthCheckPublisherOptions>? configure = null,
+            TestSink? sink = null)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddOptions();
@@ -488,20 +488,20 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private class TestPublisher : IHealthCheckPublisher
         {
-            private TaskCompletionSource<object> _started;
+            private TaskCompletionSource<object?> _started;
 
             public TestPublisher()
             {
-                _started = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _started = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
             public List<(HealthReport report, CancellationToken cancellationToken)> Entries { get; } = new List<(HealthReport report, CancellationToken cancellationToken)>();
 
-            public Exception Exception { get; set; }
+            public Exception? Exception { get; set; }
 
             public Task Started => _started.Task;
 
-            public Task Wait { get; set; }
+            public Task? Wait { get; set; }
 
             public async Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
             {

@@ -26,8 +26,22 @@
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="System.Reflection.Metadata"  Condition="'$(TargetFramework)'=='net46'" />
 
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
-    <Reference Include="rzc" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
+    <ProjectReference
+      Include="..\..\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj"
+      Targets="Publish"
+      ReferenceOutputAssembly="false"
+      IsImplicityDefined="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+
+    <ProjectReference
+      Include="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
+      Targets="Publish"
+      ReferenceOutputAssembly="false"
+      IsImplicityDefined="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+
   </ItemGroup>
 
   <ItemGroup>
@@ -48,34 +62,32 @@
     <Content Include="_._" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="LayoutDependencies" BeforeTargets="Build">
+  <Target Name="LayoutDependencies" BeforeTargets="Build"
+    Condition="'$(IsInnerBuild)' != 'true' AND '$(NoBuild)' != 'true'">
     <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
-    <MSBuild
-      Projects="..\..\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj"
-      Properties="PublishDir=$(SdkOutputPath)temp;TargetFramework=netcoreapp3.0"
-      Targets="Publish"
-      ContinueOnError="true"  />
-    <MSBuild
-      Projects="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
-      Properties="TargetFramework=netstandard2.0"
-      Targets="Build"
-      Condition="'$(NoBuild)' != 'true'"
-      ContinueOnError="true"  />
-    
+
     <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' != 'true'">
       <_ContinueOnError>true</_ContinueOnError>
       <_Retries>1</_Retries>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_ContinueOnError>false</_ContinueOnError>
       <_Retries>10</_Retries>
     </PropertyGroup>
-    
+
     <ItemGroup>
-      <RazorToolsOutput Include="$(SdkOutputPath)temp\**\*.*" />
+      <RazorToolsOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Razor.Tools\$(Configuration)\netcoreapp3.0\publish\**\*.*" />
       <MvcRazorExtensionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
+
+    <Error
+      Message="rzc outputs were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Razor.Tools\$(Configuration)\netcoreapp3.0\publish"
+      Condition="'@(RazorToolsOutput->Count())' == '0'" />
+
+    <Error
+      Message="Mvc extensions outputs were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0"
+      Condition="'@(MvcRazorExtensionOutput->Count())' == '0'" />
 
     <Copy SourceFiles="@(RazorToolsOutput)" DestinationFolder="$(SdkOutputPath)tools\netcoreapp3.0\" SkipUnchangedFiles="true" Retries="$(_Retries)" ContinueOnError="$(_ContinueOnError)" />
     <Copy SourceFiles="@(MvcRazorExtensionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true" Retries="$(_Retries)" ContinueOnError="$(_ContinueOnError)">
@@ -94,13 +106,11 @@
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
-    <Message Importance="High" Text="Prepared Razor SDK at $(SdkOutputPath)" />
-
-    <ItemGroup>
+    <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_PreparedRazorSdkFiles Include="$(SdkOutputPath)**\*.*" />
     </ItemGroup>
-
-    <Message Importance="High" Text="Prepared files:@(_PreparedRazorSdkFiles->'%0a%(Identity)')" />
+    <Message Importance="High" Text="Prepared Razor SDK at $(SdkOutputPath)" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
+    <Message Importance="High" Text="Prepared files:@(_PreparedRazorSdkFiles->'%0a%(Identity)')" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
   </Target>
 
   <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
@@ -112,4 +122,9 @@
       <NuspecProperty Include="outputPath=$(OutputPath)\sdk-output" />
     </ItemGroup>
   </Target>
+
+  <!-- Workarounds to allow publishing to work when the RazorSDK is referenced as a project.  -->
+  <Target Name="GetTargetPath" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
+
 </Project>

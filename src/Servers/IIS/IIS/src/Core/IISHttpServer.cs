@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.AbortIO(clientDisconnect: true);
+                context?.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.OnAsyncCompletion(hr, bytes);
+                context?.OnAsyncCompletion(hr, bytes);
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
             }
             catch (Exception ex)

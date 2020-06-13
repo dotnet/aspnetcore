@@ -284,7 +284,8 @@ namespace Microsoft.AspNetCore.Hosting
                 return context =>
                 {
                     context.Response.StatusCode = 500;
-                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache,no-store";
+                    context.Response.Headers[HeaderNames.Pragma] = "no-cache";
                     return errorPage.ExecuteAsync(context);
                 };
             }
